@@ -27,8 +27,8 @@ merged through PRs #85–#91, #93, #94 and the #28 PR. Its fixtures are hand-wri
 Atlassian's documented shapes; **#29 (Cloud) and #30 (Data Center) need a real tenant**
 to record real ones and to settle the open questions listed there (title case-
 sensitivity, v2 re-parenting, code-macro languages, `/descendants`). #92 (configuration
-file, sync direction, content types, templates) arrived during E2 and reshapes E3's
-settings issue #32.
+file, sync direction, content types, templates) is decided: `.lore-master.yaml`, built in
+#32; its future parts are #95, #96, #97 under E10.
 
 Done in E0: #45 workspace, #46 Go projects, #47 slicecheck, #48 ADRs, #49 memory files.
 Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maintainer).
@@ -47,7 +47,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 | E7 OAuth | #8 | #41 Cloud decision · #42 DC PKCE | — |
 | E8 Dogfood from CI | #9 | #66 tenant + secrets · #67 CI sync job | E4 |
 | E9 Visual Studio extension | #10 | #68 scaffold + RPC client · #69 the rest | E4; mnci VSIX gap (to file) |
-| E10 Beyond docs sync | #11 | — | the first feature shipping |
+| E10 Beyond docs sync | #11 | #95 two-way sync · #96 more content types (test results, code docs) · #97 templates — reserved in `.lore-master.yaml` (#92), not scheduled | the first feature shipping |
 
 ## Open decisions (maintainer)
 
@@ -55,7 +55,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 - #44 Marketplace publisher id + `VSCE_PAT`
 - #50 branch protection (merge commits only)
 - #41 Confluence Cloud OAuth: broker / user credentials / API token only
-- #64 which settings live in `contributes.configuration` vs `lore-master.json`
+- #64 which settings live in `contributes.configuration` vs `.lore-master.yaml`
 - #66 Confluence tenant for fixtures and dogfood
 
 ## mnci work this project depends on
