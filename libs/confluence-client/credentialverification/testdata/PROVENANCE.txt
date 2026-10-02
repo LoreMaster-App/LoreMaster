@@ -1,0 +1,2 @@
+Hand-written from Atlassian's documented response shapes, not recorded from a live
+site. Replace them with recorded responses in #29 (Cloud) and #30 (Data Center).

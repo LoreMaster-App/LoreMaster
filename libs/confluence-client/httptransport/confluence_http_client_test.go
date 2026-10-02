@@ -257,3 +257,16 @@ func TestNewRejectsARelativeBaseURL(t *testing.T) {
 		t.Fatal("expected an error")
 	}
 }
+
+func TestGetBytesSendsItsOwnAccept(t *testing.T) {
+	client, _, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Accept") != "application/xml" {
+			t.Errorf("Accept %q", r.Header.Get("Accept"))
+		}
+		_, _ = io.WriteString(w, "<manifest/>")
+	})
+	body, err := client.GetBytes(context.Background(), "/rest/applinks/1.0/manifest", nil, "application/xml")
+	if err != nil || string(body) != "<manifest/>" {
+		t.Fatalf("body %q, err %v", body, err)
+	}
+}

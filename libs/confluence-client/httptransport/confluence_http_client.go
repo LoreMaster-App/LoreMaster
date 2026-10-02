@@ -66,6 +66,16 @@ func (c *Client) GetJSON(ctx context.Context, path string, query url.Values, out
 	return c.doJSON(ctx, http.MethodGet, c.resolve(path, query), nil, out)
 }
 
+// GetBytes fetches path and returns the raw body, for the few endpoints that do not
+// answer JSON (the application-links manifest is XML). accept is sent as the Accept
+// header.
+func (c *Client) GetBytes(ctx context.Context, path string, query url.Values, accept string) ([]byte, error) {
+	var body []byte
+	err := c.do(ctx, http.MethodGet, c.resolve(path, query), nil, http.Header{"Accept": {accept}}, &body)
+
+	return body, err
+}
+
 // PostJSON sends body as JSON and decodes the answer into out (nil to discard).
 func (c *Client) PostJSON(ctx context.Context, path string, body any, out any) error {
 	return c.doJSON(ctx, http.MethodPost, c.resolve(path, nil), body, out)
@@ -147,7 +157,9 @@ func (c *Client) do(ctx context.Context, method string, target *url.URL, payload
 		for name, values := range header {
 			request.Header[name] = values
 		}
-		request.Header.Set("Accept", "application/json")
+		if request.Header.Get("Accept") == "" {
+			request.Header.Set("Accept", "application/json")
+		}
 		if c.authorization != "" {
 			request.Header.Set("Authorization", c.authorization)
 		}
@@ -220,6 +232,12 @@ func decode(response *http.Response, out any) error {
 		_, _ = io.Copy(io.Discard, response.Body)
 
 		return nil
+	}
+	if raw, isRaw := out.(*[]byte); isRaw {
+		body, err := io.ReadAll(response.Body)
+		*raw = body
+
+		return err
 	}
 	if err := json.NewDecoder(response.Body).Decode(out); err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("decode %s %s: %w", response.Request.Method, response.Request.URL.Path, err)
