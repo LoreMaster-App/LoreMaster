@@ -60,6 +60,11 @@ func New(options Options) (*Client, error) {
 	return client, nil
 }
 
+// BaseURL is the site's base URL, without a trailing slash.
+func (c *Client) BaseURL() string {
+	return c.base.String()
+}
+
 // GetJSON fetches path (relative to the base URL) with query and decodes the body into
 // out.
 func (c *Client) GetJSON(ctx context.Context, path string, query url.Values, out any) error {
