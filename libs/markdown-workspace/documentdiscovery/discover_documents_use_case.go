@@ -72,7 +72,7 @@ func DiscoverDocuments(ctx context.Context, options Options) (Discovery, error) 
 	slices.Sort(documents)
 	warnings = append(warnings, caseCollisionWarnings(documents)...)
 
-	return newDiscovery(documents, warnings), nil
+	return NewDiscovery(documents, warnings), nil
 }
 
 func normalisedRoots(roots []string) ([]string, error) {

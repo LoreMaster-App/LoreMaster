@@ -14,7 +14,9 @@ type Discovery struct {
 	byFolded  map[string][]DocumentPath
 }
 
-func newDiscovery(documents []DocumentPath, warnings []string) Discovery {
+// NewDiscovery indexes documents for Lookup. DiscoverDocuments builds one from a scan;
+// other slices build one from a known list of paths.
+func NewDiscovery(documents []DocumentPath, warnings []string) Discovery {
 	byFolded := make(map[string][]DocumentPath, len(documents))
 	for _, document := range documents {
 		folded := strings.ToLower(string(document))
