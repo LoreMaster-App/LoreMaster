@@ -28,6 +28,7 @@ The repository is still called `MarkDoc` until the maintainer renames it (#43).
 | Distribution | No npm packages, no CLI product. Only the VS Code Marketplace (later the Visual Studio Marketplace). The binary ships inside each extension | E5 #6, #65 |
 | Layout | Vertical feature slices in Go **and** TypeScript, even where no lint enforces it | `docs/architecture/vertical-feature-slices.md`, #47 |
 | Page titles | `<titlePrefix>: <H1>`; prefix asked once at first sync, default = selected parent page's title | E3 #4 |
+| Config file | `.lore-master.yaml` (YAML for readability; `version`, `outputs[]` with platform, location, `direction`, `content[]` types, `template`). Reserved values (two-way, other content types, templates) are in the schema but refused until built | #92, #32; #95 #96 #97 |
 | Mermaid | Default `image`: code macro + SVG attachment rendered by the editor's webview; `code`, `html-macro`, `marketplace-macro` selectable | E6 #7 |
 | Test runner (TS shell) | Jest | #45 |
 | Auth v1 | Cloud: email + API token; DC: PAT; Server: PAT ≥ 7.9 else basic. OAuth is E7 (#8) | `docs/architecture/confluence-editions.md` |
@@ -75,7 +76,7 @@ Capability → flat slice → role-suffixed files. Full ADR: `docs/architecture/
 
 ## How the sync works (the short version)
 
-1. Discover `.md` files (roots/excludes from `lore-master.json`), parse with goldmark,
+1. Discover `.md` files (roots/excludes from `.lore-master.yaml`), parse with goldmark,
    title = first H1, build the tree: explicit `parent:` → dotted filename
    (`readme.architecture.md` under `readme.md`) → directory index (`README.md`) → the
    selected Confluence parent.
@@ -109,7 +110,7 @@ npm run format    # eslint --fix (there is no Prettier)
   `mnci upgrade`; review them).
 - Conventional commits are enforced by commitlint; `nx release` versions the extension
   from them. Merge PRs with a **merge commit**, never squash or rebase (#50).
-- Secrets never touch this repo or `lore-master.json`; they live in the editor's secret
+- Secrets never touch this repo or `.lore-master.yaml`; they live in the editor's secret
   store and travel to the engine per session over stdio.
 
 ## Where to look
