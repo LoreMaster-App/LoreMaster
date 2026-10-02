@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"slices"
 
 	"lore-master/libs/documentation-sync/platformport"
@@ -22,6 +23,10 @@ type Input struct {
 	// Scope limits the plan to these files and the ancestors they need created; empty
 	// plans everything, orphans included.
 	Scope []documentdiscovery.DocumentPath
+	// Attachments is, per document, the files its page needs now (attachment name →
+	// content hash), so an image edited without touching the Markdown is still an
+	// update. A document missing from the map needs none. Nil skips the comparison.
+	Attachments map[documentdiscovery.DocumentPath]map[string]string
 }
 
 // PlanSync plans a sync of the tree to one output, reading the platform but never
@@ -56,7 +61,7 @@ func PlanSync(ctx context.Context, platform platformport.DocumentationPlatform, 
 		if walkErr != nil {
 			return
 		}
-		action, warning, planError, err := planDocument(ctx, platform, input.Output, space, node, titles, pageIDs)
+		action, warning, planError, err := planDocument(ctx, platform, input.Output, space, node, titles, pageIDs, input.Attachments)
 		if err != nil {
 			walkErr = err
 
@@ -102,6 +107,7 @@ func PlanSync(ctx context.Context, platform platformport.DocumentationPlatform, 
 func planDocument(
 	ctx context.Context, platform platformport.DocumentationPlatform, output workspacesettings.Output, space platformport.SpaceRef,
 	node *documenttree.TreeNode, titles map[documentdiscovery.DocumentPath]string, pageIDs map[documentdiscovery.DocumentPath]string,
+	attachments map[documentdiscovery.DocumentPath]map[string]string,
 ) (Action, string, string, error) {
 	document := node.Document
 	action := Action{
@@ -144,9 +150,10 @@ func planDocument(
 		return Action{}, "", "", err
 	}
 	action.PageID, action.RemoteVersion, action.URL = remote.ID, remote.Version, remote.URL
+	attachmentsChanged := attachments != nil && !maps.Equal(attachments[document.Path], annotation.Attachments)
 	action.Kind, action.Changes = detectChange(
 		remoteState{annotationVersion: annotation.Version, annotationHash: annotation.ContentHash, remoteVersion: remote.Version, remoteParentID: remote.ParentID, remoteTitle: remote.Title},
-		localState{contentHash: action.ContentHash, title: action.Title, parentPageID: action.ParentPageID},
+		localState{contentHash: action.ContentHash, title: action.Title, parentPageID: action.ParentPageID, attachmentsChanged: attachmentsChanged},
 	)
 	if action.Kind == Conflict {
 		action.Reason = fmt.Sprintf("the page was edited on the platform after the last sync (version %d, synced at %d); it was left alone", remote.Version, annotation.Version)

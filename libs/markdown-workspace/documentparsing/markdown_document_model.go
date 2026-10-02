@@ -14,6 +14,9 @@ type MarkdownDocument struct {
 	Title string
 	// TitleFromHeading says whether Title came from an H1 rather than the file name.
 	TitleFromHeading bool
+	// TitleHeading is the H1 the title came from, or nil. A platform shows the title
+	// above the page, so the body leaves this heading out.
+	TitleHeading *ast.Heading
 	// Order is the file name's numeric prefix ("01-intro.md" is 1); Ordered says whether
 	// there was one. Siblings sort by it before their titles.
 	Order   int

@@ -288,3 +288,32 @@ func TestAnAnnotationFromAnotherSpaceStartsAfresh(t *testing.T) {
 		t.Fatalf("a page id from another space must not be looked up: %+v %q", got.Actions[0], got.Warnings)
 	}
 }
+
+func TestAnEditedImageUpdatesThePageItIsOn(t *testing.T) {
+	w, files, ids := steady(t)
+	// The guide shows one image; the last sync recorded its hash.
+	files["readme.guide.md"] = strings.Replace(annotated(ids["readme.guide.md"], 1, "# Guide\n", ""), "-->", "attachments: {\"diagram.png\":\"old\"}\n-->", 1)
+	run := func(attachments map[documentdiscovery.DocumentPath]map[string]string) SyncPlan {
+		result, err := PlanSync(context.Background(), w.platform, Input{Tree: treeOf(t, files), Output: w.output, SpaceID: "1", Attachments: attachments})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return result
+	}
+
+	same := run(map[documentdiscovery.DocumentPath]map[string]string{"readme.guide.md": {"diagram.png": "old"}})
+	edited := run(map[documentdiscovery.DocumentPath]map[string]string{"readme.guide.md": {"diagram.png": "new"}})
+	removed := run(map[documentdiscovery.DocumentPath]map[string]string{})
+	unknown := run(nil)
+	for name, got := range map[string]SyncPlan{"same": same, "unknown": unknown} {
+		if got.Actions[1].Kind != Unchanged {
+			t.Errorf("%s: %s", name, summary(got))
+		}
+	}
+	for name, got := range map[string]SyncPlan{"edited": edited, "removed": removed} {
+		if got.Actions[1].Kind != Update || got.Counts()[Update] != 1 {
+			t.Errorf("%s: %s", name, summary(got))
+		}
+	}
+}
