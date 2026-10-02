@@ -13,6 +13,7 @@ import (
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/apps/lore-master-engine/sessionlifecycle"
 )
 
 // version is stamped at build time: -ldflags "-X main.version=<tag>".
@@ -36,8 +37,12 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 	}
 
 	logger := slog.New(slog.NewTextHandler(stderr, nil)).With("version", version)
+	sessions := sessionlifecycle.NewStore()
+	network := sessionlifecycle.Environment{Logger: logger}
 	methods := rpcserver.Methods{
-		rpcprotocol.MethodPing: rpcserver.Ping(version),
+		rpcprotocol.MethodPing:         rpcserver.Ping(version),
+		rpcprotocol.MethodSessionOpen:  sessionlifecycle.OpenSession(sessions, network),
+		rpcprotocol.MethodSessionClose: sessionlifecycle.CloseSession(sessions),
 	}
 	if err := rpcserver.Serve(ctx, stdio{Reader: stdin, Writer: stdout}, methods, logger); err != nil {
 		logger.Error("stopped", "error", err.Error())
