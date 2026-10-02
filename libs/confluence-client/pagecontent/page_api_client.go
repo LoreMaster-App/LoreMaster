@@ -22,6 +22,10 @@ type pageAPI interface {
 	search(ctx context.Context, cql string, visit func(Page) error) error
 	create(ctx context.Context, input CreatePageInput) (Page, error)
 	update(ctx context.Context, input UpdatePageInput) (Page, error)
+	descendants(ctx context.Context, id string, visit func(Page) error) error
+	trash(ctx context.Context, id string) error
+	setProperty(ctx context.Context, id string, key string, value any) error
+	addLabel(ctx context.Context, id string, label string) error
 }
 
 // Pages reads and writes pages on one site.
@@ -134,6 +138,50 @@ func (c cloudPages) update(ctx context.Context, input UpdatePageInput) (Page, er
 	}
 
 	return wire.page(c.client.BaseURL()), nil
+}
+
+func (c cloudPages) descendants(ctx context.Context, id string, visit func(Page) error) error {
+	err := httptransport.PageV2(ctx, c.client, "/api/v2/pages/"+url.PathEscape(id)+"/descendants", url.Values{"limit": {"250"}}, func(wire pageV2) error {
+		return visit(wire.page(c.client.BaseURL()))
+	})
+
+	return notFound(err, id)
+}
+
+func (c cloudPages) trash(ctx context.Context, id string) error {
+	return notFound(c.client.Delete(ctx, "/api/v2/pages/"+url.PathEscape(id), nil), id)
+}
+
+type propertyV2 struct {
+	ID      string `json:"id"`
+	Key     string `json:"key"`
+	Version struct {
+		Number int `json:"number"`
+	} `json:"version"`
+}
+
+// setProperty creates the content property, or updates it at its next version when it
+// already exists (properties are versioned like pages).
+func (c cloudPages) setProperty(ctx context.Context, id string, key string, value any) error {
+	base := "/api/v2/pages/" + url.PathEscape(id) + "/properties"
+	var existing struct {
+		Results []propertyV2 `json:"results"`
+	}
+	if err := c.client.GetJSON(ctx, base, url.Values{"key": {key}}, &existing); err != nil {
+		return notFound(err, id)
+	}
+	if len(existing.Results) == 0 {
+		return c.client.PostJSON(ctx, base, map[string]any{"key": key, "value": value}, nil)
+	}
+	current := existing.Results[0]
+
+	return c.client.PutJSON(ctx, base+"/"+url.PathEscape(current.ID), map[string]any{
+		"key": key, "value": value, "version": map[string]any{"number": current.Version.Number + 1},
+	}, nil)
+}
+
+func (c cloudPages) addLabel(ctx context.Context, id string, label string) error {
+	return addLabelV1(ctx, c.client, id, label)
 }
 
 // serverPages speaks REST v1, the only API of Data Center and Server.
@@ -270,6 +318,49 @@ func (s serverPages) update(ctx context.Context, input UpdatePageInput) (Page, e
 	}
 
 	return page, nil
+}
+
+func (s serverPages) descendants(ctx context.Context, id string, visit func(Page) error) error {
+	err := httptransport.PageV1(ctx, s.client, "/rest/api/content/"+url.PathEscape(id)+"/descendant/page", url.Values{"expand": {"version,ancestors,space"}}, listPageSize, func(wire pageV1) error {
+		return visit(wire.page(s.client.BaseURL()))
+	})
+
+	return notFound(err, id)
+}
+
+func (s serverPages) trash(ctx context.Context, id string) error {
+	return notFound(s.client.Delete(ctx, "/rest/api/content/"+url.PathEscape(id), nil), id)
+}
+
+func (s serverPages) setProperty(ctx context.Context, id string, key string, value any) error {
+	path := "/rest/api/content/" + url.PathEscape(id) + "/property/" + url.PathEscape(key)
+	var existing struct {
+		Version struct {
+			Number int `json:"number"`
+		} `json:"version"`
+	}
+	err := s.client.GetJSON(ctx, path, nil, &existing)
+	var apiError *httptransport.APIError
+	if errors.As(err, &apiError) && apiError.Status == http.StatusNotFound {
+		return notFound(s.client.PostJSON(ctx, "/rest/api/content/"+url.PathEscape(id)+"/property", map[string]any{"key": key, "value": value}, nil), id)
+	}
+	if err != nil {
+		return err
+	}
+
+	return s.client.PutJSON(ctx, path, map[string]any{
+		"key": key, "value": value, "version": map[string]any{"number": existing.Version.Number + 1},
+	}, nil)
+}
+
+func (s serverPages) addLabel(ctx context.Context, id string, label string) error {
+	return addLabelV1(ctx, s.client, id, label)
+}
+
+// addLabelV1 adds a global label through v1, which every edition serves (Cloud's v2
+// can read labels but not add them). Adding a label the page already has is a no-op.
+func addLabelV1(ctx context.Context, client *httptransport.Client, id string, label string) error {
+	return notFound(client.PostJSON(ctx, "/rest/api/content/"+url.PathEscape(id)+"/label", []map[string]string{{"prefix": "global", "name": label}}, nil), id)
 }
 
 // searchV1 runs CQL through /rest/api/content/search, which every edition serves.
