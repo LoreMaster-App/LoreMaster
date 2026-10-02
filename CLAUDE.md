@@ -8,8 +8,6 @@ Confluence first (Cloud, Data Center, and the end-of-life Server). More platform
 more kinds of lore come later, which is why nothing here is named after Confluence or
 Markdown.
 
-The repository is still called `MarkDoc` until the maintainer renames it (#43).
-
 ## Two rules that govern all work here
 
 1. **Every step is a GitHub issue before it is built.** The issues are the durable
