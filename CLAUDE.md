@@ -96,17 +96,25 @@ npm run test      # jest + go test ./...
 npm run build     # engine binaries + extension bundle
 npm run format    # eslint --fix (there is no Prettier)
 VERSION=1.2.3 npx nx run lore-master-engine:build-all   # six static engine binaries, stamped
+npx nx run lore-master-vscode:package   # 8 .vsix in dist/drop, engine in bin/, stamped with the extension version
 ```
+
+The extension is `apps/lore-master-vscode` (Nx project `lore-master-vscode`, pinned by
+`nx.name`) but ships as `russoedu.lore-master`: the manifest `name` is free to differ.
+Debug it with the `lore-master-vscode: debug` launch entry (Extension Development Host).
 
 - Go import paths are `lore-master/libs/<lib>/<slice>`. The module name comes
   from the npm scope (MoNecromanCi#236); fine for an app nobody `go get`s.
-- Until MoNecromanCi#228 (`--registry none`) ships, two known reds are expected:
-  `mnci doctor` flags the unused `NODE_AUTH_TOKEN` line in `.npmrc`, and
-  `npm run release:preview` errors because nothing matches `release.projects`
-  yet (CI's release step skips that case by itself).
-- mnci is the published CLI: `npx @mnci/cli@latest upgrade` (≥ 4.11.0, which carries
+- Until MoNecromanCi#228 (`--registry none`) ships, one known red is expected:
+  `mnci doctor` flags the unused `NODE_AUTH_TOKEN` line in `.npmrc`.
+- Every merge to `main` releases the extension: `nx release` versions
+  `lore-master-vscode` from conventional commits (it is in scope through its
+  `type:vscode-extension` tag), tags it and creates a GitHub Release. The Marketplace
+  publish skips until a `VSCE_PAT` secret exists (#44).
+- mnci is the published CLI: `npx @mnci/cli@latest upgrade` (≥ 4.12.2, which carries
   the fixes this workspace was bootstrapped with, MoNecromanCi#227 Go half, #233, #234,
-  #235, #237, plus the engine's six-platform `build-all`/`package-all`, #226).
+  #235, #237, the engine's six-platform `build-all`/`package-all`, #226, and the
+  `vscode-extension` kind, #225 #229 #243 #247 #249).
   `mnci upgrade` on a clean checkout must leave `git status` empty.
 - Before committing: `npm run format`, then `git diff` (mnci-owned files change on
   `mnci upgrade`; review them).

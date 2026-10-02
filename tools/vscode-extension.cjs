@@ -91,7 +91,7 @@ const manifest = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf
 const project = basename(resolve(projectRoot))
 // nx release --dry-run hands the publish target --dryRun=true and sets NX_DRY_RUN
 // (measured on Nx 23), so a dry run never reaches the Marketplace, token or not.
-const dryRun = rest.some(argument => /^--dry-?run(=true)?$/i.test(argument)) || process.env.NX_DRY_RUN === 'true'
+const dryRun = rest.some(argument => /^--dry-?run(?:=true)?$/i.test(argument)) || process.env.NX_DRY_RUN === 'true'
 if (command === 'package') packageExtension(projectRoot, manifest, sidecar)
 else if (command === 'publish') publishExtension(manifest, sidecar, dryRun)
 else fail('Unknown command ' + command + ' - expected package or publish.')
