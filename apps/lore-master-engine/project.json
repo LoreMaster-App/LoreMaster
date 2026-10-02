@@ -48,6 +48,36 @@
         "command": "go run .",
         "cwd": "apps/lore-master-engine"
       }
+    },
+    "build-all": {
+      "executor": "nx:run-commands",
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/go.mod",
+        "{workspaceRoot}/go.sum",
+        {
+          "env": "VERSION"
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/platforms/lore-master-engine"
+      ],
+      "options": {
+        "command": "node -e \"const{spawnSync}=require('node:child_process');const v=process.env.VERSION||'dev';for(const p of ['windows/amd64','windows/arm64','linux/amd64','linux/arm64','darwin/amd64','darwin/arm64']){const[os,arch]=p.split('/');const out='../../dist/platforms/lore-master-engine/'+os+'-'+arch+'/lore-master-engine'+(os==='windows'?'.exe':'');const r=spawnSync('go',['build','-trimpath','-ldflags','-s -w -X main.version='+v,'-o',out,'.'],{cwd:'apps/lore-master-engine',stdio:'inherit',env:{...process.env,CGO_ENABLED:'0',GOOS:os,GOARCH:arch}});if(r.status!==0)process.exit(r.status??1)}\""
+      }
+    },
+    "package-all": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build-all"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/drop/go-app-lore-master-engine-*.zip"
+      ],
+      "options": {
+        "command": "node -e \"const fs=require('node:fs');const A=require('adm-zip');fs.mkdirSync('dist/drop',{recursive:true});for(const d of fs.readdirSync('dist/platforms/lore-master-engine')){const z=new A();z.addLocalFolder('dist/platforms/lore-master-engine/'+d);z.writeZip('dist/drop/go-app-lore-master-engine-'+d+'.zip')}\""
+      }
     }
   }
 }
