@@ -103,7 +103,7 @@ func (inventory *Inventory) addImage(base string, destination string, node ast.N
 	if destination == "" {
 		return
 	}
-	if isRemote(destination) {
+	if IsRemote(destination) {
 		inventory.Images = append(inventory.Images, ImageRef{URL: destination, Node: node})
 
 		return
@@ -121,7 +121,7 @@ func (inventory *Inventory) addImage(base string, destination string, node ast.N
 // not one: remote, mail, anchor-only and non-Markdown targets are left alone.
 func pageTarget(base string, destination string) (documentdiscovery.DocumentPath, string, bool, string) {
 	destination = strings.TrimSpace(destination)
-	if destination == "" || strings.HasPrefix(destination, "#") || isRemote(destination) {
+	if destination == "" || strings.HasPrefix(destination, "#") || IsRemote(destination) {
 		return "", "", false, ""
 	}
 	target, fragment, _ := strings.Cut(destination, "#")
@@ -152,9 +152,9 @@ func resolveLocal(base string, reference string) (documentdiscovery.DocumentPath
 	return documentdiscovery.DocumentPath(joined), true, ""
 }
 
-// isRemote is any destination with a URL scheme (http:, https:, mailto:, data:, …) or a
+// IsRemote is any destination with a URL scheme (http:, https:, mailto:, data:, …) or a
 // protocol-relative "//host" prefix. A one-letter "scheme" is a Windows drive, not a URL.
-func isRemote(destination string) bool {
+func IsRemote(destination string) bool {
 	if strings.HasPrefix(destination, "//") {
 		return true
 	}

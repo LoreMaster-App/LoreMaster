@@ -18,6 +18,9 @@ type localState struct {
 	// parentPageID is the parent the page should have; empty when that parent is
 	// created in this sync, which always means a move.
 	parentPageID string
+	// attachmentsChanged says a file the page shows differs from the one uploaded at
+	// the last sync, which changes the page as much as an edit to the text does.
+	attachmentsChanged bool
 }
 
 // detectChange decides an annotated page's action. A remote version newer than the
@@ -30,7 +33,7 @@ func detectChange(remote remoteState, local localState) (ActionKind, []Change) {
 		return Conflict, nil
 	}
 	var changes []Change
-	if local.contentHash != remote.annotationHash {
+	if local.contentHash != remote.annotationHash || local.attachmentsChanged {
 		changes = append(changes, ChangeContent)
 	}
 	if local.parentPageID == "" || local.parentPageID != remote.remoteParentID {

@@ -1,0 +1,62 @@
+paragraph "Intro with "em("emphasis")", "strong("strong")", "del("gone")", "code("code")", an escaped *star* and & entity. A soft break, then a hard one"<br>"next line"<br>"after a br tag, Ctrl key."
+h2 "Links"
+list ordered=false start=0
+  item
+    paragraph link(page="ENG: Home" anchor="" "home")" and "link(page="ENG: Home" anchor="Install" "install")" and "link(page="ENG: Home" anchor="" "top")
+  item
+    paragraph link(page="ENG: API" anchor="" "api, any case")" and "link(page="ENG: API" anchor="" "missing heading")
+  item
+    paragraph link(page="ENG: Guide" anchor="Tables" "same page")" and "link(url=https://example.com/x?y=1 "web")" and "link(url=https://auto.example "https://auto.example")" and "link(url=mailto:me@example.com "me@example.com")
+  item
+    paragraph "not synced and outside and spec"
+h2 "Images"
+paragraph img(attachment=docs__img__diagram.png alt="First diagram" title="Shown first" width=0)" "img(attachment=img__diagram.png alt="Second diagram" title="" width=0)" "img(attachment=logo.png alt="logo" title="" width=0)" "img(attachment=docs__img__diagram.png alt="again" title="" width=0)" "img(url=https://cdn.example/a.png alt="remote" title="" width=0)" escaped "img(attachment=badge.svg alt="Badge" title="" width=120)
+paragraph img(attachment=hero.png alt="" title="" width=0)
+h2 "Tables"
+table align=[1 2 3 0]
+  header "Left" | "Centre" | "Right" | "None"
+  row "a" | "b" | "c" | "d"
+h2 "Lists"
+list ordered=true start=1
+  item
+    paragraph "one"
+  item
+    paragraph "two"
+  item
+    paragraph "three"
+    list ordered=false start=0
+      item
+        paragraph "nested"
+tasks
+  done=true "done"
+  done=false "open"
+list ordered=false start=0
+  item
+    paragraph "[x] mixed"
+  item
+    paragraph "plain"
+tasks
+  done=false "task with"
+code "go" "fmt.Println(\"hi\")"
+diagram "mermaid" "graph TD; A-->B" image=<nil>
+code "" "indented code"
+quote
+  paragraph "quoted"
+  h3 "Quoted heading"
+rule
+
+attachments:
+  docs__img__diagram.png <- docs/img/diagram.png
+  img__diagram.png <- img/diagram.png
+  logo.png <- docs/logo.png
+  badge.svg <- docs/badge.svg
+  hero.png <- docs/hero.png
+
+warnings:
+  docs/guide.md: the reference "../../other.md" points outside the workspace and is left as is
+  docs/guide.md: the reference "../../outside.png" points outside the workspace and is left as is
+  docs/guide.md: docs/api.md has no heading for #nowhere, so the link goes to the top of the page
+  docs/guide.md: the link to notes/skip.md is not synced (that file is not part of the sync), so it is left as plain text
+  docs/guide.md: the link to spec.pdf points at a local file, which is not synced; it is left as plain text
+  docs/guide.md: line 26: an HTML block is not synced
+  docs/guide.md: line 50: only the first line of a task item is synced; the content nested under it is left out

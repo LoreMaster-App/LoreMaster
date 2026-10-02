@@ -34,7 +34,8 @@ func ParseDocument(documentPath documentdiscovery.DocumentPath, content []byte) 
 	}
 	fallback, order, ordered := fileNameTitle(string(documentPath))
 	document.Order, document.Ordered = order, ordered
-	document.Title, document.TitleFromHeading = headingTitle(tree, split.Body)
+	document.Title, document.TitleHeading = headingTitle(tree, split.Body)
+	document.TitleFromHeading = document.TitleHeading != nil
 	if !document.TitleFromHeading {
 		document.Title = fallback
 	}
