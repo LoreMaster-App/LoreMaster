@@ -3,6 +3,7 @@ package documenttree
 import (
 	"fmt"
 	"path"
+	"slices"
 	"strings"
 
 	"lore-master/libs/markdown-workspace/documentdiscovery"
@@ -11,11 +12,42 @@ import (
 // NestingPolicy decides each document's parent among a fixed set of documents.
 type NestingPolicy struct {
 	documents documentdiscovery.Discovery
+	// indexes maps a directory to its index document (README.md, else index.md).
+	indexes map[string]documentdiscovery.DocumentPath
+	// demoted maps an index.md that lost to a README.md in the same directory to it.
+	demoted map[documentdiscovery.DocumentPath]documentdiscovery.DocumentPath
 }
 
 // NewNestingPolicy indexes the documents the rules may choose a parent from.
 func NewNestingPolicy(documents []documentdiscovery.DocumentPath) NestingPolicy {
-	return NestingPolicy{documents: documentdiscovery.NewDiscovery(documents, nil)}
+	policy := NestingPolicy{
+		documents: documentdiscovery.NewDiscovery(documents, nil),
+		indexes:   map[string]documentdiscovery.DocumentPath{},
+		demoted:   map[documentdiscovery.DocumentPath]documentdiscovery.DocumentPath{},
+	}
+	sorted := slices.Clone(documents)
+	slices.Sort(sorted)
+	var indexMd []documentdiscovery.DocumentPath
+	for _, document := range sorted {
+		switch strings.ToLower(path.Base(string(document))) {
+		case "readme.md":
+			if _, taken := policy.indexes[path.Dir(string(document))]; !taken {
+				policy.indexes[path.Dir(string(document))] = document
+			}
+		case "index.md":
+			indexMd = append(indexMd, document)
+		}
+	}
+	for _, document := range indexMd {
+		dir := path.Dir(string(document))
+		if readme, taken := policy.indexes[dir]; taken {
+			policy.demoted[document] = readme
+		} else {
+			policy.indexes[dir] = document
+		}
+	}
+
+	return policy
 }
 
 // DecideParent applies the rules in order to one document. explicitParent is the
@@ -37,8 +69,36 @@ func (p NestingPolicy) DecideParent(document documentdiscovery.DocumentPath, exp
 
 		return ParentDecision{Parent: parent, Rule: RuleDottedName, Warnings: warnings}
 	}
+	if readme, demoted := p.demoted[document]; demoted {
+		warnings = append(warnings, fmt.Sprintf("%s: %s is the page for this directory, so this index is nested under it", document, readme))
+	}
+	if parent := p.indexParent(document); parent != nil {
+		return ParentDecision{Parent: parent, Rule: RuleDirectoryIndex, Warnings: warnings}
+	}
 
 	return ParentDecision{Rule: RuleSelectedParent, Warnings: warnings}
+}
+
+// indexParent is rule 3. A directory's index (README.md, else index.md, any case) is
+// the parent of the directory's other documents and of its subdirectories' indexes; a
+// directory without one hands its documents to the nearest ancestor that has one.
+func (p NestingPolicy) indexParent(document documentdiscovery.DocumentPath) *documentdiscovery.DocumentPath {
+	dir := path.Dir(string(document))
+	if p.indexes[dir] == document {
+		if dir == "." {
+			return nil
+		}
+		dir = path.Dir(dir)
+	}
+	for {
+		if index, exists := p.indexes[dir]; exists && index != document {
+			return &index
+		}
+		if dir == "." {
+			return nil
+		}
+		dir = path.Dir(dir)
+	}
 }
 
 // explicitParent resolves "parent:" against the document's directory ('/' meaning the
