@@ -92,3 +92,45 @@ func TestPagingStopsWhenVisitFails(t *testing.T) {
 		t.Fatalf("visited %d, err %v", visited, err)
 	}
 }
+
+func TestPageV1KeepsGoingWhenTheServerClampsTheLimit(t *testing.T) {
+	var starts []string
+	client, _, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		start := r.URL.Query().Get("start")
+		starts = append(starts, start)
+		switch start {
+		case "0":
+			_, _ = io.WriteString(w, `{"results":[{"id":"a"},{"id":"b"}],"start":0,"limit":2,"size":2,"_links":{"next":"/rest/api/space?start=2&limit=2"}}`)
+		case "2":
+			_, _ = io.WriteString(w, `{"results":[{"id":"c"},{"id":"d"}],"start":2,"limit":2,"size":2,"_links":{"next":"/rest/api/space?start=4&limit=2"}}`)
+		case "4":
+			_, _ = io.WriteString(w, `{"results":[{"id":"e"}],"start":4,"limit":2,"size":1,"_links":{}}`)
+		}
+	})
+	var ids []string
+	err := PageV1(context.Background(), client, "/rest/api/space", nil, 250, func(i item) error {
+		ids = append(ids, i.ID)
+
+		return nil
+	})
+	if err != nil || !reflect.DeepEqual(ids, []string{"a", "b", "c", "d", "e"}) || !reflect.DeepEqual(starts, []string{"0", "2", "4"}) {
+		t.Fatalf("ids %v, starts %v, err %v", ids, starts, err)
+	}
+}
+
+func TestPageV1StopsOnAFullLastPageWithoutANextLink(t *testing.T) {
+	calls := 0
+	client, _, _ := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+		if calls == 1 {
+			_, _ = io.WriteString(w, `{"results":[{"id":"a"},{"id":"b"}],"limit":2,"size":2,"_links":{}}`)
+
+			return
+		}
+		_, _ = io.WriteString(w, `{"results":[],"limit":2,"size":0,"_links":{}}`)
+	})
+	err := PageV1(context.Background(), client, "/rest/api/space", nil, 2, func(item) error { return nil })
+	if err != nil || calls != 2 {
+		t.Fatalf("calls %d, err %v", calls, err)
+	}
+}

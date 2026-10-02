@@ -46,10 +46,17 @@ func PageV2[T any](ctx context.Context, c *Client, path string, query url.Values
 type pageV1[T any] struct {
 	Results []T `json:"results"`
 	Size    int `json:"size"`
+	Limit   int `json:"limit"`
+	Links   struct {
+		Next string `json:"next"`
+	} `json:"_links"`
 }
 
-// PageV1 lists every item of a REST v1 collection with start/limit paging, stopping on
-// the first page smaller than limit (v1 has no reliable total).
+// PageV1 lists every item of a REST v1 collection with start/limit paging. It continues
+// while the page carries a _links.next, which v1 sends whenever more results exist.
+// Without one it falls back to "a short page is the last", measured against the limit
+// the server echoes: Data Center clamps limit, so a page of 100 for a requested 250 is
+// not the end.
 func PageV1[T any](ctx context.Context, c *Client, path string, query url.Values, limit int, visit func(T) error) error {
 	for start := 0; ; {
 		pageQuery := url.Values{}
@@ -68,8 +75,17 @@ func PageV1[T any](ctx context.Context, c *Client, path string, query url.Values
 			}
 		}
 		size := max(page.Size, len(page.Results))
-		if size < limit || size == 0 {
+		if size == 0 {
 			return nil
+		}
+		if page.Links.Next == "" {
+			effectiveLimit := limit
+			if page.Limit > 0 {
+				effectiveLimit = page.Limit
+			}
+			if size < effectiveLimit {
+				return nil
+			}
 		}
 		start += size
 	}
