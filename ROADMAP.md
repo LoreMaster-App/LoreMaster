@@ -6,8 +6,14 @@ prefixed with `mnci` (= `russoedu/MoNecromanCi`).
 
 ## Status
 
-Planning done (2026-10-01). Nothing is built yet. Next: E0 bootstrap, in parallel with
-the mnci issues it depends on.
+2026-10-02: E0's build work is done. The workspace exists (`mnci new --into`), with the
+engine `go-app`, the three Go capability libraries shaped as slice packages, and
+`tools/slicecheck` enforcing the Go layout in `npm run lint`. lint/test/build are green and
+a fresh install audits clean. Next: E1 (`libs/markdown-workspace`), while the mnci fixes
+this needed (#227 Go half, #233, #234, #235) wait to be merged and released.
+
+Done in E0: #45 workspace, #46 Go projects, #47 slicecheck, #48 ADRs, #49 memory files.
+Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maintainer).
 
 ## Epics
 
@@ -46,7 +52,10 @@ the mnci issues it depends on.
 | #230 | CLAUDE.md drift: `build:dev`/`dev`, per-project launch configs, launch merge by prefix | #225's launch entry naming |
 | #231 | `mnci new` polish: C# kinds in "Next steps", loud enum validation | — |
 | #232 | `verticalSlices` ergonomics; a Go file-role check in mnci? | #47 (optional) |
-| #233 | Verify Go test/lint targets cover nested packages | #46 |
+| #233 | Verify Go test/lint targets cover nested packages (measured: they do; pinned) | #46 |
+| #234 | `--into` refused repos with their own CLAUDE.md/.github; leaked staging (fixed on branch) | #45 |
+| #235 | Generated workspaces failed their own audit gate on axios (fixed on branch) | #45 |
+| #236 | Go module path follows the npm scope; go-lib not `go get`-able | module name only |
 
 ## Build order
 
@@ -56,5 +65,7 @@ the mnci issues it depends on.
 
 ## Done
 
+- 2026-10-02 — E0 #45 #46 #47 built on the mnci branch build; mnci #227 (Go half),
+  #233, #234, #235 fixed on MoNecromanCi branch `claude/markdoc-markdown-confluence-plan-1618w4`.
 - 2026-10-01 — plan approved; labels, 11 epics, 58 sub-issues here; 9 issues on mnci;
   `CLAUDE.md`, this file, and the three architecture docs written.

@@ -36,7 +36,7 @@ The repository is still called `MarkDoc` until the maintainer renames it (#43).
 ## Layout
 
 ```
-LoreMaster/                         one root go.mod, module github.com/russoedu/loremaster
+LoreMaster/                         one root go.mod, module lore-master (mnci derives it; MoNecromanCi#236)
 ├── apps/
 │   ├── lore-master-engine/         go-app: JSON-RPC sidecar (main.go + slice packages)      E4 #5
 │   └── lore-master-vscode/         VS Code extension, TypeScript (mnci vscode-extension)    E5 #6
@@ -96,6 +96,15 @@ npm run build     # engine binaries + extension bundle
 npm run format    # eslint --fix (there is no Prettier)
 ```
 
+- Go import paths are `lore-master/libs/<lib>/<slice>`. The module name comes
+  from the npm scope (MoNecromanCi#236); fine for an app nobody `go get`s.
+- Until MoNecromanCi#228 (`--registry none`) ships, two known reds are expected:
+  `mnci doctor` flags the unused `NODE_AUTH_TOKEN` line in `.npmrc`, and
+  `npm run release:preview` errors because nothing matches `release.projects`
+  yet (CI's release step skips that case by itself).
+- The workspace was generated from MoNecromanCi's unreleased branch build
+  (`node <MoNecromanCi>/packages/cli/dist/cli.js`); use the published
+  `npx @mnci/cli` once MoNecromanCi#227/#234/#235 are released.
 - Before committing: `npm run format`, then `git diff` (mnci-owned files change on
   `mnci upgrade`; review them).
 - Conventional commits are enforced by commitlint; `nx release` versions the extension
