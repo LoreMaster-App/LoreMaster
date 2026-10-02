@@ -23,10 +23,17 @@ type Input struct {
 	// Scope limits the plan to these files and the ancestors they need created; empty
 	// plans everything, orphans included.
 	Scope []documentdiscovery.DocumentPath
-	// Attachments is, per document, the files its page needs now (attachment name →
-	// content hash), so an image edited without touching the Markdown is still an
-	// update. A document missing from the map needs none. Nil skips the comparison.
-	Attachments map[documentdiscovery.DocumentPath]map[string]string
+	// Rendered is, per document, what its page shows beyond the Markdown, so a page
+	// still updates when that changes and the file does not. A document missing from
+	// the map shows nothing beyond it. Nil skips the comparison.
+	Rendered map[documentdiscovery.DocumentPath]RenderedPage
+}
+
+// RenderedPage is what a page shows as converted now: the hash of its body, which
+// follows links into other files, and its attachments (name → content hash).
+type RenderedPage struct {
+	RenderHash  string
+	Attachments map[string]string
 }
 
 // PlanSync plans a sync of the tree to one output, reading the platform but never
@@ -137,7 +144,7 @@ type planner struct {
 }
 
 func (run *planner) planDocument(node *documenttree.TreeNode) (Action, string, string, error) {
-	ctx, platform, output, attachments := run.ctx, run.platform, run.input.Output, run.input.Attachments
+	ctx, platform, output := run.ctx, run.platform, run.input.Output
 	titles, pageIDs := run.titles, run.pageIDs
 	document := node.Document
 	action := Action{
@@ -187,10 +194,14 @@ func (run *planner) planDocument(node *documenttree.TreeNode) (Action, string, s
 		return Action{}, "", "", err
 	}
 	action.PageID, action.RemoteVersion, action.URL = remote.ID, remote.Version, remote.URL
-	attachmentsChanged := attachments != nil && !maps.Equal(attachments[document.Path], annotation.Attachments)
+	renderedChanged := false
+	if rendered := run.input.Rendered; rendered != nil {
+		now := rendered[document.Path]
+		renderedChanged = now.RenderHash != annotation.RenderHash || !maps.Equal(now.Attachments, annotation.Attachments)
+	}
 	action.Kind, action.Changes = detectChange(
 		remoteState{annotationVersion: annotation.Version, annotationHash: annotation.ContentHash, remoteVersion: remote.Version, remoteParentID: remote.ParentID, remoteTitle: remote.Title},
-		localState{contentHash: action.ContentHash, title: action.Title, parentPageID: action.ParentPageID, attachmentsChanged: attachmentsChanged},
+		localState{contentHash: action.ContentHash, title: action.Title, parentPageID: action.ParentPageID, renderedChanged: renderedChanged},
 	)
 	if action.Kind == Conflict {
 		action.Reason = fmt.Sprintf("the page was edited on the platform after the last sync (version %d, synced at %d); it was left alone", remote.Version, annotation.Version)

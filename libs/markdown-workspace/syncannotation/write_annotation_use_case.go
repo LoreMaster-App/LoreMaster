@@ -75,6 +75,7 @@ func blockLines(annotation Annotation) ([]string, error) {
 		KeyPageID:      annotation.PageID,
 		KeyParentID:    annotation.ParentID,
 		KeyContentHash: annotation.ContentHash,
+		KeyRenderHash:  annotation.RenderHash,
 		KeyTitle:       annotation.Title,
 		KeyParent:      annotation.Parent,
 	}
@@ -127,6 +128,7 @@ func normalised(annotation Annotation) Annotation {
 	trim := strings.TrimSpace
 	annotation.Platform, annotation.BaseURL, annotation.Space = trim(annotation.Platform), trim(annotation.BaseURL), trim(annotation.Space)
 	annotation.PageID, annotation.ParentID, annotation.ContentHash = trim(annotation.PageID), trim(annotation.ParentID), trim(annotation.ContentHash)
+	annotation.RenderHash = trim(annotation.RenderHash)
 	annotation.Title, annotation.Parent = trim(annotation.Title), trim(annotation.Parent)
 	if len(annotation.Attachments) == 0 {
 		annotation.Attachments = nil

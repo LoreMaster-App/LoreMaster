@@ -23,7 +23,7 @@ func TestDetectChange(t *testing.T) {
 		{"parent", synced, localState{"h", "T", "q", false}, Move, []Change{ChangeParent}},
 		{"parent created in this sync", synced, localState{"h", "T", "", false}, Move, []Change{ChangeParent}},
 		{"parent created in this sync, page was at the space root", remoteState{3, "h", 3, "", "T"}, localState{"h", "T", "", false}, Move, []Change{ChangeParent}},
-		{"an attachment alone", synced, localState{contentHash: "h", title: "T", parentPageID: "p", attachmentsChanged: true}, Update, []Change{ChangeContent}},
+		{"what the page shows alone", synced, localState{contentHash: "h", title: "T", parentPageID: "p", renderedChanged: true}, Update, []Change{ChangeContent}},
 		{"title", synced, localState{"h", "U", "p", false}, RenameTitle, []Change{ChangeTitle}},
 		{"move and rename", synced, localState{"h", "U", "q", false}, Move, []Change{ChangeParent, ChangeTitle}},
 		{"everything", synced, localState{"h2", "U", "q", false}, Update, []Change{ChangeContent, ChangeParent, ChangeTitle}},

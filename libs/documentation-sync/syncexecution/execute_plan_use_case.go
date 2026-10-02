@@ -260,7 +260,7 @@ func (run *execution) annotation(page PreparedPage, remote platformport.RemotePa
 	output := run.input.Output
 	annotation.Platform, annotation.BaseURL, annotation.Space = output.Platform, output.BaseURL, output.Space
 	annotation.PageID, annotation.ParentID, annotation.Version = remote.ID, parentID, remote.Version
-	annotation.ContentHash = contentHash
+	annotation.ContentHash, annotation.RenderHash = contentHash, page.Converted.RenderHash
 	annotation.Attachments = maps.Clone(attachments)
 	annotation.SyncedAt = run.now().UTC().Truncate(time.Second)
 

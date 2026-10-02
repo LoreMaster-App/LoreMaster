@@ -46,6 +46,7 @@ func ConvertDocument(document documentparsing.MarkdownDocument, workspace Worksp
 	}
 
 	converted := Converted{Document: platformport.Document{Blocks: c.blocks(document.AST)}, Warnings: c.warnings}
+	converted.RenderHash = renderHash(converted.Document)
 	for _, attachment := range named {
 		if c.used[attachment.Path] {
 			converted.Attachments = append(converted.Attachments, attachment)

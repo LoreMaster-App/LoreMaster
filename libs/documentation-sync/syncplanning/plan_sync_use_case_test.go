@@ -289,29 +289,36 @@ func TestAnAnnotationFromAnotherSpaceStartsAfresh(t *testing.T) {
 	}
 }
 
-func TestAnEditedImageUpdatesThePageItIsOn(t *testing.T) {
+func TestWhatThePageShowsDecidesAnUpdateToo(t *testing.T) {
 	w, files, ids := steady(t)
-	// The guide shows one image; the last sync recorded its hash.
-	files["readme.guide.md"] = strings.Replace(annotated(ids["readme.guide.md"], 1, "# Guide\n", ""), "-->", "attachments: {\"diagram.png\":\"old\"}\n-->", 1)
-	run := func(attachments map[documentdiscovery.DocumentPath]map[string]string) SyncPlan {
-		result, err := PlanSync(context.Background(), w.platform, Input{Tree: treeOf(t, files), Output: w.output, SpaceID: "1", Attachments: attachments})
+	// The last sync recorded the guide's render hash and its one image.
+	files["readme.guide.md"] = strings.Replace(annotated(ids["readme.guide.md"], 1, "# Guide\n", ""), "-->", "render-hash: r1\nattachments: {\"diagram.png\":\"old\"}\n-->", 1)
+	run := func(rendered map[documentdiscovery.DocumentPath]RenderedPage) SyncPlan {
+		result, err := PlanSync(context.Background(), w.platform, Input{Tree: treeOf(t, files), Output: w.output, SpaceID: "1", Rendered: rendered})
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		return result
 	}
+	now := func(renderHash string, attachments map[string]string) map[documentdiscovery.DocumentPath]RenderedPage {
+		return map[documentdiscovery.DocumentPath]RenderedPage{"readme.guide.md": {RenderHash: renderHash, Attachments: attachments}}
+	}
 
-	same := run(map[documentdiscovery.DocumentPath]map[string]string{"readme.guide.md": {"diagram.png": "old"}})
-	edited := run(map[documentdiscovery.DocumentPath]map[string]string{"readme.guide.md": {"diagram.png": "new"}})
-	removed := run(map[documentdiscovery.DocumentPath]map[string]string{})
-	unknown := run(nil)
-	for name, got := range map[string]SyncPlan{"same": same, "unknown": unknown} {
+	for name, got := range map[string]SyncPlan{
+		"same":    run(now("r1", map[string]string{"diagram.png": "old"})),
+		"unknown": run(nil),
+	} {
 		if got.Actions[1].Kind != Unchanged {
 			t.Errorf("%s: %s", name, summary(got))
 		}
 	}
-	for name, got := range map[string]SyncPlan{"edited": edited, "removed": removed} {
+	for name, got := range map[string]SyncPlan{
+		"image edited":                  run(now("r1", map[string]string{"diagram.png": "new"})),
+		"image removed":                 run(now("r1", nil)),
+		"a link now shows another page": run(now("r2", map[string]string{"diagram.png": "old"})),
+		"not converted yet":             run(map[documentdiscovery.DocumentPath]RenderedPage{}),
+	} {
 		if got.Actions[1].Kind != Update || got.Counts()[Update] != 1 {
 			t.Errorf("%s: %s", name, summary(got))
 		}

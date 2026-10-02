@@ -37,6 +37,7 @@ const (
 	KeyParentID    = "parent-id"
 	KeyVersion     = "version"
 	KeyContentHash = "content-hash"
+	KeyRenderHash  = "render-hash"
 	KeyAttachments = "attachments"
 	KeySyncedAt    = "synced-at"
 	KeyTitle       = "title"
@@ -45,7 +46,7 @@ const (
 
 var knownKeys = []string{
 	KeyPlatform, KeyBaseURL, KeySpace, KeyPageID, KeyParentID, KeyVersion,
-	KeyContentHash, KeyAttachments, KeySyncedAt, KeyTitle, KeyParent,
+	KeyContentHash, KeyRenderHash, KeyAttachments, KeySyncedAt, KeyTitle, KeyParent,
 }
 
 // Annotation is what a file remembers about its page. The sync writes everything but
@@ -58,6 +59,10 @@ type Annotation struct {
 	ParentID    string
 	Version     int
 	ContentHash string
+	// RenderHash is the hash of the page body as it was converted: it changes when what
+	// the page shows changes without the file changing, such as a link to a file that
+	// now exists or whose title changed.
+	RenderHash string
 	// Attachments maps an attachment file name to the content hash it was uploaded with.
 	Attachments map[string]string
 	SyncedAt    time.Time
