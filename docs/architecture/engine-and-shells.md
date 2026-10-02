@@ -23,7 +23,8 @@ behind a running sync. When the editor closes stdin, running requests are cancel
 waited for, so a sync stops between pages and still writes back what it did.
 
 Editor → engine: `ping`, `session/open`, `session/close`, `space/list`, `page/children`,
-`page/search`, `sync/plan`, `sync/execute`, `$/cancelRequest`.
+`page/search`, `settings/read`, `settings/save`, `sync/plan`, `sync/execute`,
+`$/cancelRequest`.
 
 Engine → editor: `host/renderDiagram { language, source } → { svg }`,
 `host/progress { message, done, total }`.

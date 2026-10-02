@@ -16,6 +16,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
+	"lore-master/apps/lore-master-engine/settingscommands"
 	"lore-master/apps/lore-master-engine/synccommands"
 )
 
@@ -63,6 +64,8 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodPageSearch:   catalogqueries.SearchPages(sessions),
 		rpcprotocol.MethodSyncPlan:     synccommands.PlanSync(sessions, plans),
 		rpcprotocol.MethodSyncExecute:  synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout),
+		rpcprotocol.MethodSettingsRead: settingscommands.ReadSettings(),
+		rpcprotocol.MethodSettingsSave: settingscommands.SaveSettings(),
 	}
 }
 
