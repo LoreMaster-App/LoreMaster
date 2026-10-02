@@ -12,9 +12,11 @@ import (
 	"os"
 
 	"lore-master/apps/lore-master-engine/catalogqueries"
+	"lore-master/apps/lore-master-engine/hostbridge"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
+	"lore-master/apps/lore-master-engine/synccommands"
 )
 
 // version is stamped at build time: -ldflags "-X main.version=<tag>".
@@ -38,23 +40,30 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 	}
 
 	logger := slog.New(slog.NewTextHandler(stderr, nil)).With("version", version)
-	sessions := sessionlifecycle.NewStore()
-	network := sessionlifecycle.Environment{Logger: logger}
-	methods := rpcserver.Methods{
-		rpcprotocol.MethodPing:         rpcserver.Ping(version),
-		rpcprotocol.MethodSessionOpen:  sessionlifecycle.OpenSession(sessions, network),
-		rpcprotocol.MethodSessionClose: sessionlifecycle.CloseSession(sessions),
-		rpcprotocol.MethodSpaceList:    catalogqueries.ListSpaces(sessions),
-		rpcprotocol.MethodPageChildren: catalogqueries.ListChildren(sessions),
-		rpcprotocol.MethodPageSearch:   catalogqueries.SearchPages(sessions),
-	}
-	if err := rpcserver.Serve(ctx, stdio{Reader: stdin, Writer: stdout}, methods, logger); err != nil {
+	if err := rpcserver.Serve(ctx, stdio{Reader: stdin, Writer: stdout}, engineMethods(logger), logger); err != nil {
 		logger.Error("stopped", "error", err.Error())
 
 		return 1
 	}
 
 	return 0
+}
+
+// engineMethods is every method the editor can call, wired to its slice.
+func engineMethods(logger *slog.Logger) rpcserver.Methods {
+	sessions := sessionlifecycle.NewStore()
+	plans := synccommands.NewPlanStore()
+
+	return rpcserver.Methods{
+		rpcprotocol.MethodPing:         rpcserver.Ping(version),
+		rpcprotocol.MethodSessionOpen:  sessionlifecycle.OpenSession(sessions, sessionlifecycle.Environment{Logger: logger}),
+		rpcprotocol.MethodSessionClose: sessionlifecycle.CloseSession(sessions),
+		rpcprotocol.MethodSpaceList:    catalogqueries.ListSpaces(sessions),
+		rpcprotocol.MethodPageChildren: catalogqueries.ListChildren(sessions),
+		rpcprotocol.MethodPageSearch:   catalogqueries.SearchPages(sessions),
+		rpcprotocol.MethodSyncPlan:     synccommands.PlanSync(sessions, plans),
+		rpcprotocol.MethodSyncExecute:  synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout),
+	}
 }
 
 // stdio joins stdin and stdout into the stream the server reads and writes. Closing it

@@ -6,10 +6,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"lore-master/apps/lore-master-engine/rpcprotocol"
 )
 
 func TestVersionFlagPrintsTheStampedVersion(t *testing.T) {
@@ -61,5 +64,23 @@ func TestServesStdinUntilItEnds(t *testing.T) {
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("the engine did not exit when stdin closed")
+	}
+}
+
+// Every method the protocol says the editor may call has a handler: a contract nobody
+// routes would only show up as "method not found" in the editor.
+func TestEveryEditorMethodIsRouted(t *testing.T) {
+	methods := engineMethods(slog.New(slog.NewTextHandler(io.Discard, nil)))
+	for _, method := range []string{
+		rpcprotocol.MethodPing, rpcprotocol.MethodSessionOpen, rpcprotocol.MethodSessionClose,
+		rpcprotocol.MethodSpaceList, rpcprotocol.MethodPageChildren, rpcprotocol.MethodPageSearch,
+		rpcprotocol.MethodSyncPlan, rpcprotocol.MethodSyncExecute,
+	} {
+		if methods[method] == nil {
+			t.Errorf("%s has no handler", method)
+		}
+	}
+	if len(methods) != 8 {
+		t.Errorf("%d methods routed; update this list when the protocol grows", len(methods))
 	}
 }
