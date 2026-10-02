@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"lore-master/libs/confluence-client/authentication"
 	"lore-master/libs/confluence-client/connection"
@@ -157,6 +158,16 @@ func credentialFrom(signIn SignIn) (authentication.Credential, error) {
 	}
 
 	return nil, fmt.Errorf("the credential kind %q is not one of apitoken, pat or basic", signIn.Kind)
+}
+
+// SameSite reports whether two addresses name the same Confluence site once
+// normalised, so a settings file's baseUrl matches the session that was opened for it
+// whichever way the person wrote it.
+func SameSite(a string, b string) bool {
+	normalA, errA := connection.NormalizeBaseURL(a)
+	normalB, errB := connection.NormalizeBaseURL(b)
+
+	return errA == nil && errB == nil && strings.EqualFold(normalA, normalB)
 }
 
 // ForOutput is the same connection rendering pages the way the output asks: its

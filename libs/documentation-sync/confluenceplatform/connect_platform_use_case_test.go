@@ -116,3 +116,19 @@ func TestForOutputRendersAsTheOutputAsks(t *testing.T) {
 		t.Fatal("the original is unchanged")
 	}
 }
+
+func TestSameSite(t *testing.T) {
+	cases := map[[2]string]bool{
+		{"https://acme.atlassian.net", "https://ACME.atlassian.net/wiki/"}:                          true,
+		{"https://acme.atlassian.net/wiki/spaces/ENG/pages/1/X", "https://acme.atlassian.net/wiki"}: true,
+		{"https://confluence.acme.com/confluence/", "https://confluence.acme.com/confluence"}:       true,
+		{"https://acme.atlassian.net", "https://other.atlassian.net"}:                               false,
+		{"https://confluence.acme.com/a", "https://confluence.acme.com/b"}:                          false,
+		{"", ""}: false,
+	}
+	for pair, want := range cases {
+		if SameSite(pair[0], pair[1]) != want {
+			t.Errorf("%q: want %v", pair, want)
+		}
+	}
+}
