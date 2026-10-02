@@ -67,7 +67,50 @@
   },
   "tasks": {
     "version": "2.0.0",
-    "tasks": []
+    "tasks": [
+      {
+        "label": "markdown-workspace: qa",
+        "type": "npm",
+        "script": "markdown-workspace:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "confluence-client: qa",
+        "type": "npm",
+        "script": "confluence-client:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "documentation-sync: qa",
+        "type": "npm",
+        "script": "documentation-sync:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "lore-master-engine: qa",
+        "type": "npm",
+        "script": "lore-master-engine:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "lore-master-engine: build",
+        "type": "npm",
+        "script": "lore-master-engine:build",
+        "problemMatcher": [],
+        "group": "build"
+      },
+      {
+        "label": "lore-master-engine: start",
+        "type": "npm",
+        "script": "lore-master-engine:start",
+        "problemMatcher": [],
+        "isBackground": true
+      }
+    ]
   },
   "launch": {
     "version": "0.2.0",

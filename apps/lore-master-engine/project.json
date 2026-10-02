@@ -1,0 +1,53 @@
+{
+  "name": "lore-master-engine",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/lore-master-engine",
+  "tags": [
+    "type:go-app"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx-go/nx-go:build",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/lore-master-engine"
+      ],
+      "options": {
+        "outputPath": "../../dist/apps/lore-master-engine/lore-master-engine"
+      }
+    },
+    "test": {
+      "executor": "@nx-go/nx-go:test"
+    },
+    "lint": {
+      "executor": "@nx-go/nx-go:lint",
+      "parallelism": false,
+      "options": {
+        "linter": "golangci-lint",
+        "args": [
+          "run"
+        ]
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "build"
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/drop/go-app-lore-master-engine.zip"
+      ],
+      "options": {
+        "command": "node -e \"const fs=require('node:fs');fs.mkdirSync('dist/drop',{recursive:true});const A=require('adm-zip');const z=new A();z.addLocalFolder('dist/apps/lore-master-engine');z.writeZip('dist/drop/go-app-lore-master-engine.zip')\""
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "go run .",
+        "cwd": "apps/lore-master-engine"
+      }
+    }
+  }
+}

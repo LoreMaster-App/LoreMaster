@@ -35,7 +35,8 @@
       "options": {
         "targetName": "lint"
       }
-    }
+    },
+    "@nx-go/nx-go"
   ],
   "analytics": false,
   "defaultBase": "main",
