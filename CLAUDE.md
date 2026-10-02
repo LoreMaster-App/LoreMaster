@@ -102,9 +102,9 @@ npm run format    # eslint --fix (there is no Prettier)
   `mnci doctor` flags the unused `NODE_AUTH_TOKEN` line in `.npmrc`, and
   `npm run release:preview` errors because nothing matches `release.projects`
   yet (CI's release step skips that case by itself).
-- The workspace was generated from MoNecromanCi's unreleased branch build
-  (`node <MoNecromanCi>/packages/cli/dist/cli.js`); use the published
-  `npx @mnci/cli` once MoNecromanCi#227/#234/#235 are released.
+- mnci is the published CLI: `npx @mnci/cli@latest upgrade` (≥ 4.10.7, which carries
+  the fixes this workspace was bootstrapped with: MoNecromanCi#227 Go half, #233, #234,
+  #235, #237). `mnci upgrade` on a clean checkout must leave `git status` empty.
 - Before committing: `npm run format`, then `git diff` (mnci-owned files change on
   `mnci upgrade`; review them).
 - Conventional commits are enforced by commitlint; `nx release` versions the extension
@@ -118,4 +118,4 @@ npm run format    # eslint --fix (there is no Prettier)
 - `docs/architecture/engine-and-shells.md` — why one Go sidecar, the RPC surface,
   rejected alternatives.
 - `docs/architecture/confluence-editions.md` — the verified API facts per edition.
-- `russoedu/MoNecromanCi` issues #225–#233 — the mnci work this project waits on.
+- `russoedu/MoNecromanCi` issues labelled `found-by:lore-master` — the mnci work this project found or waits on.

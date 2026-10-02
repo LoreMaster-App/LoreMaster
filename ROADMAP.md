@@ -9,8 +9,8 @@ prefixed with `mnci` (= `russoedu/MoNecromanCi`).
 2026-10-02: E0's build work is done. The workspace exists (`mnci new --into`), with the
 engine `go-app`, the three Go capability libraries shaped as slice packages, and
 `tools/slicecheck` enforcing the Go layout in `npm run lint`. lint/test/build are green and
-a fresh install audits clean. Next: E1 (`libs/markdown-workspace`), while the mnci fixes
-this needed (#227 Go half, #233, #234, #235) wait to be merged and released.
+a fresh install audits clean. The mnci fixes it needed (#227 Go half, #233, #234, #235,
+#237) shipped in `@mnci/cli@4.10.7` (MoNecromanCi PR #238). Next: E1 (`libs/markdown-workspace`).
 
 Done in E0: #45 workspace, #46 Go projects, #47 slicecheck, #48 ADRs, #49 memory files.
 Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maintainer).
@@ -52,11 +52,11 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 | #230 | CLAUDE.md drift: `build:dev`/`dev`, per-project launch configs, launch merge by prefix | #225's launch entry naming |
 | #231 | `mnci new` polish: C# kinds in "Next steps", loud enum validation | — |
 | #232 | `verticalSlices` ergonomics; a Go file-role check in mnci? | #47 (optional) |
-| #233 | Verify Go test/lint targets cover nested packages (measured: they do; pinned) | #46 |
-| #234 | `--into` refused repos with their own CLAUDE.md/.github; leaked staging (fixed on branch) | #45 |
-| #235 | Generated workspaces failed their own audit gate on axios (fixed on branch) | #45 |
+| #233 | Verify Go test/lint targets cover nested packages (measured: they do; pinned, released 4.10.7) | #46 |
+| #234 | `--into` refused repos with their own CLAUDE.md/.github; leaked staging (released 4.10.7) | #45 |
+| #235 | Generated workspaces failed their own audit gate on axios (released 4.10.7) | #45 |
 | #236 | Go module path follows the npm scope; go-lib not `go get`-able | module name only |
-| #237 | Empty `.claude/` after `mnci new`; `mnci upgrade` re-diffed `.code-workspace` (fixed on branch) | upgrade is now a no-op here |
+| #237 | Empty `.claude/` after `mnci new`; `mnci upgrade` re-diffed `.code-workspace` (released 4.10.7) | upgrade is now a no-op here |
 
 ## Build order
 
@@ -66,6 +66,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 
 ## Done
 
+- 2026-10-02 — MoNecromanCi PR #238 merged; `@mnci/cli@4.10.7` released with every fix above.
 - 2026-10-02 — E0 #45 #46 #47 built on the mnci branch build; mnci #227 (Go half),
   #233, #234, #235, #237 fixed on MoNecromanCi branch `claude/markdoc-markdown-confluence-plan-1618w4`.
 - 2026-10-01 — plan approved; labels, 11 epics, 58 sub-issues here; 9 issues on mnci;
