@@ -10,7 +10,14 @@ prefixed with `mnci` (= `russoedu/MoNecromanCi`).
 engine `go-app`, the three Go capability libraries shaped as slice packages, and
 `tools/slicecheck` enforcing the Go layout in `npm run lint`. lint/test/build are green and
 a fresh install audits clean. The mnci fixes it needed (#227 Go half, #233, #234, #235,
-#237) shipped in `@mnci/cli@4.10.7` (MoNecromanCi PR #238). Next: E1 (`libs/markdown-workspace`).
+#237) shipped in `@mnci/cli@4.10.7` (MoNecromanCi PR #238).
+
+E1 is done: `libs/markdown-workspace` has four slices, `documentdiscovery` (#12),
+`syncannotation` (#15, **annotation contract frozen**), `documentparsing` (#13, #14) and
+`documenttree` (#16, #17, #18), merged through PRs #77, #79–#83. The workspace runs
+`@mnci/cli@4.10.8` (#78), whose CI installs a pinned, prebuilt golangci-lint in 1 s
+(mnci #239; the devcontainer gap is mnci #241). Next: E2 (`libs/confluence-client`) and
+E3 planning, which #15 unblocked.
 
 Done in E0: #45 workspace, #46 Go projects, #47 slicecheck, #48 ADRs, #49 memory files.
 Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maintainer).
@@ -20,7 +27,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 | Epic | Issue | Sub-issues | Waits on |
 |---|---|---|---|
 | E0 Bootstrap the monorepo | #1 | #43 D1 rename · #44 D2 publisher · #45 `mnci new` · #46 Go projects · #47 slicecheck · #48 ADRs · #49 memory files · #50 branch protection | mnci #227 #228 #229 #233 |
-| E1 `libs/markdown-workspace` | #2 | #12 discovery · #13 parsing · #14 link/image inventory · #15 annotation (contract frozen) · #16 nesting 1–2 · #17 nesting 3–4 + tree · #18 duplicate titles | — |
+| E1 `libs/markdown-workspace` ✅ | #2 | #12 discovery · #13 parsing · #14 link/image inventory · #15 annotation (contract frozen) · #16 nesting 1–2 · #17 nesting 3–4 + tree · #18 duplicate titles | — |
 | E2 `libs/confluence-client` | #3 | #19 connection+auth · #20 http transport · #21 edition+credential checks · #22 spaces · #23 page read · #24 page write · #25 descendants/marker/trash · #26 attachments · #27 storage format base · #28 macros · #29 Cloud fixtures · #30 DC fixtures | tenant for #29/#30 |
 | E3 `libs/documentation-sync` | #4 | #31 ports+adapter · #32 settings · #33 planning · #34 link/image resolution · #35 executor · #36 annotation write-back · #37 orphans/prune · #38 id-link mode | #15 |
 | E4 `apps/lore-master-engine` | #5 | #51 RPC skeleton · #52 sessions · #53 catalog · #54 plan/execute · #55 host bridge · #56 multi-platform build · #57 contract mirror | mnci #226 for #56 |
