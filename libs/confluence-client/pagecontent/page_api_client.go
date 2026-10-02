@@ -20,6 +20,8 @@ type pageAPI interface {
 	get(ctx context.Context, id string, withBody bool) (Page, error)
 	children(ctx context.Context, id string, visit func(Page) error) error
 	search(ctx context.Context, cql string, visit func(Page) error) error
+	create(ctx context.Context, input CreatePageInput) (Page, error)
+	update(ctx context.Context, input UpdatePageInput) (Page, error)
 }
 
 // Pages reads and writes pages on one site.
@@ -96,6 +98,44 @@ func (c cloudPages) search(ctx context.Context, cql string, visit func(Page) err
 	return searchV1(ctx, c.client, cql, visit)
 }
 
+type storageBodyV2 struct {
+	Representation string `json:"representation"`
+	Value          string `json:"value"`
+}
+
+func (c cloudPages) create(ctx context.Context, input CreatePageInput) (Page, error) {
+	request := map[string]any{
+		"spaceId": input.SpaceID, "status": "current", "title": input.Title,
+		"body": storageBodyV2{Representation: "storage", Value: input.BodyStorage},
+	}
+	if input.ParentID != "" {
+		request["parentId"] = input.ParentID
+	}
+	var wire pageV2
+	if err := c.client.PostJSON(ctx, "/api/v2/pages", request, &wire); err != nil {
+		return Page{}, err
+	}
+
+	return wire.page(c.client.BaseURL()), nil
+}
+
+func (c cloudPages) update(ctx context.Context, input UpdatePageInput) (Page, error) {
+	request := map[string]any{
+		"id": input.ID, "status": "current", "title": input.Title,
+		"body":    storageBodyV2{Representation: "storage", Value: input.BodyStorage},
+		"version": map[string]any{"number": input.ExpectedVersion + 1, "message": input.Message},
+	}
+	if input.ParentID != "" {
+		request["parentId"] = input.ParentID
+	}
+	var wire pageV2
+	if err := c.client.PutJSON(ctx, "/api/v2/pages/"+url.PathEscape(input.ID), request, &wire); err != nil {
+		return Page{}, notFound(err, input.ID)
+	}
+
+	return wire.page(c.client.BaseURL()), nil
+}
+
 // serverPages speaks REST v1, the only API of Data Center and Server.
 type serverPages struct {
 	client *httptransport.Client
@@ -165,6 +205,71 @@ func (s serverPages) children(ctx context.Context, id string, visit func(Page) e
 
 func (s serverPages) search(ctx context.Context, cql string, visit func(Page) error) error {
 	return searchV1(ctx, s.client, cql, visit)
+}
+
+type storageBodyV1 struct {
+	Storage struct {
+		Value          string `json:"value"`
+		Representation string `json:"representation"`
+	} `json:"storage"`
+}
+
+func storageV1(value string) storageBodyV1 {
+	var body storageBodyV1
+	body.Storage.Value = value
+	body.Storage.Representation = "storage"
+
+	return body
+}
+
+// ancestorsV1 is how v1 says where a page goes: its parent as the only ancestor.
+func ancestorsV1(parentID string) []map[string]string {
+	if parentID == "" {
+		return nil
+	}
+
+	return []map[string]string{{"id": parentID}}
+}
+
+func (s serverPages) create(ctx context.Context, input CreatePageInput) (Page, error) {
+	request := map[string]any{
+		"type": "page", "title": input.Title, "space": map[string]string{"key": input.SpaceKey},
+		"body": storageV1(input.BodyStorage),
+	}
+	if ancestors := ancestorsV1(input.ParentID); ancestors != nil {
+		request["ancestors"] = ancestors
+	}
+	var wire pageV1
+	if err := s.client.PostJSON(ctx, "/rest/api/content", request, &wire); err != nil {
+		return Page{}, err
+	}
+	page := wire.page(s.client.BaseURL())
+	if page.ParentID == "" {
+		page.ParentID = input.ParentID
+	}
+
+	return page, nil
+}
+
+func (s serverPages) update(ctx context.Context, input UpdatePageInput) (Page, error) {
+	request := map[string]any{
+		"id": input.ID, "type": "page", "title": input.Title,
+		"body":    storageV1(input.BodyStorage),
+		"version": map[string]any{"number": input.ExpectedVersion + 1, "message": input.Message},
+	}
+	if ancestors := ancestorsV1(input.ParentID); ancestors != nil {
+		request["ancestors"] = ancestors
+	}
+	var wire pageV1
+	if err := s.client.PutJSON(ctx, "/rest/api/content/"+url.PathEscape(input.ID), request, &wire); err != nil {
+		return Page{}, notFound(err, input.ID)
+	}
+	page := wire.page(s.client.BaseURL())
+	if page.ParentID == "" {
+		page.ParentID = input.ParentID
+	}
+
+	return page, nil
 }
 
 // searchV1 runs CQL through /rest/api/content/search, which every edition serves.
