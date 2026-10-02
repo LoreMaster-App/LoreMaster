@@ -40,6 +40,9 @@ type Converted struct {
 	// RenderHash identifies Document: it changes whenever what the page shows changes,
 	// including through another file (a link that now resolves, a renamed heading).
 	RenderHash string
+	// LinkedPages are the synced documents this page links to, in order, without
+	// repeats; the page itself is one when it links to its own headings.
+	LinkedPages []documentdiscovery.DocumentPath
 	// Attachments are the local files the page needs, each under the name the page
 	// refers to it by, in document order and without repeats.
 	Attachments []Attachment

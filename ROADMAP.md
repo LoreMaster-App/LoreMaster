@@ -30,6 +30,16 @@ sensitivity, v2 re-parenting, code-macro languages, `/descendants`). #92 (config
 file, sync direction, content types, templates) is decided: `.lore-master.yaml`, built in
 #32; its future parts are #95, #96, #97 under E10.
 
+E3 is built: `libs/documentation-sync` has the platform port and its Confluence adapter
+(`platformport`, `confluenceplatform`, #31), `.lore-master.yaml` (`workspacesettings`, #32),
+the planner (`syncplanning`, #33, #37), Markdown conversion with links, anchors and images
+resolved (`documentconversion`, #34), and the executor with annotation write-back and
+id-link mode (`syncexecution`, #35, #36, #38), merged through PRs #98–#100, #103–#106, #108
+and the #38 PR. #107 added `render-hash`, the only change to the annotation contract since
+it was frozen: a page re-syncs when what it shows changes through another file, and
+annotations written before it re-sync once. Follow-ups, not blockers: #101 (linked local
+files as attachments), #102 (content nested under task items). Next: E4, the engine.
+
 Done in E0: #45 workspace, #46 Go projects, #47 slicecheck, #48 ADRs, #49 memory files.
 Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maintainer).
 
@@ -40,7 +50,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 | E0 Bootstrap the monorepo | #1 | #43 D1 rename · #44 D2 publisher · #45 `mnci new` · #46 Go projects · #47 slicecheck · #48 ADRs · #49 memory files · #50 branch protection | mnci #227 #228 #229 #233 |
 | E1 `libs/markdown-workspace` ✅ | #2 | #12 discovery · #13 parsing · #14 link/image inventory · #15 annotation (contract frozen) · #16 nesting 1–2 · #17 nesting 3–4 + tree · #18 duplicate titles | — |
 | E2 `libs/confluence-client` (built; #29/#30 need a tenant) | #3 | #19 connection+auth · #20 http transport · #21 edition+credential checks · #22 spaces · #23 page read · #24 page write · #25 descendants/marker/trash · #26 attachments · #27 storage format base · #28 macros · #29 Cloud fixtures · #30 DC fixtures | tenant for #29/#30 |
-| E3 `libs/documentation-sync` | #4 | #31 ports+adapter · #32 settings · #33 planning · #34 link/image resolution · #35 executor · #36 annotation write-back · #37 orphans/prune · #38 id-link mode · #101 linked local files · #102 nested task content · #107 render hash | #15 |
+| E3 `libs/documentation-sync` (built; #101/#102 follow-ups) | #4 | #31 ports+adapter · #32 settings · #33 planning · #34 link/image resolution · #35 executor · #36 annotation write-back · #37 orphans/prune · #38 id-link mode · #101 linked local files · #102 nested task content · #107 render hash | #15 |
 | E4 `apps/lore-master-engine` | #5 | #51 RPC skeleton · #52 sessions · #53 catalog · #54 plan/execute · #55 host bridge · #56 multi-platform build · #57 contract mirror | mnci #226 for #56 |
 | E5 `apps/lore-master-vscode` | #6 | #58 skeleton · #59 engine process · #60 secrets/workspace/connection · #61 sync target · #62 sync commands · #63 diagram rendering · #64 settings decision · #65 packaging/publish | mnci #225, #229 |
 | E6 Mermaid modes | #7 | #39 `image` (spike first) · #40 `html-macro` + `marketplace-macro` | #28 |

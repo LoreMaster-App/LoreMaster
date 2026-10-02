@@ -12,13 +12,14 @@ import (
 // page's final title, so it needs no page id and works even for a page created in
 // the same sync. A fragment becomes the anchor of the heading it names. A file that
 // is not being synced cannot be linked to: nil is returned with the reason.
-func (w Workspace) resolvePageLink(link documentparsing.PageLink) (*platformport.PageLink, string) {
+func (w Workspace) resolvePageLink(link documentparsing.PageLink) (*platformport.PageLink, documentdiscovery.DocumentPath, string) {
 	found, ok := w.lookup.Lookup(string(link.Target))
 	if !ok {
-		return nil, fmt.Sprintf("the link to %s is not synced (that file is not part of the sync), so it is left as plain text", link.Target)
+		return nil, "", fmt.Sprintf("the link to %s is not synced (that file is not part of the sync), so it is left as plain text", link.Target)
 	}
+	target, warning := w.pageLink(found, link.Fragment)
 
-	return w.pageLink(found, link.Fragment)
+	return target, found, warning
 }
 
 // resolveFragment is a same-page link ("#setup").

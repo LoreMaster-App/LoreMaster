@@ -100,13 +100,14 @@ func (c *converter) inline(node ast.Node) []platformport.Inline {
 func (c *converter) link(n *ast.Link) []platformport.Inline {
 	text := c.inlines(n)
 	if page, isPage := c.pageLinks[n]; isPage {
-		target, warning := c.workspace.resolvePageLink(page)
+		target, path, warning := c.workspace.resolvePageLink(page)
 		if warning != "" {
 			c.warn("%s", warning)
 		}
 		if target == nil {
 			return text
 		}
+		c.linked(path)
 
 		return []platformport.Inline{platformport.Link{Target: *target, Inlines: text}}
 	}
@@ -117,6 +118,7 @@ func (c *converter) link(n *ast.Link) []platformport.Inline {
 		if warning != "" {
 			c.warn("%s", warning)
 		}
+		c.linked(c.document.Path)
 
 		return []platformport.Inline{platformport.Link{Target: *target, Inlines: text}}
 	case documentparsing.IsRemote(destination):

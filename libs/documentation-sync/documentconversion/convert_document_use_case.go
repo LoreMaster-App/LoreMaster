@@ -2,6 +2,7 @@ package documentconversion
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/yuin/goldmark/ast"
 
@@ -47,6 +48,7 @@ func ConvertDocument(document documentparsing.MarkdownDocument, workspace Worksp
 
 	converted := Converted{Document: platformport.Document{Blocks: c.blocks(document.AST)}, Warnings: c.warnings}
 	converted.RenderHash = renderHash(converted.Document)
+	converted.LinkedPages = c.pages
 	for _, attachment := range named {
 		if c.used[attachment.Path] {
 			converted.Attachments = append(converted.Attachments, attachment)
@@ -65,7 +67,15 @@ type converter struct {
 	images    map[ast.Node][]documentparsing.ImageRef
 	names     map[documentdiscovery.DocumentPath]string
 	used      map[documentdiscovery.DocumentPath]bool
+	pages     []documentdiscovery.DocumentPath
 	warnings  []string
+}
+
+// linked records a page this one links to.
+func (c *converter) linked(path documentdiscovery.DocumentPath) {
+	if !slices.Contains(c.pages, path) {
+		c.pages = append(c.pages, path)
+	}
 }
 
 func (c *converter) warn(format string, args ...any) {

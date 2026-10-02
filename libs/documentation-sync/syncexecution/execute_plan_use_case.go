@@ -46,25 +46,60 @@ type ExecuteInput struct {
 // are skipped. Every page's outcome is in the report, with the annotation its file
 // should now carry.
 func ExecutePlan(ctx context.Context, platform platformport.DocumentationPlatform, input ExecuteInput) SyncReport {
-	run := &execution{input: input, platform: platform, ids: map[documentdiscovery.DocumentPath]string{}, now: input.Now}
+	run := &execution{input: input, platform: platform, ids: map[documentdiscovery.DocumentPath]string{}, now: input.Now, urls: map[string]string{}}
 	if run.now == nil {
 		run.now = time.Now
+	}
+	for _, action := range input.Plan.Actions {
+		if action.Path != "" && action.URL != "" {
+			run.urls[action.Title] = action.URL
+		}
 	}
 	report := SyncReport{Warnings: append([]string(nil), input.Prepared.Warnings...)}
 	total := len(input.Plan.Actions)
 	for i, action := range input.Plan.Actions {
+		run.current = len(report.Pages)
 		result := run.execute(ctx, action)
 		if action.Path != "" && result.PageID != "" {
 			run.ids[action.Path] = result.PageID
+			if result.URL != "" {
+				run.urls[action.Title] = result.URL
+			}
 		}
 		report.Pages = append(report.Pages, result)
 		if input.Progress != nil {
 			input.Progress(i+1, total, fmt.Sprintf("%s: %s", result.Outcome, result.Title))
 		}
 	}
+	run.relinkPages(ctx, report.Pages)
 	report.Warnings = append(report.Warnings, run.warnings...)
 
 	return report
+}
+
+// relinkPages writes once more, in id mode, each page written before a page it links
+// to was created, now that its URL is known. Pages written after their targets never
+// need it, so in a cycle of two new pages only the first one written is updated again.
+func (run *execution) relinkPages(ctx context.Context, results []PageResult) {
+	for _, page := range run.relink {
+		result := &results[page.result]
+		blocks, missing := withLinkURLs(page.blocks, run.urls)
+		if missing {
+			run.warn("%s: a page it links to was not written, so that link points at the page by title", page.action.Path)
+		}
+		remote, err := run.platform.UpdatePage(ctx, platformport.PageUpdate{
+			ID: result.PageID, ExpectedVersion: result.Version, Title: page.action.Title, ParentID: page.parentID,
+			Body: platformport.Document{Blocks: blocks}, Message: "Links updated by Lore Master",
+		})
+		if err != nil {
+			run.warn("%s: the page was written, but its links could not be updated to the new pages (%s); the next sync tries again", page.action.Path, describe(err))
+			// A render hash no conversion produces makes the next plan write the page again.
+			result.Annotation.RenderHash = ""
+
+			continue
+		}
+		result.Version, result.Annotation.Version = remote.Version, remote.Version
+	}
 }
 
 type execution struct {
@@ -74,6 +109,20 @@ type execution struct {
 	now              func() time.Time
 	warnings         []string
 	warnedNoRenderer bool
+	// urls are the known pages' URLs by title, for links in id mode.
+	urls map[string]string
+	// relink are pages written before a page they link to existed (id mode).
+	relink []relink
+	// current is the index of the action being carried out, in the report.
+	current int
+}
+
+// relink is a page to write once more, when every page it links to has a URL.
+type relink struct {
+	result   int
+	action   syncplanning.Action
+	parentID string
+	blocks   []platformport.Block
 }
 
 func (run *execution) warn(format string, args ...any) {
@@ -140,7 +189,12 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 	for source, diagram := range diagrams {
 		images[source] = diagram.name
 	}
-	body := platformport.Document{Blocks: withDiagramImages(page.Converted.Document.Blocks, images)}
+	blocks := withDiagramImages(page.Converted.Document.Blocks, images)
+	unlinked := false
+	if run.input.Output.LinkMode == "id" {
+		blocks, unlinked = withLinkURLs(blocks, run.urls)
+	}
+	body := platformport.Document{Blocks: blocks}
 
 	var remote platformport.RemotePage
 	var err error
@@ -171,6 +225,9 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 		}
 	}
 	result.Annotation = run.annotation(page, remote, parentID, action.ContentHash, attachments)
+	if unlinked {
+		run.relink = append(run.relink, relink{result: run.current, action: action, parentID: parentID, blocks: withDiagramImages(page.Converted.Document.Blocks, images)})
+	}
 
 	return result
 }
