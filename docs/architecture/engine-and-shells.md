@@ -61,5 +61,7 @@ cross-compilation, a mature Markdown parser (goldmark), and existing `go-app` /
   `@vscode/test-cli` integration suites.
 - The slice architecture is applied in Go by convention plus `tools/slicecheck`, since the
   ESLint rules are TypeScript-only.
-- mnci needs a multi-platform `go-app` build (mnci #226) and a `vscode-extension` kind
-  that can bundle a sidecar (mnci #225).
+- The engine is cross-compiled by mnci's `go-app` `build-all` target (mnci #226, released
+  in 4.11.0): one static binary per platform under `dist/platforms/lore-master-engine/`.
+  Shipping it inside the extension needs a `vscode-extension` kind that can bundle a
+  sidecar (mnci #225).

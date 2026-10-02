@@ -95,6 +95,7 @@ npm run lint      # ESLint (TS shell) + golangci-lint (Go) + tools/slicecheck
 npm run test      # jest + go test ./...
 npm run build     # engine binaries + extension bundle
 npm run format    # eslint --fix (there is no Prettier)
+VERSION=1.2.3 npx nx run lore-master-engine:build-all   # six static engine binaries, stamped
 ```
 
 - Go import paths are `lore-master/libs/<lib>/<slice>`. The module name comes
@@ -103,9 +104,10 @@ npm run format    # eslint --fix (there is no Prettier)
   `mnci doctor` flags the unused `NODE_AUTH_TOKEN` line in `.npmrc`, and
   `npm run release:preview` errors because nothing matches `release.projects`
   yet (CI's release step skips that case by itself).
-- mnci is the published CLI: `npx @mnci/cli@latest upgrade` (≥ 4.10.7, which carries
-  the fixes this workspace was bootstrapped with: MoNecromanCi#227 Go half, #233, #234,
-  #235, #237). `mnci upgrade` on a clean checkout must leave `git status` empty.
+- mnci is the published CLI: `npx @mnci/cli@latest upgrade` (≥ 4.11.0, which carries
+  the fixes this workspace was bootstrapped with, MoNecromanCi#227 Go half, #233, #234,
+  #235, #237, plus the engine's six-platform `build-all`/`package-all`, #226).
+  `mnci upgrade` on a clean checkout must leave `git status` empty.
 - Before committing: `npm run format`, then `git diff` (mnci-owned files change on
   `mnci upgrade`; review them).
 - Conventional commits are enforced by commitlint; `nx release` versions the extension

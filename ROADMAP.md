@@ -40,6 +40,15 @@ it was frozen: a page re-syncs when what it shows changes through another file, 
 annotations written before it re-sync once. Follow-ups, not blockers: #101 (linked local
 files as attachments), #102 (content nested under task items). Next: E4, the engine.
 
+E4 is built except #57: `apps/lore-master-engine` speaks JSON-RPC 2.0 over stdio
+(`rpcprotocol`, `rpcserver`, #51) and routes sessions (#52), the catalog (#53),
+plan/execute (#54), the editor-side diagram renderer and progress (#55) and settings,
+merged through PR #116. #56 runs on `@mnci/cli@4.11.0` (mnci #226): `build-all` writes one
+static binary per platform (windows/linux/darwin × amd64/arm64) to
+`dist/platforms/lore-master-engine/<goos>-<goarch>/`, stamped with `VERSION`, and
+`package-all` zips each into `dist/drop/`. #57 (the TypeScript mirror of the contract)
+waits on E5 #58, which waits on mnci #225 and #229.
+
 Done in E0: #45 workspace, #46 Go projects, #47 slicecheck, #48 ADRs, #49 memory files.
 Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maintainer).
 
@@ -51,7 +60,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 | E1 `libs/markdown-workspace` ✅ | #2 | #12 discovery · #13 parsing · #14 link/image inventory · #15 annotation (contract frozen) · #16 nesting 1–2 · #17 nesting 3–4 + tree · #18 duplicate titles | — |
 | E2 `libs/confluence-client` (built; #29/#30 need a tenant) | #3 | #19 connection+auth · #20 http transport · #21 edition+credential checks · #22 spaces · #23 page read · #24 page write · #25 descendants/marker/trash · #26 attachments · #27 storage format base · #28 macros · #29 Cloud fixtures · #30 DC fixtures | tenant for #29/#30 |
 | E3 `libs/documentation-sync` (built; #101/#102 follow-ups) | #4 | #31 ports+adapter · #32 settings · #33 planning · #34 link/image resolution · #35 executor · #36 annotation write-back · #37 orphans/prune · #38 id-link mode · #101 linked local files · #102 nested task content · #107 render hash | #15 |
-| E4 `apps/lore-master-engine` | #5 | #51 RPC skeleton · #52 sessions · #53 catalog · #54 plan/execute · #55 host bridge · #56 multi-platform build · #57 contract mirror | mnci #226 for #56 |
+| E4 `apps/lore-master-engine` (built; #57 after #58) | #5 | #51 RPC skeleton · #52 sessions · #53 catalog · #54 plan/execute · #55 host bridge · #56 multi-platform build · #57 contract mirror | mnci #226 for #56 |
 | E5 `apps/lore-master-vscode` | #6 | #58 skeleton · #59 engine process · #60 secrets/workspace/connection · #61 sync target · #62 sync commands · #63 diagram rendering · #64 settings decision · #65 packaging/publish | mnci #225, #229 |
 | E6 Mermaid modes | #7 | #39 `image` (spike first) · #40 `html-macro` + `marketplace-macro` | #28 |
 | E7 OAuth | #8 | #41 Cloud decision · #42 DC PKCE | — |
@@ -73,7 +82,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 | mnci issue | What | Unblocks |
 |---|---|---|
 | #225 | New kind `vscode-extension` (bundled CJS, vsce matrix + sidecar, extensionHost launch, release publish) | #58, #65 |
-| #226 | `go-app` multi-platform build (GOOS/GOARCH matrix, version stamp) | #56 |
+| #226 | `go-app` multi-platform build (GOOS/GOARCH matrix, version stamp; released 4.11.0) | #56 |
 | #227 | Scaffold placeholders violate slice rules (go lib root file, `src/lib`, `src/assets`) | #46 |
 | #228 | `mnci new --registry none` | #45 |
 | #229 | Release scope by tag; verify `nx release` with no `packages/*` | #65 |
@@ -94,6 +103,8 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 
 ## Done
 
+- 2026-10-02 — MoNecromanCi PR #242 merged; `@mnci/cli@4.11.0` adds `build-all`/`package-all`
+  to Go apps (mnci #226). The engine runs on it (#56).
 - 2026-10-02 — MoNecromanCi PR #238 merged; `@mnci/cli@4.10.7` released with every fix above.
 - 2026-10-02 — E0 #45 #46 #47 built on the mnci branch build; mnci #227 (Go half),
   #233, #234, #235, #237 fixed on MoNecromanCi branch `claude/markdoc-markdown-confluence-plan-1618w4`.
