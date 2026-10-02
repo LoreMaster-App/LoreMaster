@@ -9,4 +9,3 @@ and Mermaid diagrams, and keep it in sync on every run.
 - Work tracking: the GitHub issues (every step is an issue before it is built)
 
 Built as an Nx monorepo with [`@mnci/cli`](https://github.com/russoedu/MoNecromanCi).
-The repository name is still `MarkDoc` until the rename (#43).

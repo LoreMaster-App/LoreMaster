@@ -22,5 +22,7 @@ import mnci from './eslint.config.mnci.mjs'
 // is a dependency, so `npm update` brings rule fixes in the way it brings any
 // other. An override here survives that; an edit to the package does not.
 export default [
-  ...mnci(),
+  // The TypeScript shell is laid out in vertical slices (#47): only main.ts at the
+  // root of src, role-suffixed files, one index.ts per slice.
+  ...mnci({ verticalSlices: ['apps/lore-master-vscode/src/**/*.ts'] }),
 ]

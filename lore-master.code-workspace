@@ -109,6 +109,26 @@
         "script": "lore-master-engine:start",
         "problemMatcher": [],
         "isBackground": true
+      },
+      {
+        "label": "lore-master-vscode: qa",
+        "type": "npm",
+        "script": "lore-master-vscode:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "lore-master-vscode: build",
+        "type": "npm",
+        "script": "lore-master-vscode:build",
+        "problemMatcher": [],
+        "group": "build"
+      },
+      {
+        "label": "lore-master-vscode: build (development)",
+        "type": "shell",
+        "command": "npx nx run lore-master-vscode:build:development",
+        "problemMatcher": []
       }
     ]
   },
@@ -158,6 +178,18 @@
           "group": "mnci",
           "order": 4
         }
+      },
+      {
+        "name": "lore-master-vscode: debug",
+        "type": "extensionHost",
+        "request": "launch",
+        "args": [
+          "--extensionDevelopmentPath=${workspaceFolder:lore-master}/apps/lore-master-vscode"
+        ],
+        "outFiles": [
+          "${workspaceFolder:lore-master}/apps/lore-master-vscode/dist/**/*.js"
+        ],
+        "preLaunchTask": "lore-master-vscode: build (development)"
       }
     ]
   }

@@ -38,7 +38,9 @@ func (s session) ForOutput(output workspacesettings.Output) platformport.Documen
 	return s.DocumentationPlatform
 }
 
-// editor plays VS Code: it draws diagrams and collects progress.
+// editor plays VS Code: it draws diagrams and collects progress. It is served
+// synchronously, as vscode-jsonrpc handles messages in arrival order: every progress
+// notification is recorded before the response to sync/execute reaches the caller.
 type editor struct {
 	mu       sync.Mutex
 	progress []rpcprotocol.ProgressParams
@@ -106,7 +108,7 @@ func newWorld(t *testing.T, platform func(*platformport.InMemoryPlatform) platfo
 			rpcprotocol.MethodSyncExecute: ExecuteSync(sessions, plans, time.Second),
 		}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}()
-	w.conn = jsonrpc2.NewConn(context.Background(), jsonrpc2.NewBufferedStream(editorEnd, jsonrpc2.VSCodeObjectCodec{}), jsonrpc2.AsyncHandler(w.editor))
+	w.conn = jsonrpc2.NewConn(context.Background(), jsonrpc2.NewBufferedStream(editorEnd, jsonrpc2.VSCodeObjectCodec{}), w.editor)
 	t.Cleanup(func() { _ = w.conn.Close() })
 
 	return w

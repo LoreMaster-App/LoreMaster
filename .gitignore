@@ -51,3 +51,5 @@ Thumbs.db
 
 # Added by MoNecromanCI: `npm run format`/`lint` run `eslint --cache`.
 .eslintcache
+
+test-output
