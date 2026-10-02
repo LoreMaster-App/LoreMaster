@@ -56,6 +56,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 | #234 | `--into` refused repos with their own CLAUDE.md/.github; leaked staging (fixed on branch) | #45 |
 | #235 | Generated workspaces failed their own audit gate on axios (fixed on branch) | #45 |
 | #236 | Go module path follows the npm scope; go-lib not `go get`-able | module name only |
+| #237 | Empty `.claude/` after `mnci new`; `mnci upgrade` re-diffed `.code-workspace` (fixed on branch) | upgrade is now a no-op here |
 
 ## Build order
 
@@ -66,6 +67,6 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 ## Done
 
 - 2026-10-02 — E0 #45 #46 #47 built on the mnci branch build; mnci #227 (Go half),
-  #233, #234, #235 fixed on MoNecromanCi branch `claude/markdoc-markdown-confluence-plan-1618w4`.
+  #233, #234, #235, #237 fixed on MoNecromanCi branch `claude/markdoc-markdown-confluence-plan-1618w4`.
 - 2026-10-01 — plan approved; labels, 11 epics, 58 sub-issues here; 9 issues on mnci;
   `CLAUDE.md`, this file, and the three architecture docs written.
