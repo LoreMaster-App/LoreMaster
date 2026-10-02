@@ -19,6 +19,17 @@ E1 is done: `libs/markdown-workspace` has four slices, `documentdiscovery` (#12)
 (mnci #239; the devcontainer gap is mnci #241). Next: E2 (`libs/confluence-client`) and
 E3 planning, which #15 unblocked.
 
+E2 is built except the two tenant-bound issues: `libs/confluence-client` has `connection`
+and `authentication` (#19), `httptransport` (#20), `editiondetection` and
+`credentialverification` (#21), `spacecatalog` (#22), `pagecontent` (#23 read, #24 write,
+#25 marker/descendants/trash), `attachmentupload` (#26) and `storageformat` (#27, #28),
+merged through PRs #85–#91, #93, #94 and the #28 PR. Its fixtures are hand-written from
+Atlassian's documented shapes; **#29 (Cloud) and #30 (Data Center) need a real tenant**
+to record real ones and to settle the open questions listed there (title case-
+sensitivity, v2 re-parenting, code-macro languages, `/descendants`). #92 (configuration
+file, sync direction, content types, templates) arrived during E2 and reshapes E3's
+settings issue #32.
+
 Done in E0: #45 workspace, #46 Go projects, #47 slicecheck, #48 ADRs, #49 memory files.
 Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maintainer).
 
@@ -28,7 +39,7 @@ Still open in E0: #43 rename, #44 publisher id, #50 branch protection (all maint
 |---|---|---|---|
 | E0 Bootstrap the monorepo | #1 | #43 D1 rename · #44 D2 publisher · #45 `mnci new` · #46 Go projects · #47 slicecheck · #48 ADRs · #49 memory files · #50 branch protection | mnci #227 #228 #229 #233 |
 | E1 `libs/markdown-workspace` ✅ | #2 | #12 discovery · #13 parsing · #14 link/image inventory · #15 annotation (contract frozen) · #16 nesting 1–2 · #17 nesting 3–4 + tree · #18 duplicate titles | — |
-| E2 `libs/confluence-client` | #3 | #19 connection+auth · #20 http transport · #21 edition+credential checks · #22 spaces · #23 page read · #24 page write · #25 descendants/marker/trash · #26 attachments · #27 storage format base · #28 macros · #29 Cloud fixtures · #30 DC fixtures | tenant for #29/#30 |
+| E2 `libs/confluence-client` (built; #29/#30 need a tenant) | #3 | #19 connection+auth · #20 http transport · #21 edition+credential checks · #22 spaces · #23 page read · #24 page write · #25 descendants/marker/trash · #26 attachments · #27 storage format base · #28 macros · #29 Cloud fixtures · #30 DC fixtures | tenant for #29/#30 |
 | E3 `libs/documentation-sync` | #4 | #31 ports+adapter · #32 settings · #33 planning · #34 link/image resolution · #35 executor · #36 annotation write-back · #37 orphans/prune · #38 id-link mode | #15 |
 | E4 `apps/lore-master-engine` | #5 | #51 RPC skeleton · #52 sessions · #53 catalog · #54 plan/execute · #55 host bridge · #56 multi-platform build · #57 contract mirror | mnci #226 for #56 |
 | E5 `apps/lore-master-vscode` | #6 | #58 skeleton · #59 engine process · #60 secrets/workspace/connection · #61 sync target · #62 sync commands · #63 diagram rendering · #64 settings decision · #65 packaging/publish | mnci #225, #229 |

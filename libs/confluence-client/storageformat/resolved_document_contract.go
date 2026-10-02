@@ -85,6 +85,67 @@ type CodeSpan struct{ Value string }
 // HardBreak is a line break inside a block.
 type HardBreak struct{}
 
+// CodeBlock is fenced or indented code. Language is the fence's info string.
+type CodeBlock struct {
+	Language string
+	Code     string
+}
+
+// Mermaid is a Mermaid diagram. Image is its rendered picture, uploaded as an
+// attachment; nil when none was rendered.
+type Mermaid struct {
+	Source string
+	Image  *AttachmentRef
+}
+
+// Image is a picture; Source is an *AttachmentRef or a *URLRef. Width is in pixels, 0
+// for the natural size.
+type Image struct {
+	Source ImageSource
+	Alt    string
+	Title  string
+	Width  int
+}
+
+// Link is a hyperlink; Target is a PageLink, an *AttachmentRef or a *URLRef.
+type Link struct {
+	Target  LinkTarget
+	Inlines []Inline
+}
+
+// ImageSource is where an image comes from.
+type ImageSource interface{ isImageSource() }
+
+// LinkTarget is what a link points at.
+type LinkTarget interface{ isLinkTarget() }
+
+// PageLink is a link to another synced page, by its final (prefixed) title, which
+// Confluence resolves when the page is shown, so links between pages created in the
+// same sync, cycles included, need no second pass. Anchor is a heading anchor on that
+// page. URL is the page's address, used only in LinkByURL mode.
+type PageLink struct {
+	Title  string
+	Anchor string
+	URL    string
+}
+
+// AttachmentRef is a file attached to the page being rendered.
+type AttachmentRef struct{ Filename string }
+
+// URLRef is an address outside Confluence.
+type URLRef struct{ URL string }
+
+func (*AttachmentRef) isImageSource() {}
+func (*URLRef) isImageSource()        {}
+func (PageLink) isLinkTarget()        {}
+func (*AttachmentRef) isLinkTarget()  {}
+func (*URLRef) isLinkTarget()         {}
+
+func (CodeBlock) isBlock() {}
+func (Mermaid) isBlock()   {}
+func (Image) isInline()    {}
+func (Link) isInline()     {}
+
 func (Paragraph) isBlock()     {}
 func (Heading) isBlock()       {}
 func (Blockquote) isBlock()    {}

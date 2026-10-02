@@ -6,10 +6,43 @@ import (
 	"strings"
 )
 
+// LinkMode says how a PageLink is written.
+type LinkMode int
+
+// Link modes.
+const (
+	// LinkByTitle writes <ri:page ri:content-title>, resolved by Confluence at view time.
+	LinkByTitle LinkMode = iota
+	// LinkByURL writes a plain <a href> to the page's address ("linkMode: id"); a
+	// PageLink without a URL falls back to LinkByTitle.
+	LinkByURL
+)
+
+// MermaidMode says how a Mermaid diagram is shown (epic #7).
+type MermaidMode int
+
+// Mermaid modes.
+const (
+	// MermaidImage shows the rendered attachment above a collapsed code macro with the
+	// source; without an image, just the code macro.
+	MermaidImage MermaidMode = iota
+	// MermaidCode shows only the source in a code macro.
+	MermaidCode
+	// MermaidHTMLMacro and MermaidMarketplaceMacro are #40.
+	MermaidHTMLMacro
+	MermaidMarketplaceMacro
+)
+
+// Options tune rendering.
+type Options struct {
+	LinkMode    LinkMode
+	MermaidMode MermaidMode
+}
+
 // Render writes doc as Confluence storage format. It never emits an XML comment, so the
 // rule that a comment may not contain "--" cannot be broken.
-func Render(doc Document) (string, error) {
-	r := &renderer{}
+func Render(doc Document, options Options) (string, error) {
+	r := &renderer{options: options}
 	for _, block := range doc.Blocks {
 		if err := r.block(block); err != nil {
 			return "", err
@@ -20,7 +53,8 @@ func Render(doc Document) (string, error) {
 }
 
 type renderer struct {
-	out strings.Builder
+	out     strings.Builder
+	options Options
 	// taskID numbers task-list items in document order, which keeps the output stable
 	// between syncs (Confluence would otherwise assign ids of its own).
 	taskID int
@@ -65,6 +99,10 @@ func (r *renderer) block(block Block) error {
 		return r.table(b)
 	case ThematicBreak:
 		r.out.WriteString("<hr />")
+	case CodeBlock:
+		r.codeMacro(b.Language, b.Code, false)
+	case Mermaid:
+		return r.mermaid(b)
 	case nil:
 		return fmt.Errorf("nil block")
 	default:
@@ -168,6 +206,10 @@ func (r *renderer) inlines(inlines []Inline) error {
 			r.out.WriteString("<code>" + escapeText(n.Value) + "</code>")
 		case HardBreak:
 			r.out.WriteString("<br />")
+		case Image:
+			err = r.image(n)
+		case Link:
+			err = r.link(n)
 		case nil:
 			err = fmt.Errorf("nil inline")
 		default:

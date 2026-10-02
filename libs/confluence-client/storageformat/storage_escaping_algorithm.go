@@ -44,3 +44,19 @@ func allowedInXML(r rune) bool {
 	return r == '\t' || r == '\n' || r == '\r' ||
 		(r >= 0x20 && r <= 0xD7FF) || (r >= 0xE000 && r <= 0xFFFD) || (r >= 0x10000 && r <= 0x10FFFF)
 }
+
+// keepXMLCharacters drops what XML 1.0 cannot carry and leaves the rest untouched, for
+// CDATA, where nothing else needs escaping.
+func keepXMLCharacters(value string) string {
+	var out strings.Builder
+	out.Grow(len(value))
+	for i := 0; i < len(value); {
+		r, size := utf8.DecodeRuneInString(value[i:])
+		i += size
+		if (r != utf8.RuneError || size != 1) && allowedInXML(r) {
+			out.WriteRune(r)
+		}
+	}
+
+	return out.String()
+}

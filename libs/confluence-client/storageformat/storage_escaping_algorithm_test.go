@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"strings"
 	"testing"
-	"unicode/utf8"
 )
 
 func TestEscapeText(t *testing.T) {
@@ -35,7 +34,7 @@ func FuzzEscapeText(f *testing.F) {
 	}
 	f.Fuzz(func(t *testing.T, input string) {
 		escaped := escapeText(input)
-		expected := keepXMLChars(input)
+		expected := keepXMLCharacters(input)
 		for _, document := range []string{"<p>" + escaped + "</p>", `<p a="` + escaped + `"/>`, `<p a='` + escaped + `'/>`} {
 			decoder := xml.NewDecoder(strings.NewReader(document))
 			var read strings.Builder
@@ -64,19 +63,6 @@ func FuzzEscapeText(f *testing.F) {
 			}
 		}
 	})
-}
-
-func keepXMLChars(input string) string {
-	var out strings.Builder
-	for i := 0; i < len(input); {
-		r, size := utf8.DecodeRuneInString(input[i:])
-		i += size
-		if (r != utf8.RuneError || size != 1) && allowedInXML(r) {
-			out.WriteRune(r)
-		}
-	}
-
-	return out.String()
 }
 
 func normalise(value string) string {

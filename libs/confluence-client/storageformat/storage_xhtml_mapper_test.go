@@ -61,28 +61,35 @@ var goldenCases = map[string]Document{
 func TestGolden(t *testing.T) {
 	for name, doc := range goldenCases {
 		t.Run(name, func(t *testing.T) {
-			got, err := Render(doc)
+			got, err := Render(doc, Options{})
 			if err != nil {
 				t.Fatal(err)
 			}
-			assertWellFormed(t, got)
-			if strings.Contains(got, "<!--") {
-				t.Fatalf("the output contains an XML comment: %s", got)
-			}
-			golden := filepath.Join("testdata", name+".golden.xhtml")
-			if *update {
-				if err := os.WriteFile(golden, []byte(got+"\n"), 0o644); err != nil {
-					t.Fatal(err)
-				}
-			}
-			want, err := os.ReadFile(golden)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if got+"\n" != string(want) {
-				t.Fatalf("%s differs\n got: %s\nwant: %s", golden, got, want)
-			}
+			checkGolden(t, name, got)
 		})
+	}
+}
+
+// checkGolden asserts got is well-formed, comment-free and equal to
+// testdata/<name>.golden.xhtml (rewritten with -update).
+func checkGolden(t *testing.T, name string, got string) {
+	t.Helper()
+	assertWellFormed(t, got)
+	if strings.Contains(got, "<!--") {
+		t.Fatalf("the output contains an XML comment: %s", got)
+	}
+	golden := filepath.Join("testdata", name+".golden.xhtml")
+	if *update {
+		if err := os.WriteFile(golden, []byte(got+"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	want, err := os.ReadFile(golden)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got+"\n" != string(want) {
+		t.Fatalf("%s differs\n got: %s\nwant: %s", golden, got, want)
 	}
 }
 
@@ -113,7 +120,7 @@ func TestRenderRejectsWhatItCannotRender(t *testing.T) {
 		"nil inline deep": {Blocks: []Block{Table{Rows: [][]TableCell{{{Inlines: []Inline{Strong{Inlines: []Inline{nil}}}}}}}}},
 	}
 	for name, doc := range cases {
-		if _, err := Render(doc); err == nil {
+		if _, err := Render(doc, Options{}); err == nil {
 			t.Errorf("%s: expected an error", name)
 		}
 	}
