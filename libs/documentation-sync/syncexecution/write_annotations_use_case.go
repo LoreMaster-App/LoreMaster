@@ -32,7 +32,7 @@ func WriteAnnotations(workspaceRoot string, report SyncReport) WriteBack {
 		switch {
 		case err != nil:
 			result.Warnings = append(result.Warnings, fmt.Sprintf(
-				"%s: the page was synced (%s), but the file could not be updated (%v); make it writable and sync again, or the next sync will not know the page is this file's",
+				"%s: the page was synced (%s), but the file could not be updated (%v); the next sync takes the page back by its title",
 				page.Path, page.URL, err))
 		case changed:
 			result.Rewritten = append(result.Rewritten, page.Path)

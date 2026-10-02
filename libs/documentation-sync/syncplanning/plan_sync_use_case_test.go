@@ -317,3 +317,51 @@ func TestAnEditedImageUpdatesThePageItIsOn(t *testing.T) {
 		}
 	}
 }
+
+func TestAFileThatLostItsAnnotationTakesItsPageBack(t *testing.T) {
+	w, files, ids := steady(t)
+	files["readme.guide.md"] = "# Guide\n"
+	got := plan(t, w, files)
+	expect(t, got,
+		`unchanged README.md "ENG: Home" parent=root`,
+		`adopt readme.guide.md "ENG: Guide" parent=README.md [content parent title]`,
+		`unchanged readme.guide.deep.md "ENG: Deep" parent=readme.guide.md`,
+	)
+	if got.Actions[1].PageID != ids["readme.guide.md"] || len(got.Errors) != 0 ||
+		len(got.Warnings) != 1 || !strings.Contains(got.Warnings[0], "its annotation is gone; the page is taken back") {
+		t.Fatalf("titleCollision is fail, yet the file's own page is no collision: %+v", got)
+	}
+}
+
+func TestAMarkedPageAnotherFileStillPointsAtIsNotTakenBack(t *testing.T) {
+	w, files, ids := steady(t)
+	// The guide was retitled "Manual"; a new file now uses its old title.
+	files["readme.guide.md"] = annotated(ids["readme.guide.md"], 1, "# Manual\n", "")
+	files["readme.newguide.md"] = "# Guide\n"
+	got := plan(t, w, files)
+	if len(got.Errors) != 1 || !strings.Contains(got.Errors[0], `readme.newguide.md: a page titled "ENG: Guide" already exists`) {
+		t.Fatalf("errors %q", got.Errors)
+	}
+}
+
+func TestTwoMarkedPagesWithTheTitleAreNotGuessedBetween(t *testing.T) {
+	w := newWorld()
+	for _, title := range []string{"ENG: Home", "ENG: HOME"} {
+		_ = w.platform.MarkPage(context.Background(), w.platform.SeedPage("ENG", w.root, title), "README.md")
+	}
+	got := plan(t, w, map[string]string{"README.md": "# Home\n"})
+	if counts := got.Counts(); counts[Adopt] != 0 || counts[Orphan] != 2 || len(got.Errors) != 1 || !strings.Contains(got.Errors[0], "already exists") {
+		t.Fatalf("plan %+v", got)
+	}
+}
+
+func TestAnAnnotationForAnotherSpaceClaimsNothingHere(t *testing.T) {
+	w, files, ids := steady(t)
+	// Same page id, but written by a sync to another space: it says nothing about
+	// this platform's page, which this file may still take back.
+	files["readme.guide.md"] = strings.Replace(annotated(ids["readme.guide.md"], 1, "# Guide\n", ""), "space: ENG", "space: OPS", 1)
+	got := plan(t, w, files)
+	if got.Actions[1].Kind != Adopt || got.Actions[1].PageID != ids["readme.guide.md"] {
+		t.Fatalf("%s %q", summary(got), got.Errors)
+	}
+}

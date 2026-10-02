@@ -433,3 +433,32 @@ func TestAMovedFileMovesItsPage(t *testing.T) {
 		t.Fatal("the page now sits under README's page")
 	}
 }
+
+func TestPruneTrashesOnlyWhatTheSyncMade(t *testing.T) {
+	w := newWorkspace(t, threeLevels())
+	_, first := w.sync()
+	handMade := w.fake.SeedPage("ENG", first.Pages[0].PageID, "Meeting notes")
+	delete(w.files, "readme.guide.deep.md")
+	w.options.Prune = true
+	_, report := w.sync()
+	expectOutcomes(t, report,
+		"unchanged unchanged README.md", "unchanged unchanged readme.guide.md", "trashed orphan ")
+	if w.fake.Page(first.Pages[2].PageID) != nil || w.fake.Page(handMade) == nil {
+		t.Fatal("the marked orphan is trashed, the hand-made page is not")
+	}
+}
+
+func TestALostAnnotationIsTakenBackAndWrittenAgain(t *testing.T) {
+	w := newWorkspace(t, threeLevels())
+	_, first := w.sync()
+	w.files["readme.guide.md"] = []byte("# Guide\n\n![diagram](img/flow.png)\n\n```mermaid\ngraph TD; A-->B\n```\n")
+	_, report := w.sync()
+	guide := report.Pages[1]
+	if guide.Planned != syncplanning.Adopt || guide.Outcome != Written || guide.PageID != first.Pages[1].PageID || guide.Annotation.PageID != guide.PageID {
+		t.Fatalf("%+v", guide)
+	}
+	plan, _ := w.sync()
+	if plan.Counts()[syncplanning.Unchanged] != 3 {
+		t.Fatalf("after the take-back the workspace is steady again: %v", plan.Counts())
+	}
+}
