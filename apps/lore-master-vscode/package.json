@@ -1,0 +1,113 @@
+{
+  "name": "lore-master",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {},
+  "displayName": "Lore Master",
+  "publisher": "russoedu",
+  "engines": {
+    "vscode": "^1.140.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/main.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "loreMaster.syncWorkspace",
+        "title": "Sync Workspace",
+        "category": "Lore Master"
+      }
+    ]
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "defaultConfiguration": "production",
+        "options": {
+          "platform": "node",
+          "outputPath": "apps/lore-master-vscode/dist",
+          "format": [
+            "cjs"
+          ],
+          "bundle": true,
+          "main": "apps/lore-master-vscode/src/main.ts",
+          "tsConfig": "apps/lore-master-vscode/tsconfig.app.json",
+          "assets": [
+            {
+              "input": "apps/lore-master-vscode/src/assets",
+              "glob": "**/*",
+              "output": "assets"
+            }
+          ],
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          },
+          "thirdParty": true,
+          "external": [
+            "vscode"
+          ],
+          "generatePackageJson": false
+        },
+        "configurations": {
+          "development": {},
+          "production": {
+            "esbuildOptions": {
+              "sourcemap": false,
+              "outExtension": {
+                ".js": ".js"
+              }
+            }
+          }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      },
+      "package": {
+        "executor": "nx:run-commands",
+        "dependsOn": [
+          "build"
+        ],
+        "outputs": [
+          "{workspaceRoot}/dist/drop/lore-master-vscode-win32-x64.vsix",
+          "{workspaceRoot}/dist/drop/lore-master-vscode-win32-arm64.vsix",
+          "{workspaceRoot}/dist/drop/lore-master-vscode-linux-x64.vsix",
+          "{workspaceRoot}/dist/drop/lore-master-vscode-linux-arm64.vsix",
+          "{workspaceRoot}/dist/drop/lore-master-vscode-alpine-x64.vsix",
+          "{workspaceRoot}/dist/drop/lore-master-vscode-alpine-arm64.vsix",
+          "{workspaceRoot}/dist/drop/lore-master-vscode-darwin-x64.vsix",
+          "{workspaceRoot}/dist/drop/lore-master-vscode-darwin-arm64.vsix"
+        ],
+        "options": {
+          "command": "node tools/vscode-extension.cjs package apps/lore-master-vscode --sidecar lore-master-engine"
+        }
+      },
+      "nx-release-publish": {
+        "executor": "nx:run-commands",
+        "dependsOn": [
+          "package"
+        ],
+        "options": {
+          "command": "node tools/vscode-extension.cjs publish apps/lore-master-vscode --sidecar lore-master-engine"
+        }
+      }
+    },
+    "name": "lore-master-vscode",
+    "tags": [
+      "type:vscode-extension"
+    ]
+  },
+  "description": "Gathers a project's lore: syncs the workspace's Markdown into a documentation platform (Confluence first)."
+}

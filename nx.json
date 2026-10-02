@@ -6,7 +6,12 @@
       "sharedGlobals"
     ],
     "production": [
-      "default"
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
     ],
     "sharedGlobals": [
       "{workspaceRoot}/eslint.config.mjs",
@@ -36,7 +41,13 @@
         "targetName": "lint"
       }
     },
-    "@nx-go/nx-go"
+    "@nx-go/nx-go",
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "targetName": "test"
+      }
+    }
   ],
   "analytics": false,
   "defaultBase": "main",
@@ -45,6 +56,7 @@
     "projects": [
       "packages/*",
       "python-packages/*",
+      "tag:type:vscode-extension",
       "!tag:type:go-lib"
     ],
     "releaseTag": {
@@ -58,7 +70,7 @@
     "version": {
       "conventionalCommits": true,
       "fallbackCurrentVersionResolver": "disk",
-      "preVersionCommand": "npx nx run-many -t build --projects=packages/*,python-packages/*",
+      "preVersionCommand": "npx nx run-many -t build --projects=packages/*,python-packages/*,tag:type:vscode-extension",
       "versionActionsOptions": {
         "skipLockFileUpdate": true
       }
@@ -68,7 +80,8 @@
       "projectChangelogs": {
         "createRelease": "github",
         "file": false
-      }
+      },
+      "automaticFromRef": true
     }
   },
   "generators": {
@@ -99,6 +112,31 @@
     "ci": "github",
     "stack": {
       "testRunner": "jest"
+    }
+  },
+  "targetDefaults": {
+    "@nx/esbuild:esbuild": {
+      "cache": true,
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "production",
+        "^production",
+        {
+          "json": "{workspaceRoot}/tsconfig.json",
+          "fields": [
+            "extends",
+            "files",
+            "include"
+          ]
+        }
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ]
     }
   }
 }

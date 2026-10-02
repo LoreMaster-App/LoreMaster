@@ -18,7 +18,9 @@
     "documentation-sync:qa": "nx run documentation-sync:lint && nx run documentation-sync:test",
     "lore-master-engine:qa": "nx run lore-master-engine:lint && nx run lore-master-engine:test",
     "lore-master-engine:build": "nx run lore-master-engine:build",
-    "lore-master-engine:start": "nx run lore-master-engine:start"
+    "lore-master-engine:start": "nx run lore-master-engine:start",
+    "lore-master-vscode:qa": "nx run lore-master-vscode:lint && nx run lore-master-vscode:test",
+    "lore-master-vscode:build": "nx run lore-master-vscode:build"
   },
   "private": true,
   "devDependencies": {
@@ -26,23 +28,37 @@
     "@commitlint/config-conventional": "^21.2.3",
     "@mnci/eslint-config": ">=0.1.0 <1.0.0",
     "@nx-go/nx-go": "^4.1.1",
+    "@nx/esbuild": "23.2.0",
     "@nx/eslint": "23.2.0",
     "@nx/eslint-plugin": "23.2.0",
+    "@nx/jest": "23.2.0",
     "@nx/js": "23.2.0",
+    "@nx/node": "^23.2.0",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.8",
     "@swc/helpers": "0.5.18",
+    "@swc/jest": "~0.2.38",
+    "@types/jest": "~30.0.0",
     "@types/node": "^24.0.0",
+    "@types/vscode": "^1.140.0",
     "@typescript/native": "npm:typescript@^7.0.2",
+    "@vscode/vsce": "^4.0.0",
     "adm-zip": "^0.6.1",
+    "esbuild": "^0.27.0",
     "eslint": "^10.8.0",
     "husky": "^9.1.7",
+    "jest": "~30.3.0",
+    "jest-environment-node": "~30.3.0",
+    "jest-util": "~30.3.0",
     "nx": "23.2.0",
+    "ts-jest": "^29.4.7",
+    "ts-node": "10.9.1",
     "tslib": "^2.3.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "overrides": {
     "eslint-plugin-jsx-a11y": {
