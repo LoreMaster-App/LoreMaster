@@ -134,3 +134,51 @@ func TestPageV1StopsOnAFullLastPageWithoutANextLink(t *testing.T) {
 		t.Fatalf("calls %d, err %v", calls, err)
 	}
 }
+
+func TestPageV1FollowsACursorNextLink(t *testing.T) {
+	var cursors []string
+	client, _, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/wiki/rest/api/content/search" || r.URL.Query().Get("cql") != `type = page` {
+			t.Errorf("request %s", r.URL)
+		}
+		cursor := r.URL.Query().Get("cursor")
+		cursors = append(cursors, cursor)
+		if cursor == "" {
+			_, _ = io.WriteString(w, `{"results":[{"id":"1"}],"limit":1,"size":1,"_links":{"next":"/rest/api/content/search?cql=type+%3D+page&limit=1&cursor=raNDoM"}}`)
+
+			return
+		}
+		_, _ = io.WriteString(w, `{"results":[{"id":"2"}],"limit":2,"size":1,"_links":{}}`)
+	})
+	var ids []string
+	err := PageV1(context.Background(), client, "/rest/api/content/search", url.Values{"cql": {"type = page"}}, 1, func(i item) error {
+		ids = append(ids, i.ID)
+
+		return nil
+	})
+	if err != nil || !reflect.DeepEqual(ids, []string{"1", "2"}) || !reflect.DeepEqual(cursors, []string{"", "raNDoM"}) {
+		t.Fatalf("ids %v, cursors %v, err %v", ids, cursors, err)
+	}
+}
+
+func TestPageV1RefusesAnAbsoluteNextLinkToAnotherSite(t *testing.T) {
+	client, _, _ := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(w, `{"results":[{"id":"1"}],"limit":1,"size":1,"_links":{"next":"https://evil.example/rest/api/space?start=1"}}`)
+	})
+	err := PageV1(context.Background(), client, "/rest/api/space", nil, 1, func(item) error { return nil })
+	if err == nil || !strings.Contains(err.Error(), "refusing to send credentials there") {
+		t.Fatalf("error %v", err)
+	}
+}
+
+func TestPagingGivesUpOnAnEndlessServer(t *testing.T) {
+	calls := 0
+	client, _, _ := newTestClient(t, func(w http.ResponseWriter, _ *http.Request) {
+		calls++
+		_, _ = io.WriteString(w, `{"results":[],"_links":{"next":"/wiki/api/v2/spaces?cursor=again"}}`)
+	})
+	err := PageV2(context.Background(), client, "/api/v2/spaces", nil, func(item) error { return nil })
+	if err != errTooManyPages || calls != maxPages {
+		t.Fatalf("calls %d, err %v", calls, err)
+	}
+}
