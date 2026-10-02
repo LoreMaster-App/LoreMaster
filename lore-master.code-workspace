@@ -1,0 +1,164 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "lore-master"
+    }
+  ],
+  "settings": {
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "json",
+      "jsonc",
+      "yaml",
+      "markdown",
+      "css",
+      "html",
+      "toml"
+    ],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "editor.formatOnSave": true,
+    "[javascript]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[yaml]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[markdown]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[css]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[html]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[toml]": {
+      "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "nrwl.angular-console",
+      "firsttris.vscode-jest-runner"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "markdown-workspace: qa",
+        "type": "npm",
+        "script": "markdown-workspace:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "confluence-client: qa",
+        "type": "npm",
+        "script": "confluence-client:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "documentation-sync: qa",
+        "type": "npm",
+        "script": "documentation-sync:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "lore-master-engine: qa",
+        "type": "npm",
+        "script": "lore-master-engine:qa",
+        "problemMatcher": [],
+        "group": "qa"
+      },
+      {
+        "label": "lore-master-engine: build",
+        "type": "npm",
+        "script": "lore-master-engine:build",
+        "problemMatcher": [],
+        "group": "build"
+      },
+      {
+        "label": "lore-master-engine: start",
+        "type": "npm",
+        "script": "lore-master-engine:start",
+        "problemMatcher": [],
+        "isBackground": true
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "mnci: build",
+        "command": "npm run build",
+        "cwd": "${workspaceFolder:lore-master}",
+        "presentation": {
+          "group": "mnci",
+          "order": 1
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "mnci: test",
+        "command": "npm run test",
+        "cwd": "${workspaceFolder:lore-master}",
+        "presentation": {
+          "group": "mnci",
+          "order": 2
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "mnci: lint",
+        "command": "npm run lint",
+        "cwd": "${workspaceFolder:lore-master}",
+        "presentation": {
+          "group": "mnci",
+          "order": 3
+        }
+      },
+      {
+        "type": "node-terminal",
+        "request": "launch",
+        "name": "mnci: typecheck",
+        "command": "npm run typecheck",
+        "cwd": "${workspaceFolder:lore-master}",
+        "presentation": {
+          "group": "mnci",
+          "order": 4
+        }
+      }
+    ]
+  }
+}

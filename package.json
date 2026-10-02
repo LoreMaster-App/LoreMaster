@@ -1,0 +1,89 @@
+{
+  "name": "@lore-master/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "build": "nx run-many -t build",
+    "lint": "nx run-many -t lint",
+    "test": "nx run-many -t test",
+    "typecheck": "nx run-many -t typecheck",
+    "affected": "nx affected -t lint,typecheck,test,build",
+    "graph": "nx graph",
+    "release:preview": "nx release --dry-run",
+    "prepare": "husky",
+    "format": "eslint . --fix --cache",
+    "python:install": "node -e \"if(!require('node:fs').existsSync('requirements-dev.txt')){console.log('No Python projects - skipping.');process.exit(0)}const py=process.platform==='win32'?'python':'python3';process.exit(require('node:child_process').spawnSync(py+' -m pip install -r requirements-dev.txt',{stdio:'inherit',shell:true}).status ?? 1)\" && node -e \"const fs=require('node:fs'),path=require('node:path');const editableDirs=[...fs.globSync('apps/*/pyproject.toml'),...fs.globSync('python-packages/*/pyproject.toml'),...fs.globSync('libs/*/pyproject.toml')].map((p)=>path.dirname(p));const requirementsFiles=fs.globSync('apps/*/requirements.txt');if(editableDirs.length===0&&requirementsFiles.length===0){console.log('No Python projects - skipping.');process.exit(0)}const args=['-m','pip','install','--quiet',...editableDirs.flatMap((d)=>['-e',d]),...requirementsFiles.flatMap((f)=>['-r',f])];const py=process.platform==='win32'?'python':'python3';process.exit(require('node:child_process').spawnSync(py,args,{stdio:'inherit'}).status ?? 1)\"",
+    "markdown-workspace:qa": "nx run markdown-workspace:lint && nx run markdown-workspace:test",
+    "confluence-client:qa": "nx run confluence-client:lint && nx run confluence-client:test",
+    "documentation-sync:qa": "nx run documentation-sync:lint && nx run documentation-sync:test",
+    "lore-master-engine:qa": "nx run lore-master-engine:lint && nx run lore-master-engine:test",
+    "lore-master-engine:build": "nx run lore-master-engine:build",
+    "lore-master-engine:start": "nx run lore-master-engine:start"
+  },
+  "private": true,
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
+    "@mnci/eslint-config": ">=0.1.0 <1.0.0",
+    "@nx-go/nx-go": "^4.1.1",
+    "@nx/eslint": "23.2.0",
+    "@nx/eslint-plugin": "23.2.0",
+    "@nx/js": "23.2.0",
+    "@swc-node/register": "1.11.1",
+    "@swc/core": "1.15.8",
+    "@swc/helpers": "0.5.18",
+    "@types/node": "^24.0.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "adm-zip": "^0.6.1",
+    "eslint": "^10.8.0",
+    "husky": "^9.1.7",
+    "nx": "23.2.0",
+    "tslib": "^2.3.0",
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "overrides": {
+    "eslint-plugin-jsx-a11y": {
+      "eslint": "$eslint"
+    },
+    "nx": {
+      "brace-expansion": "^5.0.9",
+      "smol-toml": "^1.7.1",
+      "axios": "^1.20.0"
+    },
+    "@nx/js": {
+      "brace-expansion": "^5.0.9"
+    },
+    "@nx/eslint": {
+      "brace-expansion": "^5.0.9"
+    },
+    "@nx/eslint-plugin": {
+      "brace-expansion": "^5.0.9"
+    },
+    "@nx/workspace": {
+      "brace-expansion": "^5.0.9"
+    },
+    "postcss": {
+      "nanoid": "^3.3.18"
+    },
+    "brace-expansion@4.0.0 - 5.0.8": "^5.0.9",
+    "@nx/react": {
+      "express": ">=4.0.0 <6.0.0"
+    }
+  },
+  "nx": {
+    "includedScripts": [],
+    "targets": {
+      "lint": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "options": {
+          "command": "eslint . --cache --ignore-pattern \"apps/**\" --ignore-pattern \"libs/**\" --ignore-pattern \"packages/**\" --ignore-pattern \"python-packages/**\" --ignore-pattern package-lock.json",
+          "cwd": "."
+        }
+      }
+    }
+  }
+}
