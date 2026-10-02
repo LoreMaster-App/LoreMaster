@@ -36,7 +36,7 @@ func OpenSession(store *Store, environment Environment) rpcserver.Method {
 		if err != nil {
 			return nil, connectError(err)
 		}
-		session := store.Add(Session{BaseURL: connected.BaseURL, Edition: connected.Edition, Platform: connected.Platform})
+		session := store.Add(Session{BaseURL: connected.BaseURL, Edition: connected.Edition, Platform: confluence{connected.Platform}})
 
 		return rpcprotocol.SessionOpenResult{
 			SessionID: session.ID, BaseURL: connected.BaseURL, Edition: connected.Edition, Version: connected.Version,

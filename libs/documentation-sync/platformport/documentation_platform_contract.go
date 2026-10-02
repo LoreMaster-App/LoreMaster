@@ -12,6 +12,10 @@ type DocumentationPlatform interface {
 	// FindPagesByTitle returns the pages in the space whose title equals title
 	// ignoring case: the ones a new page of that title would clash with.
 	FindPagesByTitle(ctx context.Context, space SpaceRef, title string) ([]RemotePage, error)
+	// FindPages returns up to limit pages in the space whose title contains query,
+	// ignoring case, ordered by title: what a page picker shows as someone types. An
+	// empty query lists the space's pages.
+	FindPages(ctx context.Context, space SpaceRef, query string, limit int) ([]RemotePage, error)
 	CreatePage(ctx context.Context, page NewPage) (RemotePage, error)
 	// UpdatePage writes a new version; a different ParentID moves the page.
 	UpdatePage(ctx context.Context, update PageUpdate) (RemotePage, error)

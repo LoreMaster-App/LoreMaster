@@ -58,3 +58,35 @@ func TestInMemoryPlatformKeepsThePlatformsRules(t *testing.T) {
 		t.Fatalf("calls\n got: %q\nwant: %q", platform.Calls(), want)
 	}
 }
+
+func TestFindPagesIsAContainsSearchByTitle(t *testing.T) {
+	platform := NewInMemoryPlatform(Space{ID: "1", Key: "ENG"}, Space{ID: "2", Key: "OPS"})
+	for _, title := range []string{"Setup guide", "Architecture", "Guide to setup", "Glossary"} {
+		platform.SeedPage("ENG", "", title)
+	}
+	platform.SeedPage("OPS", "", "Ops guide")
+	titles := func(pages []RemotePage) []string {
+		var out []string
+		for _, page := range pages {
+			out = append(out, page.Title)
+		}
+
+		return out
+	}
+	found, _ := platform.FindPages(context.Background(), SpaceRef{Key: "ENG"}, " GUIDE ", 10)
+	if got := titles(found); !reflect.DeepEqual(got, []string{"Guide to setup", "Setup guide"}) {
+		t.Fatalf("%q", got)
+	}
+	found, _ = platform.FindPages(context.Background(), SpaceRef{Key: "ENG"}, "", 2)
+	if got := titles(found); !reflect.DeepEqual(got, []string{"Architecture", "Glossary"}) {
+		t.Fatalf("%q", got)
+	}
+}
+
+func TestChildrenOfAMissingPageIsNotFound(t *testing.T) {
+	platform := NewInMemoryPlatform(Space{ID: "1", Key: "ENG"})
+	var missing *PageNotFoundError
+	if _, err := platform.ListChildren(context.Background(), "p404"); !errors.As(err, &missing) {
+		t.Fatalf("%v", err)
+	}
+}

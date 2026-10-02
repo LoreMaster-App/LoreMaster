@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -140,6 +141,9 @@ func (p *InMemoryPlatform) ListChildren(_ context.Context, parentID string) ([]R
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.log("ListChildren %s", parentID)
+	if _, exists := p.pages[parentID]; !exists && parentID != "" {
+		return nil, &PageNotFoundError{ID: parentID}
+	}
 	var children []RemotePage
 	for _, id := range p.sortedIDs() {
 		if p.pages[id].ParentID == parentID {
@@ -160,6 +164,26 @@ func (p *InMemoryPlatform) FindPagesByTitle(_ context.Context, space SpaceRef, t
 		if page := p.pages[id]; page.SpaceKey == space.Key && strings.EqualFold(page.Title, title) {
 			found = append(found, page.RemotePage)
 		}
+	}
+
+	return found, nil
+}
+
+// FindPages implements DocumentationPlatform.
+func (p *InMemoryPlatform) FindPages(_ context.Context, space SpaceRef, query string, limit int) ([]RemotePage, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.log("FindPages %s %s", space.Key, query)
+	needle := strings.ToLower(strings.TrimSpace(query))
+	var found []RemotePage
+	for _, id := range p.sortedIDs() {
+		if page := p.pages[id]; page.SpaceKey == space.Key && strings.Contains(strings.ToLower(page.Title), needle) {
+			found = append(found, page.RemotePage)
+		}
+	}
+	sort.SliceStable(found, func(i, j int) bool { return found[i].Title < found[j].Title })
+	if limit > 0 && len(found) > limit {
+		found = found[:limit]
 	}
 
 	return found, nil
