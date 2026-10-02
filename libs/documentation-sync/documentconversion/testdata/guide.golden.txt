@@ -45,6 +45,8 @@ quote
   h3 "Quoted heading"
 rule
 
+linked pages: [README.md docs/api.md docs/guide.md]
+
 attachments:
   docs__img__diagram.png <- docs/img/diagram.png
   img__diagram.png <- img/diagram.png

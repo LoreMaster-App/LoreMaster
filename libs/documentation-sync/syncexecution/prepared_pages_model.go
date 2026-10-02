@@ -40,7 +40,9 @@ type PreparedFile struct {
 func (p Prepared) Rendered() map[documentdiscovery.DocumentPath]syncplanning.RenderedPage {
 	rendered := make(map[documentdiscovery.DocumentPath]syncplanning.RenderedPage, len(p.Pages))
 	for path, page := range p.Pages {
-		rendered[path] = syncplanning.RenderedPage{RenderHash: page.Converted.RenderHash, Attachments: page.hashes()}
+		rendered[path] = syncplanning.RenderedPage{
+			RenderHash: page.Converted.RenderHash, Attachments: page.hashes(), LinkedPages: page.Converted.LinkedPages,
+		}
 	}
 
 	return rendered

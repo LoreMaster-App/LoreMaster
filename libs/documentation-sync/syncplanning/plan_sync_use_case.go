@@ -34,6 +34,8 @@ type Input struct {
 type RenderedPage struct {
 	RenderHash  string
 	Attachments map[string]string
+	// LinkedPages are the documents the page links to.
+	LinkedPages []documentdiscovery.DocumentPath
 }
 
 // PlanSync plans a sync of the tree to one output, reading the platform but never
@@ -110,6 +112,10 @@ func PlanSync(ctx context.Context, platform platformport.DocumentationPlatform, 
 	})
 	if walkErr != nil {
 		return SyncPlan{}, walkErr
+	}
+
+	if input.Output.LinkMode == "id" {
+		relinkToNewPages(plan.Actions, input.Rendered)
 	}
 
 	if len(input.Scope) > 0 {
@@ -254,4 +260,29 @@ func (run *planner) lostAnnotation(found []platformport.RemotePage) (platformpor
 	}
 
 	return ours[0], true
+}
+
+// relinkToNewPages updates, in id link mode, an otherwise unchanged page that links to
+// a page this sync creates: its links carry page ids, and the new page's id is new
+// even when its title is not (a page deleted remotely and created again).
+func relinkToNewPages(actions []Action, rendered map[documentdiscovery.DocumentPath]RenderedPage) {
+	created := map[documentdiscovery.DocumentPath]bool{}
+	for _, action := range actions {
+		if action.Kind == Create {
+			created[action.Path] = true
+		}
+	}
+	for i, action := range actions {
+		if action.Kind != Unchanged {
+			continue
+		}
+		for _, target := range rendered[action.Path].LinkedPages {
+			if created[target] {
+				actions[i].Kind, actions[i].Changes = Update, []Change{ChangeContent}
+				actions[i].Reason = fmt.Sprintf("it links to %s, which gets a new page and so a new id", target)
+
+				break
+			}
+		}
+	}
 }

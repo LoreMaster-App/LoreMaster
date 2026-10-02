@@ -520,3 +520,123 @@ func pageOf(t *testing.T, w *workspace, path string) string {
 
 	return read.Annotation.PageID
 }
+
+func linkURLs(document platformport.Document) []string {
+	var urls []string
+	for _, block := range document.Blocks {
+		if paragraph, ok := block.(platformport.Paragraph); ok {
+			for _, inline := range paragraph.Inlines {
+				if link, ok := inline.(platformport.Link); ok {
+					if page, ok := link.Target.(platformport.PageLink); ok {
+						urls = append(urls, page.Title+"="+page.URL)
+					}
+				}
+			}
+		}
+	}
+
+	return urls
+}
+
+func cycle() map[string]string {
+	return map[string]string{
+		"README.md": "# Home\n\nSee [setup](setup.md).\n",
+		"setup.md":  "# Setup\n\nBack [home](README.md).\n",
+	}
+}
+
+func TestIDLinksInACycleOfNewPages(t *testing.T) {
+	w := newWorkspace(t, cycle())
+	w.output.LinkMode = "id"
+	_, report := w.sync()
+	home, setup := report.Pages[0], report.Pages[1]
+	if home.Outcome != Written || setup.Outcome != Written {
+		t.Fatalf("%q", outcomes(report))
+	}
+	if got := linkURLs(w.fake.Page(home.PageID).Body); !slices.Equal(got, []string{"ENG: Setup=" + setup.URL}) {
+		t.Fatalf("home links %q", got)
+	}
+	if got := linkURLs(w.fake.Page(setup.PageID).Body); !slices.Equal(got, []string{"ENG: Home=" + home.URL}) {
+		t.Fatalf("setup links %q", got)
+	}
+	// Home was written before Setup existed, so it was written again; Setup was not.
+	if home.Version != 2 || home.Annotation.Version != 2 || setup.Version != 1 || w.fake.Page(home.PageID).Version != 2 {
+		t.Fatalf("versions: home %d/%d, setup %d", home.Version, home.Annotation.Version, setup.Version)
+	}
+	if plan, _ := w.sync(); plan.Counts()[syncplanning.Unchanged] != 2 {
+		t.Fatalf("then steady: %v", plan.Actions)
+	}
+}
+
+func TestTitleLinksNeverNeedASecondPass(t *testing.T) {
+	w := newWorkspace(t, cycle())
+	_, report := w.sync()
+	if report.Pages[0].Version != 1 || linkURLs(w.fake.Page(report.Pages[0].PageID).Body)[0] != "ENG: Setup=" {
+		t.Fatalf("%+v", report.Pages[0])
+	}
+}
+
+func TestALinkToARecreatedPageFollowsItsNewID(t *testing.T) {
+	for mode, want := range map[string]syncplanning.ActionKind{"id": syncplanning.Update, "title": syncplanning.Unchanged} {
+		t.Run(mode, func(t *testing.T) {
+			w := newWorkspace(t, cycle())
+			w.output.LinkMode = mode
+			_, first := w.sync()
+			_ = w.fake.TrashPage(context.Background(), first.Pages[1].PageID)
+			plan, report := w.sync()
+			if plan.Actions[0].Kind != want || plan.Actions[1].Kind != syncplanning.Create {
+				t.Fatalf("%s", fmt.Sprint(plan.Actions))
+			}
+			if mode == "id" && linkURLs(w.fake.Page(report.Pages[0].PageID).Body)[0] != "ENG: Setup="+report.Pages[1].URL {
+				t.Fatal("home now links to the new page's id")
+			}
+		})
+	}
+}
+
+// noRelink refuses the second write of a page.
+type noRelink struct{ *platformport.InMemoryPlatform }
+
+func (p noRelink) UpdatePage(ctx context.Context, update platformport.PageUpdate) (platformport.RemotePage, error) {
+	if update.Message == "Links updated by Lore Master" {
+		return platformport.RemotePage{}, errors.New("503 unavailable")
+	}
+
+	return p.InMemoryPlatform.UpdatePage(ctx, update)
+}
+
+func TestAFailedRelinkIsRetriedNextTime(t *testing.T) {
+	w := newWorkspace(t, cycle())
+	w.output.LinkMode = "id"
+	w.platform = noRelink{w.fake}
+	_, report := w.sync()
+	if report.Pages[0].Version != 1 || report.Pages[0].Annotation.Version != 1 || !slices.ContainsFunc(report.Warnings, func(warning string) bool {
+		return strings.HasPrefix(warning, "README.md: the page was written, but its links could not be updated")
+	}) {
+		t.Fatalf("%+v %q", report.Pages[0], report.Warnings)
+	}
+	w.platform = w.fake
+	plan, _ := w.sync()
+	if plan.Actions[0].Kind != syncplanning.Update || plan.Actions[1].Kind != syncplanning.Unchanged {
+		t.Fatalf("%s", fmt.Sprint(plan.Actions))
+	}
+	if linkURLs(w.fake.Page(report.Pages[0].PageID).Body)[0] != "ENG: Setup="+report.Pages[1].URL {
+		t.Fatal("the retry links by id")
+	}
+}
+
+func TestEditingAPageInIDModeWritesItOnce(t *testing.T) {
+	w := newWorkspace(t, cycle())
+	w.output.LinkMode = "id"
+	w.sync()
+	w.files["README.md"] = append(w.files["README.md"], "More.\n"...)
+	calls := len(w.fake.Calls())
+	_, report := w.sync()
+	// Setup is unchanged and comes after README, yet its URL is known from the plan.
+	if got := writes(w.fake, calls); len(got) != 1 || !strings.HasPrefix(got[0], "UpdatePage") {
+		t.Fatalf("writes %q", got)
+	}
+	if linkURLs(w.fake.Page(report.Pages[0].PageID).Body)[0] != "ENG: Setup="+report.Pages[1].URL {
+		t.Fatal("linked by id")
+	}
+}

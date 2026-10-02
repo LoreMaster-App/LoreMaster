@@ -42,6 +42,7 @@ func TestConvertDocumentGolden(t *testing.T) {
 	converted := ConvertDocument(guide, workspace)
 	var got strings.Builder
 	dumpBlocks(&got, converted.Document.Blocks, "")
+	fmt.Fprintf(&got, "\nlinked pages: %v\n", converted.LinkedPages)
 	got.WriteString("\nattachments:\n")
 	for _, attachment := range converted.Attachments {
 		fmt.Fprintf(&got, "  %s <- %s\n", attachment.Filename, attachment.Path)
