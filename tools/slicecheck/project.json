@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "slicecheck",
+  "projectType": "library",
+  "sourceRoot": "tools/slicecheck",
+  "tags": ["type:tool"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "parallelism": false,
+      "inputs": ["{workspaceRoot}/apps/**/*.go", "{workspaceRoot}/libs/**/*.go", "{projectRoot}/**/*"],
+      "options": {
+        "cwd": "tools/slicecheck",
+        "commands": ["golangci-lint run ./...", "go test -count=1 ."],
+        "parallel": false
+      }
+    }
+  }
+}
