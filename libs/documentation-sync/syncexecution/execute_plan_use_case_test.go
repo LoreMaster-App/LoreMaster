@@ -88,7 +88,7 @@ func (w *workspace) sync() (syncplanning.SyncPlan, SyncReport) {
 	}
 	prepared := PreparePages(documents, titles, w.read)
 	plan, err := syncplanning.PlanSync(context.Background(), w.platform, syncplanning.Input{
-		Tree: tree, Output: w.output, SpaceID: "1", Attachments: prepared.AttachmentHashes(),
+		Tree: tree, Output: w.output, SpaceID: "1", Rendered: prepared.Rendered(),
 	})
 	if err != nil {
 		w.t.Fatal(err)
@@ -461,4 +461,62 @@ func TestALostAnnotationIsTakenBackAndWrittenAgain(t *testing.T) {
 	if plan.Counts()[syncplanning.Unchanged] != 3 {
 		t.Fatalf("after the take-back the workspace is steady again: %v", plan.Counts())
 	}
+}
+
+func TestALinkFollowsTheFileItPointsAt(t *testing.T) {
+	steadyAfter := func(t *testing.T, w *workspace, changed string) {
+		t.Helper()
+		plan, report := w.sync()
+		for _, action := range plan.Actions {
+			want := syncplanning.Unchanged
+			if string(action.Path) == changed {
+				want = syncplanning.Update
+			}
+			if action.Kind != want && action.Kind != syncplanning.Create {
+				t.Fatalf("%s: %s, want %s (%q)", action.Path, action.Kind, want, outcomes(report))
+			}
+		}
+		if again, _ := w.sync(); again.Counts()[syncplanning.Unchanged] != len(again.Actions) {
+			t.Fatalf("then steady: %v", again.Counts())
+		}
+	}
+
+	t.Run("the linked file appears", func(t *testing.T) {
+		w := newWorkspace(t, map[string]string{"README.md": "# Home\n\nSee [setup](setup.md).\n"})
+		w.sync()
+		w.files["setup.md"] = []byte("# Setup\n")
+		steadyAfter(t, w, "README.md")
+		if !strings.Contains(fmt.Sprint(w.fake.Page(pageOf(t, w, "README.md")).Body), "ENG: Setup") {
+			t.Fatal("the link now points at the new page")
+		}
+	})
+	t.Run("the linked file is retitled", func(t *testing.T) {
+		w := newWorkspace(t, map[string]string{"README.md": "# Home\n\nSee [setup](setup.md).\n", "setup.md": "# Setup\n"})
+		w.sync()
+		w.files["setup.md"] = []byte(strings.Replace(string(w.files["setup.md"]), "# Setup", "# Install", 1))
+		plan, _ := w.sync()
+		if plan.Counts()[syncplanning.Update] != 2 {
+			t.Fatalf("setup.md changed and README.md shows it: %s", fmt.Sprint(plan.Actions))
+		}
+	})
+	t.Run("a heading it points at is renamed", func(t *testing.T) {
+		w := newWorkspace(t, map[string]string{"README.md": "# Home\n\nSee [usage](setup.md#usage).\n", "setup.md": "# Setup\n\n## Usage\n"})
+		w.sync()
+		// Same slug, other text: README.md is byte for byte the same, its anchor is not.
+		w.files["setup.md"] = []byte(strings.Replace(string(w.files["setup.md"]), "## Usage", "## Usage!", 1))
+		plan, _ := w.sync()
+		if plan.Counts()[syncplanning.Update] != 2 || plan.Actions[0].Path != "README.md" || plan.Actions[0].Kind != syncplanning.Update {
+			t.Fatalf("%v", plan.Actions)
+		}
+	})
+}
+
+func pageOf(t *testing.T, w *workspace, path string) string {
+	t.Helper()
+	read, err := syncannotation.Read(w.files[path])
+	if err != nil || read.Annotation == nil {
+		t.Fatalf("%s has no annotation", path)
+	}
+
+	return read.Annotation.PageID
 }

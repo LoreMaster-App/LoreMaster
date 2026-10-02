@@ -42,6 +42,7 @@ func TestReadParsesEveryKey(t *testing.T) {
 		"parent-id: 123000\r\n" +
 		"version: 7\r\n" +
 		"content-hash: sha256:abc\r\n" +
+		"render-hash:  sha256:fed \r\n" +
 		"attachments: {\"diagram-1.svg\": \"sha256:def\"}\r\n" +
 		"synced-at: 2026-10-01T12:00:00Z\r\n" +
 		"parent: ../index.md\r\n" +
@@ -54,7 +55,7 @@ func TestReadParsesEveryKey(t *testing.T) {
 	}
 	want := Annotation{
 		Platform: "confluence", BaseURL: "https://acme.atlassian.net/wiki", Space: "ENG",
-		PageID: "123456", ParentID: "123000", Version: 7, ContentHash: "sha256:abc",
+		PageID: "123456", ParentID: "123000", Version: 7, ContentHash: "sha256:abc", RenderHash: "sha256:fed",
 		Attachments: map[string]string{"diagram-1.svg": "sha256:def"},
 		SyncedAt:    time.Date(2026, 10, 1, 12, 0, 0, 0, time.UTC),
 		Title:       "Overridden title", Parent: "../index.md",

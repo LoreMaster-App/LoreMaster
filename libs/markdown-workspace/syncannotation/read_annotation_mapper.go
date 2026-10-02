@@ -90,6 +90,8 @@ func annotationFrom(fields []Field) (Annotation, []string, error) {
 			annotation.Version, err = strconv.Atoi(field.Value)
 		case KeyContentHash:
 			annotation.ContentHash = field.Value
+		case KeyRenderHash:
+			annotation.RenderHash = field.Value
 		case KeyAttachments:
 			err = json.Unmarshal([]byte(field.Value), &annotation.Attachments)
 		case KeySyncedAt:

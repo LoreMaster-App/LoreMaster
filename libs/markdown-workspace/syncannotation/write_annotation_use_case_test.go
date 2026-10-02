@@ -12,7 +12,7 @@ import (
 func fullAnnotation() Annotation {
 	return Annotation{
 		Platform: "confluence", BaseURL: "https://acme.atlassian.net/wiki", Space: "ENG",
-		PageID: "123456", ParentID: "123000", Version: 7, ContentHash: "sha256:abc",
+		PageID: "123456", ParentID: "123000", Version: 7, ContentHash: "sha256:abc", RenderHash: "sha256:fed",
 		Attachments: map[string]string{"b.svg": "sha256:2", "a.svg": "sha256:1"},
 		SyncedAt:    time.Date(2026, 10, 1, 14, 0, 0, 0, time.FixedZone("CEST", 2*60*60)),
 		Title:       "Override",
@@ -27,6 +27,7 @@ const fullBlockLF = "<!-- lore-master\n" +
 	"parent-id: 123000\n" +
 	"version: 7\n" +
 	"content-hash: sha256:abc\n" +
+	"render-hash: sha256:fed\n" +
 	"attachments: {\"a.svg\":\"sha256:1\",\"b.svg\":\"sha256:2\"}\n" +
 	"synced-at: 2026-10-01T12:00:00Z\n" +
 	"title: Override\n" +

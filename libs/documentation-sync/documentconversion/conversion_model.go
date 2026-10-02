@@ -37,6 +37,9 @@ func NewWorkspace(documents []documentparsing.MarkdownDocument, titles map[docum
 // Converted is one document ready for a platform.
 type Converted struct {
 	Document platformport.Document
+	// RenderHash identifies Document: it changes whenever what the page shows changes,
+	// including through another file (a link that now resolves, a renamed heading).
+	RenderHash string
 	// Attachments are the local files the page needs, each under the name the page
 	// refers to it by, in document order and without repeats.
 	Attachments []Attachment

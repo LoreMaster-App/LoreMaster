@@ -2,6 +2,7 @@ package syncexecution
 
 import (
 	"lore-master/libs/documentation-sync/documentconversion"
+	"lore-master/libs/documentation-sync/syncplanning"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/markdown-workspace/syncannotation"
 )
@@ -34,15 +35,15 @@ type PreparedFile struct {
 	Hash string
 }
 
-// AttachmentHashes is syncplanning.Input.Attachments: per document, attachment name
-// to hash.
-func (p Prepared) AttachmentHashes() map[documentdiscovery.DocumentPath]map[string]string {
-	hashes := make(map[documentdiscovery.DocumentPath]map[string]string, len(p.Pages))
+// Rendered is syncplanning.Input.Rendered: per document, the hash of the page body as
+// converted and its attachments' hashes, the same values the write-back records.
+func (p Prepared) Rendered() map[documentdiscovery.DocumentPath]syncplanning.RenderedPage {
+	rendered := make(map[documentdiscovery.DocumentPath]syncplanning.RenderedPage, len(p.Pages))
 	for path, page := range p.Pages {
-		hashes[path] = page.hashes()
+		rendered[path] = syncplanning.RenderedPage{RenderHash: page.Converted.RenderHash, Attachments: page.hashes()}
 	}
 
-	return hashes
+	return rendered
 }
 
 func (p PreparedPage) hashes() map[string]string {
