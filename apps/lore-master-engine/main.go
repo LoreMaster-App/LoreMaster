@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"os"
 
+	"lore-master/apps/lore-master-engine/catalogqueries"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
@@ -43,6 +44,9 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 		rpcprotocol.MethodPing:         rpcserver.Ping(version),
 		rpcprotocol.MethodSessionOpen:  sessionlifecycle.OpenSession(sessions, network),
 		rpcprotocol.MethodSessionClose: sessionlifecycle.CloseSession(sessions),
+		rpcprotocol.MethodSpaceList:    catalogqueries.ListSpaces(sessions),
+		rpcprotocol.MethodPageChildren: catalogqueries.ListChildren(sessions),
+		rpcprotocol.MethodPageSearch:   catalogqueries.SearchPages(sessions),
 	}
 	if err := rpcserver.Serve(ctx, stdio{Reader: stdin, Writer: stdout}, methods, logger); err != nil {
 		logger.Error("stopped", "error", err.Error())

@@ -97,6 +97,13 @@ func (p *Platform) FindPagesByTitle(ctx context.Context, space platformport.Spac
 	return remotes(found), portError(err)
 }
 
+// FindPages implements platformport.DocumentationPlatform.
+func (p *Platform) FindPages(ctx context.Context, space platformport.SpaceRef, query string, limit int) ([]platformport.RemotePage, error) {
+	found, err := p.pages.FindPages(ctx, space.Key, query, limit)
+
+	return remotes(found), portError(err)
+}
+
 // CreatePage implements platformport.DocumentationPlatform.
 func (p *Platform) CreatePage(ctx context.Context, page platformport.NewPage) (platformport.RemotePage, error) {
 	body, err := p.renderBody(page.Body)

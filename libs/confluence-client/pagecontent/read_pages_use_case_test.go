@@ -161,3 +161,14 @@ func TestCQLString(t *testing.T) {
 		}
 	}
 }
+
+func TestListChildrenOfAMissingPageIsNotFound(t *testing.T) {
+	for _, edition := range []connection.Edition{connection.Cloud, connection.DataCenter} {
+		pages := pagesOn(t, edition, "", func(*http.Request) (int, string) { return 404, `{"message":"No content found"}` })
+		_, err := pages.ListChildren(context.Background(), "404404")
+		var missing *PageNotFoundError
+		if !errors.As(err, &missing) || missing.ID != "404404" {
+			t.Fatalf("%s: %v", edition, err)
+		}
+	}
+}
