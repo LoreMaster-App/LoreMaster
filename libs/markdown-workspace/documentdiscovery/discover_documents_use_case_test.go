@@ -181,7 +181,7 @@ func TestDiscoverDocumentsWarnsOnCaseCollisions(t *testing.T) {
 }
 
 func TestLookup(t *testing.T) {
-	discovery := newDiscovery([]DocumentPath{"Guide.md", "guide.md", "docs/Setup.md"}, nil)
+	discovery := NewDiscovery([]DocumentPath{"Guide.md", "guide.md", "docs/Setup.md"}, nil)
 	cases := []struct {
 		path   string
 		want   DocumentPath
