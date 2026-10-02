@@ -17,7 +17,12 @@ to render a Mermaid diagram.
 
 ## RPC surface (source of truth: `apps/lore-master-engine/rpcprotocol`)
 
-Editor → engine: `session/open`, `session/close`, `space/list`, `page/children`,
+Framing: LSP-style `Content-Length: <bytes>\r\n\r\n` headers, `vscode-jsonrpc`'s default.
+Requests run concurrently, so `$/cancelRequest` and reverse requests are never stuck
+behind a running sync. When the editor closes stdin, running requests are cancelled and
+waited for, so a sync stops between pages and still writes back what it did.
+
+Editor → engine: `ping`, `session/open`, `session/close`, `space/list`, `page/children`,
 `page/search`, `sync/plan`, `sync/execute`, `$/cancelRequest`.
 
 Engine → editor: `host/renderDiagram { language, source } → { svg }`,
