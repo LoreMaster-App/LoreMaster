@@ -88,10 +88,11 @@ func (c *converter) list(n *ast.List) platformport.Block {
 					inlines = appendInline(inlines, inline)
 				}
 			}
-			list.Items = append(list.Items, platformport.TaskItem{Done: checkbox(item).IsChecked, Inlines: inlines})
-			if first.NextSibling() != nil {
-				c.warn("line %d: only the first line of a task item is synced; the content nested under it is left out", c.line(first.NextSibling()))
+			var nested []platformport.Block
+			for node := first.NextSibling(); node != nil; node = node.NextSibling() {
+				nested = append(nested, c.block(node)...)
 			}
+			list.Items = append(list.Items, platformport.TaskItem{Done: checkbox(item).IsChecked, Inlines: inlines, Blocks: nested})
 		}
 
 		return list

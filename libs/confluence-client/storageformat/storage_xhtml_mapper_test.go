@@ -111,6 +111,25 @@ func assertWellFormed(t *testing.T, fragment string) {
 	}
 }
 
+func TestNestedTaskListRendersInsideTheTaskBody(t *testing.T) {
+	doc := Document{Blocks: []Block{
+		TaskList{Items: []TaskItem{{
+			Done:    true,
+			Inlines: []Inline{text("Parent")},
+			Blocks:  []Block{TaskList{Items: []TaskItem{{Inlines: []Inline{text("Child")}}}}},
+		}}},
+	}}
+
+	got, err := Render(doc, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertWellFormed(t, got)
+	if !strings.Contains(got, "<ac:task-body>Parent<ac:task-list>") {
+		t.Fatalf("the nested task list is not inside the parent's task body: %s", got)
+	}
+}
+
 func TestRenderRejectsWhatItCannotRender(t *testing.T) {
 	cases := map[string]Document{
 		"heading level 7": {Blocks: []Block{Heading{Level: 7}}},

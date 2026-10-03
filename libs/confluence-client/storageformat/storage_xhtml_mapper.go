@@ -89,10 +89,16 @@ func (r *renderer) block(block Block) error {
 			if item.Done {
 				status = "complete"
 			}
-			open := "<ac:task><ac:task-id>" + strconv.Itoa(r.taskID) + "</ac:task-id><ac:task-status>" + status + "</ac:task-status><ac:task-body>"
-			if err := r.wrapBlock(open, item.Inlines, "</ac:task-body></ac:task>"); err != nil {
+			r.out.WriteString("<ac:task><ac:task-id>" + strconv.Itoa(r.taskID) + "</ac:task-id><ac:task-status>" + status + "</ac:task-status><ac:task-body>")
+			if err := r.inlines(item.Inlines); err != nil {
 				return err
 			}
+			for _, nested := range item.Blocks {
+				if err := r.block(nested); err != nil {
+					return err
+				}
+			}
+			r.out.WriteString("</ac:task-body></ac:task>")
 		}
 		r.out.WriteString("</ac:task-list>")
 	case Table:

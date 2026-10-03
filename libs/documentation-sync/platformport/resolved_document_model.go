@@ -31,6 +31,8 @@ type (
 	TaskItem struct {
 		Done    bool
 		Inlines []Inline
+		// Blocks is content nested under the item, e.g. a sub-task list.
+		Blocks []Block
 	}
 	Table struct {
 		Header []TableCell

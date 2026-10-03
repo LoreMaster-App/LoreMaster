@@ -37,10 +37,13 @@ type ListItem struct{ Blocks []Block }
 // TaskList is a list of checkboxes.
 type TaskList struct{ Items []TaskItem }
 
-// TaskItem is one checkbox and its text.
+// TaskItem is one checkbox, its text, and any content nested under it (sub-tasks,
+// paragraphs). Confluence's <ac:task-body> accepts rich content, a nested task list
+// included.
 type TaskItem struct {
 	Done    bool
 	Inlines []Inline
+	Blocks  []Block
 }
 
 // Alignment is a table column's alignment.
