@@ -1,4 +1,5 @@
-import type { ConnectionMeta, ConnectionStore, Credential } from '../secret-storage'
+import type { Credential } from '../engine-protocol'
+import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
 import {
   type AuthMethod,
   authMethodsFor,

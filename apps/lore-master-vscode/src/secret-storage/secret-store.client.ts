@@ -1,16 +1,5 @@
 import type * as vscode from 'vscode'
-
-/** How a user signs in. Mirrors the engine's `Credential`; `kind` decides the fields. */
-export type CredentialKind = 'apitoken' | 'pat' | 'basic'
-
-/** A credential kept in the OS secret store, never in settings or logs. */
-export interface Credential {
-  kind:      CredentialKind
-  email?:    string
-  token?:    string
-  user?:     string
-  password?: string
-}
+import type { Credential } from '../engine-protocol'
 
 /** The non-secret facts about a connection, shown in lists. Kept in `globalState`. */
 export interface ConnectionMeta {

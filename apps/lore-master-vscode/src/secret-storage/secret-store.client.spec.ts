@@ -1,5 +1,6 @@
 import type * as vscode from 'vscode'
-import { type ConnectionMeta, createConnectionStore, type Credential } from './secret-store.client'
+import { type ConnectionMeta, createConnectionStore } from './secret-store.client'
+import type { Credential } from '../engine-protocol'
 
 function fakeSecrets (): vscode.SecretStorage {
   const store: Record<string, string> = {}
