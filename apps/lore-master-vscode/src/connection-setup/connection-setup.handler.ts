@@ -1,12 +1,14 @@
-import type { ConnectionMeta, ConnectionStore, Credential, CredentialKind } from '../secret-storage'
 import {
+  type Credential,
+  type CredentialKind,
   type Edition,
   EDITION_DETECT_METHOD,
   type EditionDetectResult,
   SESSION_CLOSE_METHOD,
   SESSION_OPEN_METHOD,
   type SessionOpenResult,
-} from './connection.contract'
+} from '../engine-protocol'
+import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
 
 /** The command id contributed in package.json. */
 export const ADD_CONNECTION_COMMAND = 'loreMaster.addConnection'

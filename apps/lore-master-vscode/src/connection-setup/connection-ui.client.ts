@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
-import type { ConnectionMeta, Credential } from '../secret-storage'
+import type { Credential } from '../engine-protocol'
+import type { ConnectionMeta } from '../secret-storage'
 import type { AuthMethod, ConnectionUI } from './connection-setup.handler'
 
 const AUTH_METHOD_LABELS: Record<AuthMethod, string> = {

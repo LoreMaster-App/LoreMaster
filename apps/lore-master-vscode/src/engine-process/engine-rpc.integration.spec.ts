@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { createEngineClient, type EngineClient } from './engine-rpc.client'
-import { PING_METHOD, type PingResult } from './rpc-protocol.contract'
+import { PING_METHOD, type PingResult } from '../engine-protocol'
 
 // Spawns the REAL Go engine and pings it over stdio, proving the client's framing
 // matches the server's. Gated: it runs when LORE_MASTER_ENGINE_BIN points at a built

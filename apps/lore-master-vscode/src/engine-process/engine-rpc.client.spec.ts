@@ -1,7 +1,7 @@
 import { PassThrough } from 'node:stream'
 import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc/node'
 import { createEngineClient, type EngineChild } from './engine-rpc.client'
-import { PING_METHOD, type PingResult } from './rpc-protocol.contract'
+import { PING_METHOD, type PingResult } from '../engine-protocol'
 
 type ExitListener = (code: number | null) => void
 
