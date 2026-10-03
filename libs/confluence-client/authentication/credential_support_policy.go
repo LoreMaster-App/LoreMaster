@@ -11,9 +11,11 @@ var personalAccessTokensSince = connection.Version{Major: 7, Minor: 9}
 
 // Supports reports, as an error naming the remedy, why the edition at that version
 // cannot accept the credential; nil when it can. Cloud takes only an email and API
-// token. Data Center and Server take a personal access token from 7.9 on and a user
-// name and password before it. When the version is unknown, either of the two is
-// allowed: the server's answer is the judge.
+// token. Data Center and Server take a personal access token from 7.9 on, a user name
+// and password before it, and an OAuth access token (from 7.17's OAuth 2.0 provider).
+// When the version is unknown, either of PAT and password is allowed: the server's
+// answer is the judge. Cloud stays API-token only, so it refuses OAuth here too (see
+// docs/architecture/oauth.md).
 func Supports(edition connection.Edition, version connection.Version, credential Credential) error {
 	switch edition {
 	case connection.Cloud:
@@ -35,6 +37,8 @@ func Supports(edition connection.Edition, version connection.Version, credential
 				return fmt.Errorf("this site runs Confluence %s, which supports personal access tokens; create one under Profile → Personal Access Tokens and use it instead of a password", version)
 			}
 
+			return nil
+		case OAuth:
 			return nil
 		case APIToken:
 			return fmt.Errorf("API tokens belong to Atlassian Cloud accounts; on Confluence %s use a personal access token", editionName(edition))
