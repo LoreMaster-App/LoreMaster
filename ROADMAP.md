@@ -75,7 +75,7 @@ Done in E0 since: #43 (the repository is `russoedu/LoreMaster`). Still open in E
 | E5 `apps/lore-master-vscode` (#58 skeleton built) | #6 | #58 skeleton · #59 engine process · #60 secrets/workspace/connection · #61 sync target · #62 sync commands · #63 diagram rendering · #64 settings decision · #65 packaging/publish | mnci #225, #229 |
 | E6 Mermaid modes | #7 | #39 `image` (spike first) · #40 `html-macro` + `marketplace-macro` | #28 |
 | E7 OAuth | #8 | #41 Cloud decision · #42 DC PKCE | — |
-| E8 Dogfood from CI | #9 | #66 tenant + secrets · #67 CI sync job | E4 |
+| E8 End-to-end sync test | #9 | #139 fake-Confluence integration test (replaced the live CI dogfood #67) · #66 tenant for fixtures | E4 |
 | E9 Visual Studio extension | #10 | #68 scaffold + RPC client · #69 the rest | E4; mnci VSIX gap (to file) |
 | E10 Beyond docs sync | #11 | #95 two-way sync · #96 more content types (test results, code docs) · #97 templates — reserved in `.lore-master.yaml` (#92), not scheduled | the first feature shipping |
 
@@ -87,7 +87,7 @@ Done in E0 since: #43 (the repository is `russoedu/LoreMaster`). Still open in E
 - #50 branch protection (merge commits only)
 - #41 Confluence Cloud OAuth: broker / user credentials / API token only
 - #64 which settings live in `contributes.configuration` vs `.lore-master.yaml`
-- #66 Confluence tenant for fixtures and dogfood
+- #66 Confluence tenant for fixtures (#29/#30)
 
 ## mnci work this project depends on
 

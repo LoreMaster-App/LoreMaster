@@ -44,7 +44,7 @@ LoreMaster/                         one root go.mod, module lore-master (mnci de
 │   ├── confluence-client/          talk to any Confluence edition                            E2 #3
 │   └── documentation-sync/         reconcile a workspace with a platform (owns the ports)    E3 #4
 ├── tools/slicecheck/               Go test enforcing the file-role rules                     #47
-├── docs/                           the project's own docs, synced by the tool (dogfood)     E8 #9
+├── docs/                           the project's own docs (architecture, contributing)      #9
 ├── CLAUDE.md, ROADMAP.md
 └── (files owned by mnci: nx.json, eslint.config.mnci.mjs, CI, .code-workspace, …)
 ```
