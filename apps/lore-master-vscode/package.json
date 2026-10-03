@@ -2,7 +2,9 @@
   "name": "lore-master",
   "version": "0.0.1",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "vscode-jsonrpc": "^9.0.3"
+  },
   "displayName": "Lore Master",
   "publisher": "russoedu",
   "preview": true,
@@ -21,7 +23,17 @@
         "title": "Sync Workspace",
         "category": "Lore Master"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Lore Master",
+      "properties": {
+        "loreMaster.engine.path": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Absolute path to a locally built `lore-master-engine` binary, for development. Leave blank to use the engine bundled with the extension."
+        }
+      }
+    }
   },
   "nx": {
     "targets": {
