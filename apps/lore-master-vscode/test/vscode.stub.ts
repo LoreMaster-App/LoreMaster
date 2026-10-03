@@ -16,8 +16,30 @@ export const commands = {
   },
 }
 
+// Each window prompt is a replaceable function so a test can script what the user does
+// (reassign it), then restore it. They return "cancelled" by default.
 export const window = {
   showInformationMessage (_message: string): Promise<undefined> {
     return Promise.resolve(undefined)
+  },
+  showErrorMessage (_message: string): Promise<undefined> {
+    return Promise.resolve(undefined)
+  },
+  showInputBox (_options?: unknown): Promise<string | undefined> {
+    return Promise.resolve(undefined)
+  },
+  showQuickPick (_items: unknown, _options?: unknown): Promise<unknown> {
+    return Promise.resolve(undefined)
+  },
+  activeTextEditor: undefined as { document: { uri: unknown } } | undefined,
+}
+
+export const workspace = {
+  workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
+  getWorkspaceFolder (_uri: unknown): { uri: { fsPath: string } } | undefined {
+    return undefined
+  },
+  getConfiguration (_section?: string): { get: <T>(key: string, defaultValue?: T) => T | undefined } {
+    return { get: <T>(_key: string, defaultValue?: T) => defaultValue }
   },
 }
