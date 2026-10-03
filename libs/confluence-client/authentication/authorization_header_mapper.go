@@ -7,7 +7,8 @@ import (
 )
 
 // AuthorizationHeader is the value of the Authorization header for credential: Basic
-// for an API token (email:token) or a password, Bearer for a personal access token.
+// for an API token (email:token) or a password, Bearer for a personal access token or an
+// OAuth access token.
 func AuthorizationHeader(credential Credential) (string, error) {
 	switch c := credential.(type) {
 	case APIToken:
@@ -22,6 +23,12 @@ func AuthorizationHeader(credential Credential) (string, error) {
 		}
 
 		return "Bearer " + c.Token, nil
+	case OAuth:
+		if c.AccessToken == "" {
+			return "", errors.New("the OAuth access token is empty")
+		}
+
+		return "Bearer " + c.AccessToken, nil
 	case Basic:
 		if c.User == "" || c.Password == "" {
 			return "", errors.New("a user name and password credential needs both")
