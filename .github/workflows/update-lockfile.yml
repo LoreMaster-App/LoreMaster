@@ -1,0 +1,43 @@
+# Refreshes package-lock.json on a Linux runner and commits it back to the branch it is
+# run on. npm regenerates the lock for the platform it runs on, and a lock generated on
+# Windows drops the Linux-only optional dependencies CI needs (and vice versa); CI is
+# Linux, so the lock must be made on Linux. Run this (Actions -> Update lockfile -> Run
+# workflow, picking the branch) after changing dependencies in package.json, instead of
+# running `npm install` locally on Windows.
+name: Update lockfile
+
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # Match the npm major CI builds and tests against (see the CI workflow).
+      - run: npm install -g npm@11
+        name: Pin npm
+
+      - run: npm install --no-audit --no-fund
+        name: Resolve dependencies and rewrite the lockfile
+
+      - name: Commit the refreshed lockfile
+        run: |
+          if git diff --quiet package-lock.json; then
+            echo "package-lock.json is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "build: refresh package-lock.json on Linux"
+          git push origin HEAD:${{ github.ref_name }}
