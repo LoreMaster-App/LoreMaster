@@ -22,6 +22,11 @@
         "command": "loreMaster.syncWorkspace",
         "title": "Sync Workspace",
         "category": "Lore Master"
+      },
+      {
+        "command": "loreMaster.addConnection",
+        "title": "Add Connection",
+        "category": "Lore Master"
       }
     ],
     "configuration": {
