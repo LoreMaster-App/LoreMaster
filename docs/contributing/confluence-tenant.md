@@ -30,7 +30,9 @@ Nothing here is a secret; the secrets live only in GitHub Actions.
      refuses to touch pages it doesn't own.
 
 Until `CONFLUENCE_BASE_URL` exists, the dogfood workflow **skips**, so `main` stays green.
-Once the secrets are in place, the next push to `main` runs the sync.
+Once the secrets are in place, the next push to `main` runs the sync. If the secrets exist
+but the space or parent page is not there yet, the run **skips with a notice** rather than
+failing — `main` stays green until the target is ready, then it syncs.
 
 ## Data Center (fixtures)
 

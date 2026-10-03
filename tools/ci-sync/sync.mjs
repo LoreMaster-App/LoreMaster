@@ -54,83 +54,99 @@ connection.onNotification('host/progress', progress => {
 })
 connection.listen()
 
-try {
-  const session = await connection.sendRequest('session/open', { baseUrl, credential: { kind: 'apitoken', email, token } })
-  console.log(`Connected to ${session.baseUrl} (${session.edition}) as ${session.user.displayName}.`)
+// A missing space or parent means the tenant isn't set up yet — that is a skip, not a
+// failure, so main stays green until it is. Only a real sync problem (a plan error, a
+// conflict, a failed page) fails the job.
+class NotReadyError extends Error {}
 
-  try {
-    const spaces = await connection.sendRequest('space/list', { sessionId: session.sessionId })
-    if (spaces.spaces.every(each => each.key !== space)) {
-      throw new Error(`space "${space}" is not visible to this account — create it (docs/contributing/confluence-tenant.md)`)
-    }
-    let parentPageId = process.env.CONFLUENCE_PARENT_PAGE_ID
-    if (!parentPageId) {
-      const found = await connection.sendRequest('page/search', { sessionId: session.sessionId, spaceKey: space, query: parentTitle })
-      const parent = found.pages.find(page => page.title === parentTitle)
-      if (!parent) {
-        throw new Error(`parent page "${parentTitle}" not found in ${space} — create it, or set CONFLUENCE_PARENT_PAGE_ID`)
-      }
-      parentPageId = parent.id
-    }
-
-    await connection.sendRequest('settings/save', {
-      workspaceRoot,
-      settings: {
-        version: 1,
-        outputs: [{
-          platform:       'confluence',
-          baseUrl:        session.baseUrl,
-          space,
-          parentPageId,
-          titlePrefix,
-          direction:      'push',
-          content:        [{ type: 'markdown', roots: ['docs'], excludes: [], template: '' }],
-          mermaidMode:    'image',
-          titleCollision: process.env.CONFLUENCE_TITLE_COLLISION || 'adopt',
-          linkMode:       'title',
-        }],
-      },
-    })
-
-    const plan = await connection.sendRequest('sync/plan', { sessionId: session.sessionId, workspaceRoot, output: 0 })
-    summary(`## Lore Master dogfood\n\n**Plan:** ${planCounts(plan)}`)
-    const warnings = plan.warnings ?? []
-    for (const warning of warnings) {
-      summary(`- warning: ${warning}`)
-    }
-    const errors = plan.errors ?? []
-    const conflicts = plan.counts.conflict ?? 0
-    if (errors.length > 0 || conflicts > 0) {
-      for (const error of errors) {
-        summary(`- error: ${error}`)
-      }
-      throw new Error(`the plan has ${errors.length} error(s) and ${conflicts} conflict(s); not syncing`)
-    }
-
-    const result = await connection.sendRequest('sync/execute', { planId: plan.planId, force: false })
-    summary(`\n**Result:**\n${result.pages.map(page => `- ${page.outcome}: ${page.title}${page.error ? ` — ${page.error}` : ''}`).join('\n')}`)
-    const failed = result.pages.filter(page => page.outcome === 'failed')
-    if (failed.length > 0) {
-      throw new Error(`${failed.length} page(s) failed to sync`)
-    }
-
-    await closeQuietly(connection, session.sessionId)
-  } catch (error) {
-    await closeQuietly(connection, session.sessionId)
-    throw error
-  }
-} catch (error) {
-  summary(`\n**Dogfood failed:** ${error.message}`)
-  connection.dispose()
-  engine.kill()
-  process.exit(1)
-}
-
+const exitCode = await runDogfood()
 connection.dispose()
 engine.kill()
-process.exit(0)
+process.exit(exitCode)
 
-async function closeQuietly (connection, sessionId) {
+async function runDogfood () {
+  let session
+  try {
+    session = await connection.sendRequest('session/open', { baseUrl, credential: { kind: 'apitoken', email, token } })
+    console.log(`Connected to ${session.baseUrl} (${session.edition}) as ${session.user.displayName}.`)
+    await syncDocs(session)
+
+    return 0
+  } catch (error) {
+    if (error instanceof NotReadyError) {
+      summary(`## Lore Master dogfood\n\nSkipped — ${error.message}`)
+
+      return 0
+    }
+    summary(`\n**Dogfood failed:** ${error.message}`)
+
+    return 1
+  } finally {
+    if (session) {
+      await closeQuietly(session.sessionId)
+    }
+  }
+}
+
+async function syncDocs (session) {
+  const spaces = await connection.sendRequest('space/list', { sessionId: session.sessionId })
+  if (spaces.spaces.every(each => each.key !== space)) {
+    throw new NotReadyError(`space "${space}" is not visible to this account yet (docs/contributing/confluence-tenant.md)`)
+  }
+
+  let parentPageId = process.env.CONFLUENCE_PARENT_PAGE_ID
+  if (!parentPageId) {
+    const found = await connection.sendRequest('page/search', { sessionId: session.sessionId, spaceKey: space, query: parentTitle })
+    const parent = found.pages.find(page => page.title === parentTitle)
+    if (!parent) {
+      throw new NotReadyError(`parent page "${parentTitle}" not found in ${space} yet — create it, or set CONFLUENCE_PARENT_PAGE_ID`)
+    }
+    parentPageId = parent.id
+  }
+
+  await connection.sendRequest('settings/save', {
+    workspaceRoot,
+    settings: {
+      version: 1,
+      outputs: [{
+        platform:       'confluence',
+        baseUrl:        session.baseUrl,
+        space,
+        parentPageId,
+        titlePrefix,
+        direction:      'push',
+        content:        [{ type: 'markdown', roots: ['docs'], excludes: [], template: '' }],
+        mermaidMode:    'image',
+        titleCollision: process.env.CONFLUENCE_TITLE_COLLISION || 'adopt',
+        linkMode:       'title',
+      }],
+    },
+  })
+
+  const plan = await connection.sendRequest('sync/plan', { sessionId: session.sessionId, workspaceRoot, output: 0 })
+  summary(`## Lore Master dogfood\n\n**Plan:** ${planCounts(plan)}`)
+  const warnings = plan.warnings ?? []
+  for (const warning of warnings) {
+    summary(`- warning: ${warning}`)
+  }
+  const errors = plan.errors ?? []
+  const conflicts = plan.counts.conflict ?? 0
+  if (errors.length > 0 || conflicts > 0) {
+    for (const error of errors) {
+      summary(`- error: ${error}`)
+    }
+    throw new Error(`the plan has ${errors.length} error(s) and ${conflicts} conflict(s); not syncing`)
+  }
+
+  const result = await connection.sendRequest('sync/execute', { planId: plan.planId, force: false })
+  summary(`\n**Result:**\n${result.pages.map(page => `- ${page.outcome}: ${page.title}${page.error ? ` — ${page.error}` : ''}`).join('\n')}`)
+  const failed = result.pages.filter(page => page.outcome === 'failed')
+  if (failed.length > 0) {
+    throw new Error(`${failed.length} page(s) failed to sync`)
+  }
+}
+
+async function closeQuietly (sessionId) {
   try {
     await connection.sendRequest('session/close', { sessionId })
   } catch {
