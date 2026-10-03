@@ -31,13 +31,15 @@ type ConnectOptions struct {
 
 // SignIn is a credential as an editor collects it. Kind decides which fields are
 // read: "apitoken" reads Email and Token, "pat" reads Token, "basic" reads User and
-// Password.
+// Password, "oauth" reads AccessToken (a token already obtained by the OAuth sign-in and
+// kept in the editor's secret store).
 type SignIn struct {
-	Kind     string
-	Email    string
-	Token    string
-	User     string
-	Password string
+	Kind        string
+	Email       string
+	Token       string
+	User        string
+	Password    string
+	AccessToken string
 }
 
 // Connected is a verified connection.
@@ -155,9 +157,15 @@ func credentialFrom(signIn SignIn) (authentication.Credential, error) {
 		}
 
 		return authentication.Basic{User: signIn.User, Password: signIn.Password}, nil
+	case "oauth":
+		if signIn.AccessToken == "" {
+			return nil, missing("accessToken")
+		}
+
+		return authentication.OAuth{AccessToken: signIn.AccessToken}, nil
 	}
 
-	return nil, fmt.Errorf("the credential kind %q is not one of apitoken, pat or basic", signIn.Kind)
+	return nil, fmt.Errorf("the credential kind %q is not one of apitoken, pat, basic or oauth", signIn.Kind)
 }
 
 // SameSite reports whether two addresses name the same Confluence site once
