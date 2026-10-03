@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"lore-master/apps/lore-master-engine/catalogqueries"
+	"lore-master/apps/lore-master-engine/editiondetect"
 	"lore-master/apps/lore-master-engine/hostbridge"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
@@ -56,16 +57,17 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 	plans := synccommands.NewPlanStore()
 
 	return rpcserver.Methods{
-		rpcprotocol.MethodPing:         rpcserver.Ping(version),
-		rpcprotocol.MethodSessionOpen:  sessionlifecycle.OpenSession(sessions, sessionlifecycle.Environment{Logger: logger}),
-		rpcprotocol.MethodSessionClose: sessionlifecycle.CloseSession(sessions),
-		rpcprotocol.MethodSpaceList:    catalogqueries.ListSpaces(sessions),
-		rpcprotocol.MethodPageChildren: catalogqueries.ListChildren(sessions),
-		rpcprotocol.MethodPageSearch:   catalogqueries.SearchPages(sessions),
-		rpcprotocol.MethodSyncPlan:     synccommands.PlanSync(sessions, plans),
-		rpcprotocol.MethodSyncExecute:  synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout),
-		rpcprotocol.MethodSettingsRead: settingscommands.ReadSettings(),
-		rpcprotocol.MethodSettingsSave: settingscommands.SaveSettings(),
+		rpcprotocol.MethodPing:          rpcserver.Ping(version),
+		rpcprotocol.MethodEditionDetect: editiondetect.DetectEdition(logger),
+		rpcprotocol.MethodSessionOpen:   sessionlifecycle.OpenSession(sessions, sessionlifecycle.Environment{Logger: logger}),
+		rpcprotocol.MethodSessionClose:  sessionlifecycle.CloseSession(sessions),
+		rpcprotocol.MethodSpaceList:     catalogqueries.ListSpaces(sessions),
+		rpcprotocol.MethodPageChildren:  catalogqueries.ListChildren(sessions),
+		rpcprotocol.MethodPageSearch:    catalogqueries.SearchPages(sessions),
+		rpcprotocol.MethodSyncPlan:      synccommands.PlanSync(sessions, plans),
+		rpcprotocol.MethodSyncExecute:   synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout),
+		rpcprotocol.MethodSettingsRead:  settingscommands.ReadSettings(),
+		rpcprotocol.MethodSettingsSave:  settingscommands.SaveSettings(),
 	}
 }
 
