@@ -69,16 +69,17 @@ function publishExtension (manifest, sidecar, dryRun) {
 
     return
   }
+  const entra = process.env.VSCE_AUTH === 'entra'
   const token = process.env.VSCE_PAT ?? ''
-  if (token === '' || /^\$\(.*\)$/.test(token)) {
-    console.log('VSCE_PAT is not set - skipping the Marketplace publish of ' + manifest.name + '. Add it as a CI secret to publish.')
+  if (!entra && (token === '' || /^\$\(.*\)$/.test(token))) {
+    console.log('No Marketplace credential - skipping the Marketplace publish of ' + manifest.name + '. Set the AZURE_CLIENT_ID and AZURE_TENANT_ID variables (Microsoft Entra ID) or the VSCE_PAT secret to publish.')
 
     return
   }
   const files = vsixFiles(project, sidecar)
   const missing = files.filter(file => !existsSync(file))
   if (missing.length > 0) fail('Nothing to publish: ' + missing.join(', ') + ' not found - run the package target first.')
-  run('@vscode/vsce', 'vsce', ['publish', '--packagePath', ...files, '--skip-duplicate'])
+  run('@vscode/vsce', 'vsce', ['publish', ...(entra ? ['--azure-credential'] : []), '--packagePath', ...files, '--skip-duplicate'])
 }
 
 const [command, projectRoot, ...rest] = process.argv.slice(2)
