@@ -72,7 +72,8 @@ func TestServesStdinUntilItEnds(t *testing.T) {
 func TestEveryEditorMethodIsRouted(t *testing.T) {
 	methods := engineMethods(slog.New(slog.NewTextHandler(io.Discard, nil)))
 	for _, method := range []string{
-		rpcprotocol.MethodPing, rpcprotocol.MethodSessionOpen, rpcprotocol.MethodSessionClose,
+		rpcprotocol.MethodPing, rpcprotocol.MethodEditionDetect,
+		rpcprotocol.MethodSessionOpen, rpcprotocol.MethodSessionClose,
 		rpcprotocol.MethodSpaceList, rpcprotocol.MethodPageChildren, rpcprotocol.MethodPageSearch,
 		rpcprotocol.MethodSyncPlan, rpcprotocol.MethodSyncExecute,
 		rpcprotocol.MethodSettingsRead, rpcprotocol.MethodSettingsSave,
@@ -81,7 +82,7 @@ func TestEveryEditorMethodIsRouted(t *testing.T) {
 			t.Errorf("%s has no handler", method)
 		}
 	}
-	if len(methods) != 10 {
+	if len(methods) != 11 {
 		t.Errorf("%d methods routed; update this list when the protocol grows", len(methods))
 	}
 }
