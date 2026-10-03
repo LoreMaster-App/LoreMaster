@@ -40,6 +40,9 @@ export interface EngineClient {
   /** Listens for a server-to-editor notification (e.g. host/progress). The handler is
    *  re-applied across a restart; dispose stops it. */
   onNotification (method: string, handler: (params: unknown) => void): { dispose (): void }
+  /** Answers a server-to-editor request (e.g. host/renderDiagram). The handler is
+   *  re-applied across a restart; dispose stops it. */
+  onRequest (method: string, handler: (params: unknown) => Promise<unknown> | unknown): { dispose (): void }
   /** Kills the engine and closes the connection. Further requests reject. */
   dispose (): void
 }
@@ -70,6 +73,7 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
   let disposed = false
 
   const notificationHandlers = new Map<string, (params: unknown) => void>()
+  const requestHandlers = new Map<string, (params: unknown) => Promise<unknown> | unknown>()
   const liveRegistrations = new Map<string, { dispose (): void }>()
 
   function teardown (victim: MessageConnection): void {
@@ -101,7 +105,10 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
     established.onClose(() => teardown(established))
     established.onError(([error]) => options.onLog?.(`engine connection error: ${error.message}`))
     for (const [method, handler] of notificationHandlers) {
-      liveRegistrations.set(method, established.onNotification(method, params => handler(params as unknown)))
+      liveRegistrations.set(`n:${method}`, established.onNotification(method, params => handler(params as unknown)))
+    }
+    for (const [method, handler] of requestHandlers) {
+      liveRegistrations.set(`r:${method}`, established.onRequest(method, params => handler(params as unknown)))
     }
     established.listen()
 
@@ -137,14 +144,28 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
     onNotification (method, handler) {
       notificationHandlers.set(method, handler)
       if (connection) {
-        liveRegistrations.set(method, connection.onNotification(method, params => handler(params as unknown)))
+        liveRegistrations.set(`n:${method}`, connection.onNotification(method, params => handler(params as unknown)))
       }
 
       return {
         dispose () {
           notificationHandlers.delete(method)
-          liveRegistrations.get(method)?.dispose()
-          liveRegistrations.delete(method)
+          liveRegistrations.get(`n:${method}`)?.dispose()
+          liveRegistrations.delete(`n:${method}`)
+        },
+      }
+    },
+    onRequest (method, handler) {
+      requestHandlers.set(method, handler)
+      if (connection) {
+        liveRegistrations.set(`r:${method}`, connection.onRequest(method, params => handler(params as unknown)))
+      }
+
+      return {
+        dispose () {
+          requestHandlers.delete(method)
+          liveRegistrations.get(`r:${method}`)?.dispose()
+          liveRegistrations.delete(`r:${method}`)
         },
       }
     },

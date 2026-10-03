@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { ADD_CONNECTION_COMMAND, createConnectionUI, setUpConnection } from './connection-setup'
+import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
 import { createConnectionStore } from './secret-storage'
 import { SYNC_CURRENT_FILE_COMMAND, SYNC_WORKSPACE_COMMAND, syncCurrentFile, syncWorkspace } from './sync-command'
@@ -19,6 +20,10 @@ export function activate (context: vscode.ExtensionContext): void {
   const targets = createTargetStore()
   const output = vscode.window.createOutputChannel('Lore Master')
   context.subscriptions.push(output)
+
+  // Answer the engine's host/renderDiagram with a Mermaid webview, for the image mode.
+  const renderer = createMermaidRenderer(context.extensionUri)
+  context.subscriptions.push(renderer, answerRenderDiagrams({ engine, renderer }))
 
   const syncDeps = { engine, connections, targets, output }
 

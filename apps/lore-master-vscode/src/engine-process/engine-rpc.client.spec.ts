@@ -11,6 +11,7 @@ interface FakeEngine {
   stderr:    PassThrough
   crash:     (code?: number) => void
   notify:    (method: string, params: unknown) => void
+  ask:       (method: string, params: unknown) => Promise<unknown>
   wasKilled: () => boolean
 }
 
@@ -52,6 +53,7 @@ function fakeEngine (ping: () => PingResult = () => ({ pong: 'pong', version: 't
     stderr,
     crash:     (code = 1) => { exit(code) },
     notify:    (method, params) => { void engine.sendNotification(method, params) },
+    ask:       (method, params) => engine.sendRequest(method, params),
     wasKilled: () => killed,
   }
 }
@@ -196,6 +198,28 @@ describe('createEngineClient', () => {
     await waitFor(() => seen.length === 2)
 
     expect(seen).toEqual([{ done: 1 }, { done: 2 }])
+    client.dispose()
+  })
+
+  it('answers server requests via onRequest, re-subscribing after a restart', async () => {
+    const engines: FakeEngine[] = []
+    const spawn = jest.fn(() => {
+      const engine = fakeEngine(); engines.push(engine)
+
+      return engine.child
+    })
+    const delay = jest.fn(async () => {})
+    const client = createEngineClient({ binaryPath: '/engine', spawn, delay })
+    client.onRequest('host/renderDiagram', () => ({ svg: '<svg/>' }))
+
+    await client.request(PING_METHOD)
+    expect(await engines[0].ask('host/renderDiagram', { source: 'A-->B' })).toEqual({ svg: '<svg/>' })
+
+    engines[0].crash()
+    await flush()
+    await client.request(PING_METHOD)
+    expect(await engines[1].ask('host/renderDiagram', { source: 'C-->D' })).toEqual({ svg: '<svg/>' })
+
     client.dispose()
   })
 
