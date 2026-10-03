@@ -90,8 +90,9 @@ async function runDogfood () {
 
 async function syncDocs (session) {
   const spaces = await connection.sendRequest('space/list', { sessionId: session.sessionId })
-  if (spaces.spaces.every(each => each.key !== space)) {
-    throw new NotReadyError(`space "${space}" is not visible to this account yet (docs/contributing/confluence-tenant.md)`)
+  const keys = spaces.spaces.map(each => each.key)
+  if (!keys.includes(space)) {
+    throw new NotReadyError(`space "${space}" not among the ${keys.length} visible space(s): [${keys.join(', ')}] — check the key and the token account's access (docs/contributing/confluence-tenant.md)`)
   }
 
   let parentPageId = process.env.CONFLUENCE_PARENT_PAGE_ID
