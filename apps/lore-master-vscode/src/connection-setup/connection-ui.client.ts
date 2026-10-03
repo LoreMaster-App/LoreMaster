@@ -35,8 +35,11 @@ export function createConnectionUI (): ConnectionUI {
 
     async promptCredential (method) {
       if (method === 'oauth') {
-        // OAuth is a browser flow, not a pasted secret; it is not collected here.
-        return
+        // OAuth collects only the admin's incoming-link client id; the browser sign-in that
+        // follows produces the tokens.
+        const clientId = await ask('OAuth client id (from the site admin)')
+
+        return clientId === undefined ? undefined : { kind: 'oauth', clientId } satisfies Credential
       }
       if (method === 'apitoken') {
         const email = await ask('Atlassian account email')

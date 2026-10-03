@@ -18,6 +18,7 @@ export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
+export const HOST_OPEN_EXTERNAL_METHOD = 'host/openExternal'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
 
 // ---- shared vocabulary ---------------------------------------------------------------
@@ -29,13 +30,19 @@ export type Edition = 'cloud' | 'datacenter' | 'server'
 export type CredentialKind = 'apitoken' | 'pat' | 'basic' | 'oauth'
 
 export interface Credential {
-  kind:         CredentialKind
-  email?:       string
-  token?:       string
-  user?:        string
-  password?:    string
+  kind:          CredentialKind
+  email?:        string
+  token?:        string
+  user?:         string
+  password?:     string
   /** For `oauth` (Data Center): an access token the editor holds from an earlier sign-in. */
-  accessToken?: string
+  accessToken?:  string
+  /** For `oauth`: the incoming-link client id, to start a fresh interactive sign-in when
+   *  no access token is held, and to refresh an expired one. */
+  clientId?:     string
+  scope?:        string
+  /** For `oauth`: lets the engine renew an expired access token at open (with clientId). */
+  refreshToken?: string
 }
 
 // ---- ping ----------------------------------------------------------------------------
@@ -77,6 +84,16 @@ export interface SessionOpenResult {
   edition:   Edition
   version?:  string
   user:      SessionUser
+  /** Set only when this open ran an interactive OAuth sign-in: store them in the secret
+   *  store to open later sessions and to refresh. The engine keeps none. */
+  tokens?:   SessionTokens
+}
+
+/** OAuth tokens from an interactive sign-in. */
+export interface SessionTokens {
+  accessToken:   string
+  refreshToken?: string
+  expiresIn?:    number
 }
 
 export interface SessionCloseParams {
@@ -232,6 +249,10 @@ export interface RenderDiagramParams {
 
 export interface RenderDiagramResult {
   svg: string
+}
+
+export interface OpenExternalParams {
+  url: string
 }
 
 export interface CancelParams {
