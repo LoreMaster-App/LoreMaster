@@ -105,10 +105,11 @@ export async function setUpConnection (deps: { engine: EngineRequester; store: C
     displayName: session.user.displayName,
     user:        session.user.username ?? session.user.accountId ?? '',
   }
-  // An interactive OAuth sign-in returns tokens: store the access token, not the client id
-  // that started the flow, so later sessions reuse it instead of signing in every time.
+  // An interactive OAuth sign-in returns tokens: store them (and the client id) so later
+  // sessions reuse the access token and the engine can refresh it, instead of signing in
+  // through the browser every time.
   const stored: Credential = session.tokens
-    ? { kind: 'oauth', accessToken: session.tokens.accessToken }
+    ? { kind: 'oauth', accessToken: session.tokens.accessToken, refreshToken: session.tokens.refreshToken, clientId: credential.clientId }
     : credential
   await store.add(meta, stored)
   await ui.showConnected(meta)

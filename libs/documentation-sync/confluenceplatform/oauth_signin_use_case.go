@@ -2,6 +2,7 @@ package confluenceplatform
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"lore-master/libs/confluence-client/connection"
@@ -48,4 +49,48 @@ func SignInOAuth(ctx context.Context, options OAuthSignInOptions) (OAuthTokens, 
 	}
 
 	return OAuthTokens{AccessToken: tokens.AccessToken, RefreshToken: tokens.RefreshToken, ExpiresIn: tokens.ExpiresIn}, nil
+}
+
+// RefreshOAuthOptions configures renewing an access token from a refresh token.
+type RefreshOAuthOptions struct {
+	BaseURL      string
+	ClientID     string
+	RefreshToken string
+	HTTPClient   *http.Client
+}
+
+// RefreshOAuth renews the access token from the refresh token. A refresh token the
+// provider rejects — revoked or expired — comes back as *ReauthRequired, so the caller can
+// ask the user to sign in again rather than report a plain failure.
+func RefreshOAuth(ctx context.Context, options RefreshOAuthOptions) (OAuthTokens, error) {
+	baseURL, err := connection.NormalizeBaseURL(options.BaseURL)
+	if err != nil {
+		return OAuthTokens{}, &ConnectError{Failure: InvalidAddress, Err: err}
+	}
+	tokens, err := oauthsignin.Refresh(ctx, options.HTTPClient, baseURL, options.ClientID, options.RefreshToken)
+	if err != nil {
+		return OAuthTokens{}, reauthError(err)
+	}
+
+	return OAuthTokens{AccessToken: tokens.AccessToken, RefreshToken: tokens.RefreshToken, ExpiresIn: tokens.ExpiresIn}, nil
+}
+
+// ReauthRequired means an OAuth sign-in can no longer be renewed and must be redone.
+type ReauthRequired struct {
+	Err error
+}
+
+func (e *ReauthRequired) Error() string { return e.Err.Error() }
+
+func (e *ReauthRequired) Unwrap() error { return e.Err }
+
+// reauthError re-wraps the confluence-client's revoked-grant error as this package's, so
+// callers match one type without importing the client's.
+func reauthError(err error) error {
+	var revoked *oauthsignin.ReauthRequired
+	if errors.As(err, &revoked) {
+		return &ReauthRequired{Err: err}
+	}
+
+	return err
 }

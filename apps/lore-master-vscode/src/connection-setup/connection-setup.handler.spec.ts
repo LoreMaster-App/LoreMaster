@@ -112,7 +112,7 @@ describe('setUpConnection', () => {
     await setUpConnection({ engine, store, ui: scriptedUI({ promptCredential: () => Promise.resolve(clientCredential) }) })
 
     expect(store.added).toHaveLength(1)
-    expect(store.added[0].credential).toEqual({ kind: 'oauth', accessToken: 'at-1' })
+    expect(store.added[0].credential).toEqual({ kind: 'oauth', accessToken: 'at-1', refreshToken: 'rt-1', clientId: 'cid' })
   })
 
   it('shows the engine\'s refusal verbatim and stores nothing on a bad credential', async () => {

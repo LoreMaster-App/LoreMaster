@@ -82,6 +82,12 @@ export async function runSync (deps: SyncDeps): Promise<void> {
     return
   }
 
+  // The engine refreshed an expired OAuth token and handed back a renewed pair: re-store it
+  // so the next sync starts from the fresh access token.
+  if (session.tokens) {
+    await connections.add(meta, { kind: 'oauth', accessToken: session.tokens.accessToken, refreshToken: session.tokens.refreshToken ?? credential.refreshToken, clientId: credential.clientId })
+  }
+
   try {
     const output = await resolveOutput({ ...deps, sessionId: session.sessionId, meta })
     if (output === undefined) {

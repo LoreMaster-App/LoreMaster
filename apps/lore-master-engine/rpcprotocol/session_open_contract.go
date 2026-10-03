@@ -27,6 +27,9 @@ type Credential struct {
 	AccessToken string `json:"accessToken,omitempty"`
 	ClientID    string `json:"clientId,omitempty"`
 	Scope       string `json:"scope,omitempty"`
+	// RefreshToken lets the engine renew an expired access token at open (with ClientID),
+	// returning the fresh pair in SessionOpenResult.Tokens.
+	RefreshToken string `json:"refreshToken,omitempty"`
 }
 
 // SessionOpenResult describes the open session.

@@ -30,17 +30,19 @@ export type Edition = 'cloud' | 'datacenter' | 'server'
 export type CredentialKind = 'apitoken' | 'pat' | 'basic' | 'oauth'
 
 export interface Credential {
-  kind:         CredentialKind
-  email?:       string
-  token?:       string
-  user?:        string
-  password?:    string
+  kind:          CredentialKind
+  email?:        string
+  token?:        string
+  user?:         string
+  password?:     string
   /** For `oauth` (Data Center): an access token the editor holds from an earlier sign-in. */
-  accessToken?: string
+  accessToken?:  string
   /** For `oauth`: the incoming-link client id, to start a fresh interactive sign-in when
-   *  no access token is held. */
-  clientId?:    string
-  scope?:       string
+   *  no access token is held, and to refresh an expired one. */
+  clientId?:     string
+  scope?:        string
+  /** For `oauth`: lets the engine renew an expired access token at open (with clientId). */
+  refreshToken?: string
 }
 
 // ---- ping ----------------------------------------------------------------------------

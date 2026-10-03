@@ -224,6 +224,94 @@ func TestOpenRunsTheInteractiveOAuthSignIn(t *testing.T) {
 	}
 }
 
+// refreshSite is a fake Data Center that accepts only freshToken for the current user, and
+// whose token endpoint renews goodRefresh into freshToken but refuses any other refresh
+// token with invalid_grant.
+func refreshSite(t *testing.T, freshToken string, goodRefresh string) *httptest.Server {
+	t.Helper()
+	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/rest/applinks/1.0/manifest":
+			_, _ = w.Write([]byte(`<manifest><typeId>confluence</typeId><version>8.5.4</version></manifest>`))
+		case "/rest/oauth2/latest/token":
+			_ = r.ParseForm()
+			if r.Form.Get("grant_type") != "refresh_token" || r.Form.Get("refresh_token") != goodRefresh {
+				w.WriteHeader(http.StatusBadRequest)
+				_, _ = w.Write([]byte(`{"error":"invalid_grant","error_description":"revoked"}`))
+
+				return
+			}
+			_, _ = w.Write([]byte(`{"access_token":"` + freshToken + `","refresh_token":"rt-new","expires_in":3600}`))
+		case "/rest/api/user/current":
+			if r.Header.Get("Authorization") != "Bearer "+freshToken {
+				w.WriteHeader(http.StatusUnauthorized)
+
+				return
+			}
+			_, _ = w.Write([]byte(`{"type":"known","username":"ada","userKey":"k1","displayName":"Ada Lovelace"}`))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(site.Close)
+
+	return site
+}
+
+func sessionEngine(t *testing.T, site *httptest.Server) (*jsonrpc2.Conn, *logBuffer) {
+	t.Helper()
+	log := &logBuffer{}
+	logger := slog.New(slog.NewTextHandler(log, &slog.HandlerOptions{Level: slog.LevelDebug}))
+	engineEnd, editorEnd := net.Pipe()
+	go func() {
+		_ = rpcserver.Serve(context.Background(), engineEnd, rpcserver.Methods{
+			rpcprotocol.MethodSessionOpen: OpenSession(NewStore(), Environment{HTTPClient: site.Client(), Logger: logger}),
+		}, logger)
+	}()
+	editor := jsonrpc2.NewConn(context.Background(), jsonrpc2.NewBufferedStream(editorEnd, jsonrpc2.VSCodeObjectCodec{}),
+		jsonrpc2.AsyncHandler(jsonrpc2.HandlerWithError(func(context.Context, *jsonrpc2.Conn, *jsonrpc2.Request) (any, error) { return nil, nil })))
+	t.Cleanup(func() { _ = editor.Close() })
+
+	return editor, log
+}
+
+func TestOpenRefreshesAnExpiredOAuthTokenAndRetries(t *testing.T) {
+	const fresh = "access-token-fresh"
+	site := refreshSite(t, fresh, "rt-good")
+	editor, log := sessionEngine(t, site)
+
+	var opened rpcprotocol.SessionOpenResult
+	err := editor.Call(context.Background(), rpcprotocol.MethodSessionOpen, rpcprotocol.SessionOpenParams{
+		BaseURL:    site.URL,
+		Credential: rpcprotocol.Credential{Kind: "oauth", AccessToken: "stale", RefreshToken: "rt-good", ClientID: "cid"},
+	}, &opened)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if opened.User.DisplayName != "Ada Lovelace" || opened.SessionID == "" {
+		t.Fatalf("the stale token is renewed and the session opens: %+v", opened)
+	}
+	if opened.Tokens == nil || opened.Tokens.AccessToken != fresh || opened.Tokens.RefreshToken != "rt-new" {
+		t.Fatalf("the refreshed tokens come back for the editor to re-store: %+v", opened.Tokens)
+	}
+	if strings.Contains(log.String(), fresh) || strings.Contains(log.String(), "rt-good") {
+		t.Fatalf("no token in the log:\n%s", log.String())
+	}
+}
+
+func TestOpenReportsReauthWhenTheRefreshTokenIsRevoked(t *testing.T) {
+	site := refreshSite(t, "whatever", "rt-good")
+	editor, _ := sessionEngine(t, site)
+
+	err := editor.Call(context.Background(), rpcprotocol.MethodSessionOpen, rpcprotocol.SessionOpenParams{
+		BaseURL:    site.URL,
+		Credential: rpcprotocol.Credential{Kind: "oauth", AccessToken: "stale", RefreshToken: "rt-revoked", ClientID: "cid"},
+	}, nil)
+	if code(err) != rpcprotocol.CodeReauthRequired {
+		t.Fatalf("a revoked refresh token asks for re-auth, got code %d: %v", code(err), err)
+	}
+}
+
 func asWire(err error) error {
 	var coded *rpcprotocol.Error
 	if errors.As(err, &coded) {
