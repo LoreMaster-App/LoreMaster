@@ -10,6 +10,7 @@ interface FakeEngine {
   child:     EngineChild
   stderr:    PassThrough
   crash:     (code?: number) => void
+  notify:    (method: string, params: unknown) => void
   wasKilled: () => boolean
 }
 
@@ -50,11 +51,18 @@ function fakeEngine (ping: () => PingResult = () => ({ pong: 'pong', version: 't
     child,
     stderr,
     crash:     (code = 1) => { exit(code) },
+    notify:    (method, params) => { void engine.sendNotification(method, params) },
     wasKilled: () => killed,
   }
 }
 
 const flush = (): Promise<void> => new Promise(resolve => { setImmediate(resolve) })
+
+async function waitFor (predicate: () => boolean): Promise<void> {
+  for (let tries = 0; tries < 100 && !predicate(); tries += 1) {
+    await flush()
+  }
+}
 
 describe('createEngineClient', () => {
   it('starts the engine on the first request and returns its reply', async () => {
@@ -163,6 +171,47 @@ describe('createEngineClient', () => {
 
     expect(engine.wasKilled()).toBe(true)
     await expect(client.request(PING_METHOD)).rejects.toThrow('disposed')
+  })
+
+  it('delivers server notifications to onNotification, and re-subscribes after a restart', async () => {
+    const engines: FakeEngine[] = []
+    const spawn = jest.fn(() => {
+      const engine = fakeEngine(); engines.push(engine)
+
+      return engine.child
+    })
+    const delay = jest.fn(async () => {})
+    const client = createEngineClient({ binaryPath: '/engine', spawn, delay })
+    const seen: unknown[] = []
+    client.onNotification('host/progress', params => { seen.push(params) })
+
+    await client.request(PING_METHOD)
+    engines[0].notify('host/progress', { done: 1 })
+    await waitFor(() => seen.length === 1)
+
+    engines[0].crash()
+    await flush()
+    await client.request(PING_METHOD)
+    engines[1].notify('host/progress', { done: 2 })
+    await waitFor(() => seen.length === 2)
+
+    expect(seen).toEqual([{ done: 1 }, { done: 2 }])
+    client.dispose()
+  })
+
+  it('stops delivering after the subscription is disposed', async () => {
+    const engine = fakeEngine()
+    const client = createEngineClient({ binaryPath: '/engine', spawn: () => engine.child })
+    const seen: unknown[] = []
+    const subscription = client.onNotification('host/progress', params => { seen.push(params) })
+
+    await client.request(PING_METHOD)
+    subscription.dispose()
+    engine.notify('host/progress', { done: 1 })
+    await flush()
+
+    expect(seen).toEqual([])
+    client.dispose()
   })
 
   it('forwards the engine stderr to onLog', async () => {

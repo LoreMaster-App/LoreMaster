@@ -24,9 +24,9 @@ describe('activate', () => {
 
     activate(context)
 
-    expect(contributed).toEqual(['loreMaster.syncWorkspace', 'loreMaster.addConnection'])
+    expect(contributed).toEqual(['loreMaster.syncWorkspace', 'loreMaster.syncCurrentFile', 'loreMaster.addConnection'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
-    // The commands plus the engine client, all disposed on deactivate.
-    expect(context.subscriptions).toHaveLength(contributed.length + 1)
+    // The commands plus the engine client and the output channel, all disposed on deactivate.
+    expect(context.subscriptions).toHaveLength(contributed.length + 2)
   })
 })
