@@ -87,6 +87,25 @@ func TestAFileWithoutAnH1KeepsEveryHeading(t *testing.T) {
 	}
 }
 
+func TestATwoLevelChecklistKeepsTheNestedItems(t *testing.T) {
+	document := parse(t, "doc.md", "- [x] parent\n    - [ ] child\n")
+	converted := ConvertDocument(document, NewWorkspace([]documentparsing.MarkdownDocument{document}, nil))
+
+	tasks, ok := converted.Document.Blocks[0].(platformport.TaskList)
+	if !ok || len(tasks.Items) != 1 {
+		t.Fatalf("want a task list with one item, got %#v", converted.Document.Blocks)
+	}
+	nested, ok := tasks.Items[0].Blocks[0].(platformport.TaskList)
+	if !ok || len(nested.Items) != 1 || nested.Items[0].Done {
+		t.Fatalf("want an unchecked nested task, got %#v", tasks.Items[0].Blocks)
+	}
+	for _, warning := range converted.Warnings {
+		if strings.Contains(warning, "first line of a task item") {
+			t.Fatalf("nested task content was dropped: %q", warning)
+		}
+	}
+}
+
 func TestAnImageAndALinkedFileSharingABaseNameDoNotCollide(t *testing.T) {
 	document := parse(t, "doc.md", "![x](sub/diagram.png)\n\n[d](other/diagram.png)\n")
 	converted := ConvertDocument(document, NewWorkspace([]documentparsing.MarkdownDocument{document}, nil))
@@ -123,6 +142,7 @@ func dumpBlocks(out *strings.Builder, blocks []platformport.Block, indent string
 			fmt.Fprintf(out, "%stasks\n", indent)
 			for _, item := range b.Items {
 				fmt.Fprintf(out, "%s  done=%v %s\n", indent, item.Done, inlineText(item.Inlines))
+				dumpBlocks(out, item.Blocks, indent+"    ")
 			}
 		case platformport.Table:
 			fmt.Fprintf(out, "%stable align=%v\n", indent, b.Align)

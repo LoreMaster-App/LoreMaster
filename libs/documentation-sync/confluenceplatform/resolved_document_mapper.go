@@ -61,7 +61,11 @@ func mapBlock(block platformport.Block) (storageformat.Block, error) {
 			if err != nil {
 				return nil, err
 			}
-			items = append(items, storageformat.TaskItem{Done: item.Done, Inlines: inlines})
+			nested, err := mapBlocks(item.Blocks)
+			if err != nil {
+				return nil, err
+			}
+			items = append(items, storageformat.TaskItem{Done: item.Done, Inlines: inlines, Blocks: nested})
 		}
 
 		return storageformat.TaskList{Items: items}, nil
