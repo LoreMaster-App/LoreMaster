@@ -37,6 +37,9 @@ export interface EngineClientOptions {
 export interface EngineClient {
   /** Calls one engine method, starting (or restarting) the engine if needed. */
   request<R>(method: string, params?: unknown): Promise<R>
+  /** Listens for a server-to-editor notification (e.g. host/progress). The handler is
+   *  re-applied across a restart; dispose stops it. */
+  onNotification (method: string, handler: (params: unknown) => void): { dispose (): void }
   /** Kills the engine and closes the connection. Further requests reject. */
   dispose (): void
 }
@@ -66,6 +69,9 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
   let crashes = 0
   let disposed = false
 
+  const notificationHandlers = new Map<string, (params: unknown) => void>()
+  const liveRegistrations = new Map<string, { dispose (): void }>()
+
   function teardown (victim: MessageConnection): void {
     if (connection !== victim) {
       return
@@ -73,6 +79,7 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
     connection = undefined
     child = undefined
     starting = undefined
+    liveRegistrations.clear()
     crashes += 1
     victim.dispose()
   }
@@ -93,6 +100,9 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
     started.on('exit', () => teardown(established))
     established.onClose(() => teardown(established))
     established.onError(([error]) => options.onLog?.(`engine connection error: ${error.message}`))
+    for (const [method, handler] of notificationHandlers) {
+      liveRegistrations.set(method, established.onNotification(method, params => handler(params as unknown)))
+    }
     established.listen()
 
     connection = established
@@ -123,6 +133,20 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
       crashes = 0
 
       return result
+    },
+    onNotification (method, handler) {
+      notificationHandlers.set(method, handler)
+      if (connection) {
+        liveRegistrations.set(method, connection.onNotification(method, params => handler(params as unknown)))
+      }
+
+      return {
+        dispose () {
+          notificationHandlers.delete(method)
+          liveRegistrations.get(method)?.dispose()
+          liveRegistrations.delete(method)
+        },
+      }
     },
     dispose (): void {
       disposed = true

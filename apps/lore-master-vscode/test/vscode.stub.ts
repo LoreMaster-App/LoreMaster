@@ -31,6 +31,9 @@ export const window = {
   showQuickPick (_items: unknown, _options?: unknown): Promise<unknown> {
     return Promise.resolve(undefined)
   },
+  createOutputChannel (name: string): { name: string; appendLine: () => void; append: () => void; clear: () => void; show: () => void; hide: () => void; dispose: () => void } {
+    return { name, appendLine () {}, append () {}, clear () {}, show () {}, hide () {}, dispose () {} }
+  },
   activeTextEditor: undefined as { document: { uri: unknown } } | undefined,
 }
 

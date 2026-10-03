@@ -24,6 +24,11 @@
         "category": "Lore Master"
       },
       {
+        "command": "loreMaster.syncCurrentFile",
+        "title": "Sync Current File",
+        "category": "Lore Master"
+      },
+      {
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
         "category": "Lore Master"
