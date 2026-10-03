@@ -17,9 +17,10 @@ import (
 // attachments. External links, mail links and same-page anchors need nothing and are
 // not listed.
 type Inventory struct {
-	PageLinks []PageLink
-	Images    []ImageRef
-	Warnings  []string
+	PageLinks   []PageLink
+	Images      []ImageRef
+	LinkedFiles []FileRef
+	Warnings    []string
 }
 
 // PageLink is a link to another Markdown file in the workspace.
@@ -41,7 +42,15 @@ type ImageRef struct {
 	Node ast.Node
 }
 
-// InventoryLinks lists a parsed document's page links and images in document order.
+// FileRef is a link to a local file that is not Markdown (a PDF, a ZIP, …): it becomes
+// an attachment of the page, the same as a local image.
+type FileRef struct {
+	Path documentdiscovery.DocumentPath
+	Node ast.Node
+}
+
+// InventoryLinks lists a parsed document's page links, images and linked files in document
+// order.
 // It is pure: the tree in, the inventory out.
 func InventoryLinks(document MarkdownDocument) Inventory {
 	var inventory Inventory
@@ -60,6 +69,8 @@ func InventoryLinks(document MarkdownDocument) Inventory {
 			}
 			if ok {
 				inventory.PageLinks = append(inventory.PageLinks, PageLink{Target: target, Fragment: fragment, Node: n})
+			} else {
+				inventory.addLinkedFile(base, string(n.Destination), n)
 			}
 		case *ast.Image:
 			inventory.addImage(base, string(n.Destination), n)
@@ -114,6 +125,23 @@ func (inventory *Inventory) addImage(base string, destination string, node ast.N
 	}
 	if ok {
 		inventory.Images = append(inventory.Images, ImageRef{Path: resolved, Node: node})
+	}
+}
+
+// addLinkedFile records a link to a local non-Markdown file so it can be attached. A
+// remote, mail, anchor-only or Markdown target is not one (Markdown is a page link); a
+// target outside the workspace is left for the converter to report as plain text.
+func (inventory *Inventory) addLinkedFile(base string, destination string, node ast.Node) {
+	destination = strings.TrimSpace(destination)
+	if destination == "" || strings.HasPrefix(destination, "#") || IsRemote(destination) {
+		return
+	}
+	target := stripQueryAndFragment(destination)
+	if strings.EqualFold(path.Ext(decoded(target)), ".md") {
+		return
+	}
+	if resolved, ok, _ := resolveLocal(base, target); ok {
+		inventory.LinkedFiles = append(inventory.LinkedFiles, FileRef{Path: resolved, Node: node})
 	}
 }
 

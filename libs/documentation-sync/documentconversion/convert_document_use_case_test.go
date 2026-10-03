@@ -87,6 +87,22 @@ func TestAFileWithoutAnH1KeepsEveryHeading(t *testing.T) {
 	}
 }
 
+func TestAnImageAndALinkedFileSharingABaseNameDoNotCollide(t *testing.T) {
+	document := parse(t, "doc.md", "![x](sub/diagram.png)\n\n[d](other/diagram.png)\n")
+	converted := ConvertDocument(document, NewWorkspace([]documentparsing.MarkdownDocument{document}, nil))
+
+	names := map[string]string{}
+	for _, attachment := range converted.Attachments {
+		names[string(attachment.Path)] = attachment.Filename
+	}
+	if len(converted.Attachments) != 2 {
+		t.Fatalf("want the image and the linked file both attached, got %#v", converted.Attachments)
+	}
+	if names["sub/diagram.png"] == names["other/diagram.png"] {
+		t.Fatalf("the image and the linked file share a name: %v", names)
+	}
+}
+
 func dumpBlocks(out *strings.Builder, blocks []platformport.Block, indent string) {
 	for _, block := range blocks {
 		switch b := block.(type) {

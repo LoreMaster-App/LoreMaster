@@ -128,6 +128,11 @@ func (c *converter) link(n *ast.Link) []platformport.Inline {
 		// inventory has already reported.
 		return text
 	}
+	if file, isFile := c.linkedFiles[n]; isFile {
+		c.used[file.Path] = true
+
+		return []platformport.Inline{platformport.Link{Target: &platformport.AttachmentRef{Filename: c.names[file.Path]}, Inlines: text}}
+	}
 	c.warn("the link to %s points at a local file, which is not synced; it is left as plain text", destination)
 
 	return text

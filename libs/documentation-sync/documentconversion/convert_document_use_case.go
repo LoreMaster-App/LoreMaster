@@ -18,13 +18,14 @@ import (
 func ConvertDocument(document documentparsing.MarkdownDocument, workspace Workspace) Converted {
 	inventory := documentparsing.InventoryLinks(document)
 	c := &converter{
-		document:  document,
-		source:    document.Body,
-		workspace: workspace,
-		pageLinks: map[ast.Node]documentparsing.PageLink{},
-		images:    map[ast.Node][]documentparsing.ImageRef{},
-		names:     map[documentdiscovery.DocumentPath]string{},
-		used:      map[documentdiscovery.DocumentPath]bool{},
+		document:    document,
+		source:      document.Body,
+		workspace:   workspace,
+		pageLinks:   map[ast.Node]documentparsing.PageLink{},
+		images:      map[ast.Node][]documentparsing.ImageRef{},
+		linkedFiles: map[ast.Node]documentparsing.FileRef{},
+		names:       map[documentdiscovery.DocumentPath]string{},
+		used:        map[documentdiscovery.DocumentPath]bool{},
 	}
 	for _, link := range inventory.PageLinks {
 		c.pageLinks[link.Node] = link
@@ -35,6 +36,12 @@ func ConvertDocument(document documentparsing.MarkdownDocument, workspace Worksp
 		if image.Path != "" {
 			local = append(local, image.Path)
 		}
+	}
+	// Linked files share the image naming pool, so an image and a linked file with the
+	// same base name do not collide.
+	for _, file := range inventory.LinkedFiles {
+		c.linkedFiles[file.Node] = file
+		local = append(local, file.Path)
 	}
 	// Names are given over every image so they do not shift when one is commented out;
 	// only the images that reach the page are attached.
@@ -60,15 +67,16 @@ func ConvertDocument(document documentparsing.MarkdownDocument, workspace Worksp
 
 // converter carries one document's lookups while its tree is mapped.
 type converter struct {
-	document  documentparsing.MarkdownDocument
-	source    []byte
-	workspace Workspace
-	pageLinks map[ast.Node]documentparsing.PageLink
-	images    map[ast.Node][]documentparsing.ImageRef
-	names     map[documentdiscovery.DocumentPath]string
-	used      map[documentdiscovery.DocumentPath]bool
-	pages     []documentdiscovery.DocumentPath
-	warnings  []string
+	document    documentparsing.MarkdownDocument
+	source      []byte
+	workspace   Workspace
+	pageLinks   map[ast.Node]documentparsing.PageLink
+	images      map[ast.Node][]documentparsing.ImageRef
+	linkedFiles map[ast.Node]documentparsing.FileRef
+	names       map[documentdiscovery.DocumentPath]string
+	used        map[documentdiscovery.DocumentPath]bool
+	pages       []documentdiscovery.DocumentPath
+	warnings    []string
 }
 
 // linked records a page this one links to.
