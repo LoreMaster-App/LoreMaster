@@ -49,4 +49,7 @@ For the recorded Data Center fixtures (#30), add `CONFLUENCE_DC_BASE_URL` and
   `conflict`**, then executes and prints the report as the job summary.
 - **Annotations are not committed back.** CI uses `adopt` (title-collision) semantics, so
   the engine re-finds each page by its prefixed title on the next run; `docs/` therefore
-  stays annotation-free in git. A re-run on the same commit is all `unchanged`.
+  stays annotation-free in git. A re-run on the same commit is all `adopt`: it creates no
+  duplicates and the content converges, but today it rewrites each page (bumping its
+  Confluence version) rather than reporting `unchanged`, because `adopt` has no
+  content-hash short-circuit yet (#137).
