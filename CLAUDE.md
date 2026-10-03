@@ -30,6 +30,7 @@ Markdown.
 | Mermaid | Default `image`: code macro + SVG attachment rendered by the editor's webview; `code`, `html-macro`, `marketplace-macro` selectable | E6 #7 |
 | Test runner (TS shell) | Jest | #45 |
 | Auth v1 | Cloud: email + API token; DC: PAT; Server: PAT ≥ 7.9 else basic. OAuth is E7 (#8) | `docs/architecture/confluence-editions.md` |
+| Cloud OAuth | **Not shipped**: Cloud stays API-token only (no broker, no user 3LO app). OAuth is DC-only via PKCE (#42). Revisit a broker only post-preview | #41, `docs/architecture/oauth.md` |
 | Monorepo tooling | `@mnci/cli` (Nx), GitHub Actions CI, merge commits only | #45, #50 |
 
 ## Layout
