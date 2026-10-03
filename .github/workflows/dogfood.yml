@@ -1,0 +1,62 @@
+# Dogfood: on push to main, sync this repo's docs/ to Confluence via the engine (#67).
+# It is dormant until the CONFLUENCE_* secrets exist, so main stays green before the tenant
+# is set up (docs/contributing/confluence-tenant.md). It builds its own engine, so it does
+# not depend on the CI workflow's artifacts.
+name: Dogfood
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dogfood:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: gate
+        name: Run only when the Confluence secrets are set
+        env:
+          CONFLUENCE_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
+        run: |
+          if [ -n "$CONFLUENCE_BASE_URL" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No CONFLUENCE_BASE_URL secret — skipping the dogfood sync."
+          fi
+
+      - if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - if: steps.gate.outputs.enabled == 'true'
+        run: npm ci
+        name: Install dependencies (for the JSON-RPC client)
+
+      - if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - if: steps.gate.outputs.enabled == 'true'
+        name: Build the engine
+        run: go build -o lore-master-engine ./apps/lore-master-engine
+
+      - if: steps.gate.outputs.enabled == 'true'
+        name: Sync docs/ to Confluence
+        env:
+          LORE_MASTER_ENGINE_BIN:  ${{ github.workspace }}/lore-master-engine
+          CONFLUENCE_BASE_URL:     ${{ secrets.CONFLUENCE_BASE_URL }}
+          CONFLUENCE_EMAIL:        ${{ secrets.CONFLUENCE_EMAIL }}
+          CONFLUENCE_API_TOKEN:    ${{ secrets.CONFLUENCE_API_TOKEN }}
+          CONFLUENCE_SPACE:          ${{ vars.CONFLUENCE_SPACE }}
+          CONFLUENCE_PARENT_TITLE:   ${{ vars.CONFLUENCE_PARENT_TITLE }}
+          CONFLUENCE_PARENT_PAGE_ID: ${{ vars.CONFLUENCE_PARENT_PAGE_ID }}
+          CONFLUENCE_TITLE_PREFIX:   ${{ vars.CONFLUENCE_TITLE_PREFIX }}
+          CONFLUENCE_TITLE_COLLISION: ${{ vars.CONFLUENCE_TITLE_COLLISION }}
+        run: node tools/ci-sync/sync.mjs
