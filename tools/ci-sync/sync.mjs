@@ -68,7 +68,7 @@ async function runDogfood () {
   let session
   try {
     session = await connection.sendRequest('session/open', { baseUrl, credential: { kind: 'apitoken', email, token } })
-    console.log(`Connected to ${session.baseUrl} (${session.edition}) as ${session.user.displayName}.`)
+    console.log(`Connected to ${session.baseUrl} (${session.edition}) as ${session.user.displayName} [${session.user.accountId ?? session.user.username ?? '?'}].`)
     await syncDocs(session)
 
     return 0
@@ -89,15 +89,19 @@ async function runDogfood () {
 }
 
 async function syncDocs (session) {
+  // space/list can omit a space that is still readable directly, so treat it as a hint,
+  // not a gate: log what it returns, then read the space itself via page/search.
   const spaces = await connection.sendRequest('space/list', { sessionId: session.sessionId })
-  const keys = spaces.spaces.map(each => each.key)
-  if (!keys.includes(space)) {
-    throw new NotReadyError(`space "${space}" not among the ${keys.length} visible space(s): [${keys.join(', ')}] — check the key and the token account's access (docs/contributing/confluence-tenant.md)`)
-  }
+  console.log(`Visible spaces: [${spaces.spaces.map(each => each.key).join(', ')}]`)
 
   let parentPageId = process.env.CONFLUENCE_PARENT_PAGE_ID
   if (!parentPageId) {
-    const found = await connection.sendRequest('page/search', { sessionId: session.sessionId, spaceKey: space, query: parentTitle })
+    let found
+    try {
+      found = await connection.sendRequest('page/search', { sessionId: session.sessionId, spaceKey: space, query: parentTitle })
+    } catch (error) {
+      throw new NotReadyError(`could not read space "${space}" — is the key right and the token account a member? (${error.message})`)
+    }
     const parent = found.pages.find(page => page.title === parentTitle)
     if (!parent) {
       throw new NotReadyError(`parent page "${parentTitle}" not found in ${space} yet — create it, or set CONFLUENCE_PARENT_PAGE_ID`)
