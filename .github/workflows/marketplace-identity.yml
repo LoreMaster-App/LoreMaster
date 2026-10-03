@@ -1,0 +1,29 @@
+# Run by hand from the Actions tab (on main). It signs in to Entra ID as the
+# lore-master-marketplace app through the federated credential, prints the app's
+# Azure DevOps profile ID - the ID the Marketplace publisher's Members page asks
+# for - and then checks whether the app can publish as russoedu.
+name: Marketplace identity
+
+on: workflow_dispatch
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  profile-id:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      # 499b84ac-1321-427f-aa17-267ca6975798 is the fixed resource ID of Azure DevOps,
+      # which the Marketplace authenticates against.
+      - name: Profile ID to add to the publisher's Members, as Contributor
+        run: az rest -u https://app.vssps.visualstudio.com/_apis/profile/profiles/me --resource 499b84ac-1321-427f-aa17-267ca6975798 --query id -o tsv
+
+      - name: Can this identity publish as russoedu?
+        run: npx --yes @vscode/vsce@4.0.0 verify-pat --azure-credential russoedu
