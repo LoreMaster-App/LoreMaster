@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "vscode-jsonrpc": "^9.0.3"
+    "vscode-jsonrpc": "^9.0.3",
+    "mermaid": "^11.12.0"
   },
   "displayName": "Lore Master",
   "publisher": "russoedu",
@@ -91,7 +92,10 @@
               }
             }
           }
-        }
+        },
+        "dependsOn": [
+          "build-webview"
+        ]
       },
       "test": {
         "options": {
@@ -124,6 +128,16 @@
         ],
         "options": {
           "command": "node tools/vscode-extension.cjs publish apps/lore-master-vscode --sidecar lore-master-engine"
+        }
+      },
+      "build-webview": {
+        "executor": "nx:run-commands",
+        "outputs": [
+          "{projectRoot}/src/assets/webview/mermaid.min.js"
+        ],
+        "options": {
+          "cwd": "apps/lore-master-vscode",
+          "command": "node -e \"require('fs').mkdirSync('src/assets/webview',{recursive:true});require('fs').copyFileSync(require.resolve('mermaid/dist/mermaid.min.js'),'src/assets/webview/mermaid.min.js')\""
         }
       }
     },

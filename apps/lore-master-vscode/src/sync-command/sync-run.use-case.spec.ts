@@ -40,6 +40,9 @@ function fakeEngine (routes: Record<string, Route>): FakeEngine {
 
       return { dispose () { progress = undefined } }
     },
+    onRequest () {
+      return { dispose () {} }
+    },
     dispose () {},
   }
 }

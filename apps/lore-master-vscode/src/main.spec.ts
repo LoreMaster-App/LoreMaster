@@ -11,6 +11,7 @@ function fakeContext (): vscode.ExtensionContext {
   return {
     subscriptions: [],
     extensionPath: '/ext',
+    extensionUri:  { fsPath: '/ext' },
     secrets:       { get: async () => undefined, store: async () => {}, delete: async () => {} },
     globalState:   { get: (_key: string, value: unknown) => value, update: async () => {} },
   } as unknown as vscode.ExtensionContext
@@ -26,7 +27,8 @@ describe('activate', () => {
 
     expect(contributed).toEqual(['loreMaster.syncWorkspace', 'loreMaster.syncCurrentFile', 'loreMaster.addConnection'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
-    // The commands plus the engine client and the output channel, all disposed on deactivate.
-    expect(context.subscriptions).toHaveLength(contributed.length + 2)
+    // The commands plus the engine client, output channel, diagram renderer and its
+    // host/renderDiagram subscription — all disposed on deactivate.
+    expect(context.subscriptions).toHaveLength(contributed.length + 4)
   })
 })
