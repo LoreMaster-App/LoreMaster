@@ -29,7 +29,7 @@ func OpenSession(store *Store, environment Environment) rpcserver.Method {
 			BaseURL: params.BaseURL, Edition: params.Edition,
 			SignIn: confluenceplatform.SignIn{
 				Kind: params.Credential.Kind, Email: params.Credential.Email, Token: params.Credential.Token,
-				User: params.Credential.User, Password: params.Credential.Password,
+				User: params.Credential.User, Password: params.Credential.Password, AccessToken: params.Credential.AccessToken,
 			},
 			HTTPClient: environment.HTTPClient, Logger: environment.Logger,
 		})

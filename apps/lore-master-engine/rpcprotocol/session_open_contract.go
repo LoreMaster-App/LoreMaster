@@ -15,13 +15,15 @@ type SessionOpenParams struct {
 
 // Credential is how the user signs in. Kind decides which fields are read:
 // "apitoken" (Cloud) reads Email and Token, "pat" reads Token, "basic" reads User and
-// Password.
+// Password, "oauth" (Data Center) reads AccessToken — a token the editor already holds in
+// its secret store from an earlier OAuth sign-in.
 type Credential struct {
-	Kind     string `json:"kind"`
-	Email    string `json:"email,omitempty"`
-	Token    string `json:"token,omitempty"`
-	User     string `json:"user,omitempty"`
-	Password string `json:"password,omitempty"`
+	Kind        string `json:"kind"`
+	Email       string `json:"email,omitempty"`
+	Token       string `json:"token,omitempty"`
+	User        string `json:"user,omitempty"`
+	Password    string `json:"password,omitempty"`
+	AccessToken string `json:"accessToken,omitempty"`
 }
 
 // SessionOpenResult describes the open session.

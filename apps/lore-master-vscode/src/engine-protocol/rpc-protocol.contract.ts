@@ -26,14 +26,16 @@ export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
 export type Edition = 'cloud' | 'datacenter' | 'server'
 
 /** How a user signs in; `kind` decides which fields are read. */
-export type CredentialKind = 'apitoken' | 'pat' | 'basic'
+export type CredentialKind = 'apitoken' | 'pat' | 'basic' | 'oauth'
 
 export interface Credential {
-  kind:      CredentialKind
-  email?:    string
-  token?:    string
-  user?:     string
-  password?: string
+  kind:         CredentialKind
+  email?:       string
+  token?:       string
+  user?:        string
+  password?:    string
+  /** For `oauth` (Data Center): an access token the editor holds from an earlier sign-in. */
+  accessToken?: string
 }
 
 // ---- ping ----------------------------------------------------------------------------
