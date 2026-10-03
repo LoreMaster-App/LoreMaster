@@ -29,6 +29,11 @@ permissions:
   # Lets the release step push the version tag nx release creates back to main,
   # and (github-only provider) create the GitHub Release itself.
   contents: write
+  # Lets azure/login exchange this job's OIDC token for a Microsoft Entra ID one,
+  # which is how a VS Code extension reaches the Marketplace with no stored secret.
+  # A token minted on a pull request cannot use it: the federated credential is
+  # pinned to refs/heads/main.
+  id-token: write
 
 jobs:
   ci:
@@ -69,7 +74,7 @@ jobs:
       # Fails ONLY on an advisory that has a published fix, at moderate or
       # above; anything upstream has not fixed is printed and passes. See
       # NPM_AUDIT_STEP's remarks for why that split replaced a warn-only step.
-      - run: node -e "const cp=require('node:child_process');const r=cp.spawnSync('npm',['audit','--json'],{encoding:'utf8',shell:process.platform==='win32',maxBuffer:33554432});let d;try{d=JSON.parse(r.stdout)}catch{console.log('npm audit produced no JSON (exit '+r.status+') - not blocking on a broken audit.');process.exit(0)}const all=Object.values(d.vulnerabilities||{});const BLOCK=['critical','high','moderate'];const act=all.filter(v=>v.fixAvailable&&BLOCK.includes(v.severity));const rest=all.filter(v=>!act.includes(v));for(const v of rest)console.log('  note ['+v.severity+'] '+v.name+(v.fixAvailable?' - fix available, below the blocking threshold':' - NO fix available upstream, nothing to do here'));if(act.length===0){console.log('npm audit - '+all.length+' advisory(ies), none actionable at moderate or above.');process.exit(0)}for(const v of act)console.log('  BLOCKING ['+v.severity+'] '+v.name+' - fix available'+(v.fixAvailable&&v.fixAvailable.isSemVerMajor?' (semver-major)':''));console.log('Each has a published fix. Add a targeted overrides entry in package.json rather than npm audit fix --force.');process.exit(1)"
+      - run: node -e "const cp=require('node:child_process');const r=cp.spawnSync('npm',['audit','--json'],{encoding:'utf8',shell:process.platform==='win32',maxBuffer:33554432});let d;try{d=JSON.parse(r.stdout)}catch{console.log('npm audit produced no JSON (exit '+r.status+') - not blocking on a broken audit.');process.exit(0)}const all=Object.values(d.vulnerabilities||{});const BLOCK=['critical','high','moderate'];const major=v=>v.fixAvailable&&typeof v.fixAvailable==='object'&&v.fixAvailable.isSemVerMajor;const act=all.filter(v=>v.fixAvailable&&BLOCK.includes(v.severity)&&!major(v));const rest=all.filter(v=>!act.includes(v));for(const v of rest)console.log('  note ['+v.severity+'] '+v.name+(!v.fixAvailable?' - NO fix available upstream, nothing to do here':major(v)?' - only a semver-major change would remove it (often a parent downgrade), not applied automatically':' - fix available, below the blocking threshold'));if(act.length===0){console.log('npm audit - '+all.length+' advisory(ies), none actionable at moderate or above.');process.exit(0)}for(const v of act)console.log('  BLOCKING ['+v.severity+'] '+v.name+' - fix available');console.log('Each has a published fix. Add a targeted overrides entry in package.json rather than npm audit fix --force.');process.exit(1)"
         name: npm audit (fails on an actionable advisory)
 
       # Installs the fixed Python toolchain (ruff, pytest, build, twine,
@@ -230,6 +235,21 @@ jobs:
       # which is why 'nx release' pushes the tag itself here — see
       # releaseConfig's remarks for why that is safe on this Nx version and
       # why every other provider combination keeps the explicit push step below.
+      # Signs in to Microsoft Entra ID as the Marketplace publishing identity (an
+      # app registration with a federated credential for this repository's main
+      # branch), so the release step publishes VS Code extensions with
+      # 'vsce publish --azure-credential' and no token. Runs only when the
+      # AZURE_CLIENT_ID and AZURE_TENANT_ID repository variables exist and the
+      # workspace has an extension (every one ships a .vscodeignore). No Azure
+      # subscription is needed. Setup: README, 'VS Code extensions'.
+      - uses: azure/login@v3
+        name: Sign in to Microsoft Entra ID (VS Code Marketplace)
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' && vars.AZURE_CLIENT_ID != '' && hashFiles('apps/*/.vscodeignore') != '' }}
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
       - run: node -e "const fs=require('node:fs'),cp=require('node:child_process');const npmCount=fs.globSync('packages/*/package.json').length;const csharpCount=fs.globSync('packages/*/*.csproj').length;const pythonCount=fs.globSync('python-packages/*/pyproject.toml').length;const dartCount=fs.globSync('packages/*/pubspec.yaml').length;const vscodeCount=fs.globSync('apps/*/package.json').filter(p=>{try{return(JSON.parse(fs.readFileSync(p,'utf8')).nx?.tags||[]).includes('type:vscode-extension')}catch{return false}}).length;const hasNpm=npmCount>0;const hasPython=pythonCount>0;const hasCsharp=csharpCount>0;const hasDart=dartCount>0;const hasVscode=vscodeCount>0;if(!hasNpm&&!hasPython&&!hasCsharp&&!hasDart&&!hasVscode){console.log('Nothing to release - skipping.');process.exit(0)}const specifier=process.env.RELEASE_SPECIFIER||'';let releaseCmd='npx nx release --yes';if(specifier){if(!/^(major|minor|patch|\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?)$/.test(specifier)){console.error('RELEASE_SPECIFIER value \''+specifier+'\' is invalid - use major, minor, patch, or an exact version like 1.2.3.');process.exit(1)}const releaseProjectCount=npmCount+csharpCount+pythonCount+dartCount+vscodeCount;if(/^(major|minor|patch)$/.test(specifier)&&releaseProjectCount>1){console.error('RELEASE_SPECIFIER is a keyword (\''+specifier+'\') but this workspace has '+releaseProjectCount+' releasable packages - a keyword under-bumps interdependent packages, because nx computes the dependency-bump pass from a stale cached version. Set RELEASE_SPECIFIER to an exact version instead, or clear it.');process.exit(1)}releaseCmd='npx nx release '+specifier+' --yes'}const env={...process.env};if(hasPython){if(!process.env.PYPI_TOKEN){console.error('This workspace has '+pythonCount+' Python package(s) to publish but PYPI_TOKEN is empty. Add a PyPI API token as a secret named PYPI_TOKEN, or remove the Python packages from release.projects.');process.exit(1)}env.TWINE_USERNAME='__token__';env.TWINE_PASSWORD=process.env.PYPI_TOKEN;env.TWINE_NON_INTERACTIVE='1'}process.exit(cp.spawnSync(releaseCmd,{stdio:'inherit',shell:true,env}).status ?? 1)"
         name: Release — version, tag, publish and GitHub Release (npm + Python + C# + VS Code)
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
@@ -237,7 +257,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
           RELEASE_SPECIFIER: ${{ vars.RELEASE_SPECIFIER }}
-          # A VS Code extension publishes with it; tools/vscode-extension.cjs
-          # skips the Marketplace when it is unset.
+          # A VS Code extension publishes with Entra ID when the sign-in step
+          # above ran (VSCE_AUTH=entra), else with the VSCE_PAT token;
+          # tools/vscode-extension.cjs skips the Marketplace with neither.
+          VSCE_AUTH: ${{ vars.AZURE_CLIENT_ID != '' && 'entra' || '' }}
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

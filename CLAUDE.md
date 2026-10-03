@@ -107,12 +107,19 @@ Debug it with the `lore-master-vscode: debug` launch entry (Extension Developmen
   `mnci doctor` flags the unused `NODE_AUTH_TOKEN` line in `.npmrc`.
 - Every merge to `main` releases the extension: `nx release` versions
   `lore-master-vscode` from conventional commits (it is in scope through its
-  `type:vscode-extension` tag), tags it and creates a GitHub Release. The Marketplace
-  publish skips until a `VSCE_PAT` secret exists (#44).
-- mnci is the published CLI: `npx @mnci/cli@latest upgrade` (≥ 4.12.2, which carries
+  `type:vscode-extension` tag), tags it and creates a GitHub Release. It then
+  publishes to the Marketplace through **Microsoft Entra ID** (no stored secret):
+  the release job signs in with `azure/login` (OIDC, `id-token: write`) as the
+  `lore-master-marketplace` app registration and the script runs
+  `vsce publish --azure-credential` (`VSCE_AUTH=entra`, gated on the
+  `AZURE_CLIENT_ID`/`AZURE_TENANT_ID` repo variables, both set). No `VSCE_PAT`.
+  The identity setup is #44; MoNecromanCi#253 shipped the mnci support in 4.13.0.
+  The extension ships as a **preview** (`"preview": true`) until the sync is real.
+- mnci is the published CLI: `npx @mnci/cli@latest upgrade` (≥ 4.13.0, which carries
   the fixes this workspace was bootstrapped with, MoNecromanCi#227 Go half, #233, #234,
-  #235, #237, the engine's six-platform `build-all`/`package-all`, #226, and the
-  `vscode-extension` kind, #225 #229 #243 #247 #249).
+  #235, #237, the engine's six-platform `build-all`/`package-all`, #226, the
+  `vscode-extension` kind, #225 #229 #243 #247 #249, Entra ID publishing #253, and the
+  audit-gate fix #255).
   `mnci upgrade` on a clean checkout must leave `git status` empty.
 - Before committing: `npm run format`, then `git diff` (mnci-owned files change on
   `mnci upgrade`; review them).

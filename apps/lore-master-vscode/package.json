@@ -5,6 +5,7 @@
   "dependencies": {},
   "displayName": "Lore Master",
   "publisher": "russoedu",
+  "preview": true,
   "engines": {
     "vscode": "^1.140.0"
   },

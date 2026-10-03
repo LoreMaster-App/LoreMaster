@@ -45,8 +45,11 @@ E5 has started. #58 is the skeleton: `mnci add vscode-extension lore-master-vsco
 Master"), one command (`loreMaster.syncWorkspace`), the slice lint on for
 `apps/lore-master-vscode/src`, and one `.vsix` per Marketplace target with the engine in
 `bin/`. Getting there took three more mnci fixes (#247, #249; #243 for the first
-release). The publisher `russoedu` is the #44 proposal; the Marketplace publisher and a
-`VSCE_PAT` secret are still the maintainer's to create.
+release). The publisher `russoedu` is the #44 proposal. Publishing now goes through
+Microsoft Entra ID (OIDC, no `VSCE_PAT`): the `lore-master-marketplace` app registration,
+a federated credential for `main`, and the `AZURE_CLIENT_ID`/`AZURE_TENANT_ID` repo
+variables — all in place — let the release run `vsce publish --azure-credential`
+(MoNecromanCi#253, in mnci 4.13.0). The extension ships as a preview (`"preview": true`).
 
 E4 is built except #57: `apps/lore-master-engine` speaks JSON-RPC 2.0 over stdio
 (`rpcprotocol`, `rpcserver`, #51) and routes sessions (#52), the catalog (#53),
@@ -78,9 +81,9 @@ Done in E0 since: #43 (the repository is `russoedu/LoreMaster`). Still open in E
 
 ## Open decisions (maintainer)
 
-- #44 Marketplace publisher id and publish credential. Blocked: a new Azure DevOps
-  organization (where a PAT comes from) now needs an Azure subscription, and global
-  PATs are reportedly retired on 2026-12-01; see #44 for the options
+- #44 Marketplace publisher id and publish credential — resolved: publisher `russoedu`,
+  and publishing through Microsoft Entra ID (OIDC, no PAT) rather than a `VSCE_PAT`, which
+  sidesteps the retired global PATs and the Azure-DevOps-org requirement (mnci #253)
 - #50 branch protection (merge commits only)
 - #41 Confluence Cloud OAuth: broker / user credentials / API token only
 - #64 which settings live in `contributes.configuration` vs `.lore-master.yaml`
