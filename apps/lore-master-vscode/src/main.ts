@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { ADD_CONNECTION_COMMAND, createConnectionUI, setUpConnection } from './connection-setup'
+import { ADD_CONNECTION_COMMAND, answerOpenExternal, createConnectionUI, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
 import { createConnectionStore } from './secret-storage'
@@ -21,9 +21,14 @@ export function activate (context: vscode.ExtensionContext): void {
   const output = vscode.window.createOutputChannel('Lore Master')
   context.subscriptions.push(output)
 
-  // Answer the engine's host/renderDiagram with a Mermaid webview, for the image mode.
+  // Answer the engine's host/renderDiagram with a Mermaid webview (image mode), and its
+  // host/openExternal by opening the OAuth authorize page in the browser.
   const renderer = createMermaidRenderer(context.extensionUri)
-  context.subscriptions.push(renderer, answerRenderDiagrams({ engine, renderer }))
+  context.subscriptions.push(
+    renderer,
+    answerRenderDiagrams({ engine, renderer }),
+    answerOpenExternal({ engine, open: async url => { await vscode.env.openExternal(vscode.Uri.parse(url)) } }),
+  )
 
   const syncDeps = { engine, connections, targets, output }
 

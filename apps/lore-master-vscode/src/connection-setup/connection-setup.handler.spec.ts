@@ -71,7 +71,7 @@ function engineOf (handlers: Record<string, (params: unknown) => unknown>): Engi
 describe('authMethodsFor', () => {
   it('offers only what each edition accepts', () => {
     expect(authMethodsFor('cloud')).toEqual(['apitoken'])
-    expect(authMethodsFor('datacenter')).toEqual(['pat'])
+    expect(authMethodsFor('datacenter')).toEqual(['pat', 'oauth'])
     expect(authMethodsFor('server')).toEqual(['pat', 'basic'])
   })
 })
@@ -98,6 +98,21 @@ describe('setUpConnection', () => {
     expect(closed).toEqual(['s1']) // the verify session is thrown away
     expect(ui.connected).toHaveLength(1)
     expect(meta?.displayName).toBe('Ed')
+  })
+
+  it('stores the access token, not the client id, after an interactive OAuth sign-in', async () => {
+    const clientCredential: Credential = { kind: 'oauth', clientId: 'cid' }
+    const engine = engineOf({
+      'edition/detect': () => ({ baseUrl: 'https://dc.example', edition: 'datacenter' }),
+      'session/open':   () => ({ ...sessionResult, edition: 'datacenter', tokens: { accessToken: 'at-1', refreshToken: 'rt-1', expiresIn: 3600 } }),
+      'session/close':  () => null,
+    })
+    const store = recordingStore()
+
+    await setUpConnection({ engine, store, ui: scriptedUI({ promptCredential: () => Promise.resolve(clientCredential) }) })
+
+    expect(store.added).toHaveLength(1)
+    expect(store.added[0].credential).toEqual({ kind: 'oauth', accessToken: 'at-1' })
   })
 
   it('shows the engine\'s refusal verbatim and stores nothing on a bad credential', async () => {
