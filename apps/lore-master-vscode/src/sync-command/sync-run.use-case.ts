@@ -202,14 +202,15 @@ function execute (engine: EngineClient, planId: string, force: boolean, ui: Sync
 }
 
 function reportResult (result: SyncExecuteResult, ui: SyncUI): void {
-  const lines = result.pages.map(page => `${page.outcome.padEnd(10)}${page.title}${page.error ? `  — ${page.error}` : ''}`)
+  const pages = result.pages ?? []
+  const lines = pages.map(page => `${page.outcome.padEnd(10)}${page.title}${page.error ? `  — ${page.error}` : ''}`)
   const warnings = result.warnings ?? []
   for (const warning of warnings) {
     lines.push(`warning: ${warning}`)
   }
   ui.report(lines)
-  const failed = result.pages.filter(page => page.outcome === 'failed').length
-  ui.status(failed > 0 ? `Lore Master: synced with ${failed} failure(s)` : `Lore Master: synced ${result.pages.length} page(s)`)
+  const failed = pages.filter(page => page.outcome === 'failed').length
+  ui.status(failed > 0 ? `Lore Master: synced with ${failed} failure(s)` : `Lore Master: synced ${pages.length} page(s)`)
 }
 
 function messageOf (error: unknown): string {

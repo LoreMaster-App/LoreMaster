@@ -12,7 +12,7 @@ export interface PlanPreviewUI {
 
 /** A one-line summary: the non-zero action counts, e.g. "2 create, 1 update". */
 export function summarizePlan (plan: SyncPlanResult): string {
-  const parts = Object.entries(plan.counts)
+  const parts = Object.entries(plan.counts ?? {})
     .filter(([, count]) => count > 0)
     .map(([kind, count]) => `${count} ${kind}`)
 
@@ -21,7 +21,7 @@ export function summarizePlan (plan: SyncPlanResult): string {
 
 /** The plan as lines for the output channel: one per action, then warnings and errors. */
 export function planDetails (plan: SyncPlanResult): string[] {
-  const lines = plan.actions.map(action => {
+  const lines = (plan.actions ?? []).map(action => {
     const where = action.path ? `  (${action.path})` : ''
     const why = action.reason ? `  — ${action.reason}` : ''
 
