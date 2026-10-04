@@ -124,13 +124,19 @@ func (w *remoteWorkspace) sync() (syncplanning.SyncPlan, syncexecution.SyncRepor
 		Now: func() time.Time { return syncedAt },
 	})
 	for _, page := range report.Pages {
-		if page.Annotation != nil {
-			rendered, err := syncannotation.Render(w.files[string(page.Path)], *page.Annotation)
-			if err != nil {
-				w.t.Fatal(err)
-			}
-			w.files[string(page.Path)] = rendered
+		if page.Annotation == nil {
+			continue
 		}
+		var rendered []byte
+		if page.PulledBody != nil {
+			rendered, err = syncannotation.RenderWithBody(w.files[string(page.Path)], *page.Annotation, page.PulledBody)
+		} else {
+			rendered, err = syncannotation.Render(w.files[string(page.Path)], *page.Annotation)
+		}
+		if err != nil {
+			w.t.Fatal(err)
+		}
+		w.files[string(page.Path)] = rendered
 	}
 
 	return plan, report
@@ -219,6 +225,63 @@ func TestEditingAFileUpdatesOnlyItsPageOverHTTP(t *testing.T) {
 
 	if plan, _ := w.sync(); plan.Counts()[syncplanning.Unchanged] != 3 {
 		t.Fatalf("then steady again: %v", plan.Counts())
+	}
+}
+
+func TestATwoWayPullWritesRemoteEditsBackOverHTTP(t *testing.T) {
+	w := newRemoteWorkspace(t, map[string]string{"guide.md": "# Guide\n\nlocal text\n"})
+	w.output.Direction = "two-way"
+	_, first := w.sync()
+	id := first.Pages[0].PageID
+
+	// Someone edits the page on the platform: a new storage body and a newer version.
+	w.fake.editRemotely(id, "<h1>Guide</h1><p>edited on the platform</p>")
+
+	_, second := w.sync()
+	expectOutcomes(t, second, "pulled pull guide.md")
+	if body := string(w.files["guide.md"]); !strings.Contains(body, "edited on the platform") || strings.Contains(body, "local text") {
+		t.Fatalf("the file was not rewritten with the pulled body: %q", body)
+	}
+	if !strings.Contains(string(w.files["guide.md"]), "<!-- lore-master") {
+		t.Fatalf("the annotation was lost on a pull: %q", w.files["guide.md"])
+	}
+	if second.Pages[0].Annotation.Version != w.fake.page(id).version {
+		t.Fatalf("the annotation takes the pulled version: %+v", second.Pages[0].Annotation)
+	}
+
+	// Idempotent: nothing changed on either side, so a third sync leaves the page alone.
+	mutations := w.fake.mutationCount()
+	if plan, _ := w.sync(); plan.Counts()[syncplanning.Unchanged] != 1 {
+		t.Fatalf("a pulled file reads back as unchanged: %v", plan.Counts())
+	}
+	if extra := w.fake.mutationCount() - mutations; extra != 0 {
+		t.Fatalf("a steady re-run after a pull made %d mutating requests", extra)
+	}
+}
+
+func TestATwoWayConflictTouchesNeitherSideOverHTTP(t *testing.T) {
+	w := newRemoteWorkspace(t, map[string]string{"guide.md": "# Guide\n\nlocal text\n"})
+	w.output.Direction = "two-way"
+	_, first := w.sync()
+	id := first.Pages[0].PageID
+
+	// Both sides change: a remote edit and a local edit before the next sync.
+	w.fake.editRemotely(id, "<h1>Guide</h1><p>edited on the platform</p>")
+	w.files["guide.md"] = []byte(string(w.files["guide.md"]) + "\nlocal edit too.\n")
+	fileBefore := string(w.files["guide.md"])
+	remoteVersionBefore := w.fake.page(id).version
+	mutations := w.fake.mutationCount()
+
+	_, report := w.sync()
+	page := report.Pages[0]
+	if page.Outcome != syncexecution.Skipped || page.Planned != syncplanning.Conflict {
+		t.Fatalf("both sides changed, so it is a skipped conflict, got %s %s", page.Outcome, page.Planned)
+	}
+	if string(w.files["guide.md"]) != fileBefore {
+		t.Fatalf("a conflict must not touch the local file")
+	}
+	if w.fake.page(id).version != remoteVersionBefore || w.fake.mutationCount() != mutations {
+		t.Fatalf("a conflict must not touch the remote page")
 	}
 }
 
