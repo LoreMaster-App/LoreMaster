@@ -29,9 +29,7 @@ func WriteAnnotations(workspaceRoot string, report SyncReport) WriteBack {
 		if page.Annotation == nil {
 			continue
 		}
-		for _, warning := range writeAttachments(workspaceRoot, page) {
-			result.Warnings = append(result.Warnings, warning)
-		}
+		result.Warnings = append(result.Warnings, writeAttachments(workspaceRoot, page)...)
 		path := filepath.Join(workspaceRoot, filepath.FromSlash(string(page.Path)))
 		changed, err := writeFile(path, page)
 		switch {
