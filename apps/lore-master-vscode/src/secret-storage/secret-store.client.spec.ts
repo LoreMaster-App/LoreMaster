@@ -17,7 +17,6 @@ function fakeSecrets (): vscode.SecretStorage {
 
       return Promise.resolve()
     },
-    keys:        () => Promise.resolve(Object.keys(store)),
     onDidChange: (() => ({ dispose () {} })) as vscode.SecretStorage['onDidChange'],
   }
 }
