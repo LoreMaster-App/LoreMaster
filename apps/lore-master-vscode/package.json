@@ -102,6 +102,15 @@
           "passWithNoTests": true
         }
       },
+      "test-integration": {
+        "executor": "nx:run-commands",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "command": "node apps/lore-master-vscode/integration/run.js"
+        }
+      },
       "package": {
         "executor": "nx:run-commands",
         "dependsOn": [

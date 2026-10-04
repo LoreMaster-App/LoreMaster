@@ -23,7 +23,8 @@ import mnci from './eslint.config.mnci.mjs'
 // other. An override here survives that; an edit to the package does not.
 export default [
   // The Mermaid bundle is copied here from node_modules at build time (#63); never lint it.
-  { ignores: ['apps/lore-master-vscode/src/assets/**'] },
+  // The integration harness is plain CommonJS that runs in VS Code's test host, not slice code.
+  { ignores: ['apps/lore-master-vscode/src/assets/**', 'apps/lore-master-vscode/integration/**'] },
   // The TypeScript shell is laid out in vertical slices (#47): only main.ts at the
   // root of src, role-suffixed files, one index.ts per slice.
   ...mnci({ verticalSlices: ['apps/lore-master-vscode/src/**/*.ts'] }),
