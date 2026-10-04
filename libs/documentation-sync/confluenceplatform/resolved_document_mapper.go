@@ -183,3 +183,133 @@ func mapInline(inline platformport.Inline) (storageformat.Inline, error) {
 
 	return nil, fmt.Errorf("the Confluence adapter cannot render inline %T", inline)
 }
+
+// fromStorage maps storageformat's document back onto the sync's platform-neutral model, the
+// reverse of toStorage, for the two-way sync pull (#160). storageformat's blocks are a closed
+// set with a neutral counterpart each, so unlike toStorage it cannot meet an unknown node and
+// cannot fail; the parser upstream is where unrecognised storage is flagged.
+func fromStorage(doc storageformat.Document) platformport.Document {
+	return platformport.Document{Blocks: unmapBlocks(doc.Blocks)}
+}
+
+func unmapBlocks(blocks []storageformat.Block) []platformport.Block {
+	out := make([]platformport.Block, 0, len(blocks))
+	for _, block := range blocks {
+		out = append(out, unmapBlock(block))
+	}
+
+	return out
+}
+
+func unmapBlock(block storageformat.Block) platformport.Block {
+	switch b := block.(type) {
+	case storageformat.Paragraph:
+		return platformport.Paragraph{Inlines: unmapInlines(b.Inlines)}
+	case storageformat.Heading:
+		return platformport.Heading{Level: b.Level, Inlines: unmapInlines(b.Inlines)}
+	case storageformat.Blockquote:
+		return platformport.Blockquote{Blocks: unmapBlocks(b.Blocks)}
+	case storageformat.List:
+		items := make([]platformport.ListItem, 0, len(b.Items))
+		for _, item := range b.Items {
+			items = append(items, platformport.ListItem{Blocks: unmapBlocks(item.Blocks)})
+		}
+
+		return platformport.List{Ordered: b.Ordered, Start: b.Start, Items: items}
+	case storageformat.TaskList:
+		items := make([]platformport.TaskItem, 0, len(b.Items))
+		for _, item := range b.Items {
+			items = append(items, platformport.TaskItem{Done: item.Done, Inlines: unmapInlines(item.Inlines), Blocks: unmapBlocks(item.Blocks)})
+		}
+
+		return platformport.TaskList{Items: items}
+	case storageformat.Table:
+		return unmapTable(b)
+	case storageformat.ThematicBreak:
+		return platformport.ThematicBreak{}
+	case storageformat.CodeBlock:
+		return platformport.CodeBlock{Language: b.Language, Code: b.Code}
+	case storageformat.Mermaid:
+		diagram := platformport.Diagram{Language: "mermaid", Source: b.Source}
+		if b.Image != nil {
+			diagram.Image = &platformport.AttachmentRef{Filename: b.Image.Filename}
+		}
+
+		return diagram
+	}
+
+	// Unreachable: storageformat.Block is a closed set, all handled above. A block added there
+	// without a case here fails the round-trip test instead of silently vanishing from a pull.
+	panic(fmt.Sprintf("the Confluence adapter cannot read storage block %T", block))
+}
+
+func unmapTable(table storageformat.Table) platformport.Block {
+	unmapCells := func(cells []storageformat.TableCell) []platformport.TableCell {
+		out := make([]platformport.TableCell, 0, len(cells))
+		for _, cell := range cells {
+			out = append(out, platformport.TableCell{Inlines: unmapInlines(cell.Inlines)})
+		}
+
+		return out
+	}
+	rows := make([][]platformport.TableCell, 0, len(table.Rows))
+	for _, row := range table.Rows {
+		rows = append(rows, unmapCells(row))
+	}
+	align := make([]platformport.Alignment, len(table.Align))
+	for i, a := range table.Align {
+		align[i] = platformport.Alignment(a)
+	}
+
+	return platformport.Table{Header: unmapCells(table.Header), Rows: rows, Align: align}
+}
+
+func unmapInlines(inlines []storageformat.Inline) []platformport.Inline {
+	out := make([]platformport.Inline, 0, len(inlines))
+	for _, inline := range inlines {
+		out = append(out, unmapInline(inline))
+	}
+
+	return out
+}
+
+func unmapInline(inline storageformat.Inline) platformport.Inline {
+	switch n := inline.(type) {
+	case storageformat.Text:
+		return platformport.Text{Value: n.Value}
+	case storageformat.Emphasis:
+		return platformport.Emphasis{Inlines: unmapInlines(n.Inlines)}
+	case storageformat.Strong:
+		return platformport.Strong{Inlines: unmapInlines(n.Inlines)}
+	case storageformat.Strikethrough:
+		return platformport.Strikethrough{Inlines: unmapInlines(n.Inlines)}
+	case storageformat.CodeSpan:
+		return platformport.CodeSpan{Value: n.Value}
+	case storageformat.HardBreak:
+		return platformport.HardBreak{}
+	case storageformat.Image:
+		image := platformport.Image{Alt: n.Alt, Title: n.Title, Width: n.Width}
+		switch source := n.Source.(type) {
+		case *storageformat.AttachmentRef:
+			image.Source = &platformport.AttachmentRef{Filename: source.Filename}
+		case *storageformat.URLRef:
+			image.Source = &platformport.URLRef{URL: source.URL}
+		}
+
+		return image
+	case storageformat.Link:
+		link := platformport.Link{Inlines: unmapInlines(n.Inlines)}
+		switch target := n.Target.(type) {
+		case storageformat.PageLink:
+			link.Target = platformport.PageLink{Title: target.Title, Anchor: target.Anchor, URL: target.URL}
+		case *storageformat.AttachmentRef:
+			link.Target = &platformport.AttachmentRef{Filename: target.Filename}
+		case *storageformat.URLRef:
+			link.Target = &platformport.URLRef{URL: target.URL}
+		}
+
+		return link
+	}
+
+	panic(fmt.Sprintf("the Confluence adapter cannot read storage inline %T", inline))
+}
