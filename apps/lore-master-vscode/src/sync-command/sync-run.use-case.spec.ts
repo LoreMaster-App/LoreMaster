@@ -106,7 +106,7 @@ const configuredOutput = {
   parentPageId:   'home',
   titlePrefix:    'ENG',
   direction:      'to-platform',
-  content:        [{ type: 'markdown', roots: ['.'], template: '' }],
+  content:        [{ type: 'markdown', roots: ['.'], template: 'default' }],
   mermaidMode:    'image',
   titleCollision: 'fail',
   linkMode:       'title',

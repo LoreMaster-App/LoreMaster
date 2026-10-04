@@ -49,7 +49,11 @@ func Validate(settings Settings) error {
 		for j, content := range output.Content {
 			at := fmt.Sprintf("%s.content[%d]", where, j)
 			choose(add, at+".type", content.Type, []string{"markdown"}, map[string]string{"test-results": "#96", "code-docs": "#96"})
-			choose(add, at+".template", content.Template, []string{"default"}, nil)
+			if content.Template != "" {
+				// An empty template means "unspecified", which is the default; only a non-empty,
+				// non-default value is a (reserved) custom template.
+				choose(add, at+".template", content.Template, []string{"default"}, nil)
+			}
 			for _, root := range content.Roots {
 				clean := path.Clean(root)
 				if root == "" || path.IsAbs(root) || clean == ".." || strings.HasPrefix(clean, "../") {
