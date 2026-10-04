@@ -24,6 +24,8 @@ type InMemoryPlatform struct {
 	nextID      int
 	calls       []string
 	attachments map[string]map[string]UploadedFile
+	// attachmentContent holds the bytes uploaded, so a two-way pull can download them back.
+	attachmentContent map[string]map[string][]byte
 }
 
 // StoredPage is a page as the fake keeps it.
@@ -39,7 +41,7 @@ var _ DocumentationPlatform = (*InMemoryPlatform)(nil)
 
 // NewInMemoryPlatform returns an empty platform with the given spaces.
 func NewInMemoryPlatform(spaces ...Space) *InMemoryPlatform {
-	return &InMemoryPlatform{spaces: spaces, pages: map[string]*StoredPage{}, attachments: map[string]map[string]UploadedFile{}}
+	return &InMemoryPlatform{spaces: spaces, pages: map[string]*StoredPage{}, attachments: map[string]map[string]UploadedFile{}, attachmentContent: map[string]map[string][]byte{}}
 }
 
 // SeedPage puts a page on the platform as if someone had made it, and returns its id.
@@ -320,6 +322,40 @@ func (p *InMemoryPlatform) UploadFile(_ context.Context, pageID string, file Fil
 	}
 	uploaded := UploadedFile{ID: "att-" + pageID + "-" + file.Name, Name: file.Name, Hash: hash}
 	files[file.Name] = uploaded
+	if p.attachmentContent[pageID] == nil {
+		p.attachmentContent[pageID] = map[string][]byte{}
+	}
+	p.attachmentContent[pageID][file.Name] = file.Content
 
 	return uploaded, nil
+}
+
+// ListAttachments implements DocumentationPlatform.
+func (p *InMemoryPlatform) ListAttachments(_ context.Context, pageID string) ([]RemoteAttachment, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.log("ListAttachments %s", pageID)
+	if _, ok := p.pages[pageID]; !ok {
+		return nil, &PageNotFoundError{ID: pageID}
+	}
+	out := make([]RemoteAttachment, 0, len(p.attachments[pageID]))
+	for name, file := range p.attachments[pageID] {
+		out = append(out, RemoteAttachment{Filename: name, Hash: file.Hash})
+	}
+	slices.SortFunc(out, func(a, b RemoteAttachment) int { return strings.Compare(a.Filename, b.Filename) })
+
+	return out, nil
+}
+
+// DownloadAttachment implements DocumentationPlatform.
+func (p *InMemoryPlatform) DownloadAttachment(_ context.Context, pageID string, filename string) ([]byte, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.log("DownloadAttachment %s %s", pageID, filename)
+	content, ok := p.attachmentContent[pageID][filename]
+	if !ok {
+		return nil, &PageNotFoundError{ID: pageID + "/" + filename}
+	}
+
+	return content, nil
 }

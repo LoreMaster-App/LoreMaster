@@ -91,6 +91,27 @@ func TestChildrenOfAMissingPageIsNotFound(t *testing.T) {
 	}
 }
 
+func TestListAndDownloadAttachments(t *testing.T) {
+	ctx := context.Background()
+	platform := NewInMemoryPlatform(Space{ID: "1", Key: "ENG"})
+	page, _ := platform.CreatePage(ctx, NewPage{Space: SpaceRef{Key: "ENG"}, Title: "ENG: Doc"})
+	if _, err := platform.UploadFile(ctx, page.ID, File{Name: "photo.png", Content: []byte("PNG")}); err != nil {
+		t.Fatal(err)
+	}
+
+	list, err := platform.ListAttachments(ctx, page.ID)
+	if err != nil || len(list) != 1 || list[0].Filename != "photo.png" || list[0].Hash == "" {
+		t.Fatalf("list %+v, err %v", list, err)
+	}
+	content, err := platform.DownloadAttachment(ctx, page.ID, "photo.png")
+	if err != nil || string(content) != "PNG" {
+		t.Fatalf("content %q, err %v", content, err)
+	}
+	if _, err := platform.DownloadAttachment(ctx, page.ID, "missing.png"); err == nil {
+		t.Fatal("a missing attachment must error")
+	}
+}
+
 func TestGetPageContentReturnsTheStoredBody(t *testing.T) {
 	ctx := context.Background()
 	platform := NewInMemoryPlatform(Space{ID: "1", Key: "ENG"})

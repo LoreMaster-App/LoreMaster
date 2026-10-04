@@ -1,4 +1,4 @@
-package attachmentupload
+package attachments
 
 import (
 	"context"

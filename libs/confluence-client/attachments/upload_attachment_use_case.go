@@ -1,4 +1,4 @@
-package attachmentupload
+package attachments
 
 import (
 	"context"
@@ -24,6 +24,9 @@ type attachmentV1 struct {
 	Extensions struct {
 		Comment string `json:"comment"`
 	} `json:"extensions"`
+	Links struct {
+		Download string `json:"download"`
+	} `json:"_links"`
 }
 
 func (a attachmentV1) comment() string {

@@ -1,4 +1,4 @@
-package attachmentupload
+package attachments
 
 // Attachment is one file on a page.
 type Attachment struct {
@@ -10,6 +10,8 @@ type Attachment struct {
 	// Skipped is true when the page already had this file with this content and
 	// nothing was uploaded.
 	Skipped bool
+	// DownloadPath is the site-relative path to fetch the content, set by ListAttachments.
+	DownloadPath string
 }
 
 // AttachmentInput is a file to upload.
