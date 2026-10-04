@@ -12,12 +12,12 @@ func text(s string) platformport.Text { return platformport.Text{Value: s} }
 
 func render(t *testing.T, doc platformport.Document) (string, []string) {
 	t.Helper()
-	return documentmarkdown.ToMarkdown(doc, nil)
+	return documentmarkdown.ToMarkdown(doc, nil, nil)
 }
 
 func renderWithLinks(t *testing.T, doc platformport.Document, links documentmarkdown.Links) (string, []string) {
 	t.Helper()
-	return documentmarkdown.ToMarkdown(doc, links)
+	return documentmarkdown.ToMarkdown(doc, links, nil)
 }
 
 func TestHeadingsAndParagraph(t *testing.T) {
@@ -325,6 +325,25 @@ func TestImageURLNoTitle(t *testing.T) {
 	}})
 	if md != "![x](https://img/x.png)\n" {
 		t.Fatalf("image URL mismatch: %q", md)
+	}
+}
+
+func TestAttachmentResolvedToLocalPath(t *testing.T) {
+	resolve := func(name string) string {
+		if name == "flow.png" {
+			return "assets/flow.png"
+		}
+
+		return ""
+	}
+	md, _ := documentmarkdown.ToMarkdown(platformport.Document{Blocks: []platformport.Block{
+		platformport.Paragraph{Inlines: []platformport.Inline{
+			platformport.Image{Source: &platformport.AttachmentRef{Filename: "flow.png"}, Alt: "d"},
+			platformport.Link{Target: &platformport.AttachmentRef{Filename: "flow.png"}, Inlines: []platformport.Inline{text("see")}},
+		}},
+	}}, nil, resolve)
+	if md != "![d](assets/flow.png)[see](assets/flow.png)\n" {
+		t.Fatalf("attachment not resolved to its local path: %q", md)
 	}
 }
 

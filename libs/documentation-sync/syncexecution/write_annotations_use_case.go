@@ -2,6 +2,7 @@ package syncexecution
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"lore-master/libs/markdown-workspace/documentdiscovery"
@@ -28,6 +29,7 @@ func WriteAnnotations(workspaceRoot string, report SyncReport) WriteBack {
 		if page.Annotation == nil {
 			continue
 		}
+		result.Warnings = append(result.Warnings, writeAttachments(workspaceRoot, page)...)
 		path := filepath.Join(workspaceRoot, filepath.FromSlash(string(page.Path)))
 		changed, err := writeFile(path, page)
 		switch {
@@ -50,4 +52,23 @@ func writeFile(path string, page PageResult) (bool, error) {
 	}
 
 	return syncannotation.Write(path, *page.Annotation)
+}
+
+// writeAttachments writes a pull's downloaded images into the workspace, creating folders as
+// needed. A file that cannot be written is a warning, never fatal: the page's text still lands.
+func writeAttachments(workspaceRoot string, page PageResult) []string {
+	var warnings []string
+	for _, file := range page.PulledAttachments {
+		target := filepath.Join(workspaceRoot, filepath.FromSlash(string(file.Path)))
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			warnings = append(warnings, fmt.Sprintf("%s: the image %s could not be written (%v)", page.Path, file.Path, err))
+
+			continue
+		}
+		if err := os.WriteFile(target, file.Content, 0o644); err != nil {
+			warnings = append(warnings, fmt.Sprintf("%s: the image %s could not be written (%v)", page.Path, file.Path, err))
+		}
+	}
+
+	return warnings
 }

@@ -28,6 +28,14 @@ type PageResult struct {
 	// PulledBody is the new Markdown body to write below the annotation on a pull; nil
 	// for every other outcome, where the file's body is left as it is.
 	PulledBody []byte `json:"-"`
+	// PulledAttachments are the image files a pull downloaded, to write into the workspace.
+	PulledAttachments []PulledFile `json:"-"`
+}
+
+// PulledFile is one attachment a pull downloaded: its workspace-relative path and content.
+type PulledFile struct {
+	Path    documentdiscovery.DocumentPath
+	Content []byte
 }
 
 // Count is the number of pages with the outcome.
