@@ -31,7 +31,7 @@ const enginePath = required('LORE_MASTER_ENGINE_BIN')
 const space = process.env.CONFLUENCE_DC_SPACE || 'AUT'
 const titlePrefix = process.env.CONFLUENCE_DC_TITLE_PREFIX || 'Lore Master check'
 // A unique H1 so the page never clashes with anything already in the space.
-const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+const stamp = new Date().toISOString().replaceAll(/[:.]/g, '-')
 const h1 = `Sync check ${stamp}`
 
 const engine = spawn(enginePath, [], { stdio: ['pipe', 'pipe', 'inherit'] })
@@ -80,7 +80,7 @@ async function main () {
   await rpc.sendRequest('settings/save', settings(parentPageId))
 
   const plan = await rpc.sendRequest('sync/plan', { sessionId: session.sessionId, workspaceRoot: workspace, output: 0 })
-  if ((plan.errors ?? []).length || (plan.counts.conflict ?? 0)) {
+  if ((plan.errors ?? []).length > 0 || (plan.counts.conflict ?? 0) > 0) {
     throw new Error(`plan has errors/conflicts: ${JSON.stringify(plan.errors)} conflicts=${plan.counts.conflict ?? 0}`)
   }
   const report = await rpc.sendRequest('sync/execute', { planId: plan.planId, force: false })
@@ -103,15 +103,14 @@ async function main () {
   await rpc.sendRequest('session/close', { sessionId: session.sessionId })
 }
 
-main()
-  .then(() => {
-    console.log('DC sync check passed.')
-    cleanup(0)
-  })
-  .catch(error => {
-    console.error('DC sync check failed:', error.message ?? error)
-    cleanup(1)
-  })
+try {
+  await main()
+  console.log('DC sync check passed.')
+  cleanup(0)
+} catch (error) {
+  console.error('DC sync check failed:', error.message ?? error)
+  cleanup(1)
+}
 
 function cleanup (code) {
   try {
