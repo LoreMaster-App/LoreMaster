@@ -37,6 +37,33 @@ export const window = {
   activeTextEditor: undefined as { document: { uri: unknown } } | undefined,
 }
 
+// A minimal EventEmitter matching vscode's: `event` registers a listener, `fire` notifies.
+export class EventEmitter<T> {
+  private listeners: ((event: T) => unknown)[] = []
+
+  event = (listener: (event: T) => unknown): { dispose: () => void } => {
+    this.listeners.push(listener)
+
+    return { dispose: () => { this.listeners = this.listeners.filter(each => each !== listener) } }
+  }
+
+  fire (data: T): void {
+    for (const listener of this.listeners) {
+      listener(data)
+    }
+  }
+
+  dispose (): void {
+    this.listeners = []
+  }
+}
+
+export const authentication = {
+  registerAuthenticationProvider (_id: string, _label: string, _provider: unknown, _options?: unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+}
+
 export const workspace = {
   workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
   getWorkspaceFolder (_uri: unknown): { uri: { fsPath: string } } | undefined {
