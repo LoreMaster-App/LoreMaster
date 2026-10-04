@@ -1,7 +1,7 @@
 # Two-way sync: pull remote edits back, conflict when both sides change
 
-Decided 2026-10-04 for #95 (E10). Enables `direction: two-way`, which is reserved in the
-settings schema and refused until this ships.
+Decided 2026-10-04 for #95 (E10). Enables `direction: two-way`; the settings validator
+accepts it as of #163, wiring the pull through the engine and the VS Code preview.
 
 ## The model
 

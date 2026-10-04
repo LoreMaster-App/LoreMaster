@@ -26,7 +26,7 @@ func Validate(settings Settings) error {
 	for i, output := range settings.Outputs {
 		where := fmt.Sprintf("outputs[%d]", i)
 		choose(add, where+".platform", output.Platform, []string{"confluence"}, nil)
-		choose(add, where+".direction", output.Direction, []string{"to-platform"}, map[string]string{"two-way": "#95"})
+		choose(add, where+".direction", output.Direction, []string{"to-platform", "two-way"}, nil)
 		choose(add, where+".mermaidMode", output.MermaidMode, []string{"image", "code"}, map[string]string{"html-macro": "#40", "marketplace-macro": "#40"})
 		choose(add, where+".titleCollision", output.TitleCollision, []string{"fail", "adopt"}, nil)
 		choose(add, where+".linkMode", output.LinkMode, []string{"title", "id"}, nil)

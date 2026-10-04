@@ -12,8 +12,8 @@ import (
 // it is without looking anything up.
 const newFileHeader = `Lore Master configuration. Commit this file; it never holds a secret
 (the editor keeps credentials in its own secret store).
-Planned values, accepted later: direction two-way (#95), content types
-test-results and code-docs (#96), custom templates (#97).`
+Planned values, accepted later: content types test-results and code-docs (#96),
+custom templates (#97).`
 
 // SaveSettings writes settings back. When the file existed, the new values are merged
 // into its YAML tree, so the author's comments and key order survive; a new file gets

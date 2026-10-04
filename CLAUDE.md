@@ -26,7 +26,7 @@ Markdown.
 | Distribution | No npm packages, no CLI product. Only the VS Code Marketplace (later the Visual Studio Marketplace). The binary ships inside each extension | E5 #6, #65 |
 | Layout | Vertical feature slices in Go **and** TypeScript, even where no lint enforces it | `docs/architecture/vertical-feature-slices.md`, #47 |
 | Page titles | `<titlePrefix>: <H1>`; prefix asked once at first sync, default = selected parent page's title | E3 #4 |
-| Config file | `.lore-master.yaml` (YAML for readability; `version`, `outputs[]` with platform, location, `direction`, `content[]` types, `template`). Reserved values (two-way, other content types, templates) are in the schema but refused until built | #92, #32; #95 #96 #97 |
+| Config file | `.lore-master.yaml` (YAML for readability; `version`, `outputs[]` with platform, location, `direction`, `content[]` types, `template`). `direction: two-way` is accepted (#163); still-reserved values (other content types, templates) are in the schema but refused until built | #92, #32; #95 #96 #97 |
 | Mermaid | Default `image`: code macro + SVG attachment rendered by the editor's webview; `code`, `html-macro`, `marketplace-macro` selectable | E6 #7 |
 | Test runner (TS shell) | Jest | #45 |
 | Auth v1 | Cloud: email + API token; DC: PAT; Server: PAT ≥ 7.9 else basic. OAuth is E7 (#8) | `docs/architecture/confluence-editions.md` |

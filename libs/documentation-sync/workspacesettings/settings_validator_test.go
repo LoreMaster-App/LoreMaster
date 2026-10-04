@@ -15,6 +15,11 @@ func TestValidate(t *testing.T) {
 	if err := Validate(valid()); err != nil {
 		t.Fatalf("valid settings refused: %v", err)
 	}
+	twoWay := valid()
+	twoWay.Outputs[0].Direction = "two-way"
+	if err := Validate(twoWay); err != nil {
+		t.Fatalf("two-way direction refused: %v", err)
+	}
 	cases := []struct {
 		name   string
 		change func(*Settings)
@@ -23,7 +28,7 @@ func TestValidate(t *testing.T) {
 		{"future version", func(s *Settings) { s.Version = 2 }, "version 2 is not supported; this version of Lore Master reads version 1"},
 		{"no outputs", func(s *Settings) { s.Outputs = nil }, "outputs is empty; add at least one output"},
 		{"unknown platform", func(s *Settings) { s.Outputs[0].Platform = "notion" }, `outputs[0].platform "notion" is not one of confluence`},
-		{"two-way reserved", func(s *Settings) { s.Outputs[0].Direction = "two-way" }, `outputs[0].direction "two-way" is planned but not available yet (#95); use to-platform`},
+		{"bad direction", func(s *Settings) { s.Outputs[0].Direction = "sideways" }, `outputs[0].direction "sideways" is not one of to-platform, two-way`},
 		{"html macro reserved", func(s *Settings) { s.Outputs[0].MermaidMode = "html-macro" }, `outputs[0].mermaidMode "html-macro" is planned but not available yet (#40); use image or code`},
 		{"test results reserved", func(s *Settings) { s.Outputs[0].Content[0].Type = "test-results" }, `outputs[0].content[0].type "test-results" is planned but not available yet (#96); use markdown`},
 		{"custom template reserved", func(s *Settings) { s.Outputs[0].Content[0].Template = "fancy" }, `outputs[0].content[0].template "fancy": custom templates are planned but not available yet (#97); use default`},

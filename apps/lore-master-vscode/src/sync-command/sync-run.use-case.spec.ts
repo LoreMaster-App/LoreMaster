@@ -105,7 +105,7 @@ const configuredOutput = {
   space:          'ENG',
   parentPageId:   'home',
   titlePrefix:    'ENG',
-  direction:      'push',
+  direction:      'to-platform',
   content:        [{ type: 'markdown', roots: ['.'], template: '' }],
   mermaidMode:    'image',
   titleCollision: 'fail',

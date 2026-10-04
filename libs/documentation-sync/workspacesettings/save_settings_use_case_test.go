@@ -92,7 +92,7 @@ func TestSavingRefusesInvalidSettings(t *testing.T) {
 	root := workspaceWith(t, "")
 	loaded, _ := LoadSettings(root)
 	settings := loaded.Settings
-	settings.Outputs[0].Direction = "two-way"
+	settings.Outputs[0].Direction = "sideways"
 	if err := SaveSettings(loaded, settings); err == nil {
 		t.Fatal("expected an error")
 	}
