@@ -192,6 +192,7 @@ func (run *execution) pull(ctx context.Context, action syncplanning.Action, resu
 
 		return result
 	}
+	content.Body = run.recoverDiagrams(ctx, action, content.Body)
 	local := run.attachmentPaths(action.Path, referencedAttachments(content.Body))
 	resolve := func(name string) string {
 		if target, ok := local[name]; ok {
@@ -215,6 +216,39 @@ func (run *execution) pull(ctx context.Context, action syncplanning.Action, resu
 	result.Annotation = run.pulledAnnotation(action, content.Version, []byte(markdown), hashes)
 
 	return result
+}
+
+// recoverDiagrams turns a top-level paragraph that holds only an SVG attachment back into a
+// Mermaid diagram when that SVG carries the embedded source — the fallback for a page whose code
+// macro (the source's primary carrier, marked in #177) was removed on the platform. It downloads
+// only SVGs, and only those not already recognised as diagrams by the parser, so the common path
+// (code macro present) fetches nothing.
+func (run *execution) recoverDiagrams(ctx context.Context, action syncplanning.Action, doc platformport.Document) platformport.Document {
+	blocks := make([]platformport.Block, len(doc.Blocks))
+	copy(blocks, doc.Blocks)
+	for i, block := range blocks {
+		para, ok := block.(platformport.Paragraph)
+		if !ok || len(para.Inlines) != 1 {
+			continue
+		}
+		image, ok := para.Inlines[0].(platformport.Image)
+		if !ok {
+			continue
+		}
+		ref, ok := image.Source.(*platformport.AttachmentRef)
+		if !ok || !strings.HasSuffix(strings.ToLower(ref.Filename), ".svg") {
+			continue
+		}
+		svg, err := run.platform.DownloadAttachment(ctx, action.PageID, ref.Filename)
+		if err != nil {
+			continue
+		}
+		if source, ok := extractMermaidSource(svg); ok {
+			blocks[i] = platformport.Diagram{Language: "mermaid", Source: source}
+		}
+	}
+
+	return platformport.Document{Blocks: blocks}
 }
 
 // attachmentPaths decides where each attachment a pulled page shows lives: a file the page
@@ -537,7 +571,7 @@ func (run *execution) renderDiagrams(ctx context.Context, documentPath documentd
 
 			continue
 		}
-		diagrams[source] = renderedDiagram{name: "mermaid-" + attachmentHash([]byte(source))[len("sha256:"):][:12] + ".svg", svg: svg}
+		diagrams[source] = renderedDiagram{name: "mermaid-" + attachmentHash([]byte(source))[len("sha256:"):][:12] + ".svg", svg: injectMermaidSource(svg, source)}
 	}
 
 	return diagrams
