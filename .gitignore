@@ -56,3 +56,5 @@ test-output
 
 # VS Code extension-host integration tests download a VS Code build here.
 .vscode-test/
+
+apps/lore-master-vscode/bin/

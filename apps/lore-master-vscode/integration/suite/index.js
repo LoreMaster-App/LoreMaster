@@ -6,6 +6,7 @@ const Mocha = require('mocha')
 function run () {
   const mocha = new Mocha({ ui: 'tdd', color: false, timeout: 60_000 })
   mocha.addFile(path.resolve(__dirname, 'host-checks.js'))
+  mocha.addFile(path.resolve(__dirname, 'connection-flow.js'))
 
   return new Promise((resolve, reject) => {
     try {
