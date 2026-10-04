@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { ADD_CONNECTION_COMMAND, answerOpenExternal, createConnectionUI, setUpConnection } from './connection-setup'
+import { ADD_CONNECTION_COMMAND, answerOpenExternal, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
 import { createConnectionStore } from './secret-storage'
@@ -21,13 +21,16 @@ export function activate (context: vscode.ExtensionContext): void {
   const output = vscode.window.createOutputChannel('Lore Master')
   context.subscriptions.push(output)
 
-  // Answer the engine's host/renderDiagram with a Mermaid webview (image mode), and its
-  // host/openExternal by opening the OAuth authorize page in the browser.
+  // Answer the engine's host/renderDiagram with a Mermaid webview (image mode) and its
+  // host/openExternal by opening the OAuth page in the browser; and surface Confluence
+  // connections in VS Code's Accounts menu (sign in, see the account, sign out), bridged to
+  // the same connection store the commands use.
   const renderer = createMermaidRenderer(context.extensionUri)
   context.subscriptions.push(
     renderer,
     answerRenderDiagrams({ engine, renderer }),
     answerOpenExternal({ engine, open: async url => { await vscode.env.openExternal(vscode.Uri.parse(url)) } }),
+    registerConfluenceAuth({ store: connections, signIn: () => setUpConnection({ engine, store: connections, ui: createConnectionUI() }) }),
   )
 
   const syncDeps = { engine, connections, targets, output }

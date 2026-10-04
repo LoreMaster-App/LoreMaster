@@ -28,8 +28,8 @@ describe('activate', () => {
     expect(contributed).toEqual(['loreMaster.syncWorkspace', 'loreMaster.syncCurrentFile', 'loreMaster.addConnection'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
     // The commands plus the engine client, output channel, diagram renderer, its
-    // host/renderDiagram subscription and the host/openExternal subscription — all disposed
-    // on deactivate.
-    expect(context.subscriptions).toHaveLength(contributed.length + 5)
+    // host/renderDiagram subscription, the host/openExternal subscription and the Confluence
+    // authentication provider — all disposed on deactivate.
+    expect(context.subscriptions).toHaveLength(contributed.length + 6)
   })
 })
