@@ -112,7 +112,11 @@ func TestTheEditorDrawsAndHearsProgress(t *testing.T) {
 		got := append([]rpcprotocol.ProgressParams(nil), side.progress...)
 		side.mu.Unlock()
 		if len(got) == 2 {
-			if got[0] != (rpcprotocol.ProgressParams{PlanID: "plan-7", Message: "written: ENG: Home", Done: 1, Total: 2}) || got[1].Done != 2 {
+			// The editor handles notifications asynchronously, so the two may be recorded in
+			// either order; assert both arrived with their content, not their arrival order.
+			byMessage := map[string]rpcprotocol.ProgressParams{got[0].Message: got[0], got[1].Message: got[1]}
+			if byMessage["written: ENG: Home"] != (rpcprotocol.ProgressParams{PlanID: "plan-7", Message: "written: ENG: Home", Done: 1, Total: 2}) ||
+				byMessage["unchanged: ENG: Guide"] != (rpcprotocol.ProgressParams{PlanID: "plan-7", Message: "unchanged: ENG: Guide", Done: 2, Total: 2}) {
 				t.Fatalf("%+v", got)
 			}
 
