@@ -147,6 +147,13 @@ func (run *execution) execute(ctx context.Context, action syncplanning.Action) P
 
 			return result
 		}
+	case syncplanning.Pull:
+		// Two-way pull writes the remote body back into the file; that path is #162. Until it
+		// lands, guard against falling through to write(), which would push local content over
+		// the newer remote — the exact opposite of a pull. Report it, touching neither side.
+		result.Outcome = Reported
+
+		return result
 	case syncplanning.Orphan:
 		if !run.input.Options.Prune {
 			result.Outcome = Reported

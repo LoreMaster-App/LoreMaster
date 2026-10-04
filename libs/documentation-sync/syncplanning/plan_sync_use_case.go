@@ -208,9 +208,13 @@ func (run *planner) planDocument(node *documenttree.TreeNode) (Action, string, s
 	action.Kind, action.Changes = detectChange(
 		remoteState{annotationVersion: annotation.Version, annotationHash: annotation.ContentHash, remoteVersion: remote.Version, remoteParentID: remote.ParentID, remoteTitle: remote.Title},
 		localState{contentHash: action.ContentHash, title: action.Title, parentPageID: action.ParentPageID, renderedChanged: renderedChanged},
+		output.Direction == "two-way",
 	)
-	if action.Kind == Conflict {
+	switch action.Kind {
+	case Conflict:
 		action.Reason = fmt.Sprintf("the page was edited on the platform after the last sync (version %d, synced at %d); it was left alone", remote.Version, annotation.Version)
+	case Pull:
+		action.Reason = fmt.Sprintf("the page was edited on the platform (version %d) and the file is unchanged since the last sync; its body will be pulled back", remote.Version)
 	}
 
 	return action, "", "", nil

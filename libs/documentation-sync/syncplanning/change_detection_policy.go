@@ -23,17 +23,30 @@ type localState struct {
 	renderedChanged bool
 }
 
-// detectChange decides an annotated page's action. A remote version newer than the
-// one recorded at the last sync means someone edited the page: it is a conflict and
-// nothing else is considered, so their edit is never overwritten. Otherwise every
-// difference is collected, and the kind names the most significant: a body change is
-// an update, a new parent a move, a new title a rename; none is unchanged.
-func detectChange(remote remoteState, local localState) (ActionKind, []Change) {
+// detectChange decides an annotated page's action by reconciling two signals: the
+// remote changed when its version is newer than the one recorded at the last sync, and
+// the file changed when its content hash differs (or what the page renders beyond the
+// Markdown moved). The remote-changed case depends on direction:
+//
+//   - one-way (push): a remote change is always a conflict, left alone so the remote
+//     edit is never overwritten;
+//   - two-way: a remote change with the file unchanged is pulled back; with the file
+//     also changed it is a conflict (no merge, by decision in two-way-sync.md).
+//
+// When the remote did not change, every difference is collected and the kind names the
+// most significant: a body change is an update, a new parent a move, a new title a
+// rename; none is unchanged — the same in both directions.
+func detectChange(remote remoteState, local localState, twoWay bool) (ActionKind, []Change) {
+	localContentChanged := local.contentHash != remote.annotationHash || local.renderedChanged
 	if remote.remoteVersion > remote.annotationVersion {
+		if twoWay && !localContentChanged {
+			return Pull, []Change{ChangeContent}
+		}
+
 		return Conflict, nil
 	}
 	var changes []Change
-	if local.contentHash != remote.annotationHash || local.renderedChanged {
+	if localContentChanged {
 		changes = append(changes, ChangeContent)
 	}
 	if local.parentPageID == "" || local.parentPageID != remote.remoteParentID {
