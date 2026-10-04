@@ -20,6 +20,11 @@ func TestValidate(t *testing.T) {
 	if err := Validate(twoWay); err != nil {
 		t.Fatalf("two-way direction refused: %v", err)
 	}
+	blankTemplate := valid()
+	blankTemplate.Outputs[0].Content[0].Template = ""
+	if err := Validate(blankTemplate); err != nil {
+		t.Fatalf("an empty template (meaning default) was refused: %v", err)
+	}
 	cases := []struct {
 		name   string
 		change func(*Settings)
