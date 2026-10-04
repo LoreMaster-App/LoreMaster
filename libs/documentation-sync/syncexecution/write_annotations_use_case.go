@@ -18,17 +18,18 @@ type WriteBack struct {
 }
 
 // WriteAnnotations writes each written page's annotation into its file under
-// workspaceRoot. Only those files are opened, and one whose annotation already says
-// the same is left untouched, so after a sync git shows exactly what synced. A file
-// that cannot be written is reported, never fatal: the page is on the platform
-// already.
+// workspaceRoot, and for a pulled page replaces the body below the annotation with the
+// one pulled from the platform. Only those files are opened, and one that would be
+// identical is left untouched, so after a sync git shows exactly what synced. A file
+// that cannot be written is reported, never fatal: the page is on the platform already.
 func WriteAnnotations(workspaceRoot string, report SyncReport) WriteBack {
 	var result WriteBack
 	for _, page := range report.Pages {
 		if page.Annotation == nil {
 			continue
 		}
-		changed, err := syncannotation.Write(filepath.Join(workspaceRoot, filepath.FromSlash(string(page.Path))), *page.Annotation)
+		path := filepath.Join(workspaceRoot, filepath.FromSlash(string(page.Path)))
+		changed, err := writeFile(path, page)
 		switch {
 		case err != nil:
 			result.Warnings = append(result.Warnings, fmt.Sprintf(
@@ -40,4 +41,13 @@ func WriteAnnotations(workspaceRoot string, report SyncReport) WriteBack {
 	}
 
 	return result
+}
+
+// writeFile updates a file's annotation, and — on a pull — the body below it too.
+func writeFile(path string, page PageResult) (bool, error) {
+	if page.PulledBody != nil {
+		return syncannotation.WriteWithBody(path, *page.Annotation, page.PulledBody)
+	}
+
+	return syncannotation.Write(path, *page.Annotation)
 }

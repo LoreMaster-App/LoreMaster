@@ -106,16 +106,92 @@ func (w *workspace) sync() (syncplanning.SyncPlan, SyncReport) {
 		Now: func() time.Time { return time.Date(2026, 10, 2, 12, 0, 0, 0, time.UTC) },
 	})
 	for _, page := range report.Pages {
-		if page.Annotation != nil {
-			rendered, err := syncannotation.Render(w.files[string(page.Path)], *page.Annotation)
-			if err != nil {
-				w.t.Fatal(err)
-			}
-			w.files[string(page.Path)] = rendered
+		if page.Annotation == nil {
+			continue
 		}
+		var rendered []byte
+		if page.PulledBody != nil {
+			rendered, err = syncannotation.RenderWithBody(w.files[string(page.Path)], *page.Annotation, page.PulledBody)
+		} else {
+			rendered, err = syncannotation.Render(w.files[string(page.Path)], *page.Annotation)
+		}
+		if err != nil {
+			w.t.Fatal(err)
+		}
+		w.files[string(page.Path)] = rendered
 	}
 
 	return plan, report
+}
+
+func (w *workspace) result(report SyncReport, path string) PageResult {
+	w.t.Helper()
+	for _, page := range report.Pages {
+		if string(page.Path) == path {
+			return page
+		}
+	}
+	w.t.Fatalf("no result for %s", path)
+
+	return PageResult{}
+}
+
+func TestTwoWayPullWritesTheRemoteBodyIntoTheFile(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\nold local text\n"})
+	w.output.Direction = "two-way"
+	_, first := w.sync()
+	id := w.result(first, "guide.md").PageID
+
+	// Someone edits the page on the platform: a new body and a newer version.
+	page := w.fake.Page(id)
+	page.Body = platformport.Document{Blocks: []platformport.Block{
+		platformport.Heading{Level: 1, Inlines: []platformport.Inline{platformport.Text{Value: "Guide"}}},
+		platformport.Paragraph{Inlines: []platformport.Inline{platformport.Text{Value: "new text from the platform"}}},
+	}}
+	page.Version++
+
+	_, second := w.sync()
+	guide := w.result(second, "guide.md")
+	if guide.Outcome != Pulled || guide.Version != page.Version {
+		t.Fatalf("outcome %s version %d", guide.Outcome, guide.Version)
+	}
+	body := string(w.files["guide.md"])
+	if !strings.Contains(body, "new text from the platform") || strings.Contains(body, "old local text") {
+		t.Fatalf("the file was not rewritten with the pulled body: %q", body)
+	}
+	if !strings.Contains(body, "<!-- lore-master") {
+		t.Fatalf("the annotation was lost on a pull: %q", body)
+	}
+
+	// Idempotent: nothing changed on either side, so a third sync leaves the page alone.
+	_, third := w.sync()
+	if got := w.result(third, "guide.md").Outcome; got != Unchanged {
+		t.Fatalf("a pulled file should read back as unchanged, got %s", got)
+	}
+}
+
+func TestTwoWayPullLeavesAnUnconvertiblePageAlone(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\nkeep me\n"})
+	w.output.Direction = "two-way"
+	_, first := w.sync()
+	id := w.result(first, "guide.md").PageID
+
+	// A remote edit whose body links to a page no file owns: the serializer cannot resolve it
+	// and flags the conversion, so the pull must leave the file untouched.
+	page := w.fake.Page(id)
+	page.Body = platformport.Document{Blocks: []platformport.Block{platformport.Paragraph{Inlines: []platformport.Inline{
+		platformport.Link{Target: platformport.PageLink{Title: "Nonexistent"}, Inlines: []platformport.Inline{platformport.Text{Value: "x"}}},
+	}}}}
+	page.Version++
+
+	_, second := w.sync()
+	guide := w.result(second, "guide.md")
+	if guide.Outcome != Skipped || guide.PulledBody != nil || !strings.Contains(guide.Error, "does not convert") {
+		t.Fatalf("outcome %s error %q", guide.Outcome, guide.Error)
+	}
+	if !strings.Contains(string(w.files["guide.md"]), "keep me") {
+		t.Fatalf("an unconvertible pull must not clobber the file: %q", w.files["guide.md"])
+	}
 }
 
 func outcomes(report SyncReport) []string {

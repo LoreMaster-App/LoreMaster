@@ -15,6 +15,9 @@ type FileReader func(path documentdiscovery.DocumentPath) ([]byte, error)
 type Prepared struct {
 	Pages    map[documentdiscovery.DocumentPath]PreparedPage
 	Warnings []string
+	// Workspace resolves links and images across the documents; a two-way pull reuses it
+	// to prepare the body it pulled exactly as the next sync would.
+	Workspace documentconversion.Workspace
 }
 
 // PreparedPage is one document ready to write.

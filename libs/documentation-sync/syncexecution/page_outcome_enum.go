@@ -9,6 +9,8 @@ const (
 	Written Outcome = "written"
 	// Unchanged: nothing needed doing.
 	Unchanged Outcome = "unchanged"
+	// Pulled: the page's newer body was written back into the file (two-way sync).
+	Pulled Outcome = "pulled"
 	// Skipped: a conflict not forced, or a page whose parent could not be written.
 	Skipped Outcome = "skipped"
 	// Reported: an orphan left alone because prune was not asked for.
