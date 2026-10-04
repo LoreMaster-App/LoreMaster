@@ -430,6 +430,10 @@ func (p *parser) inlineInto(e *element, out *[]Inline) {
 		*out = append(*out, HardBreak{})
 	case "a":
 		*out = append(*out, Link{Target: &URLRef{URL: attr(e, "", "href")}, Inlines: p.inlines(e)})
+	case "p":
+		// Confluence's editor wraps table-cell content in <p>; it is a benign wrapper, not a
+		// lossy construct, so unwrap it transparently rather than flagging it.
+		*out = append(*out, p.inlines(e)...)
 	default:
 		p.flag("an unknown inline <%s> was unwrapped", displayName(e))
 		*out = append(*out, p.inlines(e)...)

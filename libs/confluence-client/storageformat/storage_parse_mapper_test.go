@@ -160,6 +160,24 @@ func TestParseTightAndLooseListItems(t *testing.T) {
 	}
 }
 
+func TestParseConfluenceTableWithParagraphWrappedCells(t *testing.T) {
+	// Confluence's editor wraps each cell's content in <p>; that must not flag or skip the pull.
+	doc, flags, err := Parse(`<table><tbody><tr><th><p>Name</p></th><th><p>Qty</p></th></tr><tr><td><p>Widget</p></td><td><p>3</p></td></tr></tbody></table>`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(flags) != 0 {
+		t.Fatalf("a <p>-wrapped cell should not be flagged, got %v", flags)
+	}
+	table, ok := doc.Blocks[0].(Table)
+	if !ok || len(table.Header) != 2 || len(table.Rows) != 1 {
+		t.Fatalf("table mismatch: %#v", doc.Blocks[0])
+	}
+	if cell := table.Rows[0][0].Inlines; len(cell) != 1 || cell[0] != (Text{Value: "Widget"}) {
+		t.Fatalf("cell content not unwrapped through <p>: %#v", table.Rows[0][0])
+	}
+}
+
 func TestParseFlagsUnknownMacro(t *testing.T) {
 	doc, flags, err := Parse(`<ac:structured-macro ac:name="info"><ac:rich-text-body><p>hi</p></ac:rich-text-body></ac:structured-macro>`)
 	if err != nil {
