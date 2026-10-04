@@ -200,6 +200,36 @@ func TestARemoteEditIsAConflictNeverAnOverwrite(t *testing.T) {
 	}
 }
 
+func TestTwoWayPullsARemotelyEditedPageWhenTheFileIsUnchanged(t *testing.T) {
+	w, files, ids := steady(t)
+	w.output.Direction = "two-way"
+	w.platform.EditRemotely(ids["readme.guide.md"])
+	got := plan(t, w, files)
+	expect(t, got,
+		`unchanged README.md "ENG: Home" parent=root`,
+		`pull readme.guide.md "ENG: Guide" parent=README.md [content]`,
+		`unchanged readme.guide.deep.md "ENG: Deep" parent=readme.guide.md`,
+	)
+	if counts := got.Counts(); counts[Pull] != 1 || counts[Unchanged] != 2 {
+		t.Fatalf("counts %v", counts)
+	}
+	if !strings.Contains(got.Actions[1].Reason, "edited on the platform (version 2) and the file is unchanged") {
+		t.Fatalf("reason %q", got.Actions[1].Reason)
+	}
+}
+
+func TestTwoWayStillConflictsWhenBothSidesChanged(t *testing.T) {
+	w, files, ids := steady(t)
+	w.output.Direction = "two-way"
+	w.platform.EditRemotely(ids["readme.guide.md"])
+	files["readme.guide.md"] = annotated(ids["readme.guide.md"], 1, "# Guide\n", "") + "Local change too.\n"
+	expect(t, plan(t, w, files),
+		`unchanged README.md "ENG: Home" parent=root`,
+		`conflict readme.guide.md "ENG: Guide" parent=README.md`,
+		`unchanged readme.guide.deep.md "ENG: Deep" parent=readme.guide.md`,
+	)
+}
+
 func TestAPageDeletedRemotelyIsCreatedAgain(t *testing.T) {
 	w, files, ids := steady(t)
 	_ = w.platform.TrashPage(context.Background(), ids["readme.guide.deep.md"])

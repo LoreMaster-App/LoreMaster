@@ -18,8 +18,12 @@ const (
 	RenameTitle ActionKind = "rename_title"
 	// Unchanged needs nothing.
 	Unchanged ActionKind = "unchanged"
+	// Pull writes the remote page's newer body back into the file (two-way sync). It
+	// happens only when the file is unchanged since the last sync, so a local edit is
+	// never overwritten; a page edited on both sides is a Conflict instead.
+	Pull ActionKind = "pull"
 	// Conflict means the page was edited on the platform since the last sync; it is
-	// left alone and reported.
+	// left alone and reported. In two-way sync it means both sides changed.
 	Conflict ActionKind = "conflict"
 	// Orphan is a page the sync made whose file no longer exists; prune trashes it.
 	Orphan ActionKind = "orphan"
