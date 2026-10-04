@@ -34,11 +34,19 @@ type fakePage struct {
 	parentID string
 	version  int
 	marked   bool
+	body     string
 }
 
 type fakeAttachment struct {
 	id      string
 	comment string
+}
+
+// storageBody is the {"body":{"storage":{"value":...}}} shape the adapter sends and reads.
+type storageBody struct {
+	Storage struct {
+		Value string `json:"value"`
+	} `json:"storage"`
 }
 
 func newFakeConfluence() *fakeConfluence {
@@ -67,6 +75,16 @@ func (f *fakeConfluence) page(id string) *fakePage {
 	defer f.mu.Unlock()
 
 	return f.pages[id]
+}
+
+// editRemotely replaces a page's storage body and bumps its version, as a person editing it
+// on the platform would — not a sync request, so it is not counted as a mutation.
+func (f *fakeConfluence) editRemotely(id string, body string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	page := f.pages[id]
+	page.body = body
+	page.version++
 }
 
 func (f *fakeConfluence) attachmentNames(pageID string) []string {
@@ -125,6 +143,7 @@ func (f *fakeConfluence) create(w http.ResponseWriter, r *http.Request) {
 		Ancestors []struct {
 			ID string `json:"id"`
 		} `json:"ancestors"`
+		Body storageBody `json:"body"`
 	}
 	_ = json.NewDecoder(r.Body).Decode(&body)
 	parent := ""
@@ -137,6 +156,7 @@ func (f *fakeConfluence) create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	page := f.store(body.Space.Key, parent, body.Title)
+	page.body = body.Body.Storage.Value
 	f.mutations = append(f.mutations, "create "+page.title)
 	f.writeJSON(w, http.StatusOK, f.pageJSON(page))
 }
@@ -150,6 +170,7 @@ func (f *fakeConfluence) update(w http.ResponseWriter, r *http.Request, id strin
 		Version struct {
 			Number int `json:"number"`
 		} `json:"version"`
+		Body storageBody `json:"body"`
 	}
 	_ = json.NewDecoder(r.Body).Decode(&body)
 	page, ok := f.pages[id]
@@ -173,6 +194,7 @@ func (f *fakeConfluence) update(w http.ResponseWriter, r *http.Request, id strin
 		page.parentID = body.Ancestors[n-1].ID
 	}
 	page.version = body.Version.Number
+	page.body = body.Body.Storage.Value
 	f.mutations = append(f.mutations, "update "+page.title)
 	f.writeJSON(w, http.StatusOK, f.pageJSON(page))
 }
@@ -347,6 +369,9 @@ func (f *fakeConfluence) pageJSON(page *fakePage) map[string]any {
 	}
 	if page.parentID != "" {
 		out["ancestors"] = []map[string]any{{"id": page.parentID}}
+	}
+	if page.body != "" {
+		out["body"] = map[string]any{"storage": map[string]any{"value": page.body, "representation": "storage"}}
 	}
 
 	return out
