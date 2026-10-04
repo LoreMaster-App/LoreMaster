@@ -26,14 +26,19 @@ var codeLanguages = map[string]string{
 
 // codeMacro writes Confluence's code macro. The body goes in CDATA, where only "]]>"
 // is special: it is split across two CDATA sections. Characters XML cannot carry are
-// dropped, as they are from text.
-func (r *renderer) codeMacro(info string, code string, collapse bool) {
+// dropped, as they are from text. mermaid tags the macro as a diagram's source, so the
+// two-way pull recognises it without relying on the collapse flag (which a Confluence-side
+// edit can drop).
+func (r *renderer) codeMacro(info string, code string, collapse bool, mermaid bool) {
 	r.out.WriteString(`<ac:structured-macro ac:name="code" ac:schema-version="1">`)
 	if language, known := codeLanguages[strings.ToLower(firstWord(info))]; known {
 		r.out.WriteString(`<ac:parameter ac:name="language">` + language + `</ac:parameter>`)
 	}
 	if collapse {
 		r.out.WriteString(`<ac:parameter ac:name="collapse">true</ac:parameter>`)
+	}
+	if mermaid {
+		r.out.WriteString(`<ac:parameter ac:name="lore-master">mermaid</ac:parameter>`)
 	}
 	r.out.WriteString(`<ac:plain-text-body><![CDATA[` + cdata(code) + `]]></ac:plain-text-body></ac:structured-macro>`)
 }
@@ -62,13 +67,13 @@ func (r *renderer) mermaid(diagram Mermaid) error {
 				return err
 			}
 			r.out.WriteString("</p>")
-			r.codeMacro("", diagram.Source, true)
+			r.codeMacro("", diagram.Source, true, true)
 
 			return nil
 		}
-		r.codeMacro("", diagram.Source, false)
+		r.codeMacro("", diagram.Source, false, true)
 	case MermaidCode:
-		r.codeMacro("", diagram.Source, false)
+		r.codeMacro("", diagram.Source, false, true)
 	default:
 		return fmt.Errorf("mermaid mode %d is not available yet (#40)", r.options.MermaidMode)
 	}
