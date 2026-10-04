@@ -111,6 +111,11 @@ async function resolveOutput (deps: SyncDeps & { sessionId: string; meta: Connec
   const read = await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot })
   const outputs = [...read.settings.outputs]
   let index = outputs.findIndex(output => output.baseUrl === meta.baseUrl)
+  if (index < 0) {
+    // A fresh workspace starts with one unconfigured scaffold output (blank baseUrl); fill it
+    // rather than appending a second, empty output beside the one we are about to configure.
+    index = outputs.findIndex(output => output.baseUrl === '')
+  }
   const existing = outputs[index]
 
   if (existing && existing.space !== '' && existing.parentPageId !== '' && existing.titlePrefix !== '') {
