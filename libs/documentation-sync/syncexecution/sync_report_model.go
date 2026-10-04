@@ -25,6 +25,9 @@ type PageResult struct {
 	// Annotation is what the file's annotation should say now; nil when the file
 	// needs no rewrite (nothing was written, or the page is an orphan).
 	Annotation *syncannotation.Annotation `json:"-"`
+	// PulledBody is the new Markdown body to write below the annotation on a pull; nil
+	// for every other outcome, where the file's body is left as it is.
+	PulledBody []byte `json:"-"`
 }
 
 // Count is the number of pages with the outcome.

@@ -7,12 +7,16 @@ import (
 	"maps"
 	"mime"
 	"path"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"lore-master/libs/documentation-sync/documentmarkdown"
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/syncplanning"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
+	"lore-master/libs/markdown-workspace/documentparsing"
 	"lore-master/libs/markdown-workspace/syncannotation"
 )
 
@@ -46,13 +50,16 @@ type ExecuteInput struct {
 // are skipped. Every page's outcome is in the report, with the annotation its file
 // should now carry.
 func ExecutePlan(ctx context.Context, platform platformport.DocumentationPlatform, input ExecuteInput) SyncReport {
-	run := &execution{input: input, platform: platform, ids: map[documentdiscovery.DocumentPath]string{}, now: input.Now, urls: map[string]string{}}
+	run := &execution{input: input, platform: platform, ids: map[documentdiscovery.DocumentPath]string{}, now: input.Now, urls: map[string]string{}, pathByTitle: map[string]documentdiscovery.DocumentPath{}}
 	if run.now == nil {
 		run.now = time.Now
 	}
 	for _, action := range input.Plan.Actions {
 		if action.Path != "" && action.URL != "" {
 			run.urls[action.Title] = action.URL
+		}
+		if action.Path != "" && action.Title != "" {
+			run.pathByTitle[action.Title] = action.Path
 		}
 	}
 	report := SyncReport{Warnings: append([]string(nil), input.Prepared.Warnings...)}
@@ -111,6 +118,9 @@ type execution struct {
 	warnedNoRenderer bool
 	// urls are the known pages' URLs by title, for links in id mode.
 	urls map[string]string
+	// pathByTitle maps a page's final title to the file that owns it, so a pulled page's
+	// links to other synced pages become links to their local files.
+	pathByTitle map[string]documentdiscovery.DocumentPath
 	// relink are pages written before a page they link to existed (id mode).
 	relink []relink
 	// current is the index of the action being carried out, in the report.
@@ -148,12 +158,7 @@ func (run *execution) execute(ctx context.Context, action syncplanning.Action) P
 			return result
 		}
 	case syncplanning.Pull:
-		// Two-way pull writes the remote body back into the file; that path is #162. Until it
-		// lands, guard against falling through to write(), which would push local content over
-		// the newer remote — the exact opposite of a pull. Report it, touching neither side.
-		result.Outcome = Reported
-
-		return result
+		return run.pull(ctx, action, result)
 	case syncplanning.Orphan:
 		if !run.input.Options.Prune {
 			result.Outcome = Reported
@@ -171,6 +176,77 @@ func (run *execution) execute(ctx context.Context, action syncplanning.Action) P
 	}
 
 	return run.write(ctx, action, result)
+}
+
+// pull writes a page's newer body back into its file (two-way sync): it reads the body as a
+// Document, serialises it to Markdown resolving links to local files, and — only when nothing
+// was lost in the conversion — returns the new body and the annotation to stamp. A page whose
+// storage could not be converted faithfully is left untouched and reported, never clobbered.
+func (run *execution) pull(ctx context.Context, action syncplanning.Action, result PageResult) PageResult {
+	content, err := run.platform.GetPageContent(ctx, action.PageID)
+	if err != nil {
+		result.Outcome, result.Error = Failed, describe(err)
+
+		return result
+	}
+	markdown, flags := documentmarkdown.ToMarkdown(content.Body, run.linksFrom(action.Path))
+	flags = append(flags, content.Flags...)
+	if len(flags) > 0 {
+		result.Outcome, result.Error = Skipped, "the page has content that does not convert to Markdown, so the file was left unchanged: "+strings.Join(flags, "; ")
+
+		return result
+	}
+	result.Outcome, result.Version, result.PulledBody = Pulled, content.Version, []byte(markdown)
+	result.Annotation = run.pulledAnnotation(action, content.Version, []byte(markdown))
+
+	return result
+}
+
+// pulledAnnotation is the annotation a pulled file should carry: the existing one with its
+// title, parent and unknown keys kept, its version set to the page's, and its content, render
+// and attachment hashes set to the pulled body's — computed through the same prepare the next
+// sync runs — so the pulled file reads back as unchanged.
+func (run *execution) pulledAnnotation(action syncplanning.Action, version int, markdown []byte) *syncannotation.Annotation {
+	var annotation syncannotation.Annotation
+	if page, ok := run.input.Prepared.Pages[action.Path]; ok && page.Annotation != nil {
+		annotation = *page.Annotation
+		annotation.Unknown = append([]syncannotation.Field(nil), page.Annotation.Unknown...)
+	}
+	output := run.input.Output
+	annotation.Platform, annotation.BaseURL, annotation.Space = output.Platform, output.BaseURL, output.Space
+	annotation.PageID, annotation.Version = action.PageID, version
+	annotation.ContentHash = syncannotation.ContentHash(markdown)
+	if document, err := documentparsing.ParseDocument(action.Path, markdown); err == nil {
+		prepared, _ := preparePage(document, run.input.Prepared.Workspace, run.input.Read)
+		annotation.RenderHash, annotation.Attachments = prepared.Converted.RenderHash, prepared.hashes()
+	}
+	annotation.SyncedAt = run.now().UTC().Truncate(time.Second)
+
+	return &annotation
+}
+
+// linksFrom resolves a page's title to a link to the local file that owns it, relative to the
+// file being written. A title no file in this sync owns is left unresolved for the serialiser
+// to fall back on (its URL, then its text).
+func (run *execution) linksFrom(from documentdiscovery.DocumentPath) documentmarkdown.Links {
+	return func(title string) (string, bool) {
+		target, ok := run.pathByTitle[title]
+		if !ok {
+			return "", false
+		}
+
+		return relativeLink(from, target), true
+	}
+}
+
+// relativeLink is to as a slash-separated path from the directory of from.
+func relativeLink(from, to documentdiscovery.DocumentPath) string {
+	rel, err := filepath.Rel(filepath.FromSlash(path.Dir(string(from))), filepath.FromSlash(string(to)))
+	if err != nil {
+		return string(to)
+	}
+
+	return filepath.ToSlash(rel)
 }
 
 // write creates or updates the page, then uploads what changed and marks it.
