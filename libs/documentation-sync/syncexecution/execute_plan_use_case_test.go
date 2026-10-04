@@ -173,6 +173,58 @@ func TestTwoWayPullWritesTheRemoteBodyIntoTheFile(t *testing.T) {
 	}
 }
 
+func TestPushEmbedsTheMermaidSourceInTheSVG(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```mermaid\ngraph TD; A-->B\n```\n"})
+	_, report := w.sync()
+	id := w.result(report, "guide.md").PageID
+
+	names, err := w.fake.ListAttachments(context.Background(), id)
+	if err != nil || len(names) == 0 {
+		t.Fatalf("no attachment uploaded: %v", err)
+	}
+	svg, err := w.fake.DownloadAttachment(context.Background(), id, names[0].Filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if source, ok := extractMermaidSource(svg); !ok || !strings.Contains(source, "graph TD; A-->B") {
+		t.Fatalf("the uploaded SVG does not carry the Mermaid source: %q ok=%v", source, ok)
+	}
+}
+
+func TestTwoWayPullRecoversADiagramFromItsSVG(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\ntext\n"})
+	w.output.Direction = "two-way"
+	_, first := w.sync()
+	id := w.result(first, "guide.md").PageID
+
+	// The platform shows the diagram as just its SVG image — its code macro was removed — but
+	// the SVG carries the source.
+	svg := injectMermaidSource([]byte("<svg></svg>"), "graph LR; X-->Y")
+	if _, err := w.fake.UploadFile(context.Background(), id, platformport.File{Name: "mermaid-1.svg", Content: svg}); err != nil {
+		t.Fatal(err)
+	}
+	page := w.fake.Page(id)
+	page.Body = platformport.Document{Blocks: []platformport.Block{
+		platformport.Heading{Level: 1, Inlines: []platformport.Inline{platformport.Text{Value: "Guide"}}},
+		platformport.Paragraph{Inlines: []platformport.Inline{platformport.Image{Source: &platformport.AttachmentRef{Filename: "mermaid-1.svg"}, Alt: "Mermaid diagram"}}},
+	}}
+	page.Version++
+
+	_, second := w.sync()
+	if got := w.result(second, "guide.md").Outcome; got != Pulled {
+		t.Fatalf("outcome %s", got)
+	}
+	if body := string(w.files["guide.md"]); !strings.Contains(body, "```mermaid\ngraph LR; X-->Y\n```") {
+		t.Fatalf("the diagram was not recovered from its SVG: %q", body)
+	}
+	if _, wrote := w.files["assets/mermaid-1.svg"]; wrote {
+		t.Fatal("a recovered diagram's SVG must not be written to disk")
+	}
+	if plan, _ := w.sync(); plan.Counts()[syncplanning.Unchanged] != 1 {
+		t.Fatalf("a recovered diagram should read back as unchanged: %v", plan.Counts())
+	}
+}
+
 func TestTwoWayPullDownloadsANewRemoteImageToAssets(t *testing.T) {
 	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\ntext\n"})
 	w.output.Direction = "two-way"
