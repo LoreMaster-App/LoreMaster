@@ -110,7 +110,9 @@ func findSpace(ctx context.Context, platform platformport.DocumentationPlatform,
 }
 
 func planResult(id string, plan syncplanning.SyncPlan) rpcprotocol.SyncPlanResult {
-	result := rpcprotocol.SyncPlanResult{PlanID: id, Counts: map[string]int{}, Warnings: plan.Warnings, Errors: plan.Errors}
+	// Actions is initialised so an empty plan marshals as [] rather than null, which the
+	// editor's plan preview would otherwise call .map on.
+	result := rpcprotocol.SyncPlanResult{PlanID: id, Counts: map[string]int{}, Actions: []rpcprotocol.PlanAction{}, Warnings: plan.Warnings, Errors: plan.Errors}
 	for kind, count := range plan.Counts() {
 		result.Counts[string(kind)] = count
 	}

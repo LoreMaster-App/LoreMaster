@@ -111,6 +111,11 @@ async function resolveOutput (deps: SyncDeps & { sessionId: string; meta: Connec
   const read = await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot })
   const outputs = [...read.settings.outputs]
   let index = outputs.findIndex(output => output.baseUrl === meta.baseUrl)
+  if (index < 0) {
+    // A fresh workspace starts with one unconfigured scaffold output (blank baseUrl); fill it
+    // rather than appending a second, empty output beside the one we are about to configure.
+    index = outputs.findIndex(output => output.baseUrl === '')
+  }
   const existing = outputs[index]
 
   if (existing && existing.space !== '' && existing.parentPageId !== '' && existing.titlePrefix !== '') {
@@ -197,14 +202,15 @@ function execute (engine: EngineClient, planId: string, force: boolean, ui: Sync
 }
 
 function reportResult (result: SyncExecuteResult, ui: SyncUI): void {
-  const lines = result.pages.map(page => `${page.outcome.padEnd(10)}${page.title}${page.error ? `  — ${page.error}` : ''}`)
+  const pages = result.pages ?? []
+  const lines = pages.map(page => `${page.outcome.padEnd(10)}${page.title}${page.error ? `  — ${page.error}` : ''}`)
   const warnings = result.warnings ?? []
   for (const warning of warnings) {
     lines.push(`warning: ${warning}`)
   }
   ui.report(lines)
-  const failed = result.pages.filter(page => page.outcome === 'failed').length
-  ui.status(failed > 0 ? `Lore Master: synced with ${failed} failure(s)` : `Lore Master: synced ${result.pages.length} page(s)`)
+  const failed = pages.filter(page => page.outcome === 'failed').length
+  ui.status(failed > 0 ? `Lore Master: synced with ${failed} failure(s)` : `Lore Master: synced ${pages.length} page(s)`)
 }
 
 function messageOf (error: unknown): string {

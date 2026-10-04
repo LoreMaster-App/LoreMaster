@@ -135,7 +135,8 @@ describe('runSync', () => {
     let saved: unknown
     const engine = fakeEngine({
       [SESSION_OPEN_METHOD]:  () => session,
-      [SETTINGS_READ_METHOD]: () => ({ exists: false, firstSync: true, settings: { version: 1, outputs: [] } }),
+      // A fresh workspace is read back with one unconfigured scaffold output, as the engine returns.
+      [SETTINGS_READ_METHOD]: () => ({ exists: false, firstSync: true, settings: { version: 1, outputs: [{ ...configuredOutput, baseUrl: '', space: '', parentPageId: '', titlePrefix: '' }] } }),
       'space/list':           () => ({ spaces: [{ id: '1', key: 'ENG', name: 'Engineering', homepageId: 'home' }] }),
       'page/children':        () => ({ pages: [] }),
       [SETTINGS_SAVE_METHOD]: params => {
@@ -149,6 +150,8 @@ describe('runSync', () => {
 
     await runSync({ engine, connections: connectionStore(), targets: createTargetStore(), workspaceRoot: '/w', ui: buildUI() })
 
+    // The scaffold is filled in place, not duplicated: exactly one, fully configured, output.
+    expect((saved as { settings: { outputs: unknown[] } }).settings.outputs).toHaveLength(1)
     expect(saved).toMatchObject({ workspaceRoot: '/w', settings: { outputs: [{ baseUrl: meta.baseUrl, space: 'ENG', parentPageId: 'home', titlePrefix: 'Engineering' }] } })
   })
 
