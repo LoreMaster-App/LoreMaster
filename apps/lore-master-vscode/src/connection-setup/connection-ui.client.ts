@@ -35,11 +35,18 @@ export function createConnectionUI (): ConnectionUI {
 
     async promptCredential (method) {
       if (method === 'oauth') {
-        // OAuth collects only the admin's incoming-link client id; the browser sign-in that
-        // follows produces the tokens.
+        // OAuth collects the admin's incoming-link client id and, optionally, the scope the
+        // link was configured with; the browser sign-in that follows produces the tokens.
         const clientId = await ask('OAuth client id (from the site admin)')
+        if (clientId === undefined) {
+          return
+        }
+        const scope = await ask('OAuth scope (optional; e.g. WRITE)')
+        if (scope === undefined) {
+          return
+        }
 
-        return clientId === undefined ? undefined : { kind: 'oauth', clientId } satisfies Credential
+        return { kind: 'oauth', clientId, ...(scope && { scope }) } satisfies Credential
       }
       if (method === 'apitoken') {
         const email = await ask('Atlassian account email')
