@@ -119,6 +119,9 @@ func (w *workspace) sync() (syncplanning.SyncPlan, SyncReport) {
 			w.t.Fatal(err)
 		}
 		w.files[string(page.Path)] = rendered
+		for _, file := range page.PulledAttachments {
+			w.files[string(file.Path)] = file.Content
+		}
 	}
 
 	return plan, report
@@ -167,6 +170,40 @@ func TestTwoWayPullWritesTheRemoteBodyIntoTheFile(t *testing.T) {
 	_, third := w.sync()
 	if got := w.result(third, "guide.md").Outcome; got != Unchanged {
 		t.Fatalf("a pulled file should read back as unchanged, got %s", got)
+	}
+}
+
+func TestTwoWayPullDownloadsANewRemoteImageToAssets(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\ntext\n"})
+	w.output.Direction = "two-way"
+	_, first := w.sync()
+	id := w.result(first, "guide.md").PageID
+
+	// The platform gains an image the file never had, and the body now shows it.
+	if _, err := w.fake.UploadFile(context.Background(), id, platformport.File{Name: "diagram.png", Content: []byte("PNG-DATA")}); err != nil {
+		t.Fatal(err)
+	}
+	page := w.fake.Page(id)
+	page.Body = platformport.Document{Blocks: []platformport.Block{
+		platformport.Heading{Level: 1, Inlines: []platformport.Inline{platformport.Text{Value: "Guide"}}},
+		platformport.Paragraph{Inlines: []platformport.Inline{platformport.Image{Source: &platformport.AttachmentRef{Filename: "diagram.png"}, Alt: "d"}}},
+	}}
+	page.Version++
+
+	_, second := w.sync()
+	if got := w.result(second, "guide.md").Outcome; got != Pulled {
+		t.Fatalf("outcome %s", got)
+	}
+	if got := string(w.files["assets/diagram.png"]); got != "PNG-DATA" {
+		t.Fatalf("the new image was not written to assets/: %q", got)
+	}
+	if body := string(w.files["guide.md"]); !strings.Contains(body, "![d](assets/diagram.png)") {
+		t.Fatalf("the image reference was not rewritten to the local path: %q", body)
+	}
+
+	// Idempotent: the image is now a tracked file, so a third sync changes nothing.
+	if plan, _ := w.sync(); plan.Counts()[syncplanning.Unchanged] != 1 {
+		t.Fatalf("a pulled image should read back as unchanged: %v", plan.Counts())
 	}
 }
 

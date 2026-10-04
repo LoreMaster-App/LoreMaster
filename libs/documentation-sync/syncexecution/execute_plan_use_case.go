@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"lore-master/libs/documentation-sync/documentconversion"
 	"lore-master/libs/documentation-sync/documentmarkdown"
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/syncplanning"
@@ -179,9 +180,11 @@ func (run *execution) execute(ctx context.Context, action syncplanning.Action) P
 }
 
 // pull writes a page's newer body back into its file (two-way sync): it reads the body as a
-// Document, serialises it to Markdown resolving links to local files, and — only when nothing
-// was lost in the conversion — returns the new body and the annotation to stamp. A page whose
-// storage could not be converted faithfully is left untouched and reported, never clobbered.
+// Document, decides where each attachment the page shows lives locally (a tracked file stays
+// put, a new one lands in an assets/ folder beside the page), serialises the body to Markdown
+// pointing at those files, downloads the ones that changed, and returns the new body, the files
+// to write and the annotation to stamp. A page whose storage could not be converted faithfully
+// is left untouched and reported, never clobbered.
 func (run *execution) pull(ctx context.Context, action syncplanning.Action, result PageResult) PageResult {
 	content, err := run.platform.GetPageContent(ctx, action.PageID)
 	if err != nil {
@@ -189,24 +192,97 @@ func (run *execution) pull(ctx context.Context, action syncplanning.Action, resu
 
 		return result
 	}
-	markdown, flags := documentmarkdown.ToMarkdown(content.Body, run.linksFrom(action.Path))
+	local := run.attachmentPaths(action.Path, referencedAttachments(content.Body))
+	resolve := func(name string) string {
+		if target, ok := local[name]; ok {
+			return relativeLink(action.Path, target)
+		}
+
+		return ""
+	}
+
+	markdown, flags := documentmarkdown.ToMarkdown(content.Body, run.linksFrom(action.Path), resolve)
 	flags = append(flags, content.Flags...)
 	if len(flags) > 0 {
 		result.Outcome, result.Error = Skipped, "the page has content that does not convert to Markdown, so the file was left unchanged: "+strings.Join(flags, "; ")
 
 		return result
 	}
-	result.Outcome, result.Version, result.PulledBody = Pulled, content.Version, []byte(markdown)
-	result.Annotation = run.pulledAnnotation(action, content.Version, []byte(markdown))
+
+	files, hashes := run.pullAttachments(ctx, action, local)
+	result.Outcome, result.Version = Pulled, content.Version
+	result.PulledBody, result.PulledAttachments = []byte(markdown), files
+	result.Annotation = run.pulledAnnotation(action, content.Version, []byte(markdown), hashes)
 
 	return result
 }
 
+// attachmentPaths decides where each attachment a pulled page shows lives: a file the page
+// already tracks keeps its path, a new one goes to an assets/ folder beside the page.
+func (run *execution) attachmentPaths(mdPath documentdiscovery.DocumentPath, names []string) map[string]documentdiscovery.DocumentPath {
+	tracked := map[string]documentdiscovery.DocumentPath{}
+	if page, ok := run.input.Prepared.Pages[mdPath]; ok {
+		for _, file := range page.Files {
+			tracked[file.Name] = file.Path
+		}
+	}
+	dir := path.Dir(string(mdPath))
+	local := make(map[string]documentdiscovery.DocumentPath, len(names))
+	for _, name := range names {
+		if existing, ok := tracked[name]; ok {
+			local[name] = existing
+		} else {
+			local[name] = documentdiscovery.DocumentPath(path.Join(dir, "assets", name))
+		}
+	}
+
+	return local
+}
+
+// pullAttachments downloads the attachments whose content the workspace does not already have,
+// returning the files to write and, per local path, the content hash now on disk. One that
+// cannot be downloaded is warned about and left out; the page still points at it.
+func (run *execution) pullAttachments(ctx context.Context, action syncplanning.Action, local map[string]documentdiscovery.DocumentPath) ([]PulledFile, map[documentdiscovery.DocumentPath]string) {
+	remote := map[string]string{}
+	if list, err := run.platform.ListAttachments(ctx, action.PageID); err != nil {
+		run.warn("%s: the page's attachments could not be listed (%s); its images may be left missing", action.Path, describe(err))
+	} else {
+		for _, attachment := range list {
+			remote[attachment.Filename] = attachment.Hash
+		}
+	}
+	tracked := map[string]string{}
+	if page, ok := run.input.Prepared.Pages[action.Path]; ok {
+		for _, file := range page.Files {
+			tracked[file.Name] = file.Hash
+		}
+	}
+	var files []PulledFile
+	hashes := map[documentdiscovery.DocumentPath]string{}
+	for name, target := range local {
+		if hash, ok := tracked[name]; ok && remote[name] != "" && hash == remote[name] {
+			hashes[target] = hash
+
+			continue
+		}
+		content, err := run.platform.DownloadAttachment(ctx, action.PageID, name)
+		if err != nil {
+			run.warn("%s: the image %s could not be downloaded (%s); the file points at it but it is not on disk", action.Path, name, describe(err))
+
+			continue
+		}
+		hashes[target] = attachmentHash(content)
+		files = append(files, PulledFile{Path: target, Content: content})
+	}
+
+	return files, hashes
+}
+
 // pulledAnnotation is the annotation a pulled file should carry: the existing one with its
 // title, parent and unknown keys kept, its version set to the page's, and its content, render
-// and attachment hashes set to the pulled body's — computed through the same prepare the next
-// sync runs — so the pulled file reads back as unchanged.
-func (run *execution) pulledAnnotation(action syncplanning.Action, version int, markdown []byte) *syncannotation.Annotation {
+// and attachment hashes set to the pulled body's (the attachment hashes keyed by the name the
+// next sync derives), so the pulled file reads back as unchanged.
+func (run *execution) pulledAnnotation(action syncplanning.Action, version int, markdown []byte, hashes map[documentdiscovery.DocumentPath]string) *syncannotation.Annotation {
 	var annotation syncannotation.Annotation
 	if page, ok := run.input.Prepared.Pages[action.Path]; ok && page.Annotation != nil {
 		annotation = *page.Annotation
@@ -216,13 +292,92 @@ func (run *execution) pulledAnnotation(action syncplanning.Action, version int, 
 	annotation.Platform, annotation.BaseURL, annotation.Space = output.Platform, output.BaseURL, output.Space
 	annotation.PageID, annotation.Version = action.PageID, version
 	annotation.ContentHash = syncannotation.ContentHash(markdown)
+	annotation.Attachments = nil
 	if document, err := documentparsing.ParseDocument(action.Path, markdown); err == nil {
-		prepared, _ := preparePage(document, run.input.Prepared.Workspace, run.input.Read)
-		annotation.RenderHash, annotation.Attachments = prepared.Converted.RenderHash, prepared.hashes()
+		converted := documentconversion.ConvertDocument(document, run.input.Prepared.Workspace)
+		annotation.RenderHash = converted.RenderHash
+		attachments := map[string]string{}
+		for _, attachment := range converted.Attachments {
+			if hash, ok := hashes[attachment.Path]; ok {
+				attachments[attachment.Filename] = hash
+			}
+		}
+		if len(attachments) > 0 {
+			annotation.Attachments = attachments
+		}
 	}
 	annotation.SyncedAt = run.now().UTC().Truncate(time.Second)
 
 	return &annotation
+}
+
+// referencedAttachments is the attachment file names a document's images and links point at, in
+// document order and without duplicates.
+func referencedAttachments(doc platformport.Document) []string {
+	var names []string
+	seen := map[string]bool{}
+	add := func(ref *platformport.AttachmentRef) {
+		if ref != nil && ref.Filename != "" && !seen[ref.Filename] {
+			seen[ref.Filename] = true
+			names = append(names, ref.Filename)
+		}
+	}
+	var inlines func([]platformport.Inline)
+	inlines = func(list []platformport.Inline) {
+		for _, inline := range list {
+			switch n := inline.(type) {
+			case platformport.Image:
+				if ref, ok := n.Source.(*platformport.AttachmentRef); ok {
+					add(ref)
+				}
+			case platformport.Link:
+				if ref, ok := n.Target.(*platformport.AttachmentRef); ok {
+					add(ref)
+				}
+				inlines(n.Inlines)
+			case platformport.Emphasis:
+				inlines(n.Inlines)
+			case platformport.Strong:
+				inlines(n.Inlines)
+			case platformport.Strikethrough:
+				inlines(n.Inlines)
+			}
+		}
+	}
+	var blocks func([]platformport.Block)
+	blocks = func(list []platformport.Block) {
+		for _, block := range list {
+			switch n := block.(type) {
+			case platformport.Paragraph:
+				inlines(n.Inlines)
+			case platformport.Heading:
+				inlines(n.Inlines)
+			case platformport.Blockquote:
+				blocks(n.Blocks)
+			case platformport.List:
+				for _, item := range n.Items {
+					blocks(item.Blocks)
+				}
+			case platformport.TaskList:
+				for _, item := range n.Items {
+					inlines(item.Inlines)
+					blocks(item.Blocks)
+				}
+			case platformport.Table:
+				for _, cell := range n.Header {
+					inlines(cell.Inlines)
+				}
+				for _, row := range n.Rows {
+					for _, cell := range row {
+						inlines(cell.Inlines)
+					}
+				}
+			}
+		}
+	}
+	blocks(doc.Blocks)
+
+	return names
 }
 
 // linksFrom resolves a page's title to a link to the local file that owns it, relative to the

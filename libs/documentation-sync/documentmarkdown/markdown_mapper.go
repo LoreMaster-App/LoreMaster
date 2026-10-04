@@ -11,24 +11,44 @@ import (
 // local file — a workspace-relative path. ok is false when no local file owns that title.
 type Links func(title string) (target string, ok bool)
 
+// Attachments maps an attachment's name to the Markdown src to write for it — the local file's
+// path relative to the page's own file. A nil resolver, or one that returns "", leaves the
+// bare attachment name, which is what a one-way render wants.
+type Attachments func(filename string) string
+
 // ToMarkdown serialises a neutral Document as Markdown, the reverse of documentconversion.
 // links resolves a page link back to the local file that owns its title; an unresolved page
-// link falls back to its URL, then to its link text, and is flagged. The returned flags name
-// content that could not be represented faithfully in Markdown; the caller decides whether to
-// write the result or leave the file for the user. Passing a nil links treats every page link
-// as unresolved.
-func ToMarkdown(doc platformport.Document, links Links) (markdown string, flags []string) {
+// link falls back to its URL, then to its link text, and is flagged. attachments resolves an
+// attachment reference to the local path to write for it. The returned flags name content that
+// could not be represented faithfully in Markdown; the caller decides whether to write the
+// result or leave the file for the user. A nil links treats every page link as unresolved; a
+// nil attachments keeps the bare attachment name.
+func ToMarkdown(doc platformport.Document, links Links, attachments Attachments) (markdown string, flags []string) {
 	if links == nil {
 		links = func(string) (string, bool) { return "", false }
 	}
-	r := &renderer{links: links}
+	if attachments == nil {
+		attachments = func(string) string { return "" }
+	}
+	r := &renderer{links: links, attachments: attachments}
 	body := r.blocks(doc.Blocks)
 	return strings.TrimRight(body, "\n") + "\n", r.flags
 }
 
 type renderer struct {
-	links Links
-	flags []string
+	links       Links
+	attachments Attachments
+	flags       []string
+}
+
+// attachmentSrc is the path to write for an attachment: the resolver's answer, or the bare
+// name when it has none.
+func (r *renderer) attachmentSrc(filename string) string {
+	if resolved := r.attachments(filename); resolved != "" {
+		return resolved
+	}
+
+	return filename
 }
 
 func (r *renderer) flag(format string, a ...any) {
@@ -171,7 +191,7 @@ func (r *renderer) image(img platformport.Image) string {
 	src := ""
 	switch s := img.Source.(type) {
 	case *platformport.AttachmentRef:
-		src = s.Filename
+		src = r.attachmentSrc(s.Filename)
 	case *platformport.URLRef:
 		src = s.URL
 	default:
@@ -202,7 +222,7 @@ func (r *renderer) link(link platformport.Link) string {
 			target += "#" + t.Anchor
 		}
 	case *platformport.AttachmentRef:
-		target = t.Filename
+		target = r.attachmentSrc(t.Filename)
 	case *platformport.URLRef:
 		target = t.URL
 	default:
