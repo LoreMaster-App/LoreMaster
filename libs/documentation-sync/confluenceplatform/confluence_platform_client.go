@@ -3,10 +3,11 @@ package confluenceplatform
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
-	"lore-master/libs/confluence-client/attachmentupload"
+	"lore-master/libs/confluence-client/attachments"
 	"lore-master/libs/confluence-client/authentication"
 	"lore-master/libs/confluence-client/connection"
 	"lore-master/libs/confluence-client/httptransport"
@@ -167,7 +168,7 @@ func (p *Platform) TrashPage(ctx context.Context, id string) error {
 
 // UploadFile implements platformport.DocumentationPlatform.
 func (p *Platform) UploadFile(ctx context.Context, pageID string, file platformport.File) (platformport.UploadedFile, error) {
-	uploaded, err := attachmentupload.UploadAttachment(ctx, p.client, pageID, attachmentupload.AttachmentInput{
+	uploaded, err := attachments.UploadAttachment(ctx, p.client, pageID, attachments.AttachmentInput{
 		Filename: file.Name, ContentType: file.ContentType, Content: file.Content,
 	})
 	if err != nil {
@@ -175,6 +176,37 @@ func (p *Platform) UploadFile(ctx context.Context, pageID string, file platformp
 	}
 
 	return platformport.UploadedFile{ID: uploaded.ID, Name: uploaded.Filename, Hash: uploaded.Hash, Skipped: uploaded.Skipped}, nil
+}
+
+// ListAttachments implements platformport.DocumentationPlatform.
+func (p *Platform) ListAttachments(ctx context.Context, pageID string) ([]platformport.RemoteAttachment, error) {
+	list, err := attachments.ListAttachments(ctx, p.client, pageID)
+	if err != nil {
+		return nil, portError(err)
+	}
+	out := make([]platformport.RemoteAttachment, 0, len(list))
+	for _, file := range list {
+		out = append(out, platformport.RemoteAttachment{Filename: file.Filename, Hash: file.Hash})
+	}
+
+	return out, nil
+}
+
+// DownloadAttachment implements platformport.DocumentationPlatform.
+func (p *Platform) DownloadAttachment(ctx context.Context, pageID string, filename string) ([]byte, error) {
+	list, err := attachments.ListAttachments(ctx, p.client, pageID)
+	if err != nil {
+		return nil, portError(err)
+	}
+	for _, file := range list {
+		if file.Filename == filename {
+			content, err := attachments.DownloadAttachment(ctx, p.client, file.DownloadPath)
+
+			return content, portError(err)
+		}
+	}
+
+	return nil, fmt.Errorf("the page %s has no attachment named %q", pageID, filename)
 }
 
 func (p *Platform) renderBody(doc platformport.Document) (string, error) {

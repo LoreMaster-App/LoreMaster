@@ -29,4 +29,9 @@ type DocumentationPlatform interface {
 	// TrashPage moves the page to the trash; an already-gone page is not an error.
 	TrashPage(ctx context.Context, id string) error
 	UploadFile(ctx context.Context, pageID string, file File) (UploadedFile, error)
+	// ListAttachments lists a page's attachments for a two-way pull: each name and the
+	// content hash the sync recorded, so only changed files are downloaded.
+	ListAttachments(ctx context.Context, pageID string) ([]RemoteAttachment, error)
+	// DownloadAttachment fetches one attachment's content by name.
+	DownloadAttachment(ctx context.Context, pageID string, filename string) ([]byte, error)
 }

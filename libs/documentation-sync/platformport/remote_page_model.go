@@ -58,3 +58,10 @@ type UploadedFile struct {
 	// Skipped is true when the page already had this content under this name.
 	Skipped bool
 }
+
+// RemoteAttachment is a file on a page as a two-way pull sees it: its name and the content
+// hash the sync recorded when it uploaded the file (empty for a file a person attached).
+type RemoteAttachment struct {
+	Filename string
+	Hash     string
+}
