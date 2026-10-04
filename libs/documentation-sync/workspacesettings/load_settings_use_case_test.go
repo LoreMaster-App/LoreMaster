@@ -60,7 +60,7 @@ func TestLoadingRefusesWhatItCannotTrust(t *testing.T) {
 		"misspelt key": {"version: 1\noutputs:\n  - platfrom: confluence\n", "line 3: field platfrom not found"},
 		"secret":       {"version: 1\noutputs:\n  - space: ENG\n    apiToken: abc\n", `.lore-master.yaml line 4: "apiToken" looks like a secret; secrets never go in this committed file`},
 		"not yaml":     {"version: [1\n", ".lore-master.yaml: yaml:"},
-		"invalid":      {"version: 1\noutputs:\n  - direction: two-way\n", `outputs[0].direction "two-way" is planned but not available yet (#95); use to-platform`},
+		"invalid":      {"version: 1\noutputs:\n  - direction: sideways\n", `outputs[0].direction "sideways" is not one of to-platform, two-way`},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {

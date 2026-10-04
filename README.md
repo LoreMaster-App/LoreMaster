@@ -92,7 +92,7 @@ outputs:
     space: DOCS
     parentPageId: "123456"      # the page everything nests under
     titlePrefix: "Lore Master"  # pages are titled "<prefix>: <H1>"
-    direction: to-platform      # workspace → platform (two-way is reserved, not built)
+    direction: to-platform      # to-platform (push) | two-way (also pull remote edits back)
     mermaidMode: image          # image | code | html-macro | marketplace-macro
     titleCollision: adopt       # adopt | fail
     linkMode: title             # title | id
@@ -103,8 +103,9 @@ outputs:
         template: default
 ```
 
-Reserved values (two-way sync, other content types, templates) are present in the schema
-but refused until built.
+`direction: two-way` also pulls edits made on the platform back into the Markdown (a page
+changed on both sides is reported as a conflict, never merged). Other reserved values (more
+content types, templates) are present in the schema but refused until built.
 
 ## Architecture
 

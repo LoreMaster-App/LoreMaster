@@ -138,7 +138,7 @@ async function resolveOutput (deps: SyncDeps & { sessionId: string; meta: Connec
     space:          space.key,
     parentPageId:   parent.pageId,
     titlePrefix,
-    direction:      existing?.direction ?? 'push',
+    direction:      existing?.direction ?? 'to-platform',
     content:        existing && existing.content.length > 0 ? existing.content : [{ type: 'markdown', roots: ['.'], template: '' }],
     mermaidMode:    existing?.mermaidMode ?? 'image',
     titleCollision: existing?.titleCollision ?? 'fail',
