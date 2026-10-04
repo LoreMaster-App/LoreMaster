@@ -1,6 +1,7 @@
 package syncannotation
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -65,6 +66,61 @@ func Render(content []byte, annotation Annotation) ([]byte, error) {
 	}
 
 	return slices.Concat(prefix, body[:at], []byte(inserted), body[at:]), nil
+}
+
+// WriteWithBody replaces the file's body with body and sets its annotation, for a two-way
+// pull, and reports whether the file changed. Like Write, a file that would be identical is
+// left untouched. The byte-order mark, line-ending style and any YAML front matter above the
+// annotation are kept; everything below the annotation becomes the new body.
+func WriteWithBody(path string, annotation Annotation, body []byte) (bool, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return false, err
+	}
+	updated, err := RenderWithBody(content, annotation, body)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", path, err)
+	}
+	if slices.Equal(updated, content) {
+		return false, nil
+	}
+
+	return true, replaceFile(path, updated)
+}
+
+// RenderWithBody returns content with everything below its annotation replaced by body and its
+// annotation set to annotation. The byte-order mark, line-ending style and any YAML front
+// matter above the annotation are preserved; body's line endings are converted to the file's.
+// The caller is responsible for carrying the annotation's title/parent/unknown keys over.
+func RenderWithBody(content []byte, annotation Annotation, body []byte) ([]byte, error) {
+	document, err := Read(content)
+	if err != nil {
+		return nil, err
+	}
+	lines, err := blockLines(annotation)
+	if err != nil {
+		return nil, err
+	}
+	eol := document.Layout.LineEnding
+	block := strings.Join(lines, eol)
+	frontMatter := document.Body[:frontMatterEnd(document.Body)]
+
+	var prefix []byte
+	if document.Layout.ByteOrderMark {
+		prefix = byteOrderMark
+	}
+
+	return slices.Concat(prefix, frontMatter, []byte(block+eol), normaliseEOL(body, eol)), nil
+}
+
+// normaliseEOL rewrites body's line endings to eol, so a pulled body matches the file's style.
+func normaliseEOL(body []byte, eol string) []byte {
+	lf := bytes.ReplaceAll(body, []byte("\r\n"), []byte("\n"))
+	if eol == "\n" {
+		return lf
+	}
+
+	return bytes.ReplaceAll(lf, []byte("\n"), []byte(eol))
 }
 
 func blockLines(annotation Annotation) ([]string, error) {

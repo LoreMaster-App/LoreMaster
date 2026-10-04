@@ -12,8 +12,54 @@ import (
 
 	"lore-master/libs/confluence-client/authentication"
 	"lore-master/libs/confluence-client/connection"
+	"lore-master/libs/confluence-client/storageformat"
 	"lore-master/libs/documentation-sync/platformport"
 )
+
+func TestGetPageContentParsesTheStorageBody(t *testing.T) {
+	const storage = `<h1>Title</h1><p>a <strong>b</strong></p>`
+	platform := dataCenter(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet || r.URL.Path != "/confluence/rest/api/content/700" {
+			t.Errorf("%s %s", r.Method, r.URL)
+		}
+		if !strings.Contains(r.URL.Query().Get("expand"), "body.storage") {
+			t.Errorf("the pull must ask for the body, expand was %q", r.URL.Query().Get("expand"))
+		}
+		_, _ = io.WriteString(w, `{"id":"700","title":"ENG: Doc","version":{"number":5},"ancestors":[{"id":"500"}],"space":{"key":"ENG"},"body":{"storage":{"value":"`+storage+`"}}}`)
+	})
+	content, err := platform.GetPageContent(context.Background(), "700")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if content.Version != 5 || len(content.Flags) != 0 {
+		t.Fatalf("version %d, flags %v", content.Version, content.Flags)
+	}
+	// The body round-trips: mapping it back to storage reproduces what the page served.
+	remapped, err := toStorage(content.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := storageformat.Render(remapped, storageformat.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != storage {
+		t.Fatalf("round trip\n got %q\nwant %q", got, storage)
+	}
+}
+
+func TestGetPageContentFlagsUnconvertibleContent(t *testing.T) {
+	platform := dataCenter(t, func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = io.WriteString(w, `{"id":"700","title":"X","version":{"number":1},"space":{"key":"ENG"},"body":{"storage":{"value":"<ac:structured-macro ac:name=\"info\"><ac:rich-text-body><p>hi</p></ac:rich-text-body></ac:structured-macro>"}}}`)
+	})
+	content, err := platform.GetPageContent(context.Background(), "700")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(content.Flags) == 0 {
+		t.Fatalf("an unknown macro should be flagged, body %#v", content.Body)
+	}
+}
 
 func dataCenter(t *testing.T, handler http.HandlerFunc) *Platform {
 	t.Helper()

@@ -1,6 +1,7 @@
 package syncannotation
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -8,6 +9,58 @@ import (
 	"testing"
 	"time"
 )
+
+func TestRenderWithBodyReplacesTheBodyKeepsLayoutAndAnnotationKeys(t *testing.T) {
+	// BOM, CRLF, a title override and an unknown key — all must survive a pull.
+	content := []byte("\xef\xbb\xbf<!-- lore-master\r\npage-id: 7\r\nversion: 3\r\ntitle: Custom\r\nweird: keep\r\n-->\r\n# Old\r\n\r\nold body\r\n")
+	document, err := Read(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	annotation := *document.Annotation
+	annotation.Version = 9
+	annotation.ContentHash = "sha256:new"
+
+	out, err := RenderWithBody(content, annotation, []byte("# New\n\nnew body\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(out)
+	switch {
+	case !bytes.HasPrefix(out, byteOrderMark):
+		t.Fatal("the byte-order mark was dropped")
+	case !strings.Contains(s, "# New\r\n\r\nnew body\r\n"):
+		t.Fatalf("the body was not replaced with the file's CRLF: %q", s)
+	case strings.Contains(s, "old body"):
+		t.Fatal("the old body was kept")
+	case !strings.Contains(s, "title: Custom") || !strings.Contains(s, "weird: keep"):
+		t.Fatalf("the annotation lost a carried-over key: %q", s)
+	case !strings.Contains(s, "version: 9"):
+		t.Fatalf("the annotation version was not updated: %q", s)
+	}
+	reread, err := Read(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ContentHash(reread.Body) != ContentHash([]byte("# New\n\nnew body\n")) {
+		t.Fatalf("re-reading does not give back the new body: %q", reread.Body)
+	}
+}
+
+func TestRenderWithBodyKeepsFrontMatterAboveTheAnnotation(t *testing.T) {
+	content := []byte("---\ntitle: Front\n---\n<!-- lore-master\npage-id: 7\n-->\nold\n")
+	document, err := Read(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err := RenderWithBody(content, *document.Annotation, []byte("new body\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := string(out); !strings.HasPrefix(got, "---\ntitle: Front\n---\n<!-- lore-master") || !strings.HasSuffix(got, "-->\nnew body\n") {
+		t.Fatalf("front matter not preserved above a replaced body: %q", got)
+	}
+}
 
 func fullAnnotation() Annotation {
 	return Annotation{

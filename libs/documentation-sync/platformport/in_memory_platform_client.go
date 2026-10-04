@@ -136,6 +136,20 @@ func (p *InMemoryPlatform) GetPage(_ context.Context, id string) (RemotePage, er
 	return page.RemotePage, nil
 }
 
+// GetPageContent implements DocumentationPlatform. The fake stores bodies as Documents, so no
+// conversion is needed and nothing is ever flagged.
+func (p *InMemoryPlatform) GetPageContent(_ context.Context, id string) (PageContent, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.log("GetPageContent %s", id)
+	page, ok := p.pages[id]
+	if !ok {
+		return PageContent{}, &PageNotFoundError{ID: id}
+	}
+
+	return PageContent{Version: page.Version, Body: page.Body}, nil
+}
+
 // ListChildren implements DocumentationPlatform.
 func (p *InMemoryPlatform) ListChildren(_ context.Context, parentID string) ([]RemotePage, error) {
 	p.mu.Lock()

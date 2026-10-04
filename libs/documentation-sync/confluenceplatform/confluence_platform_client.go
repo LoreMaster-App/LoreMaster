@@ -83,6 +83,23 @@ func (p *Platform) GetPage(ctx context.Context, id string) (platformport.RemoteP
 	return remote(page), portError(err)
 }
 
+// GetPageContent implements platformport.DocumentationPlatform: it fetches the page with its
+// storage-format body and reverses the render — parse the storage into a Document, map it onto
+// the neutral model — for a two-way pull. Flags from the parser name anything the storage
+// format carried that could not be converted faithfully.
+func (p *Platform) GetPageContent(ctx context.Context, id string) (platformport.PageContent, error) {
+	page, err := p.pages.GetPage(ctx, id, true)
+	if err != nil {
+		return platformport.PageContent{}, portError(err)
+	}
+	document, flags, err := storageformat.Parse(page.BodyStorage)
+	if err != nil {
+		return platformport.PageContent{}, err
+	}
+
+	return platformport.PageContent{Version: page.Version, Body: fromStorage(document), Flags: flags}, nil
+}
+
 // ListChildren implements platformport.DocumentationPlatform.
 func (p *Platform) ListChildren(ctx context.Context, parentID string) ([]platformport.RemotePage, error) {
 	children, err := p.pages.ListChildren(ctx, parentID)

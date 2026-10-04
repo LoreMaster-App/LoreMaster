@@ -8,6 +8,9 @@ import "context"
 type DocumentationPlatform interface {
 	ListSpaces(ctx context.Context) ([]Space, error)
 	GetPage(ctx context.Context, id string) (RemotePage, error)
+	// GetPageContent reads a page's body as a neutral Document for a two-way pull, with
+	// flags naming anything in the platform's format that could not be converted faithfully.
+	GetPageContent(ctx context.Context, id string) (PageContent, error)
 	ListChildren(ctx context.Context, parentID string) ([]RemotePage, error)
 	// FindPagesByTitle returns the pages in the space whose title equals title
 	// ignoring case: the ones a new page of that title would clash with.

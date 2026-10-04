@@ -90,3 +90,21 @@ func TestChildrenOfAMissingPageIsNotFound(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 }
+
+func TestGetPageContentReturnsTheStoredBody(t *testing.T) {
+	ctx := context.Background()
+	platform := NewInMemoryPlatform(Space{ID: "1", Key: "ENG"})
+	body := Document{Blocks: []Block{Paragraph{Inlines: []Inline{Text{Value: "hi"}}}}}
+	page, err := platform.CreatePage(ctx, NewPage{Space: SpaceRef{Key: "ENG"}, Title: "ENG: Doc", Body: body})
+	if err != nil {
+		t.Fatal(err)
+	}
+	content, err := platform.GetPageContent(ctx, page.ID)
+	if err != nil || content.Version != page.Version || content.Flags != nil || !reflect.DeepEqual(content.Body, body) {
+		t.Fatalf("content %+v, err %v", content, err)
+	}
+	var missing *PageNotFoundError
+	if _, err := platform.GetPageContent(ctx, "p404"); !errors.As(err, &missing) {
+		t.Fatalf("a missing page must be not-found, got %v", err)
+	}
+}
