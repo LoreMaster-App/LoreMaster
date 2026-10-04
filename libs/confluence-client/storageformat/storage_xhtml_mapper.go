@@ -106,7 +106,7 @@ func (r *renderer) block(block Block) error {
 	case ThematicBreak:
 		r.out.WriteString("<hr />")
 	case CodeBlock:
-		r.codeMacro(b.Language, b.Code, false)
+		r.codeMacro(b.Language, b.Code, false, false)
 	case Mermaid:
 		return r.mermaid(b)
 	case nil:

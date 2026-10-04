@@ -134,6 +134,18 @@ func TestParseCollapsedMacroBecomesMermaidWithItsImage(t *testing.T) {
 	}
 }
 
+func TestParseMarkedCodeMacroIsMermaidWithoutCollapse(t *testing.T) {
+	// The explicit marker identifies a diagram even when it is not collapsed — a code-mode
+	// diagram, or a page where a Confluence-side edit dropped the collapse flag.
+	doc, flags, err := Parse(`<ac:structured-macro ac:name="code" ac:schema-version="1"><ac:parameter ac:name="lore-master">mermaid</ac:parameter><ac:plain-text-body><![CDATA[graph TD]]></ac:plain-text-body></ac:structured-macro>`)
+	if err != nil || len(flags) != 0 {
+		t.Fatalf("err=%v flags=%v", err, flags)
+	}
+	if diagram, ok := doc.Blocks[0].(Mermaid); !ok || diagram.Source != "graph TD" {
+		t.Fatalf("a marked code macro should be a Mermaid diagram, got %#v", doc.Blocks[0])
+	}
+}
+
 func TestParseTightAndLooseListItems(t *testing.T) {
 	doc, _, err := Parse(`<ul><li>tight</li><li><p>loose</p><p>second</p></li></ul>`)
 	if err != nil {

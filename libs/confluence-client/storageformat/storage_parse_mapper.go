@@ -270,7 +270,7 @@ func (p *parser) macro(e *element) (Block, bool) {
 		return nil, false
 	}
 	var language, body string
-	collapse := false
+	collapse, mermaidMarked := false, false
 	for _, k := range e.kids {
 		if k.el == nil || k.el.name.Space != "ac" {
 			continue
@@ -282,14 +282,17 @@ func (p *parser) macro(e *element) (Block, bool) {
 				language = textOf(k.el)
 			case "collapse":
 				collapse = strings.TrimSpace(textOf(k.el)) == "true"
+			case "lore-master":
+				mermaidMarked = strings.TrimSpace(textOf(k.el)) == "mermaid"
 			}
 		case "plain-text-body":
 			body = textOf(k.el)
 		}
 	}
-	// A collapsed code macro is the source half of an image-mode Mermaid diagram (Render marks
-	// only those with collapse=true); any other code macro is a plain code block.
-	if collapse {
+	// A code macro is a Mermaid diagram's source when it carries the lore-master marker. The
+	// collapse flag is a fallback for pages synced before the marker existed, where only an
+	// image-mode diagram's macro was collapsed; any other code macro is a plain code block.
+	if mermaidMarked || collapse {
 		return Mermaid{Source: body}, true
 	}
 
