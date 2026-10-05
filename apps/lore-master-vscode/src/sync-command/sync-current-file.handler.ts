@@ -14,7 +14,7 @@ export async function syncCurrentFile (deps: SyncCommandDeps): Promise<void> {
   const editor = vscode.window.activeTextEditor
   const folder = folderForActiveEditor()
   if (!editor || !folder) {
-    await vscode.window.showInformationMessage('Lore Master: open a file inside the workspace to sync it.')
+    await vscode.window.showInformationMessage('LoreMaster: open a file inside the workspace to sync it.')
 
     return
   }

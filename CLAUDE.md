@@ -1,8 +1,8 @@
-# Lore Master — Claude Code Project Guide
+# LoreMaster — Claude Code Project Guide
 
 ## What this is
 
-**Lore Master** is a family of editor plugins that gathers a project's lore. The first
+**LoreMaster** is a family of editor plugins that gathers a project's lore. The first
 feature syncs every Markdown file in an open workspace into a documentation platform,
 Confluence first (Cloud, Data Center, and the end-of-life Server). More platforms and
 more kinds of lore come later, which is why nothing here is named after Confluence or
@@ -21,7 +21,7 @@ Markdown.
 
 | Decision | Choice | Where |
 |---|---|---|
-| Name | Lore Master; extension id `<publisher>.lore-master` | #43, #44 |
+| Name | LoreMaster; extension id `<publisher>.lore-master` | #43, #44 |
 | Engine language | **Go**, one sidecar binary spoken to over JSON-RPC on stdio by every editor shell | `docs/architecture/engine-and-shells.md` |
 | Distribution | No npm packages, no CLI product. Only the VS Code Marketplace (later the Visual Studio Marketplace). The binary ships inside each extension | E5 #6, #65 |
 | Layout | Vertical feature slices in Go **and** TypeScript, even where no lint enforces it | `docs/architecture/vertical-feature-slices.md`, #47 |
@@ -99,7 +99,7 @@ npx nx run lore-master-vscode:package   # 8 .vsix in dist/drop, engine in bin/, 
 ```
 
 The extension is `apps/lore-master-vscode` (Nx project `lore-master-vscode`, pinned by
-`nx.name`) but ships as `LoreMaster.lore-master`: the manifest `name` is free to differ.
+`nx.name`) but ships as `LoreMaster.loremaster`: the manifest `name` is free to differ.
 Debug it with the `lore-master-vscode: debug` launch entry (Extension Development Host).
 
 - Go import paths are `lore-master/libs/<lib>/<slice>`. The module name comes

@@ -17,7 +17,7 @@ export interface PagesCommandDeps {
 export async function publishPagesCommand (deps: PagesCommandDeps): Promise<void> {
   const folder = await pickWorkspaceFolder()
   if (!folder) {
-    await vscode.window.showInformationMessage('Lore Master: open a folder to publish.')
+    await vscode.window.showInformationMessage('LoreMaster: open a folder to publish.')
 
     return
   }

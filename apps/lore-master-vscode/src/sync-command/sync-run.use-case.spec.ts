@@ -134,7 +134,7 @@ describe('syncConfluenceOutput', () => {
 
     expect(ui.steps).toEqual([{ message: 'writing', done: 1, total: 2 }])
     expect(ui.reported[0]).toEqual(['written   A'])
-    expect(ui.statuses).toEqual(['Lore Master: synced 1 page(s)'])
+    expect(ui.statuses).toEqual(['LoreMaster: synced 1 page(s)'])
     expect((engine.calls.find(call => call.method === SYNC_PLAN_METHOD)?.params as { output: number }).output).toBe(0)
     expect(engine.calls.at(-1)?.method).toBe(SESSION_CLOSE_METHOD)
   })

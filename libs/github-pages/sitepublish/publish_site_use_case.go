@@ -12,10 +12,10 @@ import (
 
 const (
 	defaultBranch        = "gh-pages"
-	defaultCommitMessage = "docs: publish site with Lore Master"
+	defaultCommitMessage = "docs: publish site with LoreMaster"
 	// commitIdentity is used only when the repository has no configured author, so a
 	// publish from a bare CI checkout still commits.
-	commitAuthorName  = "Lore Master"
+	commitAuthorName  = "LoreMaster"
 	commitAuthorEmail = "lore-master@users.noreply.github.com"
 )
 

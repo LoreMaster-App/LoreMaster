@@ -93,5 +93,5 @@ func (r *LoopbackReceiver) handle(w http.ResponseWriter, request *http.Request) 
 	default:
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = io.WriteString(w, "<!doctype html><meta charset=\"utf-8\"><title>Lore Master</title><p>"+message+"</p>")
+	_, _ = io.WriteString(w, "<!doctype html><meta charset=\"utf-8\"><title>LoreMaster</title><p>"+message+"</p>")
 }

@@ -1,4 +1,4 @@
-// Command lore-master-engine is the sidecar every Lore Master editor extension spawns.
+// Command lore-master-engine is the sidecar every LoreMaster editor extension spawns.
 // It speaks JSON-RPC 2.0 on stdin and stdout (see package rpcprotocol), logs to
 // stderr, and exits when the editor closes stdin.
 package main

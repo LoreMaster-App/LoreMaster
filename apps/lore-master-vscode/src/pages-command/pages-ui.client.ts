@@ -21,7 +21,7 @@ export function createPagesUI (output: vscode.OutputChannel): PagesUI {
     },
 
     async error (message: string) {
-      await vscode.window.showErrorMessage(`Lore Master: ${message}`)
+      await vscode.window.showErrorMessage(`LoreMaster: ${message}`)
     },
   }
 }

@@ -29,7 +29,7 @@ export function createMermaidRenderer (extensionUri: vscode.Uri): DiagramRendere
     }
     panel = vscode.window.createWebviewPanel(
       'loreMasterDiagrams',
-      'Lore Master diagrams',
+      'LoreMaster diagrams',
       { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true },
       { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'dist', 'assets')] },
     )

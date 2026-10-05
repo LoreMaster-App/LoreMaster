@@ -40,7 +40,7 @@ function fakeConfluence () {
   return { server, calls }
 }
 
-suite('Lore Master connection flow in a real VS Code host', () => {
+suite('LoreMaster connection flow in a real VS Code host', () => {
   let server
   let calls
   let baseUrl

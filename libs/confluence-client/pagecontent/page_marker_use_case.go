@@ -5,11 +5,11 @@ import (
 	"errors"
 )
 
-// The marker says "this page is Lore Master's". Orphan detection and prune consider
+// The marker says "this page is LoreMaster's". Orphan detection and prune consider
 // only marked pages, so a page someone made by hand under the sync's root is never
 // reported or trashed.
 const (
-	// MarkerLabel is the label every page Lore Master creates carries.
+	// MarkerLabel is the label every page LoreMaster creates carries.
 	MarkerLabel = "lore-master"
 	// SourcePathProperty is the content property holding the workspace-relative path of
 	// the Markdown file the page comes from.

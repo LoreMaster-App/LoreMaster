@@ -1,11 +1,11 @@
 # Getting started: syncing a workspace to Confluence
 
-A step-by-step first run of the **Lore Master** VS Code extension. It is a preview; the
+A step-by-step first run of the **LoreMaster** VS Code extension. It is a preview; the
 first feature is syncing a workspace's Markdown into Confluence.
 
 ## 1. Install
 
-In VS Code: **Extensions** → search **Lore Master** (`LoreMaster.lore-master`) → **Install**.
+In VS Code: **Extensions** → search **LoreMaster** (`LoreMaster.loremaster`) → **Install**.
 It needs VS Code **1.96 or later**. The extension bundles its own engine, so there is
 nothing else to install.
 
@@ -39,7 +39,7 @@ The **first** sync asks where things go — the space, the parent page everythin
 under, and a title prefix (pages are titled `<prefix>: <H1>`). Your answers are written to
 **`.lore-master.yaml`** in the workspace, so later syncs do not ask again.
 
-Then Lore Master shows a **plan** — what it would create, update, move, or leave unchanged —
+Then LoreMaster shows a **plan** — what it would create, update, move, or leave unchanged —
 and waits for you to confirm before writing anything. Confirm, and it creates the pages
 parents-first, uploads images, renders Mermaid diagrams to images, and links pages to each
 other by title.

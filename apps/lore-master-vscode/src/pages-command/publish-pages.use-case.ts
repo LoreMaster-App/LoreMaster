@@ -56,7 +56,7 @@ export async function publishPagesOutput (deps: { engine: PagesEngine; workspace
 
   let result: PagesPublishResult
   try {
-    result = await ui.withProgress('Lore Master: publishing to GitHub Pages', () =>
+    result = await ui.withProgress('LoreMaster: publishing to GitHub Pages', () =>
       engine.request<PagesPublishResult>(PAGES_PUBLISH_METHOD, { workspaceRoot, output }))
   } catch (error) {
     await ui.error(messageOf(error))
@@ -112,7 +112,7 @@ function reportResult (result: PagesPublishResult, ui: PagesUI): void {
     }
     lines.unshift(`Not published: the Markdown has ${errors.length} error(s). Fix them and publish again.`)
     ui.report(lines)
-    ui.status(`Lore Master: GitHub Pages not published (${errors.length} error(s))`)
+    ui.status(`LoreMaster: GitHub Pages not published (${errors.length} error(s))`)
 
     return
   }
@@ -120,7 +120,7 @@ function reportResult (result: PagesPublishResult, ui: PagesUI): void {
   if (!result.changed) {
     lines.unshift('GitHub Pages is already up to date.')
     ui.report(lines)
-    ui.status('Lore Master: GitHub Pages already up to date')
+    ui.status('LoreMaster: GitHub Pages already up to date')
 
     return
   }
@@ -128,7 +128,7 @@ function reportResult (result: PagesPublishResult, ui: PagesUI): void {
   const where = result.commit ? `${result.branch} (${result.commit})` : result.branch
   lines.unshift(`Published ${result.files} file(s) to ${where}.${result.url ? ` ${result.url}` : ''}`)
   ui.report(lines)
-  ui.status(result.url ? `Lore Master: published to GitHub Pages — ${result.url}` : 'Lore Master: published to GitHub Pages')
+  ui.status(result.url ? `LoreMaster: published to GitHub Pages — ${result.url}` : 'LoreMaster: published to GitHub Pages')
 }
 
 function messageOf (error: unknown): string {

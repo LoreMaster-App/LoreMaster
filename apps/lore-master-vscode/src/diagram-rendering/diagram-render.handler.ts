@@ -18,7 +18,7 @@ export function answerRenderDiagrams (deps: { engine: EngineClient; renderer: Di
   return deps.engine.onRequest(HOST_RENDER_DIAGRAM_METHOD, async params => {
     const { language, source } = params as RenderDiagramParams
     if (language !== 'mermaid') {
-      throw new Error(`Lore Master cannot render a ${language} diagram`)
+      throw new Error(`LoreMaster cannot render a ${language} diagram`)
     }
 
     return { svg: await deps.renderer.render(source) } satisfies RenderDiagramResult

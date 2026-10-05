@@ -1,9 +1,9 @@
-# Lore Master
+# LoreMaster
 
-![Lore Master](https://raw.githubusercontent.com/LoreMaster-App/LoreMaster/main/assets/lore-master-concept-md.jpg)
+![LoreMaster](https://raw.githubusercontent.com/LoreMaster-App/LoreMaster/main/assets/lore-master-concept-md.jpg)
 
-**Lore Master gathers a project's lore and publishes it where your team already reads.**
-Keep your docs as plain Markdown in your repo, and Lore Master syncs them to **Confluence**
+**LoreMaster gathers a project's lore and publishes it where your team already reads.**
+Keep your docs as plain Markdown in your repo, and LoreMaster syncs them to **Confluence**
 or publishes them as a **static site on GitHub Pages** — directly from VS Code.
 
 > **Preview.** The engine and its libraries are built and tested; this extension is

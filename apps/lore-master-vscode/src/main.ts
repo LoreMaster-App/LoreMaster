@@ -19,7 +19,7 @@ export function activate (context: vscode.ExtensionContext): void {
 
   const connections = createConnectionStore(context.secrets, context.globalState)
   const targets = createTargetStore()
-  const output = vscode.window.createOutputChannel('Lore Master')
+  const output = vscode.window.createOutputChannel('LoreMaster')
   context.subscriptions.push(output)
 
   // Answer the engine's host/renderDiagram with a Mermaid webview (image mode) and its

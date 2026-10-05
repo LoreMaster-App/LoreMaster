@@ -29,7 +29,7 @@ const baseUrl = required('CONFLUENCE_DC_BASE_URL')
 const token = required('CONFLUENCE_DC_PAT')
 const enginePath = required('LORE_MASTER_ENGINE_BIN')
 const space = process.env.CONFLUENCE_DC_SPACE || 'AUT'
-const titlePrefix = process.env.CONFLUENCE_DC_TITLE_PREFIX || 'Lore Master check'
+const titlePrefix = process.env.CONFLUENCE_DC_TITLE_PREFIX || 'LoreMaster check'
 // A unique H1 so the page never clashes with anything already in the space.
 const stamp = new Date().toISOString().replaceAll(/[:.]/g, '-')
 const h1 = `Sync check ${stamp}`
