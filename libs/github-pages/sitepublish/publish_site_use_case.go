@@ -1,0 +1,145 @@
+package sitepublish
+
+import (
+	"context"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"lore-master/libs/github-pages/siterender"
+)
+
+const (
+	defaultBranch        = "gh-pages"
+	defaultCommitMessage = "docs: publish site with Lore Master"
+	// commitIdentity is used only when the repository has no configured author, so a
+	// publish from a bare CI checkout still commits.
+	commitAuthorName  = "Lore Master"
+	commitAuthorEmail = "lore-master@users.noreply.github.com"
+)
+
+// PublishSite writes the generated site as the entire content of the target branch and
+// pushes it, shelling out to the user's git so their existing credentials and remotes are
+// used. It never touches the workspace's working tree: it clones the remote into a
+// temporary directory, replaces its contents with the site, commits and pushes. When the
+// site already matches the branch the result is a no-op (Changed is false).
+func PublishSite(ctx context.Context, opts PublishOptions, files []siterender.SiteFile) (PublishResult, error) {
+	git := newGitClient()
+
+	branch := opts.Branch
+	if branch == "" {
+		branch = defaultBranch
+	}
+	remote, err := resolveRemote(ctx, git, opts)
+	if err != nil {
+		return PublishResult{}, err
+	}
+
+	tmp, err := os.MkdirTemp("", "lore-master-pages-*")
+	if err != nil {
+		return PublishResult{}, err
+	}
+	defer func() { _ = os.RemoveAll(tmp) }()
+
+	if err := checkoutBranch(ctx, git, remote, branch, tmp); err != nil {
+		return PublishResult{}, err
+	}
+	if err := replaceContents(tmp, files); err != nil {
+		return PublishResult{}, err
+	}
+	if _, err := git.run(ctx, tmp, "add", "-A"); err != nil {
+		return PublishResult{}, err
+	}
+
+	status, err := git.run(ctx, tmp, "status", "--porcelain")
+	if err != nil {
+		return PublishResult{}, err
+	}
+	if status == "" {
+		return PublishResult{Branch: branch, Remote: remote, Changed: false, Files: len(files)}, nil
+	}
+
+	message := opts.CommitMessage
+	if message == "" {
+		message = defaultCommitMessage
+	}
+	if _, err := git.run(ctx, tmp, "-c", "user.name="+commitAuthorName, "-c", "user.email="+commitAuthorEmail, "commit", "-m", message); err != nil {
+		return PublishResult{}, err
+	}
+	hash, err := git.run(ctx, tmp, "rev-parse", "--short", "HEAD")
+	if err != nil {
+		return PublishResult{}, err
+	}
+	if _, err := git.run(ctx, tmp, "push", "origin", branch); err != nil {
+		return PublishResult{}, err
+	}
+
+	return PublishResult{Branch: branch, Remote: remote, Commit: hash, Changed: true, Files: len(files)}, nil
+}
+
+// resolveRemote is the clone URL to publish to: the workspace's own origin when Repo is
+// empty, otherwise Repo itself (a URL) or a github.com URL built from "owner/name".
+func resolveRemote(ctx context.Context, git gitClient, opts PublishOptions) (string, error) {
+	if opts.Repo == "" {
+		url, err := git.run(ctx, opts.WorkspaceRoot, "remote", "get-url", "origin")
+		if err != nil {
+			return "", fmt.Errorf("no origin remote to publish to in %s: %w", opts.WorkspaceRoot, err)
+		}
+
+		return url, nil
+	}
+	if strings.Contains(opts.Repo, "://") || strings.HasPrefix(opts.Repo, "git@") {
+		return opts.Repo, nil
+	}
+
+	return "https://github.com/" + opts.Repo + ".git", nil
+}
+
+// checkoutBranch clones the target branch into tmp, or, when it does not exist yet, clones
+// the default branch and starts the target as an orphan so the site does not inherit the
+// code history.
+func checkoutBranch(ctx context.Context, git gitClient, remote, branch, tmp string) error {
+	if _, err := git.run(ctx, "", "clone", "--depth", "1", "--single-branch", "--branch", branch, remote, tmp); err == nil {
+		return nil
+	}
+	if err := os.RemoveAll(tmp); err != nil {
+		return err
+	}
+	if _, err := git.run(ctx, "", "clone", "--depth", "1", remote, tmp); err != nil {
+		return fmt.Errorf("clone %s: %w", remote, err)
+	}
+	if _, err := git.run(ctx, tmp, "switch", "--orphan", branch); err != nil {
+		return fmt.Errorf("start branch %s: %w", branch, err)
+	}
+
+	return nil
+}
+
+// replaceContents clears everything in dir except the .git directory, then writes the site
+// files, so the branch ends up holding exactly the generated site.
+func replaceContents(dir string, files []siterender.SiteFile) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if entry.Name() == ".git" {
+			continue
+		}
+		if err := os.RemoveAll(filepath.Join(dir, entry.Name())); err != nil {
+			return err
+		}
+	}
+	for _, file := range files {
+		target := filepath.Join(dir, filepath.FromSlash(file.Path))
+		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(target, file.Content, 0o644); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
