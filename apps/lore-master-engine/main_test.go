@@ -77,12 +77,13 @@ func TestEveryEditorMethodIsRouted(t *testing.T) {
 		rpcprotocol.MethodSpaceList, rpcprotocol.MethodPageChildren, rpcprotocol.MethodPageSearch,
 		rpcprotocol.MethodSyncPlan, rpcprotocol.MethodSyncExecute,
 		rpcprotocol.MethodSettingsRead, rpcprotocol.MethodSettingsSave,
+		rpcprotocol.MethodPagesPublish,
 	} {
 		if methods[method] == nil {
 			t.Errorf("%s has no handler", method)
 		}
 	}
-	if len(methods) != 11 {
+	if len(methods) != 12 {
 		t.Errorf("%d methods routed; update this list when the protocol grows", len(methods))
 	}
 }
