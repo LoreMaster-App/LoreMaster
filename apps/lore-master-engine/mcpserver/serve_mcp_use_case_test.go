@@ -94,7 +94,7 @@ func TestToolsListAdvertisesEveryTool(t *testing.T) {
 			t.Errorf("%s inputSchema.type = %v", tool.Name, tool.InputSchema["type"])
 		}
 	}
-	for _, want := range []string{nestingRulesToolName, previewTreeToolName, validateDocumentToolName} {
+	for _, want := range []string{nestingRulesToolName, previewTreeToolName, validateDocumentToolName, placeDocumentToolName} {
 		if !names[want] {
 			t.Errorf("tools/list missing %q; got %v", want, names)
 		}

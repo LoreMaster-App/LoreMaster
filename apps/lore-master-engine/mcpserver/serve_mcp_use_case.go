@@ -74,6 +74,7 @@ func dispatch(ctx context.Context, message request, version string, workspaceRoo
 			nestingRulesTool(),
 			previewTreeTool(),
 			validateDocumentTool(),
+			placeDocumentTool(),
 		}}), true
 	case "tools/call":
 		result, err := callTool(ctx, message.Params, workspaceRoot)
@@ -111,6 +112,8 @@ func callTool(ctx context.Context, params json.RawMessage, workspaceRoot string)
 		return previewTreeResult(ctx, workspaceRoot), nil
 	case validateDocumentToolName:
 		return validateDocumentResult(ctx, workspaceRoot, call.Arguments), nil
+	case placeDocumentToolName:
+		return placeDocumentResult(ctx, workspaceRoot, call.Arguments), nil
 	default:
 		return toolCallResult{}, fmt.Errorf("unknown tool %q", call.Name)
 	}
