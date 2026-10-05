@@ -1,0 +1,10 @@
+# Lore Master configuration. See docs/getting-started.md.
+version: 1
+outputs:
+  - platform: github-pages
+    direction: to-platform
+    content:
+      - type: markdown
+        roots:
+          - docs
+        template: default
