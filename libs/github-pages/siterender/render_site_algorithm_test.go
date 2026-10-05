@@ -50,9 +50,11 @@ func TestGenerateSiteEmbedsTheRawMarkdownUnconverted(t *testing.T) {
 	files, _ := GenerateSite("My Project", sampleTree())
 	page, _ := fileByPath(files, "readme.html")
 
+	// The base64 must sit in a data attribute, verbatim: inside a <script> html/template would
+	// JS-escape it (turning '/' into '\/'), which breaks atob in the browser.
 	wantB64 := base64.StdEncoding.EncodeToString([]byte("# Home\n\nWelcome."))
-	if !strings.Contains(string(page.Content), wantB64) {
-		t.Fatalf("readme.html should embed the raw Markdown as base64; it did not")
+	if !strings.Contains(string(page.Content), `data-markdown="`+wantB64+`"`) {
+		t.Fatalf("readme.html should embed the raw Markdown as a base64 data attribute; it did not")
 	}
 	// The home page's bytes are rendered in the browser, not server-side: the HTML itself
 	// must not contain the converted heading.

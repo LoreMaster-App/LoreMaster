@@ -1,5 +1,7 @@
 # Lore Master
 
+![Conceptual image](./assets/ore-master-concept-small.jpg)
+
 **Lore Master** gathers a project's lore and publishes it where your team already reads.
 Its first feature syncs every Markdown file in your workspace into a documentation
 platform — **Confluence** first (Cloud, Data Center, and the end-of-life Server) — as a

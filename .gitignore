@@ -58,3 +58,6 @@ test-output
 .vscode-test/
 
 apps/lore-master-vscode/bin/
+
+# Playwright MCP artifacts
+.playwright-mcp/
