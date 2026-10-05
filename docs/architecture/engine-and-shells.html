@@ -34,6 +34,11 @@
   var markdown = new TextDecoder('utf-8').decode(bytes);
   var article = document.getElementById('lm-markdown');
   article.innerHTML = marked.parse(markdown);
+  article.querySelectorAll('a[href]').forEach(function (link) {
+    var href = link.getAttribute('href');
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.charAt(0) === '#' || href.charAt(0) === '/') { return; }
+    link.setAttribute('href', href.replace(/\.(md|markdown)(#.*)?$/i, '.html$2'));
+  });
   article.querySelectorAll('pre > code.language-mermaid').forEach(function (code) {
     var diagram = document.createElement('div');
     diagram.className = 'mermaid';
