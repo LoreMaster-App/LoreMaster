@@ -16,6 +16,7 @@ export const SYNC_PLAN_METHOD = 'sync/plan'
 export const SYNC_EXECUTE_METHOD = 'sync/execute'
 export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
+export const PAGES_PUBLISH_METHOD = 'pages/publish'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const HOST_OPEN_EXTERNAL_METHOD = 'host/openExternal'
@@ -160,6 +161,10 @@ export interface Output {
   mermaidMode:    string
   titleCollision: string
   linkMode:       string
+  /** github-pages: the repo ("owner/name" or a URL; empty = the workspace's own origin)
+   *  and the branch to publish to (empty = gh-pages). */
+  repo?:          string
+  branch?:        string
 }
 
 export interface Settings {
@@ -231,6 +236,24 @@ export interface SyncExecuteResult {
   pages:      PageOutcome[]
   rewritten?: string[]
   warnings?:  string[]
+}
+
+// ---- pages/publish -------------------------------------------------------------------
+
+export interface PagesPublishParams {
+  workspaceRoot: string
+  output:        number
+}
+
+export interface PagesPublishResult {
+  branch?:   string
+  remote?:   string
+  commit?:   string
+  changed:   boolean
+  files:     number
+  url?:      string
+  warnings?: string[]
+  errors?:   string[]
 }
 
 // ---- notifications -------------------------------------------------------------------
