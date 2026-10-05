@@ -25,11 +25,11 @@ describe('activate', () => {
 
     activate(context)
 
-    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.addConnection'])
+    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.addConnection', 'loreMaster.addStorage', 'loreMaster.openConfig'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
     // The commands plus the engine client, output channel, diagram renderer, its
-    // host/renderDiagram subscription, the host/openExternal subscription and the Confluence
-    // authentication provider — all disposed on deactivate.
-    expect(context.subscriptions).toHaveLength(contributed.length + 6)
+    // host/renderDiagram subscription, the host/openExternal subscription, the Confluence
+    // authentication provider and the sidebar Sync view — all disposed on deactivate.
+    expect(context.subscriptions).toHaveLength(contributed.length + 7)
   })
 })
