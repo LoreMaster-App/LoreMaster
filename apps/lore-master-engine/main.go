@@ -14,6 +14,7 @@ import (
 	"lore-master/apps/lore-master-engine/catalogqueries"
 	"lore-master/apps/lore-master-engine/editiondetect"
 	"lore-master/apps/lore-master-engine/hostbridge"
+	"lore-master/apps/lore-master-engine/mcpserver"
 	"lore-master/apps/lore-master-engine/pagescommands"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
@@ -33,6 +34,7 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 	flags := flag.NewFlagSet("lore-master-engine", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	showVersion := flags.Bool("version", false, "print the version and exit")
+	mcpMode := flags.Bool("mcp", false, "run as an MCP server over stdio, exposing LoreMaster's documentation rules")
 	if err := flags.Parse(args); err != nil {
 		return 2
 	}
@@ -43,6 +45,17 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 	}
 
 	logger := slog.New(slog.NewTextHandler(stderr, nil)).With("version", version)
+
+	if *mcpMode {
+		if err := mcpserver.Serve(ctx, stdin, stdout, version, logger); err != nil {
+			logger.Error("mcp server stopped", "error", err.Error())
+
+			return 1
+		}
+
+		return 0
+	}
+
 	if err := rpcserver.Serve(ctx, stdio{Reader: stdin, Writer: stdout}, engineMethods(logger), logger); err != nil {
 		logger.Error("stopped", "error", err.Error())
 
