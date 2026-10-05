@@ -47,6 +47,12 @@ func PublishPages() rpcserver.Method {
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
 		}
+		// Publish the images and linked files the pages reference, so their relative src/href
+		// resolve on the site instead of 404ing.
+		assets, assetWarnings := collectSiteAssets(params.WorkspaceRoot, documents)
+		files = append(files, assets...)
+		warnings = append(warnings, assetWarnings...)
+
 		published, err := sitepublish.PublishSite(ctx, sitepublish.PublishOptions{
 			WorkspaceRoot: params.WorkspaceRoot, Repo: output.Repo, Branch: output.Branch,
 		}, files)
