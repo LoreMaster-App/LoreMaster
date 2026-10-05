@@ -9,6 +9,7 @@ import {
   type SessionOpenResult,
 } from '../engine-protocol'
 import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
+import { createConnectionUI } from './connection-ui.client'
 
 /** The command id contributed in package.json. */
 export const ADD_CONNECTION_COMMAND = 'loreMaster.addConnection'
@@ -119,4 +120,10 @@ export async function setUpConnection (deps: { engine: EngineRequester; store: C
 
 function messageOf (error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+/** Runs the Add Connection wizard with the default editor UI. A convenience for callers that
+ *  just need "let the user add a connection now" (e.g. first-run sync with no connection). */
+export function connectConfluence (deps: { engine: EngineRequester; store: ConnectionStore }): Promise<ConnectionMeta | undefined> {
+  return setUpConnection({ engine: deps.engine, store: deps.store, ui: createConnectionUI() })
 }

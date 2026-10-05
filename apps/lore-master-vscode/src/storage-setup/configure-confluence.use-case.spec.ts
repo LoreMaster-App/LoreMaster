@@ -90,12 +90,26 @@ describe('configureConfluence', () => {
     })
   })
 
-  it('tells the user when there is no connection and configures nothing', async () => {
+  it('tells the user when there is no connection and no way to add one', async () => {
     const ui = buildUI()
     const output = await configureConfluence({ engine: fakeEngine({}), connections: connectionStore([]), ui })
 
     expect(output).toBeUndefined()
     expect(ui.recording.toldNoConnection).toBe(true)
+  })
+
+  it('launches Add Connection inline when there is none, then continues', async () => {
+    const engine = fakeEngine({
+      [SESSION_OPEN_METHOD]:  () => session,
+      [SPACE_LIST_METHOD]:    () => ({ spaces: [{ id: '1', key: 'ENG', name: 'Engineering', homepageId: 'home' }] }),
+      [PAGE_CHILDREN_METHOD]: () => ({ pages: [] }),
+    })
+    const ui = buildUI()
+
+    const output = await configureConfluence({ engine, connections: connectionStore([]), ui, addConnection: () => Promise.resolve(meta) })
+
+    expect(ui.recording.toldNoConnection).toBe(false)
+    expect(output).toMatchObject({ platform: 'confluence', baseUrl: meta.baseUrl, space: 'ENG' })
   })
 
   it('returns undefined when the space pick is cancelled', async () => {
