@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { connectConfluence } from '../connection-setup'
 import type { EngineClient } from '../engine-process'
 import type { ConnectionStore } from '../secret-storage'
 import type { TargetStore } from '../sync-target'
@@ -26,5 +27,12 @@ export async function sync (deps: SyncCommandDeps): Promise<void> {
     return
   }
 
-  await syncOutputs({ engine: deps.engine, connections: deps.connections, targets: deps.targets, workspaceRoot: folder, ui: createSyncUI(deps.output) })
+  await syncOutputs({
+    engine:        deps.engine,
+    connections:   deps.connections,
+    targets:       deps.targets,
+    workspaceRoot: folder,
+    ui:            createSyncUI(deps.output),
+    addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
+  })
 }

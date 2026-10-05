@@ -1,15 +1,17 @@
 import type { EngineClient } from '../engine-process'
 import { type Output, SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD, type SettingsReadResult } from '../engine-protocol'
-import type { ConnectionStore } from '../secret-storage'
+import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
 import { setUpStorages, type StorageSetupUI } from '../storage-setup'
 
-/** What adding a storage needs: the engine, the stored connections, the folder, and a UI
- *  that can run the storage setup and report back. */
+/** What adding a storage needs: the engine, the stored connections, the folder, a UI that can
+ *  run the storage setup and report back, and — optionally — a way to add a connection inline
+ *  when Confluence setup finds none. */
 export interface AddStorageDeps {
-  engine:        EngineClient
-  connections:   ConnectionStore
-  workspaceRoot: string
-  ui:            StorageSetupUI & { report (lines: string[]): void }
+  engine:         EngineClient
+  connections:    ConnectionStore
+  workspaceRoot:  string
+  ui:             StorageSetupUI & { report (lines: string[]): void }
+  addConnection?: () => Promise<ConnectionMeta | undefined>
 }
 
 /**
@@ -29,7 +31,7 @@ export async function addStorage (deps: AddStorageDeps): Promise<void> {
     return
   }
 
-  const created = await setUpStorages({ engine, connections, ui })
+  const created = await setUpStorages({ engine, connections, ui, addConnection: deps.addConnection })
   if (!created || created.length === 0) {
     return
   }

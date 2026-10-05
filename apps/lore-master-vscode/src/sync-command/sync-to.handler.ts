@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { connectConfluence } from '../connection-setup'
 import { pickWorkspaceFolder } from '../workspace-files'
 import type { SyncCommandDeps } from './sync.handler'
 import { syncOutputs } from './sync-outputs.use-case'
@@ -17,7 +18,14 @@ export async function syncTo (deps: SyncCommandDeps): Promise<void> {
   }
 
   await syncOutputs(
-    { engine: deps.engine, connections: deps.connections, targets: deps.targets, workspaceRoot: folder, ui: createSyncUI(deps.output) },
+    {
+      engine:        deps.engine,
+      connections:   deps.connections,
+      targets:       deps.targets,
+      workspaceRoot: folder,
+      ui:            createSyncUI(deps.output),
+      addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
+    },
     { choose: true },
   )
 }

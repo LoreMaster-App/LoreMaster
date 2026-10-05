@@ -1,5 +1,6 @@
 import { relative } from 'node:path'
 import * as vscode from 'vscode'
+import { connectConfluence } from '../connection-setup'
 import { folderForActiveEditor } from '../workspace-files'
 import type { SyncCommandDeps } from './sync.handler'
 import { syncOutputs } from './sync-outputs.use-case'
@@ -22,7 +23,15 @@ export async function syncCurrentFile (deps: SyncCommandDeps): Promise<void> {
   const scope = [relative(folder, editor.document.uri.fsPath).replaceAll(/[/\\]/g, '/')]
 
   await syncOutputs(
-    { engine: deps.engine, connections: deps.connections, targets: deps.targets, workspaceRoot: folder, scope, ui: createSyncUI(deps.output) },
+    {
+      engine:        deps.engine,
+      connections:   deps.connections,
+      targets:       deps.targets,
+      workspaceRoot: folder,
+      scope,
+      ui:            createSyncUI(deps.output),
+      addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
+    },
     { confluenceOnly: true },
   )
 }

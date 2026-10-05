@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { connectConfluence } from '../connection-setup'
 import type { EngineClient } from '../engine-process'
 import type { ConnectionStore } from '../secret-storage'
 import { createSyncUI } from '../sync-command'
@@ -24,5 +25,11 @@ export async function addStorageCommand (deps: SidebarCommandDeps): Promise<void
     return
   }
 
-  await addStorage({ engine: deps.engine, connections: deps.connections, workspaceRoot: folder, ui: createSyncUI(deps.output) })
+  await addStorage({
+    engine:        deps.engine,
+    connections:   deps.connections,
+    workspaceRoot: folder,
+    ui:            createSyncUI(deps.output),
+    addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
+  })
 }

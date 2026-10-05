@@ -11,7 +11,7 @@ import {
   type SyncExecuteResult,
   type SyncPlanResult,
 } from '../engine-protocol'
-import type { ConnectionStore } from '../secret-storage'
+import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
 import { type StorageSetupUI } from '../storage-setup'
 import { type PlanPreviewUI, previewPlan } from './plan-preview.handler'
 import type { TargetStore } from '../sync-target'
@@ -41,14 +41,16 @@ export interface SyncUI extends StorageSetupUI, PlanPreviewUI {
 }
 
 /** What a sync needs: the engine, the stored connections and targets, the folder, an
- *  optional file scope, and the editor UI. */
+ *  optional file scope, the editor UI, and — for first-run setup — a way to add a connection
+ *  inline when there is none. */
 export interface SyncDeps {
-  engine:        EngineClient
-  connections:   ConnectionStore
-  targets:       TargetStore
-  workspaceRoot: string
-  scope?:        string[]
-  ui:            SyncUI
+  engine:         EngineClient
+  connections:    ConnectionStore
+  targets:        TargetStore
+  workspaceRoot:  string
+  scope?:         string[]
+  ui:             SyncUI
+  addConnection?: () => Promise<ConnectionMeta | undefined>
 }
 
 /** One configured Confluence output to sync, with its index in the settings' outputs. */

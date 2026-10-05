@@ -31,7 +31,7 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
   let indices = outputs.map((_, index) => index).filter(index => isSyncable(outputs[index]))
 
   if (indices.length === 0) {
-    const created = await setUpStorages({ engine, connections, ui })
+    const created = await setUpStorages({ engine, connections, ui, addConnection: deps.addConnection })
     if (!created || created.length === 0) {
       return
     }

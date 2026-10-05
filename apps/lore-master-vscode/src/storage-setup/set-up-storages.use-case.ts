@@ -27,11 +27,13 @@ export interface StorageSetupUI extends ConfluenceSetupUI, GitHubPagesSetupUI {
   pickStorageTypes (): Promise<StorageType[] | undefined>
 }
 
-/** What the first-run setup needs. */
+/** What the first-run setup needs. `addConnection`, when given, lets Confluence setup start
+ *  the Add Connection wizard inline when there is no connection yet. */
 export interface StorageSetupDeps {
-  engine:      EngineClient
-  connections: ConnectionStore
-  ui:          StorageSetupUI
+  engine:         EngineClient
+  connections:    ConnectionStore
+  ui:             StorageSetupUI
+  addConnection?: () => Promise<ConnectionMeta | undefined>
 }
 
 /**
@@ -40,7 +42,7 @@ export interface StorageSetupDeps {
  * so the caller writes nothing.
  */
 export async function setUpStorages (deps: StorageSetupDeps): Promise<Output[] | undefined> {
-  const { engine, connections, ui } = deps
+  const { engine, connections, ui, addConnection } = deps
 
   const types = await ui.pickStorageTypes()
   if (!types || types.length === 0) {
@@ -49,7 +51,7 @@ export async function setUpStorages (deps: StorageSetupDeps): Promise<Output[] |
 
   const outputs: Output[] = []
   if (types.includes('confluence')) {
-    const output = await configureConfluence({ engine, connections, ui })
+    const output = await configureConfluence({ engine, connections, ui, addConnection })
     if (output) {
       outputs.push(output)
     }
