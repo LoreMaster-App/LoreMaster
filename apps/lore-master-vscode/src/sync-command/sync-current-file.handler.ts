@@ -1,14 +1,15 @@
 import { relative } from 'node:path'
 import * as vscode from 'vscode'
 import { folderForActiveEditor } from '../workspace-files'
-import { runSync } from './sync-run.use-case'
+import type { SyncCommandDeps } from './sync.handler'
+import { syncOutputs } from './sync-outputs.use-case'
 import { createSyncUI } from './sync-ui.client'
-import type { SyncCommandDeps } from './sync-workspace.handler'
 
 /** The command id contributed in package.json. */
 export const SYNC_CURRENT_FILE_COMMAND = 'loreMaster.syncCurrentFile'
 
-/** Syncs just the active file (and the ancestors it needs), scoping the plan to it. */
+/** Syncs just the active file (and the ancestors it needs) to the Confluence outputs,
+ *  scoping the plan to it. GitHub Pages publishes the whole site, so it is not scoped here. */
 export async function syncCurrentFile (deps: SyncCommandDeps): Promise<void> {
   const editor = vscode.window.activeTextEditor
   const folder = folderForActiveEditor()
@@ -20,5 +21,8 @@ export async function syncCurrentFile (deps: SyncCommandDeps): Promise<void> {
 
   const scope = [relative(folder, editor.document.uri.fsPath).replaceAll(/[/\\]/g, '/')]
 
-  await runSync({ engine: deps.engine, connections: deps.connections, targets: deps.targets, workspaceRoot: folder, scope, ui: createSyncUI(deps.output) })
+  await syncOutputs(
+    { engine: deps.engine, connections: deps.connections, targets: deps.targets, workspaceRoot: folder, scope, ui: createSyncUI(deps.output) },
+    { confluenceOnly: true },
+  )
 }
