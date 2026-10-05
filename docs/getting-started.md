@@ -16,7 +16,7 @@ Open the folder whose Markdown you want to sync. Each `.md` file becomes a page;
 
 ## 3. Add a connection
 
-Command Palette (`Ctrl`/`Cmd`+`Shift`+`P`) → **Lore Master: Add Connection** — or the
+Command Palette (`Ctrl`/`Cmd`+`Shift`+`P`) → **LoreMaster: Add Connection** — or the
 **Accounts menu** (bottom-left) → *Sign in with Confluence*. Then:
 
 1. Enter the site URL (any page URL of the site works), e.g.
@@ -32,7 +32,7 @@ Command Palette (`Ctrl`/`Cmd`+`Shift`+`P`) → **Lore Master: Add Connection** �
 
 ## 4. Sync
 
-Command Palette → **Lore Master: Sync Workspace** (or **Sync Current File** for just the
+Command Palette → **LoreMaster: Sync** (or **Sync Current File** for just the
 open file).
 
 The **first** sync asks where things go — the space, the parent page everything nests
@@ -61,7 +61,7 @@ other by title.
 ## Troubleshooting
 
 - **"not compatible with this version of Visual Studio Code"** — update VS Code to 1.96+.
-- **No connection yet** — run *Lore Master: Add Connection* first; a sync with no connection
+- **No connection yet** — run *LoreMaster: Add Connection* first; a sync with no connection
   just prompts you to add one.
 - **A custom engine build** — point `loreMaster.engine.path` at a binary if you are
   developing the engine; otherwise the bundled one is used.

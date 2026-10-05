@@ -23,27 +23,27 @@
       {
         "command": "loreMaster.sync",
         "title": "Sync",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.syncTo",
         "title": "Sync to…",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.syncCurrentFile",
         "title": "Sync Current File",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.publishPages",
         "title": "Publish to GitHub Pages",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       }
     ],
     "configuration": {

@@ -30,7 +30,7 @@ The client **secret** is not needed and is never entered into the editor — PKC
 Two ways in, both reaching the same connection:
 
 - the **Accounts menu** (bottom-left in VS Code) → *Sign in with Confluence (Lore Master)*, or
-- the **Lore Master: Add connection** command.
+- the **LoreMaster: Add Connection** command.
 
 Then:
 
