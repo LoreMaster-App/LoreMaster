@@ -14,10 +14,10 @@ export interface AuthProviderDeps {
   signIn: () => Promise<ConnectionMeta | undefined>
 }
 
-/** The access token to expose for a session. OAuth sessions carry their access token;
- *  other kinds carry their token or password, so VS Code has a non-empty value. */
+/** The token to expose for a session: the credential's token or password, so VS Code has a
+ *  non-empty value for the account. */
 function tokenOf (credential: Credential | undefined): string {
-  return credential?.accessToken ?? credential?.token ?? credential?.password ?? 'confluence'
+  return credential?.token ?? credential?.password ?? 'confluence'
 }
 
 function sessionOf (meta: ConnectionMeta, accessToken: string): vscode.AuthenticationSession {

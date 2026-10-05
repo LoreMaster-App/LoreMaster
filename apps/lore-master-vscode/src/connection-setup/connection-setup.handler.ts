@@ -40,7 +40,7 @@ export function authMethodsFor (edition: Edition): AuthMethod[] {
       return ['apitoken']
     }
     case 'datacenter': {
-      return ['pat', 'oauth']
+      return ['pat']
     }
     case 'server': {
       return ['pat', 'basic']
@@ -106,13 +106,7 @@ export async function setUpConnection (deps: { engine: EngineRequester; store: C
     displayName: session.user.displayName,
     user:        session.user.username ?? session.user.accountId ?? '',
   }
-  // An interactive OAuth sign-in returns tokens: store them (and the client id) so later
-  // sessions reuse the access token and the engine can refresh it, instead of signing in
-  // through the browser every time.
-  const stored: Credential = session.tokens
-    ? { kind: 'oauth', accessToken: session.tokens.accessToken, refreshToken: session.tokens.refreshToken, clientId: credential.clientId }
-    : credential
-  await store.add(meta, stored)
+  await store.add(meta, credential)
   await ui.showConnected(meta)
 
   return meta

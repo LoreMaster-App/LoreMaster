@@ -25,8 +25,7 @@ Command Palette (`Ctrl`/`Cmd`+`Shift`+`P`) → **LoreMaster: Add Connection** �
 2. Choose how to sign in:
    - **Cloud** — your Atlassian account email + an
      [API token](https://id.atlassian.com/manage-profile/security/api-tokens).
-   - **Data Center** — a personal access token, or **OAuth sign-in** (see
-     [`contributing/confluence-oauth.md`](contributing/confluence-oauth.md)).
+   - **Data Center** — a personal access token.
 3. The connection is verified and saved. The secret lives in VS Code's secret store, never
    in your repository.
 

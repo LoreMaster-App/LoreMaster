@@ -91,12 +91,6 @@ export async function syncConfluenceOutput (deps: SyncDeps, ref: ConfluenceOutpu
     return
   }
 
-  // The engine refreshed an expired OAuth token and handed back a renewed pair: re-store it
-  // so the next sync starts from the fresh access token.
-  if (session.tokens) {
-    await connections.add(meta, { kind: 'oauth', accessToken: session.tokens.accessToken, refreshToken: session.tokens.refreshToken ?? credential.refreshToken, clientId: credential.clientId })
-  }
-
   try {
     targets.set(workspaceRoot, { space: output.space, parentPageId: output.parentPageId, parentTitle: '', titlePrefix: output.titlePrefix })
     await planAndExecute({ ...deps, sessionId: session.sessionId, output: index })

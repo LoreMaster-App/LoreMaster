@@ -29,8 +29,7 @@ Markdown.
 | Config file | `.lore-master.yaml` (YAML for readability; `version`, `outputs[]` with platform, location, `direction`, `content[]` types, `template`). `direction: two-way` is accepted (#163); still-reserved values (other content types, templates) are in the schema but refused until built | #92, #32; #95 #96 #97 |
 | Mermaid | Default `image`: code macro + SVG attachment rendered by the editor's webview; `code`, `html-macro`, `marketplace-macro` selectable | E6 #7 |
 | Test runner (TS shell) | Jest | #45 |
-| Auth v1 | Cloud: email + API token; DC: PAT; Server: PAT ≥ 7.9 else basic. OAuth is E7 (#8) | `docs/architecture/confluence-editions.md` |
-| Cloud OAuth | **Not shipped**: Cloud stays API-token only (no broker, no user 3LO app). OAuth is DC-only via PKCE (#42). Revisit a broker only post-preview | #41, `docs/architecture/oauth.md` |
+| Auth | Cloud: email + API token; DC: PAT; Server: PAT ≥ 7.9 else basic. **No OAuth** — removed in #208 (was E7 #8); reconsider only post-preview | `docs/architecture/confluence-editions.md` |
 | Monorepo tooling | `@mnci/cli` (Nx), GitHub Actions CI, merge commits only | #45, #50 |
 
 ## Layout

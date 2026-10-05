@@ -28,7 +28,7 @@ function meta (baseUrl: string): ConnectionMeta {
 describe('createConfluenceAuthProvider', () => {
   it('surfaces stored connections as Accounts-menu sessions', async () => {
     const provider = createConfluenceAuthProvider({
-      store:  fakeStore([meta('https://dc.example')], { 'https://dc.example': { kind: 'oauth', accessToken: 'at-1' } }),
+      store:  fakeStore([meta('https://dc.example')], { 'https://dc.example': { kind: 'pat', token: 'at-1' } }),
       signIn: () => Promise.resolve(undefined),
     })
 
@@ -43,7 +43,7 @@ describe('createConfluenceAuthProvider', () => {
     const provider = createConfluenceAuthProvider({
       store,
       signIn: async () => {
-        await store.add(meta('https://dc.example'), { kind: 'oauth', accessToken: 'at-1' })
+        await store.add(meta('https://dc.example'), { kind: 'pat', token: 'at-1' })
 
         return meta('https://dc.example')
       },

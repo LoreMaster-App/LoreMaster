@@ -1,7 +1,7 @@
 # Confluence editions: the facts the design rests on
 
 Verified 2026-10-01 while planning; re-verify before relying on a row that has aged.
-Issues: #3 (client), #8 (OAuth), #7 (Mermaid).
+Issues: #3 (client), #7 (Mermaid). OAuth was #8, shipped on DC then removed in #208.
 
 | Fact | Consequence |
 |---|---|
@@ -10,8 +10,8 @@ Issues: #3 (client), #8 (OAuth), #7 (Mermaid).
 | Page **titles are unique per space**; a clash is HTTP 400 | Every page is `<titlePrefix>: <H1>`; local and remote duplicate checks before any upload; `titleCollision: adopt | fail` |
 | `ri:page` links resolve **by title at render time** | Cross-links are emitted on the first upload with locally-known titles; cycles need no second pass. `linkMode: id` (opt-in) is the only case that re-renders after creation |
 | **Cloud auth**: email + API token as Basic. **Data Center ≥ 7.9**: personal access token as `Authorization: Bearer`. **Server** (end of life Feb 2024): PAT if ≥ 7.9, else Basic | Credential kinds `apitoken`, `pat`, `basic`; `Supports(edition, credential)` refuses the wrong pairing |
-| **Cloud OAuth 2.0 (3LO)** requires a `client_secret`; no PKCE for public clients (open Atlassian feature request) | A shipped extension cannot complete the flow alone, so **Cloud stays API-token only**; no broker, no user-supplied 3LO app (decided #41, `oauth.md`) |
-| **Data Center ≥ 7.17** has an OAuth 2.0 provider supporting authorization code **with PKCE**; an admin creates the incoming link | DC sign-in is feasible (#42); loopback redirect on `127.0.0.1`, not `localhost` |
+| **Cloud OAuth 2.0 (3LO)** requires a `client_secret`; no PKCE for public clients (open Atlassian feature request) | A shipped extension cannot complete the flow alone, so **Cloud stays API-token only**; no broker, no user-supplied 3LO app (decided #41) |
+| **Data Center ≥ 7.17** has an OAuth 2.0 provider (authorization code with PKCE), but it is a global setting an admin must enable and create an incoming link for | DC OAuth sign-in was built (#42) then **removed in #208**: too many sites leave the provider off, and a PAT works everywhere without admin setup. DC/Server use a PAT (or basic) |
 | A DC behind an **SSO reverse proxy** (e.g. Microsoft Azure AD Application Proxy) pre-authenticates every request: the REST API answers `302` to `login.microsoftonline.com/…/oauth2/authorize` for any call without an Azure session, so a Confluence PAT in the `Authorization` header never reaches Confluence (verified 2026-10-04 against `atlassian.jato.com`, `x-ms-proxy-*` headers, `AzureAppProxyPreauthSessionCookie`) | The API-based engine (and the extension) cannot sync to such a site without the proxy's pre-auth session cookie, which only an interactive browser SSO produces. Out of scope for now; a site not behind an SSO proxy is required for API sync |
 | No native **Mermaid**. The HTML macro is gone on Cloud and admin-disabled by default on DC | `mermaidMode`: `image` (default; editor renders SVG, uploaded as attachment), `code`, `html-macro` (where enabled), `marketplace-macro` |
 | **Edition and version detection**: `GET /rest/api/settings/systemInfo` exists **only on Cloud** (needs the "Can use" permission). Data Center and Server serve `GET /rest/applinks/1.0/manifest` without authentication, as XML (`<typeId>confluence</typeId><version>8.5.3</version><buildNumber>…`). Server's last line is 7.19, so 8.0+ is Data Center; before 8.0 REST cannot tell Server from Data Center | `*.atlassian.net` → Cloud with no request; else systemInfo 200 → Cloud on a custom domain; else the manifest's version. Verified 2026-10-02 from Atlassian's docs and KB; fixtures are hand-written until #29/#30 record real ones |

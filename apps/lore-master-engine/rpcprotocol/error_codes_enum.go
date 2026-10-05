@@ -31,9 +31,6 @@ const (
 	CodePlatformUnreachable = -32009
 	// CodeUnsupported: the platform or edition cannot do what was asked.
 	CodeUnsupported = -32010
-	// CodeReauthRequired: the OAuth sign-in expired or was revoked and could not be
-	// refreshed; the user must sign in again.
-	CodeReauthRequired = -32011
 )
 
 // Error is an error with a code for the editor. Handlers return it; the server sends it

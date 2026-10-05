@@ -64,17 +64,6 @@ func TestConnectWithAKnownEditionSkipsDetection(t *testing.T) {
 	}
 }
 
-func TestConnectAcceptsAnOAuthTokenOnDataCenter(t *testing.T) {
-	server, _ := fakeSite(t)
-	// The OAuth access token is sent as Bearer, which the fake accepts as "good-token".
-	connected, err := Connect(context.Background(), ConnectOptions{
-		BaseURL: server.URL, Edition: "datacenter", SignIn: SignIn{Kind: "oauth", AccessToken: "good-token"}, HTTPClient: server.Client(),
-	})
-	if err != nil || connected.Username != "ada" || connected.Platform == nil {
-		t.Fatalf("%+v %v", connected, err)
-	}
-}
-
 func TestConnectSaysWhatWentWrong(t *testing.T) {
 	server, _ := fakeSite(t)
 	cases := map[string]struct {
@@ -84,8 +73,6 @@ func TestConnectSaysWhatWentWrong(t *testing.T) {
 		"refused":        {ConnectOptions{BaseURL: server.URL, SignIn: SignIn{Kind: "pat", Token: "wrong-secret"}}, Unauthorized},
 		"cloud token":    {ConnectOptions{BaseURL: server.URL, SignIn: SignIn{Kind: "apitoken", Email: "a@b.c", Token: "wrong-secret"}}, UnsupportedCredential},
 		"no token":       {ConnectOptions{BaseURL: server.URL, SignIn: SignIn{Kind: "pat"}}, InvalidCredential},
-		"no access token": {ConnectOptions{BaseURL: server.URL, SignIn: SignIn{Kind: "oauth"}}, InvalidCredential},
-		"oauth on cloud":  {ConnectOptions{BaseURL: server.URL, Edition: "cloud", SignIn: SignIn{Kind: "oauth", AccessToken: "wrong-secret"}}, UnsupportedCredential},
 		"unknown kind":    {ConnectOptions{BaseURL: server.URL, SignIn: SignIn{Kind: "saml", Token: "wrong-secret"}}, InvalidCredential},
 		"bad address":    {ConnectOptions{BaseURL: "not a url", SignIn: SignIn{Kind: "pat", Token: "wrong-secret"}}, InvalidAddress},
 		"bad edition":    {ConnectOptions{BaseURL: server.URL, Edition: "cloudy", SignIn: SignIn{Kind: "pat", Token: "wrong-secret"}}, InvalidAddress},
