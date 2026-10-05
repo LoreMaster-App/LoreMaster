@@ -14,6 +14,7 @@ import (
 	"lore-master/apps/lore-master-engine/catalogqueries"
 	"lore-master/apps/lore-master-engine/editiondetect"
 	"lore-master/apps/lore-master-engine/hostbridge"
+	"lore-master/apps/lore-master-engine/pagescommands"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
@@ -68,6 +69,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodSyncExecute:   synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout),
 		rpcprotocol.MethodSettingsRead:  settingscommands.ReadSettings(),
 		rpcprotocol.MethodSettingsSave:  settingscommands.SaveSettings(),
+		rpcprotocol.MethodPagesPublish:  pagescommands.PublishPages(),
 	}
 }
 
