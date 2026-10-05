@@ -28,6 +28,11 @@ type Output struct {
 	TitleCollision string `yaml:"titleCollision"`
 	// LinkMode is title | id.
 	LinkMode string `yaml:"linkMode"`
+	// Repo is the GitHub repository for a github-pages output ("owner/name" or a clone
+	// URL); empty means the workspace's own origin remote.
+	Repo string `yaml:"repo,omitempty"`
+	// Branch is the branch a github-pages output publishes to; empty means gh-pages.
+	Branch string `yaml:"branch,omitempty"`
 }
 
 // Content is one source feeding an output.
