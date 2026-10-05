@@ -25,7 +25,7 @@ describe('activate', () => {
 
     activate(context)
 
-    expect(contributed).toEqual(['loreMaster.syncWorkspace', 'loreMaster.syncCurrentFile', 'loreMaster.addConnection'])
+    expect(contributed).toEqual(['loreMaster.syncWorkspace', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.addConnection'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
     // The commands plus the engine client, output channel, diagram renderer, its
     // host/renderDiagram subscription, the host/openExternal subscription and the Confluence
