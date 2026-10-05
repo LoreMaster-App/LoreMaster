@@ -1,7 +1,6 @@
 package mcpserver
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -22,23 +21,6 @@ func nestingRulesTool() toolDescriptor {
 			"properties": map[string]any{},
 		},
 	}
-}
-
-// callTool runs the named tool. Only loremaster_nesting_rules exists for now.
-func callTool(params json.RawMessage) (toolCallResult, error) {
-	var call struct {
-		Name string `json:"name"`
-	}
-	if len(params) > 0 {
-		if err := json.Unmarshal(params, &call); err != nil {
-			return toolCallResult{}, fmt.Errorf("invalid tools/call params: %w", err)
-		}
-	}
-	if call.Name != nestingRulesToolName {
-		return toolCallResult{}, fmt.Errorf("unknown tool %q", call.Name)
-	}
-
-	return nestingRulesResult(), nil
 }
 
 // nestingRulesResult renders the conventions as both human-readable text (every MCP

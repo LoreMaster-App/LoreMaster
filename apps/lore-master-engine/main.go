@@ -35,6 +35,7 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 	flags.SetOutput(stderr)
 	showVersion := flags.Bool("version", false, "print the version and exit")
 	mcpMode := flags.Bool("mcp", false, "run as an MCP server over stdio, exposing LoreMaster's documentation rules")
+	workspace := flags.String("workspace", "", "the workspace directory the MCP server's workspace-aware tools read (defaults to the process working directory)")
 	if err := flags.Parse(args); err != nil {
 		return 2
 	}
@@ -47,7 +48,13 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 	logger := slog.New(slog.NewTextHandler(stderr, nil)).With("version", version)
 
 	if *mcpMode {
-		if err := mcpserver.Serve(ctx, stdin, stdout, version, logger); err != nil {
+		workspaceRoot := *workspace
+		if workspaceRoot == "" {
+			if cwd, err := os.Getwd(); err == nil {
+				workspaceRoot = cwd
+			}
+		}
+		if err := mcpserver.Serve(ctx, stdin, stdout, version, workspaceRoot, logger); err != nil {
 			logger.Error("mcp server stopped", "error", err.Error())
 
 			return 1

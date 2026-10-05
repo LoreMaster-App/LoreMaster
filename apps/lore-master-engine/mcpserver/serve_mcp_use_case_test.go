@@ -11,14 +11,21 @@ import (
 	"testing"
 )
 
-// run feeds the frames to Serve (one JSON object per line) and returns the decoded
-// responses, in order. Notifications produce no response.
+// run feeds the frames to Serve with no workspace. See runIn for the workspace-aware form.
 func run(t *testing.T, frames ...string) []response {
+	t.Helper()
+
+	return runIn(t, "", frames...)
+}
+
+// runIn feeds the frames to Serve (one JSON object per line) for the given workspace root
+// and returns the decoded responses, in order. Notifications produce no response.
+func runIn(t *testing.T, workspaceRoot string, frames ...string) []response {
 	t.Helper()
 	input := strings.Join(frames, "\n") + "\n"
 	var out bytes.Buffer
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	if err := Serve(context.Background(), strings.NewReader(input), &out, "test-version", logger); err != nil {
+	if err := Serve(context.Background(), strings.NewReader(input), &out, "test-version", workspaceRoot, logger); err != nil {
 		t.Fatalf("Serve: %v", err)
 	}
 	var responses []response
@@ -76,15 +83,21 @@ func TestNotificationsAreNotAnswered(t *testing.T) {
 	}
 }
 
-func TestToolsListAdvertisesTheNestingRulesTool(t *testing.T) {
+func TestToolsListAdvertisesEveryTool(t *testing.T) {
 	responses := run(t, `{"jsonrpc":"2.0","id":1,"method":"tools/list"}`)
 	var result toolsListResult
 	decodeResult(t, responses[0], &result)
-	if len(result.Tools) != 1 || result.Tools[0].Name != nestingRulesToolName {
-		t.Fatalf("tools = %+v", result.Tools)
+	names := map[string]bool{}
+	for _, tool := range result.Tools {
+		names[tool.Name] = true
+		if typ, _ := tool.InputSchema["type"].(string); typ != "object" {
+			t.Errorf("%s inputSchema.type = %v", tool.Name, tool.InputSchema["type"])
+		}
 	}
-	if typ, _ := result.Tools[0].InputSchema["type"].(string); typ != "object" {
-		t.Errorf("inputSchema.type = %v", result.Tools[0].InputSchema["type"])
+	for _, want := range []string{nestingRulesToolName, previewTreeToolName, validateDocumentToolName} {
+		if !names[want] {
+			t.Errorf("tools/list missing %q; got %v", want, names)
+		}
 	}
 }
 

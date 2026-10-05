@@ -25,9 +25,10 @@ const serverName = "lore-master"
 const maxFrameBytes = 8 * 1024 * 1024
 
 // Serve reads newline-delimited JSON-RPC from in and writes answers to out until the
-// input ends or ctx is cancelled. version is reported as the server version. Logs go to
-// logger (stderr); out carries only MCP frames.
-func Serve(ctx context.Context, in io.Reader, out io.Writer, version string, logger *slog.Logger) error {
+// input ends or ctx is cancelled. version is reported as the server version;
+// workspaceRoot is the open workspace the workspace-aware tools read (empty disables
+// them, with a clear message). Logs go to logger (stderr); out carries only MCP frames.
+func Serve(ctx context.Context, in io.Reader, out io.Writer, version string, workspaceRoot string, logger *slog.Logger) error {
 	scanner := bufio.NewScanner(in)
 	scanner.Buffer(make([]byte, 0, 64*1024), maxFrameBytes)
 	encoder := json.NewEncoder(out)
@@ -46,7 +47,7 @@ func Serve(ctx context.Context, in io.Reader, out io.Writer, version string, log
 
 			continue
 		}
-		answer, answered := dispatch(message, version)
+		answer, answered := dispatch(ctx, message, version, workspaceRoot)
 		if !answered {
 			continue
 		}
@@ -60,7 +61,7 @@ func Serve(ctx context.Context, in io.Reader, out io.Writer, version string, log
 
 // dispatch routes one message; the bool is false when nothing should be written (a
 // notification).
-func dispatch(message request, version string) (response, bool) {
+func dispatch(ctx context.Context, message request, version string, workspaceRoot string) (response, bool) {
 	switch message.Method {
 	case "initialize":
 		return reply(message, initialize(message, version)), true
@@ -69,9 +70,13 @@ func dispatch(message request, version string) (response, bool) {
 	case "ping":
 		return reply(message, map[string]any{}), true
 	case "tools/list":
-		return reply(message, toolsListResult{Tools: []toolDescriptor{nestingRulesTool()}}), true
+		return reply(message, toolsListResult{Tools: []toolDescriptor{
+			nestingRulesTool(),
+			previewTreeTool(),
+			validateDocumentTool(),
+		}}), true
 	case "tools/call":
-		result, err := callTool(message.Params)
+		result, err := callTool(ctx, message.Params, workspaceRoot)
 		if err != nil {
 			return replyError(message, codeInvalidParams, err.Error()), true
 		}
@@ -83,6 +88,40 @@ func dispatch(message request, version string) (response, bool) {
 		}
 
 		return replyError(message, codeMethodNotFound, fmt.Sprintf("method %q is not supported", message.Method)), true
+	}
+}
+
+// callTool runs the named tool. A Go error here is a protocol-level problem (unknown tool,
+// unparseable arguments); a tool whose work fails returns a result with IsError set, so
+// the model sees the explanation.
+func callTool(ctx context.Context, params json.RawMessage, workspaceRoot string) (toolCallResult, error) {
+	var call struct {
+		Name      string          `json:"name"`
+		Arguments json.RawMessage `json:"arguments"`
+	}
+	if len(params) > 0 {
+		if err := json.Unmarshal(params, &call); err != nil {
+			return toolCallResult{}, fmt.Errorf("invalid tools/call params: %w", err)
+		}
+	}
+	switch call.Name {
+	case nestingRulesToolName:
+		return nestingRulesResult(), nil
+	case previewTreeToolName:
+		return previewTreeResult(ctx, workspaceRoot), nil
+	case validateDocumentToolName:
+		return validateDocumentResult(ctx, workspaceRoot, call.Arguments), nil
+	default:
+		return toolCallResult{}, fmt.Errorf("unknown tool %q", call.Name)
+	}
+}
+
+// errorResult is a tool result that reports an operational failure to the caller (not a
+// protocol error): the model reads the message and can react.
+func errorResult(format string, args ...any) toolCallResult {
+	return toolCallResult{
+		Content: []contentBlock{{Type: "text", Text: fmt.Sprintf(format, args...)}},
+		IsError: true,
 	}
 }
 
