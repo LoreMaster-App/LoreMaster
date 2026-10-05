@@ -1,6 +1,6 @@
 # Lore Master
 
-![Conceptual image](./assets/ore-master-concept-small.jpg)
+![Lore Master](./assets/lore-master-concept-md.jpg)
 
 **Lore Master** gathers a project's lore and publishes it where your team already reads.
 Its first feature syncs every Markdown file in your workspace into a documentation
