@@ -34,7 +34,26 @@ export const window = {
   createOutputChannel (name: string): { name: string; appendLine: () => void; append: () => void; clear: () => void; show: () => void; hide: () => void; dispose: () => void } {
     return { name, appendLine () {}, append () {}, clear () {}, show () {}, hide () {}, dispose () {} }
   },
+  registerTreeDataProvider (_viewId: string, _provider: unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
   activeTextEditor: undefined as { document: { uri: unknown } } | undefined,
+}
+
+/** How a tree item can expand; matches vscode's enum values. */
+export const TreeItemCollapsibleState = { None: 0, Collapsed: 1, Expanded: 2 } as const
+
+/** A minimal vscode.TreeItem: holds the label and whatever the provider sets on it. */
+export class TreeItem {
+  command?:  { command: string; title: string }
+  iconPath?: unknown
+
+  constructor (public label: string, public collapsibleState: number = TreeItemCollapsibleState.None) {}
+}
+
+/** A minimal vscode.ThemeIcon: keeps the icon id. */
+export class ThemeIcon {
+  constructor (public id: string) {}
 }
 
 // A minimal EventEmitter matching vscode's: `event` registers a listener, `fire` notifies.

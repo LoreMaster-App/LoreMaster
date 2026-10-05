@@ -44,8 +44,35 @@
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
         "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.addStorage",
+        "title": "Add sync storage",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.openConfig",
+        "title": "Open config",
+        "category": "LoreMaster"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "loreMaster",
+          "title": "LoreMaster",
+          "icon": "media/loremaster.svg"
+        }
+      ]
+    },
+    "views": {
+      "loreMaster": [
+        {
+          "id": "loreMaster.sync",
+          "name": "Sync"
+        }
+      ]
+    },
     "configuration": {
       "title": "LoreMaster",
       "properties": {
