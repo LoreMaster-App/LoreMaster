@@ -7,8 +7,9 @@
     "mermaid": "^11.12.0"
   },
   "displayName": "Lore Master",
-  "publisher": "russoedu",
+  "publisher": "LoreMaster",
   "preview": true,
+  "icon": "lore-master.png",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -165,5 +166,9 @@
       "type:vscode-extension"
     ]
   },
-  "description": "Gathers a project's lore: syncs the workspace's Markdown into a documentation platform (Confluence first)."
+  "description": "Gathers a project's lore: syncs your workspace's Markdown to Confluence, and publishes it as a static site on GitHub Pages.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LoreMaster-App/LoreMaster.git"
+  }
 }

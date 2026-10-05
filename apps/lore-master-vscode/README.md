@@ -1,0 +1,84 @@
+# Lore Master
+
+![Lore Master](https://raw.githubusercontent.com/LoreMaster-App/LoreMaster/main/assets/lore-master-concept-md.jpg)
+
+**Lore Master gathers a project's lore and publishes it where your team already reads.**
+Keep your docs as plain Markdown in your repo, and Lore Master syncs them to **Confluence**
+or publishes them as a **static site on GitHub Pages** — directly from VS Code.
+
+> **Preview.** The engine and its libraries are built and tested; this extension is
+> published as a preview while the end-to-end sync is hardened.
+
+## Features
+
+- **Sync Markdown → Confluence.** Every `.md` file in your workspace becomes a Confluence
+  page. The file tree becomes the page tree, the first `# H1` becomes the title, Mermaid
+  diagrams render as images, and links between pages are preserved.
+- **Publish Markdown → GitHub Pages.** Generate a styled static site from your docs and
+  push it to the repository's `gh-pages` branch — no conversion, rendered in the browser.
+- **Two-way (Confluence).** Pull edits made on the platform back into your Markdown, with
+  conflict detection when both sides changed.
+- **Many destinations at once.** Configure as many outputs as you like; one **Sync** fans
+  out across all of them.
+
+## Requirements
+
+- VS Code **1.96** or later.
+- The extension bundles its own engine — nothing else to install.
+- For GitHub Pages: `git` on your `PATH` and push access to the repo (your existing
+  credentials are used).
+
+## Getting started
+
+1. **Run `Lore Master: Sync`** (Command Palette). On a fresh workspace it asks **where to
+   sync** — tick the storages you want (Confluence, GitHub Pages) and configure each. Your
+   choices are saved to `.lore-master.yaml` in the workspace root.
+   - **Confluence:** first run `Lore Master: Add Connection` (site URL + API token for
+     Cloud, PAT for Data Center). Then Sync walks you through the space, parent page and
+     title prefix.
+   - **GitHub Pages:** confirm the repository (defaults to your `origin`) and branch
+     (defaults to `gh-pages`).
+2. **Sync.** `Lore Master: Sync` publishes to every configured storage; it previews the
+   plan before writing anything.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| **Lore Master: Sync** | Sync every configured output (first run sets them up). |
+| **Lore Master: Sync to…** | Pick a subset of outputs to sync. |
+| **Lore Master: Sync Current File** | Sync just the active file to your Confluence outputs. |
+| **Lore Master: Publish to GitHub Pages** | Publish the site to the `gh-pages` branch. |
+| **Lore Master: Add Connection** | Sign in to a Confluence site. |
+
+## Configuration
+
+Settings live in **`.lore-master.yaml`** at the workspace root (created for you on first
+sync). Each entry under `outputs` is one destination:
+
+```yaml
+version: 1
+outputs:
+  - platform: confluence
+    baseUrl: https://your-site.atlassian.net/wiki
+    space: DOCS
+    parentPageId: "123456"
+    titlePrefix: Docs
+    direction: two-way        # or to-platform
+    content:
+      - type: markdown
+        roots: ["."]
+        template: default
+  - platform: github-pages
+    direction: to-platform
+    content:
+      - type: markdown
+        roots: ["docs"]
+        template: default
+```
+
+Credentials are **never** stored in this file — they live in VS Code's secret store.
+
+## Learn more
+
+- Source, docs and issues: **https://github.com/LoreMaster-App/LoreMaster**

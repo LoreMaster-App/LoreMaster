@@ -5,7 +5,7 @@ first feature is syncing a workspace's Markdown into Confluence.
 
 ## 1. Install
 
-In VS Code: **Extensions** → search **Lore Master** (`russoedu.lore-master`) → **Install**.
+In VS Code: **Extensions** → search **Lore Master** (`LoreMaster.lore-master`) → **Install**.
 It needs VS Code **1.96 or later**. The extension bundles its own engine, so there is
 nothing else to install.
 
