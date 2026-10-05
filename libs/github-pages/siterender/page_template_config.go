@@ -30,9 +30,11 @@ const pageTemplateSource = `<!DOCTYPE html>
 </html>
 `
 
-// renderScript decodes the embedded Markdown (UTF-8 base64), renders it with marked, and
+// renderScript decodes the embedded Markdown (UTF-8 base64), renders it with marked,
+// rewrites internal links to other Markdown files so they point at the generated pages, and
 // promotes fenced ` + "```mermaid" + ` blocks into mermaid diagrams. It runs on load; there
-// is no build step and nothing is fetched beyond the two CDN libraries above.
+// is no build step and nothing is fetched beyond the two CDN libraries above. Because each
+// page sits where its Markdown did, relative links resolve once their .md suffix is .html.
 const renderScript = `(function () {
   var source = document.getElementById('lm-source');
   if (!source) { return; }
@@ -40,6 +42,11 @@ const renderScript = `(function () {
   var markdown = new TextDecoder('utf-8').decode(bytes);
   var article = document.getElementById('lm-markdown');
   article.innerHTML = marked.parse(markdown);
+  article.querySelectorAll('a[href]').forEach(function (link) {
+    var href = link.getAttribute('href');
+    if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.charAt(0) === '#' || href.charAt(0) === '/') { return; }
+    link.setAttribute('href', href.replace(/\.(md|markdown)(#.*)?$/i, '.html$2'));
+  });
   article.querySelectorAll('pre > code.language-mermaid').forEach(function (code) {
     var diagram = document.createElement('div');
     diagram.className = 'mermaid';

@@ -57,20 +57,17 @@ func GenerateSite(siteTitle string, tree documenttree.DocumentTree) ([]SiteFile,
 
 	files := make([]SiteFile, 0, len(pages)+3)
 	for _, current := range pages {
-		content, err := renderPage(siteTitle, current.title, current.body, current.sitePath, current.sitePath, pages)
+		content, err := renderPage(siteTitle, current, pages)
 		if err != nil {
 			return nil, err
 		}
 		files = append(files, SiteFile{Path: current.sitePath, Content: content})
 	}
 
+	// index.html redirects to the home page's own file rather than copying it, so the home
+	// page is served where its relative links resolve (a copy at the root would break them).
 	if len(pages) > 0 {
-		home := pages[homeIndex(pages)]
-		index, err := renderPage(siteTitle, home.title, home.body, "index.html", home.sitePath, pages)
-		if err != nil {
-			return nil, err
-		}
-		files = append(files, SiteFile{Path: "index.html", Content: index})
+		files = append(files, SiteFile{Path: "index.html", Content: indexRedirect(pages[homeIndex(pages)].sitePath)})
 	}
 
 	files = append(files,
@@ -100,26 +97,25 @@ func collectPages(tree documenttree.DocumentTree) []page {
 	return pages
 }
 
-// renderPage renders one document's HTML. selfSitePath is the page being written (its
-// position decides the relative hrefs); activeSitePath is the page the nav should mark as
-// current (the same page, except for index.html, which mirrors the home page).
-func renderPage(siteTitle, title string, body []byte, selfSitePath, activeSitePath string, pages []page) ([]byte, error) {
-	prefix := relativePrefix(selfSitePath)
+// renderPage renders one document's HTML: its own content, and a nav whose hrefs are
+// relative to this page's position in the tree.
+func renderPage(siteTitle string, current page, pages []page) ([]byte, error) {
+	prefix := relativePrefix(current.sitePath)
 	nav := make([]navItem, 0, len(pages))
 	for _, target := range pages {
 		nav = append(nav, navItem{
 			Label:  target.title,
 			Href:   prefix + target.sitePath,
 			Depth:  target.depth,
-			Active: target.sitePath == activeSitePath,
+			Active: target.sitePath == current.sitePath,
 		})
 	}
 
 	data := pageData{
-		Title:          title,
+		Title:          current.title,
 		SiteTitle:      siteTitle,
 		AssetsPrefix:   prefix,
-		MarkdownBase64: base64.StdEncoding.EncodeToString(body),
+		MarkdownBase64: base64.StdEncoding.EncodeToString(current.body),
 		Nav:            nav,
 		RenderScript:   template.JS(renderScript),
 	}
@@ -130,6 +126,17 @@ func renderPage(siteTitle, title string, body []byte, selfSitePath, activeSitePa
 	}
 
 	return out.Bytes(), nil
+}
+
+// indexRedirect is the site root: a small page that sends the browser to the home page's own
+// file, so the home content is served where its relative links resolve.
+func indexRedirect(homeSitePath string) []byte {
+	target := template.HTMLEscapeString(homeSitePath)
+
+	return []byte("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n" +
+		"<meta http-equiv=\"refresh\" content=\"0; url=" + target + "\">\n" +
+		"<link rel=\"canonical\" href=\"" + target + "\">\n<title>Redirecting…</title>\n</head>\n" +
+		"<body>\n<p><a href=\"" + target + "\">Continue to the documentation</a></p>\n</body>\n</html>\n")
 }
 
 // homeIndex picks the site's entry page: the first top-level "readme" or "index", else the
