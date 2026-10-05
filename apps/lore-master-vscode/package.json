@@ -48,12 +48,25 @@
       {
         "command": "loreMaster.addStorage",
         "title": "Add sync storage",
-        "category": "LoreMaster"
+        "category": "LoreMaster",
+        "icon": "$(add)"
       },
       {
         "command": "loreMaster.openConfig",
         "title": "Open config",
         "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.removeStorage",
+        "title": "Remove storage",
+        "category": "LoreMaster",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "loreMaster.refreshStorages",
+        "title": "Refresh storages",
+        "category": "LoreMaster",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -70,9 +83,50 @@
         {
           "id": "loreMaster.sync",
           "name": "Sync"
+        },
+        {
+          "id": "loreMaster.storages",
+          "name": "Storages"
         }
       ]
     },
+    "menus": {
+      "view/title": [
+        {
+          "command": "loreMaster.addStorage",
+          "when": "view == loreMaster.storages",
+          "group": "navigation@1"
+        },
+        {
+          "command": "loreMaster.refreshStorages",
+          "when": "view == loreMaster.storages",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "loreMaster.removeStorage",
+          "when": "view == loreMaster.storages && viewItem == loreMasterStorage",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "loreMaster.removeStorage",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.refreshStorages",
+          "when": "false"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "loreMaster.storages",
+        "contents": "No sync storages yet.\n[Add sync storage](command:loreMaster.addStorage)"
+      }
+    ],
     "configuration": {
       "title": "LoreMaster",
       "properties": {

@@ -4,7 +4,7 @@ import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering
 import { createEngineClient, resolveEngineBinary } from './engine-process'
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { createConnectionStore } from './secret-storage'
-import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, registerSyncView } from './sidebar'
+import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
 import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, sync, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
 
@@ -36,15 +36,19 @@ export function activate (context: vscode.ExtensionContext): void {
   )
 
   const syncDeps = { engine, connections, targets, output }
+  const storages = new StoragesViewProvider(engine)
 
   context.subscriptions.push(
     registerSyncView(),
+    vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => sync(syncDeps)),
     vscode.commands.registerCommand(SYNC_TO_COMMAND, () => syncTo(syncDeps)),
     vscode.commands.registerCommand(SYNC_CURRENT_FILE_COMMAND, () => syncCurrentFile(syncDeps)),
     vscode.commands.registerCommand(PUBLISH_PAGES_COMMAND, () => publishPagesCommand({ engine, output })),
-    vscode.commands.registerCommand(ADD_STORAGE_COMMAND, () => addStorageCommand({ engine, connections, output })),
+    vscode.commands.registerCommand(ADD_STORAGE_COMMAND, async () => { await addStorageCommand({ engine, connections, output }); storages.refresh() }),
     vscode.commands.registerCommand(OPEN_CONFIG_COMMAND, () => openConfig()),
+    vscode.commands.registerCommand(REMOVE_STORAGE_COMMAND, async (node: StorageNode | undefined) => { await removeStorageCommand({ engine }, node); storages.refresh() }),
+    vscode.commands.registerCommand(REFRESH_STORAGES_COMMAND, () => storages.refresh()),
     vscode.commands.registerCommand(ADD_CONNECTION_COMMAND, () => setUpConnection({ engine, store: connections, ui: createConnectionUI() })),
   )
 }
