@@ -14,7 +14,6 @@ func TestSupports(t *testing.T) {
 	token := APIToken{Email: "me@acme.com", Token: "t"}
 	pat := PAT{Token: "p"}
 	password := Basic{User: "me", Password: "pw"}
-	oauth := OAuth{AccessToken: "a"}
 
 	cases := []struct {
 		name       string
@@ -33,9 +32,6 @@ func TestSupports(t *testing.T) {
 		{"data center 8.5 refuses a password", connection.DataCenter, v85, password, "this site runs Confluence 8.5.3, which supports personal access tokens; create one under Profile → Personal Access Tokens and use it instead of a password"},
 		{"unknown version: PAT allowed", connection.DataCenter, unknown, pat, ""},
 		{"unknown version: password allowed", connection.Server, unknown, password, ""},
-		{"data center 8.5 takes an OAuth token", connection.DataCenter, v85, oauth, ""},
-		{"server takes an OAuth token", connection.Server, unknown, oauth, ""},
-		{"cloud refuses an OAuth token", connection.Cloud, unknown, oauth, "a oauth credential does not work on Confluence Cloud, which accepts only an Atlassian account email with an API token (create one at https://id.atlassian.com/manage-profile/security/api-tokens)"},
 		{"data center refuses an API token", connection.DataCenter, v85, token, "API tokens belong to Atlassian Cloud accounts; on Confluence Data Center use a personal access token"},
 		{"server refuses an API token", connection.Server, v74, token, "API tokens belong to Atlassian Cloud accounts; on Confluence Server use a personal access token"},
 		{"unknown edition", connection.Edition("x"), unknown, pat, `unknown Confluence edition "x"`},

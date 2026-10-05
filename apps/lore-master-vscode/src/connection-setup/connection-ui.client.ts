@@ -7,9 +7,6 @@ const AUTH_METHOD_LABELS: Record<AuthMethod, string> = {
   apitoken: 'Email and API token (Cloud)',
   pat:      'Personal access token (Data Center / Server)',
   basic:    'Username and password (Server)',
-  // OAuth is interactive (a browser sign-in), not a pasted secret, so it is offered by a
-  // separate flow — not listed here yet. The label keeps the map type-complete.
-  oauth:    'OAuth sign-in (Data Center)',
 }
 
 /** The {@link ConnectionUI} backed by VS Code's input boxes and QuickPick. */
@@ -34,20 +31,6 @@ export function createConnectionUI (): ConnectionUI {
     },
 
     async promptCredential (method) {
-      if (method === 'oauth') {
-        // OAuth collects the admin's incoming-link client id and, optionally, the scope the
-        // link was configured with; the browser sign-in that follows produces the tokens.
-        const clientId = await ask('OAuth client id (from the site admin)')
-        if (clientId === undefined) {
-          return
-        }
-        const scope = await ask('OAuth scope (optional; e.g. WRITE)')
-        if (scope === undefined) {
-          return
-        }
-
-        return { kind: 'oauth', clientId, ...(scope && { scope }) } satisfies Credential
-      }
       if (method === 'apitoken') {
         const email = await ask('Atlassian account email')
         if (email === undefined) {

@@ -74,13 +74,8 @@ Credentials never touch this repository or `.lore-master.yaml`. They live in the
 | Edition | Credential |
 |---|---|
 | **Cloud** | Atlassian account email + API token |
-| **Data Center** | personal access token (≥ 7.9), or **OAuth 2.0 sign-in** (authorization code + PKCE, ≥ 7.17) |
+| **Data Center** | personal access token (≥ 7.9) |
 | **Server** (EOL) | personal access token (≥ 7.9), else user name + password |
-
-**Cloud OAuth is intentionally not offered** — Cloud's 3LO needs a client secret and has no
-PKCE for public clients, so Cloud stays API-token only. OAuth ships on Data Center, where
-PKCE needs no secret. The reasoning is in
-[`docs/architecture/oauth.md`](docs/architecture/oauth.md).
 
 ## Configuration — `.lore-master.yaml`
 
