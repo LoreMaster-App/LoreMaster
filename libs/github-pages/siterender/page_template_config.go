@@ -4,6 +4,10 @@ package siterender
 // converted on our side: it is embedded verbatim (base64, to survive any byte) in a
 // non-executable <script> and rendered in the browser by renderScript. Nav labels, the
 // title and the hrefs are filled per page so the same shell serves every document.
+// pageTemplateSource carries the Markdown as base64 in a data attribute, not inside a
+// <script>: html/template escapes a script element's contents as JavaScript (it turns the
+// base64 '/' into '\/'), which breaks atob at runtime. An attribute value is HTML-escaped,
+// and base64's alphabet has no HTML-special characters, so it survives byte for byte.
 const pageTemplateSource = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +26,7 @@ const pageTemplateSource = `<!DOCTYPE html>
 </nav>
 <main class="lm-content"><article id="lm-markdown" class="markdown-body"></article></main>
 </div>
-<script id="lm-source" type="application/x-lore-markdown">{{.MarkdownBase64}}</script>
+<div id="lm-source" data-markdown="{{.MarkdownBase64}}" hidden></div>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script>{{.RenderScript}}</script>
@@ -38,7 +42,7 @@ const pageTemplateSource = `<!DOCTYPE html>
 const renderScript = `(function () {
   var source = document.getElementById('lm-source');
   if (!source) { return; }
-  var bytes = Uint8Array.from(atob(source.textContent.trim()), function (c) { return c.charCodeAt(0); });
+  var bytes = Uint8Array.from(atob(source.getAttribute('data-markdown')), function (c) { return c.charCodeAt(0); });
   var markdown = new TextDecoder('utf-8').decode(bytes);
   var article = document.getElementById('lm-markdown');
   article.innerHTML = marked.parse(markdown);
