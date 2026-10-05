@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import { ADD_CONNECTION_COMMAND, answerOpenExternal, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
+import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { createConnectionStore } from './secret-storage'
 import { SYNC_CURRENT_FILE_COMMAND, SYNC_WORKSPACE_COMMAND, syncCurrentFile, syncWorkspace } from './sync-command'
 import { createTargetStore } from './sync-target'
@@ -38,6 +39,7 @@ export function activate (context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand(SYNC_WORKSPACE_COMMAND, () => syncWorkspace(syncDeps)),
     vscode.commands.registerCommand(SYNC_CURRENT_FILE_COMMAND, () => syncCurrentFile(syncDeps)),
+    vscode.commands.registerCommand(PUBLISH_PAGES_COMMAND, () => publishPagesCommand({ engine, output })),
     vscode.commands.registerCommand(ADD_CONNECTION_COMMAND, () => setUpConnection({ engine, store: connections, ui: createConnectionUI() })),
   )
 }

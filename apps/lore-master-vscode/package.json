@@ -30,6 +30,11 @@
         "category": "Lore Master"
       },
       {
+        "command": "loreMaster.publishPages",
+        "title": "Publish to GitHub Pages",
+        "category": "Lore Master"
+      },
+      {
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
         "category": "Lore Master"
