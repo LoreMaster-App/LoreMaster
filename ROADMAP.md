@@ -46,7 +46,8 @@ E5 has started. #58 is the skeleton: `mnci add vscode-extension lore-master-vsco
 Master"), one command (`loreMaster.syncWorkspace`), the slice lint on for
 `apps/lore-master-vscode/src`, and one `.vsix` per Marketplace target with the engine in
 `bin/`. Getting there took three more mnci fixes (#247, #249; #243 for the first
-release). The publisher `russoedu` is the #44 proposal. Publishing now goes through
+release). The publisher is `LoreMaster` (#197, renamed from the #44 `russoedu` proposal
+after the org move). Publishing now goes through
 Microsoft Entra ID (OIDC, no `VSCE_PAT`): the `lore-master-marketplace` app registration,
 a federated credential for `main`, and the `AZURE_CLIENT_ID`/`AZURE_TENANT_ID` repo
 variables — all in place — let the release run `vsce publish --azure-credential`
@@ -82,7 +83,8 @@ Done in E0 since: #43 (the repository), #157 (moved to the `LoreMaster-App` org,
 
 ## Open decisions (maintainer)
 
-- #44 Marketplace publisher id and publish credential — resolved: publisher `russoedu`,
+- #44 Marketplace publisher id and publish credential — resolved: publisher `LoreMaster`
+  (#197, renamed from `russoedu` after the org move),
   and publishing through Microsoft Entra ID (OIDC, no PAT) rather than a `VSCE_PAT`, which
   sidesteps the retired global PATs and the Azure-DevOps-org requirement (mnci #253)
 - #50 branch protection (merge commits only)

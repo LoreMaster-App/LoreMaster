@@ -12,7 +12,7 @@ engine, so the same sync behaves identically in every editor. The project is del
 not named after Confluence or Markdown: more platforms and more kinds of lore come later.
 
 > **Status: preview.** The engine and its libraries are built and tested; the VS Code
-> extension is published to the Marketplace as a preview (`russoedu.lore-master`) while the
+> extension is published to the Marketplace as a preview (`LoreMaster.lore-master`) while the
 > end-to-end sync is hardened. See [`ROADMAP.md`](ROADMAP.md).
 
 ---

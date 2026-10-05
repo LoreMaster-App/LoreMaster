@@ -99,7 +99,7 @@ npx nx run lore-master-vscode:package   # 8 .vsix in dist/drop, engine in bin/, 
 ```
 
 The extension is `apps/lore-master-vscode` (Nx project `lore-master-vscode`, pinned by
-`nx.name`) but ships as `russoedu.lore-master`: the manifest `name` is free to differ.
+`nx.name`) but ships as `LoreMaster.lore-master`: the manifest `name` is free to differ.
 Debug it with the `lore-master-vscode: debug` launch entry (Extension Development Host).
 
 - Go import paths are `lore-master/libs/<lib>/<slice>`. The module name comes
