@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OAuth 2.0 sign-in: Cloud stays API-token, Data Center gets PKCE</title>
+<link rel="stylesheet" href="../../assets/lore-master.css">
+</head>
+<body>
+<div class="lm-layout">
+<nav class="lm-nav">
+<div class="lm-nav-title">LoreMaster</div>
+<ul>
+<li class="lm-depth-0"><a href="../../docs/README.html">Lore Master documentation</a></li>
+<li class="lm-depth-1"><a href="../../docs/architecture/engine-and-shells.html">ADR: One Go engine, thin editor shells</a></li>
+<li class="lm-depth-1"><a href="../../docs/architecture/vertical-feature-slices.html">ADR: Vertical feature slices, in Go and TypeScript</a></li>
+<li class="lm-depth-1"><a href="../../docs/architecture/confluence-editions.html">Confluence editions: the facts the design rests on</a></li>
+<li class="lm-depth-1"><a href="../../docs/contributing/confluence-tenant.html">Confluence tenant for recorded fixtures</a></li>
+<li class="lm-depth-1"><a href="../../docs/getting-started.html">Getting started: syncing a workspace to Confluence</a></li>
+<li class="lm-depth-1 lm-active"><a href="../../docs/architecture/oauth.html">OAuth 2.0 sign-in: Cloud stays API-token, Data Center gets PKCE</a></li>
+<li class="lm-depth-1"><a href="../../docs/contributing/confluence-oauth.html">Signing in to Confluence Data Center with OAuth</a></li>
+<li class="lm-depth-1"><a href="../../docs/architecture/two-way-sync.html">Two-way sync: pull remote edits back, conflict when both sides change</a></li>
+</ul>
+</nav>
+<main class="lm-content"><article id="lm-markdown" class="markdown-body"></article></main>
+</div>
+<script id="lm-source" type="application/x-lore-markdown">IyBPQXV0aCAyLjAgc2lnbi1pbjogQ2xvdWQgc3RheXMgQVBJLXRva2VuLCBEYXRhIENlbnRlciBnZXRzIFBLQ0UNCg0KRGVjaWRlZCAyMDI2LTEwLTAzIGZvciBlcGljIEU3ICgjOCk7IHJlc29sdmVzIHRoZSBDbG91ZCBkZWNpc2lvbiAjNDEuIFJlLW9wZW4gaWYgdGhlDQpwcm9kdWN0IGxlYXZlcyBwcmV2aWV3IGFuZCBkZW1hbmQgY2hhbmdlcyB0aGUgdHJhZGUtb2ZmLg0KDQojIyBUaGUgY29uc3RyYWludA0KDQpDb25mbHVlbmNlICoqQ2xvdWQqKiBPQXV0aCAyLjAgKDNMTykgcmVxdWlyZXMgYSBgY2xpZW50X3NlY3JldGAgYW5kIG9mZmVycyAqKm5vIFBLQ0UqKg0KZm9yIHB1YmxpYyBjbGllbnRzIChhbiBvcGVuIEF0bGFzc2lhbiBmZWF0dXJlIHJlcXVlc3QpLiBBIGRpc3RyaWJ1dGVkIGV4dGVuc2lvbiBjYW5ub3QNCmVtYmVkIGEgc2VjcmV0LCBzbyBpdCBjYW5ub3QgY29tcGxldGUgdGhlIENsb3VkIGZsb3cgYnkgaXRzZWxmLiBPbmx5IHR3byBzaGFwZXMgY291bGQ6DQoNCi0gYSAqKmhvc3RlZCBicm9rZXIqKiB0aGF0IGhvbGRzIHRoZSBzZWNyZXQgYW5kIGV4Y2hhbmdlcyB0aGUgY29kZSAod2hhdCBBdGxhc3NpYW4ncyBvd24NCiAgVlMgQ29kZSBleHRlbnNpb24gZG9lcykg4oCUIHBlcm1hbmVudCBpbmZyYXN0cnVjdHVyZSwgdXB0aW1lLCBhbmQgaXQgYmVjb21lcyB0aGUNCiAgdHJ1c3QgYW5kIHByaXZhY3kgaW50ZXJtZWRpYXJ5IGZvciBldmVyeSB1c2VyJ3MgQ29uZmx1ZW5jZSBhdXRoOw0KLSAqKnVzZXItc3VwcGxpZWQgYXBwIGNyZWRlbnRpYWxzKiog4oCUIGVhY2ggdXNlciByZWdpc3RlcnMgYSAzTE8gYXBwIGFuZCBwYXN0ZXMgYSBjbGllbnQNCiAgaWQgYW5kIHNlY3JldCwgaGVhdmllciBVWCB0aGFuIHRoZSBBUEkgdG9rZW4gaXQgd291bGQgc2l0IGJlc2lkZS4NCg0KKipEYXRhIENlbnRlciDiiaUgNy4xNyoqIGlzIGRpZmZlcmVudDogaXRzIE9BdXRoIDIuMCBwcm92aWRlciBzdXBwb3J0cyBhdXRob3JpemF0aW9uIGNvZGUNCioqd2l0aCBQS0NFKiosIHNvIGEgcHVibGljIGNsaWVudCBuZWVkcyBubyBzZWNyZXQuIEFuIGFkbWluIGNyZWF0ZXMgdGhlIGluY29taW5nIGxpbmsgYW5kDQpoYW5kcyBvdXQgdGhlIGNsaWVudCBpZC4NCg0KIyMgRGVjaXNpb24NCg0KLSAqKkNsb3VkIGlzIEFQSS10b2tlbiBvbmx5LioqIEVtYWlsICsgQVBJIHRva2VuIChCYXNpYykgc3RheXMgdGhlIENsb3VkIGNyZWRlbnRpYWwuIFdlDQogIHNoaXAgKipubyBicm9rZXIqKiBhbmQgZG8gKipub3QqKiBhc2sgdXNlcnMgdG8gcmVnaXN0ZXIgYSAzTE8gYXBwLg0KLSAqKkRhdGEgQ2VudGVyIGdldHMgT0F1dGgqKiAoIzQyKTogYXV0aG9yaXphdGlvbiBjb2RlICsgUEtDRSwgbG9vcGJhY2sgcmVkaXJlY3Qgb24NCiAgYGh0dHA6Ly8xMjcuMC4wLjE6PHBvcnQ&#43;L2NhbGxiYWNrYCAoUkZDIDgyNTIg4oCUIGAxMjcuMC4wLjFgLCBub3QgYGxvY2FsaG9zdGApLCB0b2tlbnMgaW4NCiAgdGhlIGVkaXRvcidzIHNlY3JldCBzdG9yZSwgc2lsZW50IHJlZnJlc2ggb24gNDAxLCBhbmQgYSB0eXBlZCBgUmVhdXRoUmVxdWlyZWRgIG9uDQogIHJldm9jYXRpb24uIFRoZSBlbmdpbmUgcmV0dXJucyB0aGUgdG9rZW5zIGluIHRoZSBgc2Vzc2lvbi9vcGVuYCByZXNwb25zZSBhbmQgbmV2ZXINCiAgcGVyc2lzdHMgdGhlbS4NCg0KIyMgV2h5DQoNCi0gSXQga2VlcHMgdGhlIHByb2plY3QncyBwb3N0dXJlOiAqKm5vIGluZnJhc3RydWN0dXJlLCBubyBzdG9yZWQgc2VjcmV0cyoqIOKAlCB0aGUgc2FtZQ0KICByZWFzb24gTWFya2V0cGxhY2UgcHVibGlzaGluZyB1c2VzIE1pY3Jvc29mdCBFbnRyYSBJRCAoT0lEQyksIG5vdCBhIHN0b3JlZCBQQVQuIEEgYnJva2VyDQogIGlzIGEgbGFyZ2UsIHBlcm1hbmVudCwgc2VjdXJpdHktc2Vuc2l0aXZlIGxpYWJpbGl0eSBmb3IgYSBzb2xvLW1haW50YWluZWQgKipwcmV2aWV3KiouDQotIENsb3VkIGFscmVhZHkgaGFzIGEgY2xlYW4gcGF0aC4gQSB1c2VyLXN1cHBsaWVkIDNMTyBhcHAgaXMgKndvcnNlKiBVWCB0aGFuIGVtYWlsICsgQVBJDQogIHRva2VuIOKAlCBpdCBzdGlsbCBwYXN0ZXMgYSBjcmVkZW50aWFsLCBhbmQgYWRkcyBhcHAgcmVnaXN0cmF0aW9uIG9uIHRvcCDigJQgc28gaXQgYnV5cw0KICBub3RoaW5nIG92ZXIgd2hhdCB2MSBzaGlwcy4NCi0gRGF0YSBDZW50ZXIgZ2VudWluZWx5IGdhaW5zOiBQS0NFIHJlbW92ZXMgdGhlIHNlY3JldCBwcm9ibGVtLCBhbmQgcmVmcmVzaCB0b2tlbnMgYmVhdCBhDQogIGxvbmctbGl2ZWQgUEFULiBUaGF0IGlzIHdoZXJlIE9BdXRoIGVhcm5zIGl0cyBrZWVwLCBzbyB0aGF0IGlzIHdoZXJlIGl0IHNoaXBzLg0KDQojIyBSZXZpc2l0IHdoZW4NCg0KVGhlIHByb2R1Y3QgbGVhdmVzIHByZXZpZXcgKiphbmQqKiB0aGVyZSBpcyByZWFsIGRlbWFuZCBmb3Igb25lLWNsaWNrIENsb3VkIHNpZ24taW4uIFRoZW4NCmEgaG9zdGVkIGJyb2tlciBiZWNvbWVzIHdvcnRoIGl0cyBjb3N0OyB0aGlzIGRlY2lzaW9uIGRvZXMgbm90IGZvcmVjbG9zZSBpdC4NCg==</script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>(function () {
+  var source = document.getElementById('lm-source');
+  if (!source) { return; }
+  var bytes = Uint8Array.from(atob(source.textContent.trim()), function (c) { return c.charCodeAt(0); });
+  var markdown = new TextDecoder('utf-8').decode(bytes);
+  var article = document.getElementById('lm-markdown');
+  article.innerHTML = marked.parse(markdown);
+  article.querySelectorAll('pre > code.language-mermaid').forEach(function (code) {
+    var diagram = document.createElement('div');
+    diagram.className = 'mermaid';
+    diagram.textContent = code.textContent;
+    code.parentNode.replaceWith(diagram);
+  });
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: false });
+    mermaid.run({ querySelector: '.mermaid' });
+  }
+})();</script>
+</body>
+</html>
