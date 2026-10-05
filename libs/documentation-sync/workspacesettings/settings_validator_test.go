@@ -30,7 +30,7 @@ func TestValidate(t *testing.T) {
 		change func(*Settings)
 		want   string
 	}{
-		{"future version", func(s *Settings) { s.Version = 2 }, "version 2 is not supported; this version of Lore Master reads version 1"},
+		{"future version", func(s *Settings) { s.Version = 2 }, "version 2 is not supported; this version of LoreMaster reads version 1"},
 		{"no outputs", func(s *Settings) { s.Outputs = nil }, "outputs is empty; add at least one output"},
 		{"unknown platform", func(s *Settings) { s.Outputs[0].Platform = "wiki" }, `outputs[0].platform "wiki" is not one of confluence, github-pages`},
 		{"reserved platform", func(s *Settings) { s.Outputs[0].Platform = "notion" }, `outputs[0].platform "notion" is planned but not available yet (#166); use confluence or github-pages`},
@@ -104,7 +104,7 @@ func TestValidateReportsEveryProblemAtOnce(t *testing.T) {
 	settings := valid()
 	settings.Version = 9
 	settings.Outputs[0].LinkMode = "x"
-	want := "version 9 is not supported; this version of Lore Master reads version 1\n" + `outputs[0].linkMode "x" is not one of title, id`
+	want := "version 9 is not supported; this version of LoreMaster reads version 1\n" + `outputs[0].linkMode "x" is not one of title, id`
 	if err := Validate(settings); err == nil || err.Error() != want {
 		t.Fatalf("\n got: %v\nwant: %s", err, want)
 	}

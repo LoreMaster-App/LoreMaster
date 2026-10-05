@@ -1,8 +1,8 @@
-# Lore Master
+# LoreMaster
 
-![Lore Master](./assets/lore-master-concept-md.jpg)
+![LoreMaster](./assets/lore-master-concept-md.jpg)
 
-**Lore Master** gathers a project's lore and publishes it where your team already reads.
+**LoreMaster** gathers a project's lore and publishes it where your team already reads.
 Its first feature syncs every Markdown file in your workspace into a documentation
 platform — **Confluence** first (Cloud, Data Center, and the end-of-life Server) — as a
 clean page tree, and keeps it in sync on every run.
@@ -12,7 +12,7 @@ engine, so the same sync behaves identically in every editor. The project is del
 not named after Confluence or Markdown: more platforms and more kinds of lore come later.
 
 > **Status: preview.** The engine and its libraries are built and tested; the VS Code
-> extension is published to the Marketplace as a preview (`LoreMaster.lore-master`) while the
+> extension is published to the Marketplace as a preview (`LoreMaster.loremaster`) while the
 > end-to-end sync is hardened. See [`ROADMAP.md`](ROADMAP.md).
 
 ---
@@ -93,7 +93,7 @@ outputs:
     baseUrl: https://your-site.atlassian.net/wiki
     space: DOCS
     parentPageId: "123456"      # the page everything nests under
-    titlePrefix: "Lore Master"  # pages are titled "<prefix>: <H1>"
+    titlePrefix: "LoreMaster"  # pages are titled "<prefix>: <H1>"
     direction: to-platform      # to-platform (push) | two-way (also pull remote edits back)
     mermaidMode: image          # image | code | html-macro | marketplace-macro
     titleCollision: adopt       # adopt | fail
@@ -111,7 +111,7 @@ content types, templates) are present in the schema but refused until built.
 
 ## Architecture
 
-Lore Master is **one Go engine** — a sidecar binary spoken to over **JSON-RPC on stdio** —
+LoreMaster is **one Go engine** — a sidecar binary spoken to over **JSON-RPC on stdio** —
 wrapped by a thin editor shell per editor. The shell handles UI, secrets, and the browser;
 the engine does all the Confluence work. This keeps the sync identical everywhere and the
 shells small. The rationale and rejected alternatives are in

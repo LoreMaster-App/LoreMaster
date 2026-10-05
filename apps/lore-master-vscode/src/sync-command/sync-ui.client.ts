@@ -14,14 +14,14 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
     async pickConnection (connections: ConnectionMeta[]) {
       const picked = await vscode.window.showQuickPick(
         connections.map(meta => ({ label: meta.baseUrl, description: meta.displayName, meta })),
-        { title: 'Lore Master: connection', placeHolder: 'Which site?' },
+        { title: 'LoreMaster: connection', placeHolder: 'Which site?' },
       )
 
       return picked?.meta
     },
 
     async noConnections () {
-      await vscode.window.showInformationMessage('Lore Master: no connection yet — run "Lore Master: Add Connection" first.')
+      await vscode.window.showInformationMessage('LoreMaster: no connection yet — run "LoreMaster: Add Connection" first.')
     },
 
     async pickStorageTypes () {
@@ -30,7 +30,7 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
           { label: 'Confluence', description: 'Sync Markdown to a Confluence space', value: 'confluence' as StorageType, picked: true },
           { label: 'GitHub Pages', description: 'Publish Markdown as a static site on a gh-pages branch', value: 'github-pages' as StorageType },
         ],
-        { title: 'Lore Master: where to sync', placeHolder: 'Choose one or more storages', canPickMany: true },
+        { title: 'LoreMaster: where to sync', placeHolder: 'Choose one or more storages', canPickMany: true },
       )
 
       return picked?.map(item => item.value)
@@ -39,7 +39,7 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
     async pickOutputs (choices: OutputChoice[]) {
       const picked = await vscode.window.showQuickPick(
         choices.map(choice => ({ label: outputLabel(choice.output), description: outputDescription(choice.output), index: choice.index, picked: true })),
-        { title: 'Lore Master: sync to', placeHolder: 'Choose the storages to sync', canPickMany: true },
+        { title: 'LoreMaster: sync to', placeHolder: 'Choose the storages to sync', canPickMany: true },
       )
 
       return picked?.map(item => item.index)
@@ -47,14 +47,14 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
 
     promptRepo () {
       return Promise.resolve(vscode.window.showInputBox({
-        title:       'Lore Master: GitHub Pages repository',
+        title:       'LoreMaster: GitHub Pages repository',
         prompt:      "owner/name or a clone URL — leave blank to use this repository's origin",
         placeHolder: "(this repository's origin)",
       }))
     },
 
     promptBranch () {
-      return Promise.resolve(vscode.window.showInputBox({ title: 'Lore Master: GitHub Pages branch', prompt: 'Branch to publish to', value: 'gh-pages' }))
+      return Promise.resolve(vscode.window.showInputBox({ title: 'LoreMaster: GitHub Pages branch', prompt: 'Branch to publish to', value: 'gh-pages' }))
     },
 
     async choose (summary: string) {
@@ -64,7 +64,7 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
           { label: '$(list-unordered) Show details', value: 'details' },
           { label: '$(x) Cancel', value: 'cancel' },
         ],
-        { title: `Lore Master: ${summary}`, placeHolder: 'Review the plan' },
+        { title: `LoreMaster: ${summary}`, placeHolder: 'Review the plan' },
       )
 
       return (picked?.value ?? 'cancel') as 'cancel' | 'details' | 'run'
@@ -79,7 +79,7 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
     },
 
     async showErrors (errors: string[]) {
-      await vscode.window.showErrorMessage(`Lore Master: the plan has ${errors.length} error(s) and cannot run. See the Lore Master output.`)
+      await vscode.window.showErrorMessage(`LoreMaster: the plan has ${errors.length} error(s) and cannot run. See the LoreMaster output.`)
       output.show(true)
     },
 
@@ -104,7 +104,7 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
     },
 
     async error (message: string) {
-      await vscode.window.showErrorMessage(`Lore Master: ${message}`)
+      await vscode.window.showErrorMessage(`LoreMaster: ${message}`)
     },
   }
 }

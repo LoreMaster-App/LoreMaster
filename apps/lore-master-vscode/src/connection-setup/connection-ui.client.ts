@@ -17,7 +17,7 @@ export function createConnectionUI (): ConnectionUI {
   return {
     promptBaseUrl () {
       return Promise.resolve(vscode.window.showInputBox({
-        title:          'Lore Master: add a connection',
+        title:          'LoreMaster: add a connection',
         prompt:         'Confluence site URL',
         placeHolder:    'https://your-site.atlassian.net/wiki',
         ignoreFocusOut: true,
@@ -27,7 +27,7 @@ export function createConnectionUI (): ConnectionUI {
     async pickAuthMethod (methods) {
       const picked = await vscode.window.showQuickPick(
         methods.map(method => ({ label: AUTH_METHOD_LABELS[method], method })),
-        { title: 'Lore Master: sign-in method', placeHolder: 'How do you sign in?' },
+        { title: 'LoreMaster: sign-in method', placeHolder: 'How do you sign in?' },
       )
 
       return picked?.method
@@ -76,7 +76,7 @@ export function createConnectionUI (): ConnectionUI {
     },
 
     async showConnected (meta: ConnectionMeta) {
-      await vscode.window.showInformationMessage(`Lore Master: connected to ${meta.baseUrl} as ${meta.displayName}.`)
+      await vscode.window.showInformationMessage(`LoreMaster: connected to ${meta.baseUrl} as ${meta.displayName}.`)
     },
   }
 }

@@ -79,7 +79,7 @@ func TestSavingANewFileExplainsItself(t *testing.T) {
 		t.Fatal(err)
 	}
 	written, _ := os.ReadFile(filepath.Join(root, FileName))
-	if !strings.HasPrefix(string(written), "# Lore Master configuration. Commit this file; it never holds a secret\n") {
+	if !strings.HasPrefix(string(written), "# LoreMaster configuration. Commit this file; it never holds a secret\n") {
 		t.Fatalf("new file:\n%s", written)
 	}
 	reloaded, err := LoadSettings(root)

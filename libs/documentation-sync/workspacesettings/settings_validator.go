@@ -25,7 +25,7 @@ func Validate(settings Settings) error {
 	add := func(format string, args ...any) { problems = append(problems, fmt.Errorf(format, args...)) }
 
 	if settings.Version != CurrentVersion {
-		add("version %d is not supported; this version of Lore Master reads version %d", settings.Version, CurrentVersion)
+		add("version %d is not supported; this version of LoreMaster reads version %d", settings.Version, CurrentVersion)
 	}
 	if len(settings.Outputs) == 0 {
 		add("outputs is empty; add at least one output")

@@ -76,7 +76,7 @@ func TestTheFirstSyncWizardRoundTrip(t *testing.T) {
 		t.Fatalf("saved: %+v", saved)
 	}
 	content, _ := os.ReadFile(filepath.Join(root, ".lore-master.yaml"))
-	if !strings.HasPrefix(string(content), "# Lore Master configuration.") {
+	if !strings.HasPrefix(string(content), "# LoreMaster configuration.") {
 		t.Fatalf("a new file explains itself:\n%s", content)
 	}
 }

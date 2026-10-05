@@ -1,6 +1,6 @@
 # Signing in to Confluence Data Center with OAuth
 
-Lore Master can sign in to **Confluence Data Center** with OAuth 2.0 (authorization code +
+LoreMaster can sign in to **Confluence Data Center** with OAuth 2.0 (authorization code +
 PKCE) instead of a personal access token. **Confluence Cloud stays API-token only** — the
 reasoning is in [`../architecture/oauth.md`](../architecture/oauth.md). This guide is how to
 set it up and what happens under the hood.
@@ -13,7 +13,7 @@ provider that supports PKCE (so a distributed extension needs no client secret).
 A site admin creates an **incoming OAuth 2.0 link** on the Data Center site and gives each
 user its **client id**. The exact screens vary by version — see Atlassian's own
 documentation for "OAuth 2.0 provider" / "incoming application links" on Data Center — but
-two things matter for Lore Master:
+two things matter for LoreMaster:
 
 - **Redirect / callback.** The extension completes the flow on a **loopback** address,
   `http://127.0.0.1:<port>/callback` (RFC 8252; `127.0.0.1`, not `localhost`, because some
@@ -29,8 +29,8 @@ The client **secret** is not needed and is never entered into the editor — PKC
 
 Two ways in, both reaching the same connection:
 
-- the **Accounts menu** (bottom-left in VS Code) → *Sign in with Confluence (Lore Master)*, or
-- the **Lore Master: Add connection** command.
+- the **Accounts menu** (bottom-left in VS Code) → *Sign in with Confluence (LoreMaster)*, or
+- the **LoreMaster: Add Connection** command.
 
 Then:
 
@@ -54,7 +54,7 @@ Then:
 - When a stored access token has expired, the next session **refreshes** it from the refresh
   token automatically and stores the renewed pair.
 - If the refresh token has been **revoked or expired**, the sign-in can no longer be renewed:
-  Lore Master reports that you need to sign in again rather than failing silently. Sign in
+  LoreMaster reports that you need to sign in again rather than failing silently. Sign in
   once more from the Accounts menu or the command.
 
 ## Signing out

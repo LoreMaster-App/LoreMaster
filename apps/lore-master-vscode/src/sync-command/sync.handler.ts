@@ -21,7 +21,7 @@ export interface SyncCommandDeps {
 export async function sync (deps: SyncCommandDeps): Promise<void> {
   const folder = await pickWorkspaceFolder()
   if (!folder) {
-    await vscode.window.showInformationMessage('Lore Master: open a folder to sync.')
+    await vscode.window.showInformationMessage('LoreMaster: open a folder to sync.')
 
     return
   }

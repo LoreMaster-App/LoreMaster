@@ -1,4 +1,4 @@
-# Lore Master documentation
+# LoreMaster documentation
 
 Start here, then dive into the architecture decisions.
 

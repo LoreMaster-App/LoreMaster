@@ -16,7 +16,7 @@ export function createSyncTargetUI (): SyncTargetUI {
     async pickSpace (spaces: Space[]) {
       const picked = await vscode.window.showQuickPick(
         spaces.map(space => ({ label: space.name, description: space.key, space })),
-        { title: 'Lore Master: space', placeHolder: 'Which Confluence space?' },
+        { title: 'LoreMaster: space', placeHolder: 'Which Confluence space?' },
       )
 
       return picked?.space
@@ -65,7 +65,7 @@ export function createSyncTargetUI (): SyncTargetUI {
 
     promptTitlePrefix (defaultValue: string, validate: (value: string) => string | undefined) {
       return Promise.resolve(vscode.window.showInputBox({
-        title:          'Lore Master: page title prefix',
+        title:          'LoreMaster: page title prefix',
         prompt:         'Every synced page is titled "<prefix>: <heading>"',
         value:          defaultValue,
         ignoreFocusOut: true,

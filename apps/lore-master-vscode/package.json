@@ -1,12 +1,12 @@
 {
-  "name": "lore-master",
+  "name": "loremaster",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
     "vscode-jsonrpc": "^9.0.3",
     "mermaid": "^11.12.0"
   },
-  "displayName": "Lore Master",
+  "displayName": "LoreMaster",
   "publisher": "LoreMaster",
   "preview": true,
   "icon": "lore-master.png",
@@ -23,31 +23,31 @@
       {
         "command": "loreMaster.sync",
         "title": "Sync",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.syncTo",
         "title": "Sync to…",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.syncCurrentFile",
         "title": "Sync Current File",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.publishPages",
         "title": "Publish to GitHub Pages",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       },
       {
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
-        "category": "Lore Master"
+        "category": "LoreMaster"
       }
     ],
     "configuration": {
-      "title": "Lore Master",
+      "title": "LoreMaster",
       "properties": {
         "loreMaster.engine.path": {
           "type": "string",

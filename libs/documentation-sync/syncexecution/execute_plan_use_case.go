@@ -97,7 +97,7 @@ func (run *execution) relinkPages(ctx context.Context, results []PageResult) {
 		}
 		remote, err := run.platform.UpdatePage(ctx, platformport.PageUpdate{
 			ID: result.PageID, ExpectedVersion: result.Version, Title: page.action.Title, ParentID: page.parentID,
-			Body: platformport.Document{Blocks: blocks}, Message: "Links updated by Lore Master",
+			Body: platformport.Document{Blocks: blocks}, Message: "Links updated by LoreMaster",
 		})
 		if err != nil {
 			run.warn("%s: the page was written, but its links could not be updated to the new pages (%s); the next sync tries again", page.action.Path, describe(err))
@@ -475,7 +475,7 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 	} else {
 		remote, err = run.platform.UpdatePage(ctx, platformport.PageUpdate{
 			ID: action.PageID, ExpectedVersion: action.RemoteVersion, Title: action.Title, ParentID: parentID, Body: body,
-			Message: "Synced by Lore Master from " + string(action.Path),
+			Message: "Synced by LoreMaster from " + string(action.Path),
 		})
 	}
 	if err != nil {

@@ -1,4 +1,4 @@
-# Lore Master configuration. See docs/getting-started.md.
+# LoreMaster configuration. See docs/getting-started.md.
 version: 1
 outputs:
   - platform: github-pages

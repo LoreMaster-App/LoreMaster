@@ -1,9 +1,9 @@
-# Lore Master
+# LoreMaster
 
-![Lore Master](https://raw.githubusercontent.com/LoreMaster-App/LoreMaster/main/assets/lore-master-concept-md.jpg)
+![LoreMaster](https://raw.githubusercontent.com/LoreMaster-App/LoreMaster/main/assets/lore-master-concept-md.jpg)
 
-**Lore Master gathers a project's lore and publishes it where your team already reads.**
-Keep your docs as plain Markdown in your repo, and Lore Master syncs them to **Confluence**
+**LoreMaster gathers a project's lore and publishes it where your team already reads.**
+Keep your docs as plain Markdown in your repo, and LoreMaster syncs them to **Confluence**
 or publishes them as a **static site on GitHub Pages** — directly from VS Code.
 
 > **Preview.** The engine and its libraries are built and tested; this extension is
@@ -30,26 +30,26 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 
 ## Getting started
 
-1. **Run `Lore Master: Sync`** (Command Palette). On a fresh workspace it asks **where to
+1. **Run `LoreMaster: Sync`** (Command Palette). On a fresh workspace it asks **where to
    sync** — tick the storages you want (Confluence, GitHub Pages) and configure each. Your
    choices are saved to `.lore-master.yaml` in the workspace root.
-   - **Confluence:** first run `Lore Master: Add Connection` (site URL + API token for
+   - **Confluence:** first run `LoreMaster: Add Connection` (site URL + API token for
      Cloud, PAT for Data Center). Then Sync walks you through the space, parent page and
      title prefix.
    - **GitHub Pages:** confirm the repository (defaults to your `origin`) and branch
      (defaults to `gh-pages`).
-2. **Sync.** `Lore Master: Sync` publishes to every configured storage; it previews the
+2. **Sync.** `LoreMaster: Sync` publishes to every configured storage; it previews the
    plan before writing anything.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| **Lore Master: Sync** | Sync every configured output (first run sets them up). |
-| **Lore Master: Sync to…** | Pick a subset of outputs to sync. |
-| **Lore Master: Sync Current File** | Sync just the active file to your Confluence outputs. |
-| **Lore Master: Publish to GitHub Pages** | Publish the site to the `gh-pages` branch. |
-| **Lore Master: Add Connection** | Sign in to a Confluence site. |
+| **LoreMaster: Sync** | Sync every configured output (first run sets them up). |
+| **LoreMaster: Sync to…** | Pick a subset of outputs to sync. |
+| **LoreMaster: Sync Current File** | Sync just the active file to your Confluence outputs. |
+| **LoreMaster: Publish to GitHub Pages** | Publish the site to the `gh-pages` branch. |
+| **LoreMaster: Add Connection** | Sign in to a Confluence site. |
 
 ## Configuration
 

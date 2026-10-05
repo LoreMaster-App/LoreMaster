@@ -11,7 +11,7 @@ export const SYNC_TO_COMMAND = 'loreMaster.syncTo'
 export async function syncTo (deps: SyncCommandDeps): Promise<void> {
   const folder = await pickWorkspaceFolder()
   if (!folder) {
-    await vscode.window.showInformationMessage('Lore Master: open a folder to sync.')
+    await vscode.window.showInformationMessage('LoreMaster: open a folder to sync.')
 
     return
   }

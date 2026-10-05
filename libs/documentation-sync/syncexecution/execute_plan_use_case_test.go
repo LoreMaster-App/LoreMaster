@@ -763,7 +763,7 @@ func TestALinkToARecreatedPageFollowsItsNewID(t *testing.T) {
 type noRelink struct{ *platformport.InMemoryPlatform }
 
 func (p noRelink) UpdatePage(ctx context.Context, update platformport.PageUpdate) (platformport.RemotePage, error) {
-	if update.Message == "Links updated by Lore Master" {
+	if update.Message == "Links updated by LoreMaster" {
 		return platformport.RemotePage{}, errors.New("503 unavailable")
 	}
 

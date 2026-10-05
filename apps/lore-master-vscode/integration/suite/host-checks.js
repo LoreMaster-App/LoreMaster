@@ -8,7 +8,7 @@ const EXTENSION_ID = 'russoedu.lore-master'
 const AUTH_PROVIDER_ID = 'lore-master-confluence'
 const COMMANDS = ['loreMaster.syncWorkspace', 'loreMaster.syncCurrentFile', 'loreMaster.addConnection']
 
-suite('Lore Master in a real VS Code host', () => {
+suite('LoreMaster in a real VS Code host', () => {
   suiteSetup(async function () {
     this.timeout(60_000)
     const extension = vscode.extensions.getExtension(EXTENSION_ID)

@@ -10,7 +10,7 @@ import (
 
 // newFileHeader opens a file written from scratch, so whoever opens it next learns what
 // it is without looking anything up.
-const newFileHeader = `Lore Master configuration. Commit this file; it never holds a secret
+const newFileHeader = `LoreMaster configuration. Commit this file; it never holds a secret
 (the editor keeps credentials in its own secret store).
 Planned values, accepted later: content types test-results and code-docs (#96),
 custom templates (#97).`

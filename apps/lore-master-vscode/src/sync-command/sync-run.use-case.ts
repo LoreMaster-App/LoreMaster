@@ -69,7 +69,7 @@ export async function syncConfluenceOutput (deps: SyncDeps, ref: ConfluenceOutpu
 
   const meta = connections.list().find(connection => sameSite(connection.baseUrl, output.baseUrl))
   if (!meta) {
-    await ui.error(`No connection for ${output.baseUrl}. Add it with "Lore Master: Add Connection", then sync again.`)
+    await ui.error(`No connection for ${output.baseUrl}. Add it with "LoreMaster: Add Connection", then sync again.`)
 
     return
   }
@@ -134,7 +134,7 @@ function planOnce (engine: EngineClient, params: { sessionId: string; workspaceR
 }
 
 function execute (engine: EngineClient, planId: string, force: boolean, ui: SyncUI): Promise<SyncExecuteResult> {
-  return ui.withProgress('Lore Master: syncing', async report => {
+  return ui.withProgress('LoreMaster: syncing', async report => {
     const subscription = engine.onNotification(HOST_PROGRESS_METHOD, params => {
       const progress = params as ProgressParams
       if (progress.planId === planId) {
@@ -158,7 +158,7 @@ function reportResult (result: SyncExecuteResult, ui: SyncUI): void {
   }
   ui.report(lines)
   const failed = pages.filter(page => page.outcome === 'failed').length
-  ui.status(failed > 0 ? `Lore Master: synced with ${failed} failure(s)` : `Lore Master: synced ${pages.length} page(s)`)
+  ui.status(failed > 0 ? `LoreMaster: synced with ${failed} failure(s)` : `LoreMaster: synced ${pages.length} page(s)`)
 }
 
 /** Two base URLs point at the same site when they match but for a trailing slash or case. */

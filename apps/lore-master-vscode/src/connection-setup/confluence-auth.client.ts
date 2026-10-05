@@ -2,9 +2,9 @@ import * as vscode from 'vscode'
 import type { Credential } from '../engine-protocol'
 import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
 
-/** The id and label VS Code shows for Lore Master's Confluence accounts. */
+/** The id and label VS Code shows for LoreMaster's Confluence accounts. */
 export const CONFLUENCE_AUTH_ID = 'lore-master-confluence'
-export const CONFLUENCE_AUTH_LABEL = 'Confluence (Lore Master)'
+export const CONFLUENCE_AUTH_LABEL = 'Confluence (LoreMaster)'
 
 /** What the provider needs: the connection store, and a way to run the sign-in flow. */
 export interface AuthProviderDeps {
