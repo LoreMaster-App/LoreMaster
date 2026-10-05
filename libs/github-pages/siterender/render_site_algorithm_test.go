@@ -78,17 +78,34 @@ func TestGenerateSiteLinksAssetsAndSiblingsRelativeToEachPage(t *testing.T) {
 	}
 }
 
-func TestGenerateSiteIndexMirrorsTheHomePage(t *testing.T) {
+func TestGenerateSiteIndexRedirectsToTheHomePage(t *testing.T) {
 	files, _ := GenerateSite("My Project", sampleTree())
 	index, _ := fileByPath(files, "index.html")
+	html := string(index.Content)
 
-	homeB64 := base64.StdEncoding.EncodeToString([]byte("# Home\n\nWelcome."))
-	if !strings.Contains(string(index.Content), homeB64) {
-		t.Fatalf("index.html should mirror the home (readme) page")
+	// index.html redirects to the home page's own file rather than copying it, so the home
+	// page's relative links resolve where the page actually lives.
+	if !strings.Contains(html, `content="0; url=readme.html"`) {
+		t.Errorf("index.html should redirect to the home page's file")
 	}
-	// index.html sits at the root, so its nav marks the home page's own file as current.
-	if !strings.Contains(string(index.Content), `href="readme.html"`) {
-		t.Errorf("index.html nav should link the home page at the root")
+	if !strings.Contains(html, `href="readme.html"`) {
+		t.Errorf("index.html should offer a link to the home page")
+	}
+	homeB64 := base64.StdEncoding.EncodeToString([]byte("# Home\n\nWelcome."))
+	if strings.Contains(html, homeB64) {
+		t.Errorf("index.html should not duplicate the home page's content")
+	}
+}
+
+func TestGenerateSiteConvertsInternalMarkdownLinks(t *testing.T) {
+	files, _ := GenerateSite("My Project", sampleTree())
+	page, _ := fileByPath(files, "readme.html")
+
+	// The render script rewrites a relative .md link to .html, but leaves external links and
+	// anchors alone.
+	script := string(page.Content)
+	if !strings.Contains(script, `.replace(/\.(md|markdown)(#.*)?$/i, '.html$2')`) {
+		t.Errorf("the page should rewrite internal Markdown links to .html")
 	}
 }
 
