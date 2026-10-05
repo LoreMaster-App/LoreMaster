@@ -3,11 +3,11 @@ import type { EngineClient } from '../engine-process'
 import type { ConnectionStore } from '../secret-storage'
 import type { TargetStore } from '../sync-target'
 import { pickWorkspaceFolder } from '../workspace-files'
-import { runSync } from './sync-run.use-case'
+import { syncOutputs } from './sync-outputs.use-case'
 import { createSyncUI } from './sync-ui.client'
 
 /** The command id contributed in package.json. */
-export const SYNC_WORKSPACE_COMMAND = 'loreMaster.syncWorkspace'
+export const SYNC_COMMAND = 'loreMaster.sync'
 
 /** What the sync commands are given at registration. */
 export interface SyncCommandDeps {
@@ -17,8 +17,8 @@ export interface SyncCommandDeps {
   output:      vscode.OutputChannel
 }
 
-/** Syncs the whole open workspace folder. */
-export async function syncWorkspace (deps: SyncCommandDeps): Promise<void> {
+/** Syncs every configured output of the chosen workspace folder (first run sets them up). */
+export async function sync (deps: SyncCommandDeps): Promise<void> {
   const folder = await pickWorkspaceFolder()
   if (!folder) {
     await vscode.window.showInformationMessage('Lore Master: open a folder to sync.')
@@ -26,5 +26,5 @@ export async function syncWorkspace (deps: SyncCommandDeps): Promise<void> {
     return
   }
 
-  await runSync({ engine: deps.engine, connections: deps.connections, targets: deps.targets, workspaceRoot: folder, ui: createSyncUI(deps.output) })
+  await syncOutputs({ engine: deps.engine, connections: deps.connections, targets: deps.targets, workspaceRoot: folder, ui: createSyncUI(deps.output) })
 }

@@ -1,3 +1,5 @@
-export { SYNC_WORKSPACE_COMMAND, syncWorkspace, type SyncCommandDeps } from './sync-workspace.handler'
+export { SYNC_COMMAND, sync, type SyncCommandDeps } from './sync.handler'
+export { SYNC_TO_COMMAND, syncTo } from './sync-to.handler'
 export { SYNC_CURRENT_FILE_COMMAND, syncCurrentFile } from './sync-current-file.handler'
-export { runSync, type SyncDeps, type SyncUI } from './sync-run.use-case'
+export { syncOutputs, type SyncOutputsOptions } from './sync-outputs.use-case'
+export { syncConfluenceOutput, type ConfluenceOutputRef, type OutputChoice, type SyncDeps, type SyncUI } from './sync-run.use-case'

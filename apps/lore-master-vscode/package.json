@@ -20,8 +20,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "loreMaster.syncWorkspace",
-        "title": "Sync Workspace",
+        "command": "loreMaster.sync",
+        "title": "Sync",
+        "category": "Lore Master"
+      },
+      {
+        "command": "loreMaster.syncTo",
+        "title": "Sync to…",
         "category": "Lore Master"
       },
       {

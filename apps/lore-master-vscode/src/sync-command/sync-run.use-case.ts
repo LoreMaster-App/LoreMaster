@@ -5,18 +5,16 @@ import {
   type ProgressParams,
   SESSION_CLOSE_METHOD,
   SESSION_OPEN_METHOD,
-  SETTINGS_READ_METHOD,
-  SETTINGS_SAVE_METHOD,
   type SessionOpenResult,
-  type SettingsReadResult,
   SYNC_EXECUTE_METHOD,
   SYNC_PLAN_METHOD,
   type SyncExecuteResult,
   type SyncPlanResult,
 } from '../engine-protocol'
-import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
-import { pickParentPage, pickSpace, resolveTitlePrefix, type SyncTargetUI, type TargetStore } from '../sync-target'
+import type { ConnectionStore } from '../secret-storage'
+import { type StorageSetupUI } from '../storage-setup'
 import { type PlanPreviewUI, previewPlan } from './plan-preview.handler'
+import type { TargetStore } from '../sync-target'
 
 /** One progress step, as `withProgress` reports it. */
 export interface ProgressStep {
@@ -25,15 +23,21 @@ export interface ProgressStep {
   total:   number
 }
 
-/** Everything the sync flow asks of the editor. Composes the target and preview prompts. */
-export interface SyncUI extends SyncTargetUI, PlanPreviewUI {
-  pickConnection (connections: ConnectionMeta[]): Promise<ConnectionMeta | undefined>
-  noConnections (): Promise<void>
+/** One configured output offered for a subset sync, with its index in the settings. */
+export interface OutputChoice {
+  index:  number
+  output: Output
+}
+
+/** Everything the sync flow asks of the editor. Composes the first-run storage setup (which
+ *  carries the target prompts, the connection picker and the GitHub Pages prompts), the plan
+ *  preview, the output-subset picker, and the progress/report surface. */
+export interface SyncUI extends StorageSetupUI, PlanPreviewUI {
+  pickOutputs (choices: OutputChoice[]): Promise<number[] | undefined>
   withProgress<T> (title: string, task: (report: (step: ProgressStep) => void) => Promise<T>): Promise<T>
   report (lines: string[]): void
   status (message: string): void
   confirmForce (message: string): Promise<boolean>
-  error (message: string): Promise<void>
 }
 
 /** What a sync needs: the engine, the stored connections and targets, the folder, an
@@ -47,23 +51,26 @@ export interface SyncDeps {
   ui:            SyncUI
 }
 
+/** One configured Confluence output to sync, with its index in the settings' outputs. */
+export interface ConfluenceOutputRef {
+  output: Output
+  index:  number
+}
+
 /**
- * Syncs a folder: choose a connection, open a session, make sure the folder has a target
- * (space, parent page, prefix — asking once and saving to .lore-master.yaml), plan, preview,
- * execute under a progress bar, and report. A conflict offers a forced re-run. The session
- * is always closed.
+ * Syncs one configured Confluence output: find the connection for its site, open a session,
+ * plan, preview, execute under a progress bar, and report. A conflict offers a forced
+ * re-run. The session is always closed. The output is already configured — the first-run
+ * pickers live in the storage-setup flow.
  */
-export async function runSync (deps: SyncDeps): Promise<void> {
-  const { engine, connections, ui } = deps
+export async function syncConfluenceOutput (deps: SyncDeps, ref: ConfluenceOutputRef): Promise<void> {
+  const { engine, connections, targets, workspaceRoot, ui } = deps
+  const { output, index } = ref
 
-  const metas = connections.list()
-  if (metas.length === 0) {
-    await ui.noConnections()
-
-    return
-  }
-  const meta = metas.length === 1 ? metas[0] : await ui.pickConnection(metas)
+  const meta = connections.list().find(connection => sameSite(connection.baseUrl, output.baseUrl))
   if (!meta) {
+    await ui.error(`No connection for ${output.baseUrl}. Add it with "Lore Master: Add Connection", then sync again.`)
+
     return
   }
   const credential = await connections.credential(meta.baseUrl)
@@ -89,11 +96,8 @@ export async function runSync (deps: SyncDeps): Promise<void> {
   }
 
   try {
-    const output = await resolveOutput({ ...deps, sessionId: session.sessionId, meta })
-    if (output === undefined) {
-      return
-    }
-    await planAndExecute({ ...deps, sessionId: session.sessionId, output })
+    targets.set(workspaceRoot, { space: output.space, parentPageId: output.parentPageId, parentTitle: '', titlePrefix: output.titlePrefix })
+    await planAndExecute({ ...deps, sessionId: session.sessionId, output: index })
   } catch (error) {
     await ui.error(messageOf(error))
   } finally {
@@ -103,62 +107,6 @@ export async function runSync (deps: SyncDeps): Promise<void> {
       // Closing is best-effort.
     }
   }
-}
-
-async function resolveOutput (deps: SyncDeps & { sessionId: string; meta: ConnectionMeta }): Promise<number | undefined> {
-  const { engine, sessionId, workspaceRoot, meta, targets, ui } = deps
-
-  const read = await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot })
-  const outputs = [...read.settings.outputs]
-  let index = outputs.findIndex(output => output.baseUrl === meta.baseUrl)
-  if (index < 0) {
-    // A fresh workspace starts with one unconfigured scaffold output (blank baseUrl); fill it
-    // rather than appending a second, empty output beside the one we are about to configure.
-    index = outputs.findIndex(output => output.baseUrl === '')
-  }
-  const existing = outputs[index]
-
-  if (existing && existing.space !== '' && existing.parentPageId !== '' && existing.titlePrefix !== '') {
-    targets.set(workspaceRoot, { space: existing.space, parentPageId: existing.parentPageId, parentTitle: '', titlePrefix: existing.titlePrefix })
-
-    return index
-  }
-
-  const space = await pickSpace({ engine, sessionId, ui })
-  if (!space) {
-    return undefined
-  }
-  const parent = await pickParentPage({ engine, sessionId, space, ui })
-  if (!parent) {
-    return undefined
-  }
-  const titlePrefix = await resolveTitlePrefix({ existing: existing?.titlePrefix ?? '', parentTitle: parent.title, ui })
-  if (titlePrefix === undefined) {
-    return undefined
-  }
-
-  const output: Output = {
-    platform:       'confluence',
-    baseUrl:        meta.baseUrl,
-    space:          space.key,
-    parentPageId:   parent.pageId,
-    titlePrefix,
-    direction:      existing?.direction ?? 'to-platform',
-    content:        existing && existing.content.length > 0 ? existing.content : [{ type: 'markdown', roots: ['.'], template: 'default' }],
-    mermaidMode:    existing?.mermaidMode ?? 'image',
-    titleCollision: existing?.titleCollision ?? 'fail',
-    linkMode:       existing?.linkMode ?? 'title',
-  }
-  if (index >= 0) {
-    outputs[index] = output
-  } else {
-    outputs.push(output)
-    index = outputs.length - 1
-  }
-  await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { version: read.settings.version || 1, outputs } })
-  targets.set(workspaceRoot, { space: space.key, parentPageId: parent.pageId, parentTitle: parent.title, titlePrefix })
-
-  return index
 }
 
 async function planAndExecute (deps: SyncDeps & { sessionId: string; output: number }): Promise<void> {
@@ -211,6 +159,15 @@ function reportResult (result: SyncExecuteResult, ui: SyncUI): void {
   ui.report(lines)
   const failed = pages.filter(page => page.outcome === 'failed').length
   ui.status(failed > 0 ? `Lore Master: synced with ${failed} failure(s)` : `Lore Master: synced ${pages.length} page(s)`)
+}
+
+/** Two base URLs point at the same site when they match but for a trailing slash or case. */
+function sameSite (a: string, b: string): boolean {
+  return normaliseUrl(a) === normaliseUrl(b)
+}
+
+function normaliseUrl (url: string): string {
+  return url.replace(/\/+$/, '').toLowerCase()
 }
 
 function messageOf (error: unknown): string {

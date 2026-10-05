@@ -46,6 +46,14 @@ export async function publishPages (deps: PagesDeps): Promise<void> {
     return
   }
 
+  await publishPagesOutput({ engine, workspaceRoot, output, ui })
+}
+
+/** Publishes one already-chosen github-pages output and reports the result. This is the
+ *  per-output path the unified sync fan-out calls for each github-pages output. */
+export async function publishPagesOutput (deps: { engine: PagesEngine; workspaceRoot: string; output: number; ui: PagesUI }): Promise<void> {
+  const { engine, workspaceRoot, output, ui } = deps
+
   let result: PagesPublishResult
   try {
     result = await ui.withProgress('Lore Master: publishing to GitHub Pages', () =>
