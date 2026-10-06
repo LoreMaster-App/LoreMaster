@@ -11,7 +11,7 @@
   "preview": true,
   "icon": "lore-master.png",
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.101.0"
   },
   "categories": [
     "Other"
@@ -19,6 +19,12 @@
   "main": "./dist/main.js",
   "activationEvents": [],
   "contributes": {
+    "mcpServerDefinitionProviders": [
+      {
+        "id": "loreMaster.engine",
+        "label": "LoreMaster"
+      }
+    ],
     "commands": [
       {
         "command": "loreMaster.sync",

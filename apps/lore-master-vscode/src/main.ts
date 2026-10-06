@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import { ADD_CONNECTION_COMMAND, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
+import { registerMcpServer } from './mcp-server'
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { createConnectionStore } from './secret-storage'
 import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
@@ -31,6 +32,8 @@ export function activate (context: vscode.ExtensionContext): void {
     renderer,
     answerRenderDiagrams({ engine, renderer }),
     registerConfluenceAuth({ store: connections, signIn: () => setUpConnection({ engine, store: connections, ui: createConnectionUI() }) }),
+    // Expose the engine's MCP server so the editor's AI agent knows LoreMaster's rules.
+    registerMcpServer(context),
   )
 
   const syncDeps = { engine, connections, targets, output }

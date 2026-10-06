@@ -91,4 +91,57 @@ export const workspace = {
   getConfiguration (_section?: string): { get: <T>(key: string, defaultValue?: T) => T | undefined } {
     return { get: <T>(_key: string, defaultValue?: T) => defaultValue }
   },
+  onDidChangeWorkspaceFolders (_listener: () => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+}
+
+/** A minimal vscode.Uri: keeps the fsPath, which is all the extension reads. */
+export const Uri = {
+  file (fsPath: string): { fsPath: string; scheme: string } {
+    return { fsPath, scheme: 'file' }
+  },
+}
+
+/** Combines disposables, like vscode.Disposable.from. */
+export const Disposable = {
+  from (...items: { dispose: () => void }[]): { dispose: () => void } {
+    return { dispose () { for (const item of items) item.dispose() } }
+  },
+}
+
+/** A minimal vscode.McpStdioServerDefinition: records how the server is launched. */
+export class McpStdioServerDefinition {
+  cwd?: { fsPath: string }
+
+  constructor (
+    public label: string,
+    public command: string,
+    public args: string[] = [],
+    public env: Record<string, string | number | null> = {},
+    public version?: string,
+  ) {}
+}
+
+// The MCP provider API. registerMcpServerDefinitionProvider keeps the provider so a test
+// can fetch it by id and exercise provideMcpServerDefinitions.
+interface McpServerDefinitionProvider {
+  onDidChangeMcpServerDefinitions?: (listener: () => unknown) => { dispose: () => void }
+  provideMcpServerDefinitions (token?: unknown): unknown
+  resolveMcpServerDefinition?(server: unknown, token?: unknown): unknown
+}
+
+const mcpProviders = new Map<string, McpServerDefinitionProvider>()
+
+export const lm = {
+  registerMcpServerDefinitionProvider (id: string, provider: McpServerDefinitionProvider): { dispose: () => void } {
+    mcpProviders.set(id, provider)
+
+    return { dispose: () => { mcpProviders.delete(id) } }
+  },
+}
+
+/** Test helper: the provider registered under an id, or undefined. */
+export function mcpProvider (id: string): McpServerDefinitionProvider | undefined {
+  return mcpProviders.get(id)
 }
