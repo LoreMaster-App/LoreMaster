@@ -20,10 +20,24 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
   conflict detection when both sides changed.
 - **Many destinations at once.** Configure as many outputs as you like; one **Sync** fans
   out across all of them.
+- **A sidebar, not just commands.** The LoreMaster icon in the activity bar has three views:
+  **Sync** (add a storage, sync, open the config), **Pages** and **Storages**.
+- **See where everything stands.** The **Pages** view shows your Markdown as the tree it is on
+  the storage, with an icon per page — new, synced, local changes, and (after a read-only
+  *Check remote status*) remote changes or a conflict. Name pages by their title or their file
+  name, whichever you prefer.
+- **Change a storage without the YAML.** Edit a storage's prefix, direction, Mermaid mode,
+  folders and more from the **Storages** view; the file keeps your comments.
+- **Teach your AI agent the rules.** An MCP server tells an agent where a new page nests and
+  how it is titled, and can preview and validate against your workspace. It is registered
+  for the editor's agent automatically; **LoreMaster: Copy MCP Server Config** gives you the
+  entry for Claude Desktop, Claude Code and other clients.
+- **Leave things out.** `.gitignore`d Markdown is skipped by default (`skipGitignored`), and
+  an `ignore` list takes gitignore-style patterns.
 
 ## Requirements
 
-- VS Code **1.96** or later.
+- VS Code **1.101** or later.
 - The extension bundles its own engine — nothing else to install.
 - For GitHub Pages: `git` on your `PATH` and push access to the repo (your existing
   credentials are used).
@@ -50,6 +64,12 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 | **LoreMaster: Sync Current File** | Sync just the active file to your Confluence outputs. |
 | **LoreMaster: Publish to GitHub Pages** | Publish the site to the `gh-pages` branch. |
 | **LoreMaster: Add Connection** | Sign in to a Confluence site. |
+| **LoreMaster: Add sync storage** | Set up another destination for this workspace. |
+| **LoreMaster: Edit storage** | Change one setting of a storage (also the pencil in the Storages view). |
+| **LoreMaster: Open config** | Open `.lore-master.yaml`. |
+| **LoreMaster: Check remote status** | Ask the platform where each page stands (read-only) and show it in the Pages view. |
+| **LoreMaster: Show page titles or file names** | Switch how the Pages view names pages (setting `loreMaster.pages.label`). |
+| **LoreMaster: Copy MCP Server Config** | Copy the MCP server entry for an external AI client. |
 
 ## Configuration
 

@@ -6,7 +6,7 @@ first feature is syncing a workspace's Markdown into Confluence.
 ## 1. Install
 
 In VS Code: **Extensions** → search **LoreMaster** (`LoreMaster.loremaster`) → **Install**.
-It needs VS Code **1.96 or later**. The extension bundles its own engine, so there is
+It needs VS Code **1.101 or later**. The extension bundles its own engine, so there is
 nothing else to install.
 
 ## 2. Open a workspace
@@ -102,7 +102,7 @@ config** opens the file.
 
 ## Troubleshooting
 
-- **"not compatible with this version of Visual Studio Code"** — update VS Code to 1.96+.
+- **"not compatible with this version of Visual Studio Code"** — update VS Code to 1.101+.
 - **No connection yet** — run *LoreMaster: Add Connection* first; a sync with no connection
   just prompts you to add one.
 - **A custom engine build** — point `loreMaster.engine.path` at a binary if you are
