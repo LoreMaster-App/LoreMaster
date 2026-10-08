@@ -71,3 +71,24 @@ func TestLoadingRefusesWhatItCannotTrust(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadingReadsTheDiscoveryScope(t *testing.T) {
+	loaded, err := LoadSettings(workspaceWith(t, `version: 1
+skipGitignored: false
+ignore:
+  - drafts/**
+  - NOTES.md
+outputs:
+  - baseUrl: https://acme.atlassian.net/wiki
+    space: ENG
+    parentPageId: "123000"
+    titlePrefix: MNCI
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	scope := loaded.Settings.DiscoveryScope()
+	if scope.SkipGitignored || !reflect.DeepEqual(scope.Ignore, []string{"drafts/**", "NOTES.md"}) {
+		t.Fatalf("scope %+v", scope)
+	}
+}

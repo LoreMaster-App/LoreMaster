@@ -31,7 +31,7 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 		if err != nil {
 			return nil, err
 		}
-		output, err := outputToSync(params, session.BaseURL)
+		output, discovery, err := outputToSync(params, session.BaseURL)
 		if err != nil {
 			return nil, err
 		}
@@ -40,7 +40,7 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 			return nil, err
 		}
 
-		documents, warnings, problems, err := loadDocuments(ctx, params.WorkspaceRoot, output)
+		documents, warnings, problems, err := loadDocuments(ctx, params.WorkspaceRoot, output, discovery)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
@@ -73,26 +73,26 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 
 // outputToSync loads and checks the settings and picks the output, which must belong
 // to the session's site.
-func outputToSync(params rpcprotocol.SyncPlanParams, sessionURL string) (workspacesettings.Output, error) {
+func outputToSync(params rpcprotocol.SyncPlanParams, sessionURL string) (workspacesettings.Output, workspacesettings.DiscoveryScope, error) {
 	loaded, err := workspacesettings.LoadSettings(params.WorkspaceRoot)
 	if err != nil {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if loaded.FirstSync {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s has no site, space, parent page or title prefix yet; run the first sync to choose them", workspacesettings.FileName)
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s has no site, space, parent page or title prefix yet; run the first sync to choose them", workspacesettings.FileName)
 	}
 	if err := workspacesettings.Validate(loaded.Settings); err != nil {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if params.Output < 0 || params.Output >= len(loaded.Settings.Outputs) {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(loaded.Settings.Outputs))
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(loaded.Settings.Outputs))
 	}
 	output := loaded.Settings.Outputs[params.Output]
 	if !confluenceplatform.SameSite(output.BaseURL, sessionURL) {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d syncs to %s but the session is open on %s", params.Output, output.BaseURL, sessionURL)
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d syncs to %s but the session is open on %s", params.Output, output.BaseURL, sessionURL)
 	}
 
-	return output, nil
+	return output, loaded.Settings.DiscoveryScope(), nil
 }
 
 func findSpace(ctx context.Context, platform platformport.DocumentationPlatform, key string) (platformport.SpaceRef, error) {

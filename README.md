@@ -83,6 +83,8 @@ The sync is driven by a per-workspace YAML file (written for you on the first sy
 
 ```yaml
 version: 1
+skipGitignored: true         # default; leave out .md files your .gitignore files ignore
+ignore: []                    # gitignore-style patterns every output leaves out, e.g. [drafts/**, NOTES.md]
 outputs:
   - platform: confluence
     baseUrl: https://your-site.atlassian.net/wiki
@@ -99,6 +101,12 @@ outputs:
         excludes: []
         template: default
 ```
+
+`skipGitignored` (default `true`) skips Markdown that the workspace's `.gitignore` files (nested ones
+included) ignore — usually drafts, vendored copies or build output; set it to `false` to sync them. `ignore`
+is a list of gitignore-style patterns, matched against workspace-relative paths, that every output leaves out
+on top of its own `content[].excludes`. `node_modules`, `.git`, `dist`, `out-tsc`, `coverage` and `.venv` are
+always skipped.
 
 `direction: two-way` also pulls edits made on the platform back into the Markdown (a page
 changed on both sides is reported as a conflict, never merged). Other reserved values (more

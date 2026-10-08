@@ -32,7 +32,11 @@ type SettingsSaveParams struct {
 
 // Settings mirrors .lore-master.yaml.
 type Settings struct {
-	Version int      `json:"version"`
+	Version int `json:"version"`
+	// SkipGitignored leaves out Markdown the workspace's .gitignore files ignore; absent means true.
+	SkipGitignored *bool `json:"skipGitignored,omitempty"`
+	// Ignore is gitignore-syntax patterns every output leaves out of the scan.
+	Ignore  []string `json:"ignore,omitempty"`
 	Outputs []Output `json:"outputs"`
 }
 

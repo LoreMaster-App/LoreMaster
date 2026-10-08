@@ -8,8 +8,14 @@ const CurrentVersion = 1
 
 // Settings is the whole file.
 type Settings struct {
-	Version int      `yaml:"version"`
-	Outputs []Output `yaml:"outputs"`
+	Version int `yaml:"version"`
+	// SkipGitignored leaves out Markdown that the workspace's .gitignore files ignore.
+	// Nil means the default, true; see DiscoveryScope.
+	SkipGitignored *bool `yaml:"skipGitignored,omitempty"`
+	// Ignore is gitignore-syntax patterns, matched against workspace-relative paths, that
+	// every output leaves out of the scan on top of its content[].excludes.
+	Ignore  []string `yaml:"ignore,omitempty"`
+	Outputs []Output   `yaml:"outputs"`
 }
 
 // Output is one place the lore goes.

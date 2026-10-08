@@ -16,13 +16,15 @@ import (
 type ignoreRules struct {
 	workspaceRoot string
 	excludes      *ignore.GitIgnore
+	gitignored    bool
 	gitignores    map[string]*ignore.GitIgnore
 }
 
-func newIgnoreRules(workspaceRoot string, excludes []string) *ignoreRules {
+func newIgnoreRules(workspaceRoot string, excludes []string, honourGitignore bool) *ignoreRules {
 	return &ignoreRules{
 		workspaceRoot: workspaceRoot,
 		excludes:      ignore.CompileIgnoreLines(excludes...),
+		gitignored:    honourGitignore,
 		gitignores:    map[string]*ignore.GitIgnore{},
 	}
 }
@@ -36,6 +38,9 @@ func (r *ignoreRules) ignored(rel string, isDir bool) (bool, error) {
 	}
 	if r.excludes.MatchesPath(withDirectorySlash(rel, isDir)) {
 		return true, nil
+	}
+	if !r.gitignored {
+		return false, nil
 	}
 	for dir := path.Dir(rel); ; dir = path.Dir(dir) {
 		rules, err := r.gitignoreIn(dir)
