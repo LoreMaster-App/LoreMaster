@@ -114,6 +114,11 @@
         "title": "Edit storage",
         "category": "LoreMaster",
         "icon": "$(edit)"
+      },
+      {
+        "command": "loreMaster.runGenerators",
+        "title": "Run generators",
+        "category": "LoreMaster"
       }
     ],
     "viewsContainers": {

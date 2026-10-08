@@ -22,6 +22,9 @@ export const window = {
   showInformationMessage (_message: string): Promise<undefined> {
     return Promise.resolve(undefined)
   },
+  showWarningMessage (_message: string, ..._items: unknown[]): Promise<undefined> {
+    return Promise.resolve(undefined)
+  },
   showErrorMessage (_message: string): Promise<undefined> {
     return Promise.resolve(undefined)
   },
