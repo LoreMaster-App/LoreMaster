@@ -1,0 +1,65 @@
+[
+  {
+    "declarations": [
+      {
+        "kind": "class",
+        "name": "Cart",
+        "description": "A cart of items.\n",
+        "members": [
+          {
+            "kind": "field",
+            "name": "owner",
+            "type": "String",
+            "description": "Who owns the cart.\n",
+            "final": true
+          },
+          {
+            "kind": "constructor",
+            "name": "Cart",
+            "description": "Creates a cart for [owner].\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "this.owner"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "method",
+            "name": "add",
+            "description": "Adds an item and returns the new item count.\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "sku",
+                  "type": "String"
+                },
+                {
+                  "name": "quantity",
+                  "type": "int",
+                  "default": "1"
+                }
+              ],
+              "named": 1
+            },
+            "returns": "int"
+          }
+        ]
+      }
+    ],
+    "source": "lib/src/cart.dart"
+  },
+  {
+    "directives": [
+      {
+        "kind": "library"
+      },
+      {
+        "kind": "export",
+        "uri": "src/cart.dart"
+      }
+    ],
+    "source": "lib/shop.dart"
+  }
+]

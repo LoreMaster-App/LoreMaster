@@ -54,6 +54,14 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     inputHint:     'Project folders, separated by commas, e.g. src/Shop/. Needs the .NET SDK and DefaultDocumentation (dotnet tool install -g DefaultDocumentation.Console). Leave empty for every project.',
   },
   {
+    type:          'dart-docs',
+    label:         'Dart API docs',
+    description:   'Classes, mixins, enums and functions of Dart and Flutter packages, with dartdoc_json',
+    icon:          'symbol-interface',
+    defaultOutput: 'docs/dart',
+    inputHint:     'Package folders, separated by commas, e.g. packages/shop/. Needs the Dart SDK and dartdoc_json (dart pub global activate dartdoc_json). Leave empty for every package.',
+  },
+  {
     type:          'openapi-docs',
     label:         'OpenAPI docs',
     description:   'OpenAPI 3 descriptions (YAML or JSON): operations, parameters, schemas',
