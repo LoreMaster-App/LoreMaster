@@ -38,6 +38,14 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     inputHint:     'Project folders, separated by commas, e.g. libs/, apps/web/. Needs typedoc and typedoc-plugin-markdown installed in the workspace. Leave empty for every project.',
   },
   {
+    type:          'python-docs',
+    label:         'Python API docs',
+    description:   'Modules, classes and functions of Python projects, with pydoc-markdown',
+    icon:          'symbol-method',
+    defaultOutput: 'docs/python',
+    inputHint:     'Project folders, separated by commas, e.g. services/billing/. Needs pydoc-markdown installed (pip install pydoc-markdown). Leave empty for every project.',
+  },
+  {
     type:          'openapi-docs',
     label:         'OpenAPI docs',
     description:   'OpenAPI 3 descriptions (YAML or JSON): operations, parameters, schemas',

@@ -6,12 +6,12 @@ import (
 )
 
 func TestForFindsABuiltGeneratorAndNothingElse(t *testing.T) {
-	for _, kind := range []string{"test-results", "go-docs", "openapi-docs", "ts-docs"} {
+	for _, kind := range []string{"test-results", "go-docs", "openapi-docs", "ts-docs", "python-docs"} {
 		if generate, found := For(kind); !found || generate == nil {
 			t.Fatalf("%s is not registered", kind)
 		}
 	}
-	if _, found := For("python-docs"); found {
+	if _, found := For("csharp-docs"); found {
 		t.Fatal("a generator that is not built is registered")
 	}
 	if _, found := For(""); found {
