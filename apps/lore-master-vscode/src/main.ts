@@ -3,6 +3,7 @@ import { CREATE_AGENT_COMMAND, createAgentCommand } from './agent-creation'
 import { ADD_CONNECTION_COMMAND, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
+import { GENERATE_AND_SYNC_COMMAND, generateAndSyncCommand, syncCommand } from './generate-and-sync'
 import { registerGeneratorsView } from './generators-view'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
@@ -10,7 +11,7 @@ import { registerPagesView } from './pages-view'
 import { createConnectionStore } from './secret-storage'
 import { EDIT_STORAGE_COMMAND, editStorageCommand } from './storage-editing'
 import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
-import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, sync, syncCurrentFile, syncTo } from './sync-command'
+import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
 
 export function activate (context: vscode.ExtensionContext): void {
@@ -48,7 +49,8 @@ export function activate (context: vscode.ExtensionContext): void {
     registerPagesView(syncDeps),
     registerGeneratorsView({ engine, output }),
     vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
-    vscode.commands.registerCommand(SYNC_COMMAND, () => sync(syncDeps)),
+    vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
+    vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),
     vscode.commands.registerCommand(SYNC_TO_COMMAND, () => syncTo(syncDeps)),
     vscode.commands.registerCommand(SYNC_CURRENT_FILE_COMMAND, () => syncCurrentFile(syncDeps)),
     vscode.commands.registerCommand(PUBLISH_PAGES_COMMAND, () => publishPagesCommand({ engine, output })),

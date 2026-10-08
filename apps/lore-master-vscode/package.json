@@ -155,6 +155,12 @@
         "title": "Refresh generators",
         "category": "LoreMaster",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "loreMaster.generateAndSync",
+        "title": "Generate and sync documentation",
+        "category": "LoreMaster",
+        "icon": "$(debug-start)"
       }
     ],
     "viewsContainers": {
@@ -221,12 +227,17 @@
         {
           "command": "loreMaster.runGenerators",
           "when": "view == loreMaster.generators",
-          "group": "navigation@2"
+          "group": "navigation@3"
         },
         {
           "command": "loreMaster.refreshGenerators",
           "when": "view == loreMaster.generators",
-          "group": "navigation@3"
+          "group": "navigation@4"
+        },
+        {
+          "command": "loreMaster.generateAndSync",
+          "when": "view == loreMaster.generators",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -326,6 +337,11 @@
             "Name each page by its file name."
           ],
           "markdownDescription": "How the **Pages** view names each page. The other name is shown beside it. Switch with the button in the view title."
+        },
+        "loreMaster.generateBeforeSync": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Run the generators (test results, API documentation) before every **Sync**, so the pages they write are as fresh as the code. **Generate and sync documentation** always does."
         }
       }
     }

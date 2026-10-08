@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { GENERATE_AND_SYNC_COMMAND } from '../generate-and-sync'
 import { SYNC_COMMAND } from '../sync-command'
 import { ADD_STORAGE_COMMAND } from './add-storage.handler'
 import { OPEN_CONFIG_COMMAND } from './open-config.handler'
@@ -16,6 +17,7 @@ interface SyncAction {
 const SYNC_ACTIONS: SyncAction[] = [
   { label: 'Add sync storage', command: ADD_STORAGE_COMMAND, icon: 'add' },
   { label: 'Sync', command: SYNC_COMMAND, icon: 'sync' },
+  { label: 'Generate and sync', command: GENERATE_AND_SYNC_COMMAND, icon: 'debug-start' },
   { label: 'Update config…', command: OPEN_CONFIG_COMMAND, icon: 'gear' },
 ]
 
