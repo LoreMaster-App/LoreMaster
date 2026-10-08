@@ -7,11 +7,11 @@ describe('SyncViewProvider', () => {
     expect(SYNC_VIEW_ID).toBe('loreMaster.sync')
   })
 
-  it('lists the three sync actions at the root, each wired to a command', () => {
+  it('lists the sync actions at the root, each wired to a command', () => {
     const actions = provider.getChildren()
 
-    expect(actions.map(action => action.label)).toEqual(['Add sync storage', 'Sync', 'Update config…'])
-    expect(actions.map(action => action.command)).toEqual(['loreMaster.addStorage', 'loreMaster.sync', 'loreMaster.openConfig'])
+    expect(actions.map(action => action.label)).toEqual(['Add sync storage', 'Sync', 'Generate and sync', 'Update config…'])
+    expect(actions.map(action => action.command)).toEqual(['loreMaster.addStorage', 'loreMaster.sync', 'loreMaster.generateAndSync', 'loreMaster.openConfig'])
   })
 
   it('has no children under an action (the tree is flat)', () => {

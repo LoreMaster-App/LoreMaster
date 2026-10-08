@@ -18,9 +18,10 @@ export interface SyncCommandDeps {
   output:      vscode.OutputChannel
 }
 
-/** Syncs every configured output of the chosen workspace folder (first run sets them up). */
-export async function sync (deps: SyncCommandDeps): Promise<void> {
-  const folder = await pickWorkspaceFolder()
+/** Syncs every configured output of the chosen workspace folder (first run sets them up). The
+ *  folder is asked for unless the caller already has it. */
+export async function sync (deps: SyncCommandDeps, chosenFolder?: string): Promise<void> {
+  const folder = chosenFolder ?? await pickWorkspaceFolder()
   if (!folder) {
     await vscode.window.showInformationMessage('LoreMaster: open a folder to sync.')
 

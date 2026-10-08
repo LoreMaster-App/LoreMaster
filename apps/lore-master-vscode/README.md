@@ -75,6 +75,7 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 | **LoreMaster: Check remote status** | Ask the platform where each page stands (read-only) and show it in the Pages view. |
 | **LoreMaster: Show page titles or file names** | Switch how the Pages view names pages (setting `loreMaster.pages.label`). |
 | **LoreMaster: Create documentation agent** | Write an agent for Claude Code, VS Code or `AGENTS.md` that follows LoreMaster's structure and your workspace's layout. |
+| **LoreMaster: Generate and sync documentation** | Run the generators, then sync, so generated pages are as fresh as the code (setting `loreMaster.generateBeforeSync` does it on every Sync). |
 | **LoreMaster: Add generator** | Add a generator (test results, Go docs, OpenAPI docs) from the Generators view. |
 | **LoreMaster: Run generators** | Write Markdown from your test reports, Go packages and OpenAPI descriptions (configured under `generators:` in `.lore-master.yaml`); the next sync publishes it. |
 | **LoreMaster: Copy MCP Server Config** | Copy the MCP server entry for an external AI client. |

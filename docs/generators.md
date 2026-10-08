@@ -133,7 +133,18 @@ saves it with your comments kept, warns if no storage syncs that folder, and off
 once. Removing a generator never deletes the pages it wrote.
 
 The editor's **Run generators** command, the view's run buttons and the engine's `generators/run`
-method all run the same thing. Output is deterministic — the same
+method all run the same thing.
+
+## Generate and sync in one step
+
+**LoreMaster: Generate and sync documentation** (also a row in the Sync view and a button in the
+Generators view) runs every generator and then syncs, so the pages that reach the storage are as
+fresh as the code. The sync previews its plan as usual, and unchanged generated pages are not in
+it. If a generator **fails**, you are asked before the pages go out, since some may be missing or
+stale; warnings alone (an input skipped) do not stop it. With no generators configured it syncs
+the Markdown and says so.
+
+To make every ordinary **Sync** do this, turn on the setting `loreMaster.generateBeforeSync`. Output is deterministic — the same
 reports give the same bytes — so running it again with nothing new rewrites nothing and shows
 no diff.
 
