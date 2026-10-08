@@ -133,11 +133,12 @@ func (inventory *Inventory) addImage(base string, destination string, node ast.N
 // target outside the workspace is left for the converter to report as plain text.
 func (inventory *Inventory) addLinkedFile(base string, destination string, node ast.Node) {
 	destination = strings.TrimSpace(destination)
-	if destination == "" || strings.HasPrefix(destination, "#") || IsRemote(destination) {
+	if destination == "" || strings.HasPrefix(destination, "#") || IsRemote(destination) || IsBareWebHost(destination) {
 		return
 	}
 	target := stripQueryAndFragment(destination)
-	if strings.EqualFold(path.Ext(decoded(target)), ".md") {
+	// A file has an extension; "/manual/configuration" is a route on a site, not a file.
+	if extension := path.Ext(decoded(target)); extension == "" || strings.EqualFold(extension, ".md") {
 		return
 	}
 	if resolved, ok, _ := resolveLocal(base, target); ok {
@@ -189,6 +190,12 @@ func IsRemote(destination string) bool {
 	parsed, err := url.Parse(destination)
 
 	return err == nil && len(parsed.Scheme) > 1
+}
+
+// IsBareWebHost is a "www." address written without a scheme, which Markdown readers
+// would resolve against the document's folder but its author meant as a web address.
+func IsBareWebHost(destination string) bool {
+	return strings.HasPrefix(strings.ToLower(destination), "www.")
 }
 
 func stripQueryAndFragment(reference string) string {
