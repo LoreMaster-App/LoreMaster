@@ -25,6 +25,9 @@ export default [
   // The Mermaid bundle is copied here from node_modules at build time (#63); never lint it.
   // The integration harness is plain CommonJS that runs in VS Code's test host, not slice code.
   { ignores: ['apps/lore-master-vscode/src/assets/**', 'apps/lore-master-vscode/integration/**'] },
+  // Gitignored tool state that mnci >= 4.40 would otherwise lint (JSON/YAML in dot-directories):
+  // the downloaded VS Code test host alone is thousands of files and exhausts the heap.
+  { ignores: ['.vscode-test/**', '.playwright-mcp/**', '.claude/**'] },
   // The TypeScript shell is laid out in vertical slices (#47): only main.ts at the
   // root of src, role-suffixed files, one index.ts per slice.
   ...mnci({ verticalSlices: ['apps/lore-master-vscode/src/**/*.ts'] }),
