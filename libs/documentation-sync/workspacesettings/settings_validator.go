@@ -153,9 +153,9 @@ func validateIgnore(add func(string, ...any), patterns []string) {
 
 // BuiltGeneratorTypes are the generator types that exist; the rest the format names are
 // reserved until they are built.
-var BuiltGeneratorTypes = []string{"test-results"}
+var BuiltGeneratorTypes = []string{"test-results", "go-docs"}
 
-var reservedGenerators = map[string]string{"go-docs": "#248", "openapi-docs": "#249", "ts-docs": "#251"}
+var reservedGenerators = map[string]string{"openapi-docs": "#249", "ts-docs": "#251"}
 
 // validateGenerators checks the generators list: a known type, an output folder inside the
 // workspace that no other generator writes into, and input patterns that stay inside it.

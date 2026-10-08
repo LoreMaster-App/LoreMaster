@@ -212,3 +212,28 @@ func TestEveryBuiltGeneratorTypeHasAGenerator(t *testing.T) {
 		}
 	}
 }
+
+func TestRunGeneratesGoPackageDocumentation(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{
+		workspacesettings.FileName: "version: 1\ngenerators:\n  - type: go-docs\n    input: [pkg/, '!pkg/internal/']\n    output: docs/api\n    title: API\noutputs:\n  - platform: github-pages\n    content:\n      - type: markdown\n        roots: [\"docs\"]\n",
+		"go.mod":                   "module example.com/m\n\ngo 1.24\n",
+		"pkg/a/a.go":               "// Package a does a.\npackage a\n\n// Do does it.\nfunc Do() {}\n",
+		"pkg/internal/b/b.go":      "// Package b is hidden.\npackage b\n",
+		"other/c.go":               "// Package c is not selected.\npackage c\n",
+	})
+
+	result, err := call(t, connect(t), root, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entry := result.Runs[0]
+	if want := []string{"docs/api/README.md", "docs/api/pkg/a/README.md"}; entry.Error != "" || !slices.Equal(entry.Written, want) {
+		t.Fatalf("run %+v, want %q", entry, want)
+	}
+	page, err := os.ReadFile(filepath.Join(root, "docs", "api", "pkg", "a", "README.md"))
+	if err != nil || !strings.Contains(string(page), "# example.com/m/pkg/a") || !strings.Contains(string(page), "generated: go-docs") || !strings.Contains(string(page), "### func Do") {
+		t.Fatalf("page %s (%v)", page, err)
+	}
+}

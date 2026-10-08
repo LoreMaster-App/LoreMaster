@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"lore-master/libs/content-generation/generatedfile"
+	"lore-master/libs/content-generation/markdownwriting"
 )
 
 const (
@@ -169,7 +170,7 @@ func renderSuite(p page) string {
 	if len(broken) > 0 {
 		out.WriteString("## Failures\n\n")
 		for _, test := range broken {
-			fmt.Fprintf(&out, "### %s\n\n%s.\n\n%s\n", code(caseName(test)), capitalise(string(test.Status)), fenced(failureText(test)))
+			fmt.Fprintf(&out, "### %s\n\n%s.\n\n%s\n", code(caseName(test)), capitalise(string(test.Status)), markdownwriting.CodeBlock("text", failureText(test)))
 		}
 		out.WriteString("\n")
 	}
@@ -205,22 +206,6 @@ func failureText(test Case) string {
 	}
 
 	return text
-}
-
-// fenced is text in a code block whose fence is longer than any run of backticks in it.
-func fenced(text string) string {
-	longest, run := 0, 0
-	for _, r := range text {
-		if r == '`' {
-			run++
-			longest = max(longest, run)
-		} else {
-			run = 0
-		}
-	}
-	fence := strings.Repeat("`", max(3, longest+1))
-
-	return fence + "text\n" + text + "\n" + fence + "\n"
 }
 
 // caseName is how a test is shown: its name, qualified by its class when that adds something.
