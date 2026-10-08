@@ -118,12 +118,43 @@
       {
         "command": "loreMaster.runGenerators",
         "title": "Run generators",
-        "category": "LoreMaster"
+        "category": "LoreMaster",
+        "icon": "$(run-all)"
       },
       {
         "command": "loreMaster.createAgent",
         "title": "Create documentation agent",
         "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.addGenerator",
+        "title": "Add generator",
+        "category": "LoreMaster",
+        "icon": "$(add)"
+      },
+      {
+        "command": "loreMaster.runGenerator",
+        "title": "Run generator",
+        "category": "LoreMaster",
+        "icon": "$(play)"
+      },
+      {
+        "command": "loreMaster.editGenerator",
+        "title": "Edit generator",
+        "category": "LoreMaster",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "loreMaster.removeGenerator",
+        "title": "Remove generator",
+        "category": "LoreMaster",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "loreMaster.refreshGenerators",
+        "title": "Refresh generators",
+        "category": "LoreMaster",
+        "icon": "$(refresh)"
       }
     ],
     "viewsContainers": {
@@ -144,6 +175,10 @@
         {
           "id": "loreMaster.pages",
           "name": "Pages"
+        },
+        {
+          "id": "loreMaster.generators",
+          "name": "Generators"
         },
         {
           "id": "loreMaster.storages",
@@ -177,6 +212,21 @@
           "command": "loreMaster.refreshPages",
           "when": "view == loreMaster.pages",
           "group": "navigation@3"
+        },
+        {
+          "command": "loreMaster.addGenerator",
+          "when": "view == loreMaster.generators",
+          "group": "navigation@1"
+        },
+        {
+          "command": "loreMaster.runGenerators",
+          "when": "view == loreMaster.generators",
+          "group": "navigation@2"
+        },
+        {
+          "command": "loreMaster.refreshGenerators",
+          "when": "view == loreMaster.generators",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -194,6 +244,21 @@
           "command": "loreMaster.syncPage",
           "when": "view == loreMaster.pages && viewItem == loreMasterPage",
           "group": "inline"
+        },
+        {
+          "command": "loreMaster.runGenerator",
+          "when": "view == loreMaster.generators && viewItem == loreMasterGenerator",
+          "group": "inline@1"
+        },
+        {
+          "command": "loreMaster.editGenerator",
+          "when": "view == loreMaster.generators && viewItem == loreMasterGenerator",
+          "group": "inline@2"
+        },
+        {
+          "command": "loreMaster.removeGenerator",
+          "when": "view == loreMaster.generators && viewItem == loreMasterGenerator",
+          "group": "inline@3"
         }
       ],
       "commandPalette": [
@@ -208,10 +273,30 @@
         {
           "command": "loreMaster.syncPage",
           "when": "false"
+        },
+        {
+          "command": "loreMaster.runGenerator",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.editGenerator",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.removeGenerator",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.refreshGenerators",
+          "when": "false"
         }
       ]
     },
     "viewsWelcome": [
+      {
+        "view": "loreMaster.generators",
+        "contents": "No generators yet. A generator writes Markdown pages from your test reports, Go packages or OpenAPI descriptions, and they sync like any other page.\n[Add generator](command:loreMaster.addGenerator)"
+      },
       {
         "view": "loreMaster.pages",
         "contents": "No Markdown pages to show yet.\n[Add sync storage](command:loreMaster.addStorage)"
