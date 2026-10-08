@@ -27,7 +27,7 @@ outputs:
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results` or `go-docs`. `openapi-docs` and `ts-docs` are reserved for generators not built yet. |
+| `type` | `test-results`, `go-docs` or `openapi-docs`. `ts-docs` is reserved for a generator not built yet. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -72,6 +72,25 @@ Folders named `node_modules`, `vendor`, `testdata`, `dist`, or starting with `.`
 skipped. A package with no exported declarations and no package comment is left out. Build
 constraints are ignored (so the pages are the same on every OS), except files marked
 `//go:build ignore`. A file that does not parse is reported and skipped.
+
+## `openapi-docs`
+
+Reads **OpenAPI 3.x** descriptions, YAML or JSON, and writes Markdown. Without `input` it looks
+for `**/openapi.{yaml,yml,json}`, `**/swagger.{yaml,yml,json}` and `**/*.openapi.{yaml,yml,json}`,
+skipping `node_modules`, `vendor` and `.git`. Each API gets its own folder:
+
+- **`README.md`** (the output root) — the list of APIs; **`<api>/README.md`** — title, version,
+  description, servers and a table of every operation.
+- **`<api>/<tag>.md`** — one page per tag, in the order the description declares them (then
+  tags only operations mention, then `default` for the untagged). Each operation shows its
+  parameters, request body and responses as tables; `$ref`s into `components` are resolved. An
+  operation is listed under its first tag.
+- **`<api>/schemas.md`** — every schema in `components`, with its properties, enum values and
+  defaults; an `allOf` shows the properties of its inline parts, and a reference links to the
+  schemas page.
+
+Paths, responses and properties keep the order the author wrote them in. A Swagger 2 file, or a
+file that is not an OpenAPI description, is reported and skipped; the rest are still written.
 
 ## Running it
 

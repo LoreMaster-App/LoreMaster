@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: Petstore
+  version: 1.2.0
+  description: |
+    A sample API for managing pets.
+
+    Authenticate with an API key.
+servers:
+  - url: https://api.example.com/v1
+    description: Production
+  - url: https://staging.example.com/v1
+tags:
+  - name: pets
+    description: Everything about pets.
+  - name: store
+    description: Orders. Never used by an operation below.
+  - name: owners
+paths:
+  /pets:
+    get:
+      tags: [pets]
+      summary: List pets
+      operationId: listPets
+      description: Returns every pet, newest first.
+      parameters:
+        - name: limit
+          in: query
+          description: How many pets to return.
+          schema:
+            type: integer
+            format: int32
+            default: 20
+        - $ref: '#/components/parameters/Status'
+      responses:
+        '200':
+          description: A page of pets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [pets]
+      summary: Add a pet
+      requestBody:
+        $ref: '#/components/requestBodies/NewPet'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+  /pets/{petId}:
+    parameters:
+      - name: petId
+        in: path
+        required: true
+        description: The pet's id.
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [pets, owners]
+      summary: Get a pet
+      responses:
+        '200':
+          description: The pet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '404':
+          description: No such pet.
+    delete:
+      tags: [pets]
+      summary: Remove a pet
+      deprecated: true
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: Overrides the path-level description.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Removed.
+  /health:
+    get:
+      summary: Is it up?
+      responses:
+        '200':
+          description: Yes.
+components:
+  parameters:
+    Status:
+      name: status
+      in: query
+      description: Only pets with this status.
+      schema:
+        type: string
+        enum: [available, pending, sold]
+  requestBodies:
+    NewPet:
+      description: The pet to add.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NewPet'
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/NewPet'
+  responses:
+    Problem:
+      description: Something went wrong.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    NewPet:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          description: What the pet is called.
+        tag:
+          type: string
+          nullable: true
+    Pet:
+      description: A pet that lives here.
+      allOf:
+        - $ref: '#/components/schemas/NewPet'
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              enum: [available, pending, sold]
+              default: available
+            owner:
+              type: [string, 'null']
+              description: The owner's name, if any.
+            friends:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pet'
+            pipe:
+              type: string
+              description: Contains a | pipe and <angle> brackets.
+    Problem:
+      type: object
+      properties:
+        title:
+          type: string
+        detail:
+          type: string
+    Shape:
+      oneOf:
+        - $ref: '#/components/schemas/Pet'
+        - $ref: '#/components/schemas/Problem'
