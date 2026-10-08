@@ -112,7 +112,8 @@ describe('createAgentCommand', () => {
     await createAgentCommand({ engine: engine(scenario), files: store.factory })
 
     expect(scenario.requests).toEqual([AGENT_INSTRUCTIONS_METHOD])
-    expect(store.files.keys().toArray()).toEqual(['.claude/agents/loremaster-writer.md'])
+    expect(store.files.size).toBe(1)
+    expect(store.files.has('.claude/agents/loremaster-writer.md')).toBe(true)
     expect(scenario.messages).toEqual(['info: LoreMaster agent: created .claude/agents/loremaster-writer.md. For the place and validate tools, add the LoreMaster MCP server.'])
     expect(scenario.buttons).toEqual([['Open', 'Copy MCP Server Config']])
   })

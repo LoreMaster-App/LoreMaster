@@ -53,7 +53,8 @@ describe('createAgent', () => {
 
     await createAgent(deps(files), [targetById('vscode-agent')])
 
-    expect(files.files.keys().toArray()).toEqual(['.github/agents/loremaster-writer.agent.md'])
+    expect(files.files.size).toBe(1)
+    expect(files.files.has('.github/agents/loremaster-writer.agent.md')).toBe(true)
   })
 
   it('updates what it wrote before, reports what is already current, and appends to a shared file', async () => {
