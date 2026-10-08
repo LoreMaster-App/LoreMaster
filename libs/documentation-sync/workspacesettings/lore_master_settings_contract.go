@@ -23,7 +23,8 @@ type Settings struct {
 
 // Generator is one generator: what it reads, and the folder it writes its pages to.
 type Generator struct {
-	// Type is test-results (JUnit XML); the other types the format names are reserved.
+	// Type is test-results (JUnit XML) or go-docs (Go package documentation); the other
+	// types the format names are reserved.
 	Type string `yaml:"type"`
 	// Input is gitignore-style patterns selecting what to read; empty means the type's own
 	// default.

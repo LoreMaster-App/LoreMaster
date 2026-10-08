@@ -27,8 +27,8 @@ outputs:
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`. `go-docs` and `openapi-docs` are reserved for generators not built yet. |
-| `input` | Gitignore-style patterns selecting what to read. Empty means the type's default. |
+| `type` | `test-results` or `go-docs`. `openapi-docs` and `ts-docs` are reserved for generators not built yet. |
+| `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
 
@@ -48,6 +48,30 @@ It writes:
 
 A report that is not valid JUnit is reported and skipped; the others are still written. When
 there are no reports at all, the index says so, so old results never linger.
+
+## `go-docs`
+
+Reads the Go packages in the workspace and writes their documentation — the same doc
+comments `go doc` shows — as Markdown:
+
+- **`README.md`** — a table of every documented package with its synopsis.
+- **one page per package**, at the path of its folder (`<output>/pkg/store/README.md`), so
+  the pages nest the way your directories do. A page has the import path, the package
+  comment, then constants, variables, functions and types with their constructors and
+  methods; each declaration is shown as gofmt prints it, without its body, with its comment
+  beneath it. The root package, which cannot be `README.md`, is named after the package.
+
+```yaml
+generators:
+  - type: go-docs
+    input: ["libs/", "apps/", "!**/internal/"]   # optional; default is every package
+    output: docs/api
+```
+
+Folders named `node_modules`, `vendor`, `testdata`, `dist`, or starting with `.` or `_` are
+skipped. A package with no exported declarations and no package comment is left out. Build
+constraints are ignored (so the pages are the same on every OS), except files marked
+`//go:build ignore`. A file that does not parse is reported and skipped.
 
 ## Running it
 

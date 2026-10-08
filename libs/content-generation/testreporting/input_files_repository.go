@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	ignore "github.com/sabhiram/go-gitignore"
+	"lore-master/libs/content-generation/inputselection"
 )
 
 // defaultInput selects the reports the common runners write: JUnit-style names anywhere.
@@ -17,12 +17,10 @@ var defaultInput = []string{"**/junit*.xml", "**/TEST-*.xml", "**/*junit.xml"}
 var skippedFolders = []string{"node_modules", ".git"}
 
 // findReports lists the workspace-relative paths ('/'-separated, sorted) of the files the
-// patterns select. Patterns use gitignore syntax, so "**/junit*.xml" and "reports/" work.
+// patterns select: gitignore syntax, so "**/junit*.xml" and "reports/" work, and a pattern
+// starting with "!" leaves out what it matches. With none selecting, the usual report names apply.
 func findReports(ctx context.Context, workspaceRoot string, patterns []string) ([]string, error) {
-	if len(patterns) == 0 {
-		patterns = defaultInput
-	}
-	matcher := ignore.CompileIgnoreLines(patterns...)
+	selector := inputselection.NewSelector(patterns, defaultInput)
 
 	var found []string
 	err := filepath.WalkDir(workspaceRoot, func(full string, entry fs.DirEntry, walkErr error) error {
@@ -44,7 +42,7 @@ func findReports(ctx context.Context, workspaceRoot string, patterns []string) (
 			return err
 		}
 		relative = filepath.ToSlash(relative)
-		if strings.EqualFold(filepath.Ext(relative), ".xml") && matcher.MatchesPath(relative) {
+		if strings.EqualFold(filepath.Ext(relative), ".xml") && selector.Selects(relative, false) {
 			found = append(found, relative)
 		}
 

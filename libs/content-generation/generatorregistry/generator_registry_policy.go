@@ -4,11 +4,13 @@ import (
 	"slices"
 
 	"lore-master/libs/content-generation/generatedfile"
+	"lore-master/libs/content-generation/godocs"
 	"lore-master/libs/content-generation/testreporting"
 )
 
 // generators maps a configured type to the function that generates it.
 var generators = map[string]generatedfile.GenerateFunc{
+	"go-docs":      godocs.Generate,
 	"test-results": testreporting.Generate,
 }
 
