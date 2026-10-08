@@ -32,7 +32,7 @@ func preparePage(document documentparsing.MarkdownDocument, workspace documentco
 	for _, attachment := range converted.Attachments {
 		content, err := read(attachment.Path)
 		if err != nil {
-			warnings = append(warnings, fmt.Sprintf("%s: the image %s cannot be read (%v); the page will show it broken", document.Path, attachment.Path, err))
+			warnings = append(warnings, fmt.Sprintf("%s: the file %s cannot be read (%v); the page will show it broken", document.Path, attachment.Path, err))
 
 			continue
 		}
