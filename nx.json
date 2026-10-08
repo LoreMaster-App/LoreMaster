@@ -41,7 +41,12 @@
         "targetName": "lint"
       }
     },
-    "@nx-go/nx-go",
+    {
+      "plugin": "@nx-go/nx-go",
+      "options": {
+        "modulePrefix": "github.com/LoreMaster-App/LoreMaster"
+      }
+    },
     {
       "plugin": "@nx/jest/plugin",
       "options": {
@@ -57,6 +62,7 @@
       "packages/*",
       "python-packages/*",
       "tag:type:vscode-extension",
+      "tag:release:go",
       "!tag:type:go-lib"
     ],
     "releaseTag": {
@@ -73,7 +79,8 @@
       "preVersionCommand": "npx nx run-many -t build --projects=packages/*,python-packages/*,tag:type:vscode-extension",
       "versionActionsOptions": {
         "skipLockFileUpdate": true
-      }
+      },
+      "preserveMatchingDependencyRanges": false
     },
     "changelog": {
       "workspaceChangelog": false,
