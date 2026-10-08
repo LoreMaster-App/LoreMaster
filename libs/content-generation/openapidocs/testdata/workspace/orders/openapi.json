@@ -1,0 +1,29 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Orders", "version": "0.1.0" },
+  "paths": {
+    "/orders": {
+      "post": {
+        "tags": ["orders"],
+        "summary": "Place an order",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Order" } } }
+        },
+        "responses": { "202": { "description": "Accepted." } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Order": {
+        "type": "object",
+        "required": ["sku"],
+        "properties": {
+          "sku": { "type": "string" },
+          "quantity": { "type": ["integer", "null"], "default": 1 }
+        }
+      }
+    }
+  }
+}
