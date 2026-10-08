@@ -26,12 +26,12 @@ func PublishPages() rpcserver.Method {
 		if !filepath.IsAbs(params.WorkspaceRoot) {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "workspaceRoot must be an absolute path, got %q", params.WorkspaceRoot)
 		}
-		output, err := pagesOutput(params)
+		output, scope, err := pagesOutput(params)
 		if err != nil {
 			return nil, err
 		}
 
-		documents, warnings, problems, err := loadMarkdown(ctx, params.WorkspaceRoot, output)
+		documents, warnings, problems, err := loadMarkdown(ctx, params.WorkspaceRoot, output, scope)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
@@ -70,23 +70,23 @@ func PublishPages() rpcserver.Method {
 
 // pagesOutput loads and checks the settings and picks the output, which must be a
 // github-pages output.
-func pagesOutput(params rpcprotocol.PagesPublishParams) (workspacesettings.Output, error) {
+func pagesOutput(params rpcprotocol.PagesPublishParams) (workspacesettings.Output, workspacesettings.DiscoveryScope, error) {
 	loaded, err := workspacesettings.LoadSettings(params.WorkspaceRoot)
 	if err != nil {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if err := workspacesettings.Validate(loaded.Settings); err != nil {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if params.Output < 0 || params.Output >= len(loaded.Settings.Outputs) {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(loaded.Settings.Outputs))
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(loaded.Settings.Outputs))
 	}
 	output := loaded.Settings.Outputs[params.Output]
 	if output.Platform != "github-pages" {
-		return workspacesettings.Output{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d is a %q output, not github-pages", params.Output, output.Platform)
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d is a %q output, not github-pages", params.Output, output.Platform)
 	}
 
-	return output, nil
+	return output, loaded.Settings.DiscoveryScope(), nil
 }
 
 // deriveSiteTitle labels the site's sidebar: the repository name when one is configured,

@@ -98,6 +98,7 @@ func loadWorkspaceDocuments(ctx context.Context, root string) ([]documentparsing
 		return nil, nil, err
 	}
 
+	scope := loaded.Settings.DiscoveryScope()
 	var paths []documentdiscovery.DocumentPath
 	var notes []string
 	for _, output := range loaded.Settings.Outputs {
@@ -105,7 +106,7 @@ func loadWorkspaceDocuments(ctx context.Context, root string) ([]documentparsing
 			if content.Type != "markdown" {
 				continue
 			}
-			found, err := documentdiscovery.DiscoverDocuments(ctx, documentdiscovery.Options{WorkspaceRoot: root, Roots: content.Roots, Excludes: content.Excludes})
+			found, err := documentdiscovery.DiscoverDocuments(ctx, documentdiscovery.Options{WorkspaceRoot: root, Roots: content.Roots, Excludes: scope.ExcludesFor(content), IncludeGitignored: !scope.SkipGitignored})
 			if err != nil {
 				return nil, nil, err
 			}

@@ -8,6 +8,9 @@ type Options struct {
 	Roots []string
 	// Excludes are gitignore-syntax patterns matched against workspace-relative paths.
 	Excludes []string
+	// IncludeGitignored also reads files the workspace's .gitignore files ignore. The zero
+	// value skips them, which is what a sync wants.
+	IncludeGitignored bool
 }
 
 // DefaultExcludedDirectories are never entered, at any depth, whatever the options say:

@@ -30,6 +30,7 @@ func Validate(settings Settings) error {
 	if len(settings.Outputs) == 0 {
 		add("outputs is empty; add at least one output")
 	}
+	validateIgnore(add, settings.Ignore)
 	confluenceSeen := map[string]int{}
 	pagesSeen := map[string]int{}
 	for i, output := range settings.Outputs {
@@ -136,5 +137,15 @@ func choose(add func(string, ...any), field string, value string, allowed []stri
 		add("%s %q: custom templates are planned but not available yet (#97); use default", field, value)
 	default:
 		add("%s %q is not one of %s", field, value, strings.Join(allowed, ", "))
+	}
+}
+
+// validateIgnore checks the top-level ignore list: patterns stay inside the workspace.
+func validateIgnore(add func(string, ...any), patterns []string) {
+	for i, pattern := range patterns {
+		clean := path.Clean(strings.TrimPrefix(pattern, "!"))
+		if strings.TrimSpace(pattern) == "" || path.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, "../") {
+			add("ignore[%d] %q must be a non-empty pattern inside the workspace", i, pattern)
+		}
 	}
 }

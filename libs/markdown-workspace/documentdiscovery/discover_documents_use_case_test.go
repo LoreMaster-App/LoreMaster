@@ -87,6 +87,23 @@ func TestDiscoverDocuments(t *testing.T) {
 			},
 		},
 		{
+			name:    "IncludeGitignored reads git-ignored files but keeps the default excluded directories",
+			options: Options{IncludeGitignored: true},
+			want: []string{
+				"README.md", "UPPER.MD", "build/out.md", "docs/drafts/keep.md", "docs/drafts/wip.md", "docs/guide.md",
+				"docs/keep.tmp.md", "docs/private/secret.md", "docs/scratch.tmp.md",
+				"packages/a/CHANGELOG.md", "packages/a/README.md", "readme.architecture.md", "src/build/still-here.md",
+			},
+		},
+		{
+			name:    "IncludeGitignored still applies the user excludes",
+			options: Options{IncludeGitignored: true, Excludes: []string{"/build/", "docs/drafts/"}},
+			want: []string{
+				"README.md", "UPPER.MD", "docs/guide.md", "docs/keep.tmp.md", "docs/private/secret.md", "docs/scratch.tmp.md",
+				"packages/a/CHANGELOG.md", "packages/a/README.md", "readme.architecture.md", "src/build/still-here.md",
+			},
+		},
+		{
 			name:    "roots narrow the scan and overlapping roots do not duplicate",
 			options: Options{Roots: []string{"docs", "./docs/private", "packages/a/"}},
 			want:    []string{"docs/guide.md", "docs/keep.tmp.md", "docs/private/secret.md", "packages/a/CHANGELOG.md", "packages/a/README.md"},

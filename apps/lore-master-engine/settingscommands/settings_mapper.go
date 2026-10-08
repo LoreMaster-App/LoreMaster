@@ -6,7 +6,7 @@ import (
 )
 
 func toWire(settings workspacesettings.Settings) rpcprotocol.Settings {
-	wire := rpcprotocol.Settings{Version: settings.Version, Outputs: make([]rpcprotocol.Output, len(settings.Outputs))}
+	wire := rpcprotocol.Settings{Version: settings.Version, SkipGitignored: settings.SkipGitignored, Ignore: settings.Ignore, Outputs: make([]rpcprotocol.Output, len(settings.Outputs))}
 	for i, output := range settings.Outputs {
 		wire.Outputs[i] = rpcprotocol.Output{
 			Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
@@ -23,7 +23,7 @@ func toWire(settings workspacesettings.Settings) rpcprotocol.Settings {
 }
 
 func fromWire(wire rpcprotocol.Settings) workspacesettings.Settings {
-	settings := workspacesettings.Settings{Version: wire.Version, Outputs: make([]workspacesettings.Output, len(wire.Outputs))}
+	settings := workspacesettings.Settings{Version: wire.Version, SkipGitignored: wire.SkipGitignored, Ignore: wire.Ignore, Outputs: make([]workspacesettings.Output, len(wire.Outputs))}
 	for i, output := range wire.Outputs {
 		settings.Outputs[i] = workspacesettings.Output{
 			Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,

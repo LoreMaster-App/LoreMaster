@@ -150,8 +150,12 @@ export interface Output {
 }
 
 export interface Settings {
-  version: number
-  outputs: Output[]
+  version:         number
+  /** Leave out Markdown the workspace's .gitignore files ignore; absent means true. */
+  skipGitignored?: boolean
+  /** Gitignore-syntax patterns every output leaves out of the scan. */
+  ignore?:         string[]
+  outputs:         Output[]
 }
 
 export interface SettingsReadParams {
