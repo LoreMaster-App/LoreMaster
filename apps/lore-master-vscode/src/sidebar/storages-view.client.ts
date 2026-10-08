@@ -69,10 +69,10 @@ export function isConfiguredOutput (output: Output): boolean {
   return output.platform === 'confluence' && output.baseUrl !== '' && output.space !== ''
 }
 
-function storageLabel (output: Output): string {
+export function storageLabel (output: Output): string {
   return output.platform === 'github-pages' ? `GitHub Pages · ${output.branch || 'gh-pages'}` : `Confluence · ${output.space}`
 }
 
-function storageDescription (output: Output): string {
+export function storageDescription (output: Output): string {
   return output.platform === 'github-pages' ? (output.repo || "this repo's origin") : output.baseUrl
 }

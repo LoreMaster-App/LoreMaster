@@ -72,6 +72,20 @@ changes, so the view never shows a platform state it has not just asked for.
 - The tree follows `roots`, `excludes`, `ignore` and `skipGitignored` from
   `.lore-master.yaml`, so what you see is what a sync would read.
 
+## 6. Change a storage's settings
+
+In the **Storages** view, click the pencil on a storage (or run **LoreMaster: Edit storage**).
+Pick a setting, then its new value:
+
+- **Confluence:** title prefix, direction (`to-platform` or `two-way`), Mermaid diagrams
+  (`image` or `code`), how pages link to each other, what to do when a title already exists,
+  the folders to sync, and paths to leave out.
+- **GitHub Pages:** the repository, the branch, the folders to sync, and paths to leave out.
+
+The value is checked and saved to `.lore-master.yaml` with your comments kept; a value that is
+not allowed is refused with the reason and nothing is written. For anything else, **Open
+config** opens the file.
+
 ## What you get
 
 - A page tree mirroring your files: nesting from `parent:` annotations, dotted filenames

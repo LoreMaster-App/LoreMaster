@@ -6,6 +6,7 @@ import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { registerPagesView } from './pages-view'
 import { createConnectionStore } from './secret-storage'
+import { EDIT_STORAGE_COMMAND, editStorageCommand } from './storage-editing'
 import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
 import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, sync, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
@@ -52,6 +53,7 @@ export function activate (context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(OPEN_CONFIG_COMMAND, () => openConfig()),
     vscode.commands.registerCommand(REMOVE_STORAGE_COMMAND, async (node: StorageNode | undefined) => { await removeStorageCommand({ engine }, node); storages.refresh() }),
     vscode.commands.registerCommand(REFRESH_STORAGES_COMMAND, () => storages.refresh()),
+    vscode.commands.registerCommand(EDIT_STORAGE_COMMAND, (node: StorageNode | undefined) => editStorageCommand({ engine }, node)),
     vscode.commands.registerCommand(ADD_CONNECTION_COMMAND, () => setUpConnection({ engine, store: connections, ui: createConnectionUI() })),
     vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )

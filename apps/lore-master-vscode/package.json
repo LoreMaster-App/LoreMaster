@@ -102,6 +102,12 @@
         "title": "Sync this page",
         "category": "LoreMaster",
         "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "loreMaster.editStorage",
+        "title": "Edit storage",
+        "category": "LoreMaster",
+        "icon": "$(edit)"
       }
     ],
     "viewsContainers": {
@@ -159,9 +165,14 @@
       ],
       "view/item/context": [
         {
+          "command": "loreMaster.editStorage",
+          "when": "view == loreMaster.storages && viewItem == loreMasterStorage",
+          "group": "inline@1"
+        },
+        {
           "command": "loreMaster.removeStorage",
           "when": "view == loreMaster.storages && viewItem == loreMasterStorage",
-          "group": "inline"
+          "group": "inline@2"
         },
         {
           "command": "loreMaster.syncPage",
