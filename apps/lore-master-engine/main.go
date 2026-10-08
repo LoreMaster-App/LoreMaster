@@ -13,6 +13,7 @@ import (
 
 	"lore-master/apps/lore-master-engine/catalogqueries"
 	"lore-master/apps/lore-master-engine/editiondetect"
+	"lore-master/apps/lore-master-engine/generatorcommands"
 	"lore-master/apps/lore-master-engine/hostbridge"
 	"lore-master/apps/lore-master-engine/mcpserver"
 	"lore-master/apps/lore-master-engine/pagescommands"
@@ -92,6 +93,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodSettingsSave:  settingscommands.SaveSettings(),
 		rpcprotocol.MethodPagesPublish:  pagescommands.PublishPages(),
 		rpcprotocol.MethodWorkspaceTree:  treecommands.WorkspaceTree(),
+		rpcprotocol.MethodGeneratorsRun:  generatorcommands.RunGenerators(),
 	}
 }
 

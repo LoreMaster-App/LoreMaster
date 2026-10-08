@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="3" failures="0" errors="0" time="1.250">
+  <testsuite name="Pages view" errors="0" failures="0" skipped="0" timestamp="2026-10-08T20:00:00" time="0.800" tests="2">
+    <testcase classname="Pages view nests children" name="Pages view nests children" time="0.003"></testcase>
+    <testcase classname="Pages view sorts by file name" name="Pages view sorts by file name" time="0.004"></testcase>
+  </testsuite>
+  <testsuite name="Status policy" errors="0" failures="0" skipped="0" timestamp="2026-10-08T20:00:01" time="0.450" tests="1">
+    <testcase classname="Status policy combines" name="Status policy combines" time="0.002"></testcase>
+  </testsuite>
+</testsuites>

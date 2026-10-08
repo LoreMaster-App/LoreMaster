@@ -170,3 +170,26 @@ func TestTheDiscoveryScopeSurvivesAReadAndSave(t *testing.T) {
 		t.Fatalf("save dropped the scope: %+v", again)
 	}
 }
+
+func TestGeneratorsSurviveAReadAndSave(t *testing.T) {
+	conn, root := connect(t), t.TempDir()
+	file := filepath.Join(root, ".lore-master.yaml")
+	authored := "version: 1\ngenerators:\n  - type: test-results\n    input: [ci/]\n    output: docs/tests\n    title: CI results\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"98306\"\n    titlePrefix: ENG\n"
+	if err := os.WriteFile(file, []byte(authored), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	loaded := read(t, conn, root).Settings
+	if len(loaded.Generators) != 1 || loaded.Generators[0].Type != "test-results" || loaded.Generators[0].Output != "docs/tests" || loaded.Generators[0].Title != "CI results" || loaded.Generators[0].Input[0] != "ci/" {
+		t.Fatalf("read dropped the generators: %+v", loaded.Generators)
+	}
+
+	loaded.Generators = append(loaded.Generators, rpcprotocol.Generator{Type: "test-results", Output: "docs/unit"})
+	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsSave, rpcprotocol.SettingsSaveParams{WorkspaceRoot: root, Settings: loaded}, nil); err != nil {
+		t.Fatal(err)
+	}
+	again := read(t, conn, root).Settings
+	if len(again.Generators) != 2 || again.Generators[1].Output != "docs/unit" {
+		t.Fatalf("save dropped a generator: %+v", again.Generators)
+	}
+}

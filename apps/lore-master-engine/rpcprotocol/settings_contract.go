@@ -36,8 +36,18 @@ type Settings struct {
 	// SkipGitignored leaves out Markdown the workspace's .gitignore files ignore; absent means true.
 	SkipGitignored *bool `json:"skipGitignored,omitempty"`
 	// Ignore is gitignore-syntax patterns every output leaves out of the scan.
-	Ignore  []string `json:"ignore,omitempty"`
-	Outputs []Output `json:"outputs"`
+	Ignore []string `json:"ignore,omitempty"`
+	// Generators write Markdown into the workspace from test reports and other artifacts.
+	Generators []Generator `json:"generators,omitempty"`
+	Outputs    []Output    `json:"outputs"`
+}
+
+// Generator is one generator of .lore-master.yaml.
+type Generator struct {
+	Type   string   `json:"type"`
+	Input  []string `json:"input,omitempty"`
+	Output string   `json:"output"`
+	Title  string   `json:"title,omitempty"`
 }
 
 // Output is one place the lore goes.

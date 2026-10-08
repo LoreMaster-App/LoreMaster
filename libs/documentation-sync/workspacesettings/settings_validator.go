@@ -31,6 +31,7 @@ func Validate(settings Settings) error {
 		add("outputs is empty; add at least one output")
 	}
 	validateIgnore(add, settings.Ignore)
+	validateGenerators(add, settings.Generators)
 	confluenceSeen := map[string]int{}
 	pagesSeen := map[string]int{}
 	for i, output := range settings.Outputs {
@@ -146,6 +147,45 @@ func validateIgnore(add func(string, ...any), patterns []string) {
 		clean := path.Clean(strings.TrimPrefix(pattern, "!"))
 		if strings.TrimSpace(pattern) == "" || path.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, "../") {
 			add("ignore[%d] %q must be a non-empty pattern inside the workspace", i, pattern)
+		}
+	}
+}
+
+// BuiltGeneratorTypes are the generator types that exist; the rest the format names are
+// reserved until they are built.
+var BuiltGeneratorTypes = []string{"test-results"}
+
+var reservedGenerators = map[string]string{"go-docs": "#248", "openapi-docs": "#249", "ts-docs": "#251"}
+
+// validateGenerators checks the generators list: a known type, an output folder inside the
+// workspace that no other generator writes into, and input patterns that stay inside it.
+func validateGenerators(add func(string, ...any), generators []Generator) {
+	outputs := make([]string, len(generators))
+	for i, generator := range generators {
+		at := fmt.Sprintf("generators[%d]", i)
+		choose(add, at+".type", generator.Type, BuiltGeneratorTypes, reservedGenerators)
+
+		output := path.Clean(generator.Output)
+		switch {
+		case generator.Output == "":
+			add("%s.output is empty; name the folder the pages are written to", at)
+		case path.IsAbs(generator.Output) || output == "." || output == ".." || strings.HasPrefix(output, "../"):
+			add("%s.output %q must be a folder inside the workspace", at, generator.Output)
+		default:
+			outputs[i] = output
+		}
+		for j, pattern := range generator.Input {
+			clean := path.Clean(strings.TrimPrefix(pattern, "!"))
+			if strings.TrimSpace(pattern) == "" || path.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, "../") {
+				add("%s.input[%d] %q must be a non-empty pattern inside the workspace", at, j, pattern)
+			}
+		}
+	}
+	for i := range generators {
+		for j := i + 1; j < len(generators); j++ {
+			if outputs[i] != "" && outputs[j] != "" && (outputs[i] == outputs[j] || strings.HasPrefix(outputs[j], outputs[i]+"/") || strings.HasPrefix(outputs[i], outputs[j]+"/")) {
+				add("generators[%d] and generators[%d] write into overlapping folders (%s, %s); give each its own", i, j, outputs[i], outputs[j])
+			}
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package workspacesettings
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -107,5 +108,53 @@ func TestValidateReportsEveryProblemAtOnce(t *testing.T) {
 	want := "version 9 is not supported; this version of LoreMaster reads version 1\n" + `outputs[0].linkMode "x" is not one of title, id`
 	if err := Validate(settings); err == nil || err.Error() != want {
 		t.Fatalf("\n got: %v\nwant: %s", err, want)
+	}
+}
+
+func settingsWith(generators ...Generator) Settings {
+	return Settings{Version: CurrentVersion, Outputs: []Output{defaultOutput()}, Generators: generators}
+}
+
+func TestValidateAcceptsABuiltGenerator(t *testing.T) {
+	err := Validate(settingsWith(Generator{Type: "test-results", Input: []string{"**/junit*.xml", "!vendor/"}, Output: "docs/tests", Title: "Results"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateRefusesAGeneratorThatCannotBeUsed(t *testing.T) {
+	cases := []struct {
+		name      string
+		generator Generator
+		want      string
+	}{
+		{"unknown type", Generator{Type: "crayon", Output: "docs/x"}, `generators[0].type "crayon" is not one of test-results`},
+		{"reserved type", Generator{Type: "go-docs", Output: "docs/x"}, "#248"},
+		{"no output", Generator{Type: "test-results"}, "generators[0].output is empty"},
+		{"output is the workspace", Generator{Type: "test-results", Output: "."}, "must be a folder inside the workspace"},
+		{"output escapes", Generator{Type: "test-results", Output: "../out"}, "must be a folder inside the workspace"},
+		{"absolute output", Generator{Type: "test-results", Output: "/out"}, "must be a folder inside the workspace"},
+		{"empty input pattern", Generator{Type: "test-results", Output: "docs/x", Input: []string{" "}}, "generators[0].input[0]"},
+		{"input escapes", Generator{Type: "test-results", Output: "docs/x", Input: []string{"../reports"}}, "generators[0].input[0]"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := Validate(settingsWith(tc.generator))
+			if err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("got %v, want it to contain %q", err, tc.want)
+			}
+		})
+	}
+}
+
+func TestValidateRefusesGeneratorsThatWriteIntoTheSameFolder(t *testing.T) {
+	for _, outputs := range [][2]string{{"docs/tests", "docs/tests"}, {"docs", "docs/tests"}, {"docs/tests/", "docs"}} {
+		err := Validate(settingsWith(Generator{Type: "test-results", Output: outputs[0]}, Generator{Type: "test-results", Output: outputs[1]}))
+		if err == nil || !strings.Contains(err.Error(), "overlapping folders") {
+			t.Fatalf("%v: got %v", outputs, err)
+		}
+	}
+	if err := Validate(settingsWith(Generator{Type: "test-results", Output: "docs/tests"}, Generator{Type: "test-results", Output: "docs/testing"})); err != nil {
+		t.Fatalf("sibling folders with a shared prefix are fine: %v", err)
 	}
 }

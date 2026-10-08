@@ -18,6 +18,7 @@ export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const PAGES_PUBLISH_METHOD = 'pages/publish'
 export const WORKSPACE_TREE_METHOD = 'workspace/tree'
+export const GENERATORS_RUN_METHOD = 'generators/run'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -150,12 +151,25 @@ export interface Output {
   branch?:        string
 }
 
+/** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */
+export interface Generator {
+  /** test-results (JUnit XML); other types are reserved. */
+  type:   string
+  /** Gitignore-style patterns selecting what to read; absent means the type's default. */
+  input?: string[]
+  /** Workspace-relative folder the pages are written to. */
+  output: string
+  title?: string
+}
+
 export interface Settings {
   version:         number
   /** Leave out Markdown the workspace's .gitignore files ignore; absent means true. */
   skipGitignored?: boolean
   /** Gitignore-syntax patterns every output leaves out of the scan. */
   ignore?:         string[]
+  /** Write Markdown into the workspace from test reports and other artifacts. */
+  generators?:     Generator[]
   outputs:         Output[]
 }
 
@@ -207,6 +221,30 @@ export interface WorkspaceTreeResult {
   nodes:     TreeNode[]
   warnings?: string[]
   problems?: string[]
+}
+
+// ---- generators/run ------------------------------------------------------------------
+
+export interface GeneratorsRunParams {
+  workspaceRoot: string
+  /** Indexes into the settings' generators list; absent runs them all. */
+  generators?:   number[]
+}
+
+export interface GeneratorRun {
+  index:      number
+  type:       string
+  output:     string
+  written?:   string[]
+  unchanged?: string[]
+  removed?:   string[]
+  warnings?:  string[]
+  /** Why the generator could not run at all. */
+  error?:     string
+}
+
+export interface GeneratorsRunResult {
+  runs: GeneratorRun[]
 }
 
 // ---- sync/plan, sync/execute ---------------------------------------------------------
