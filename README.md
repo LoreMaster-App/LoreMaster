@@ -31,6 +31,7 @@ not named after Confluence or Markdown: more platforms and more kinds of lore co
   your workspace's layout. See [`docs/agent.md`](docs/agent.md).
 - **Generates pages from your artifacts** — JUnit test reports, Go package docs and OpenAPI descriptions — as
   plain Markdown that syncs like any other page, managed from a **Generators** view. See [`docs/generators.md`](docs/generators.md).
+- **Command line.** The engine also runs `generate`, `sync` and `tree` unattended for CI. See [`docs/cli.md`](docs/cli.md).
 - **Teaches your AI agent the rules** through an [MCP server](docs/mcp-server.md): the agent
   asks LoreMaster where a new page nests and how it is titled, and can preview and validate
   against your actual workspace.
