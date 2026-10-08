@@ -27,7 +27,7 @@ outputs:
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `go-docs`, `openapi-docs`, `ts-docs` or `python-docs`. `csharp-docs` and `dart-docs` are reserved for generators not built yet. |
+| `type` | `test-results`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs` or `csharp-docs`. `dart-docs` is reserved for generators not built yet. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -134,6 +134,39 @@ generators:
   pages nest like the packages. Docstrings in the Sphinx, Google and NumPy styles are rendered by
   pydoc-markdown. Titles are the dotted module names, which are unique; a title that two projects
   share gets the folder added in brackets.
+
+## `csharp-docs`
+
+Documents **C#** projects from their XML documentation with
+[DefaultDocumentation](https://github.com/Doraku/DefaultDocumentation). It needs the .NET SDK (8 or
+newer) and the tool, installed once:
+
+```bash
+dotnet tool install -g DefaultDocumentation.Console
+```
+
+If the tool is missing, the generator stops before building anything and says exactly this; it
+never installs anything itself.
+
+```yaml
+generators:
+  - type: csharp-docs
+    input: ["src/", "!src/Legacy/"]   # project folders; default is every project
+    output: docs/csharp
+    title: C# API
+```
+
+- **Which projects:** every folder with a `.csproj`, narrowed by `input`. Test projects
+  (`*.Tests`, `*.UnitTests`, ...) are skipped.
+- **Build:** each project is built in `Release` with `GenerateDocumentationFile` switched on, so
+  the XML is as fresh as the code (an up-to-date project builds in moments; `bin/` and `obj/` are
+  written as for any build). A project that targets several frameworks is documented for the last
+  one. A failed build stops the run and shows the compiler's errors.
+- **Pages:** an index, then a page per namespace and per type (its constructors, properties and
+  methods are on its page), nested by namespace like folders: `Shop.Billing` is
+  `Shop/Billing/README.md`, `Shop.Billing.Invoice` is `Shop/Billing/Invoice.md`. A type's title is
+  its full name and kind (`Shop.Cart Class`), so titles are unique; links between pages follow
+  the new paths.
 
 ## `openapi-docs`
 

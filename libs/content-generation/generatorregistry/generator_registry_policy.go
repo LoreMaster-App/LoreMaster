@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"lore-master/libs/content-generation/generatedfile"
+	"lore-master/libs/content-generation/csharpdocs"
 	"lore-master/libs/content-generation/godocs"
 	"lore-master/libs/content-generation/openapidocs"
 	"lore-master/libs/content-generation/testreporting"
@@ -13,6 +14,7 @@ import (
 
 // generators maps a configured type to the function that generates it.
 var generators = map[string]generatedfile.GenerateFunc{
+	"csharp-docs":  csharpdocs.Generate,
 	"go-docs":      godocs.Generate,
 	"openapi-docs": openapidocs.Generate,
 	"python-docs":  pythondocs.Generate,

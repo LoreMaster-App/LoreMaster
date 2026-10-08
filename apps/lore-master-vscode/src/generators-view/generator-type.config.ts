@@ -46,6 +46,14 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     inputHint:     'Project folders, separated by commas, e.g. services/billing/. Needs pydoc-markdown installed (pip install pydoc-markdown). Leave empty for every project.',
   },
   {
+    type:          'csharp-docs',
+    label:         'C# API docs',
+    description:   'Namespaces and types of C# projects, from their XML documentation, with DefaultDocumentation',
+    icon:          'symbol-namespace',
+    defaultOutput: 'docs/csharp',
+    inputHint:     'Project folders, separated by commas, e.g. src/Shop/. Needs the .NET SDK and DefaultDocumentation (dotnet tool install -g DefaultDocumentation.Console). Leave empty for every project.',
+  },
+  {
     type:          'openapi-docs',
     label:         'OpenAPI docs',
     description:   'OpenAPI 3 descriptions (YAML or JSON): operations, parameters, schemas',
