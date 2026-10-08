@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="5" failures="1" errors="1" time="0.532">
+  <testsuite tests="3" failures="1" time="0.300" name="lore-master/libs/markdown-workspace/documentparsing" timestamp="2026-10-08T21:00:00+01:00">
+    <testcase classname="lore-master/libs/markdown-workspace/documentparsing" name="TestParse" time="0.010"></testcase>
+    <testcase classname="lore-master/libs/markdown-workspace/documentparsing" name="TestGolden" time="0.020">
+      <failure message="Failed" type="">    parse_document_use_case_test.go:107: rendered HTML differs from testdata/full.golden.html
+         got: &lt;h1&gt;Getting started&lt;/h1&gt; | a table cell
+         want: ```code fence``` inside</failure>
+    </testcase>
+    <testcase classname="lore-master/libs/markdown-workspace/documentparsing" name="TestOnlyOnLinux" time="0.000">
+      <skipped message="needs a symlink"></skipped>
+    </testcase>
+  </testsuite>
+  <testsuite tests="2" failures="0" errors="1" time="0.232" name="lore-master/libs/confluence-client/storageformat" timestamp="2026-10-08T21:00:01+01:00">
+    <testcase classname="lore-master/libs/confluence-client/storageformat" name="TestEscaping" time="0.100"></testcase>
+    <testcase classname="lore-master/libs/confluence-client/storageformat" name="TestPanics" time="0.132">
+      <error message="panic: runtime error: index out of range [3] with length 3" type="panic">goroutine 7 [running]:
+lore-master/libs/confluence-client/storageformat.TestPanics(0xc000102000)
+	/repo/storage_test.go:42 +0x1d</error>
+    </testcase>
+  </testsuite>
+</testsuites>

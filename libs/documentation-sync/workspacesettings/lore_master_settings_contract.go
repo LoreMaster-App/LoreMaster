@@ -14,8 +14,25 @@ type Settings struct {
 	SkipGitignored *bool `yaml:"skipGitignored,omitempty"`
 	// Ignore is gitignore-syntax patterns, matched against workspace-relative paths, that
 	// every output leaves out of the scan on top of its content[].excludes.
-	Ignore  []string `yaml:"ignore,omitempty"`
-	Outputs []Output   `yaml:"outputs"`
+	Ignore []string `yaml:"ignore,omitempty"`
+	// Generators write Markdown into the workspace from other project artifacts (test
+	// reports, source documentation) so it syncs like any other page.
+	Generators []Generator `yaml:"generators,omitempty"`
+	Outputs    []Output    `yaml:"outputs"`
+}
+
+// Generator is one generator: what it reads, and the folder it writes its pages to.
+type Generator struct {
+	// Type is test-results (JUnit XML); the other types the format names are reserved.
+	Type string `yaml:"type"`
+	// Input is gitignore-style patterns selecting what to read; empty means the type's own
+	// default.
+	Input []string `yaml:"input,omitempty"`
+	// Output is the workspace-relative folder the pages are written to. Include it in an
+	// output's content roots for the pages to sync.
+	Output string `yaml:"output"`
+	// Title heads the generated index page; empty means the type's own default.
+	Title string `yaml:"title,omitempty"`
 }
 
 // Output is one place the lore goes.

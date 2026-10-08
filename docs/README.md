@@ -5,6 +5,8 @@ Start here, then dive into the architecture decisions.
 ## Using it
 
 - [Getting started](getting-started.md) — install, connect, and run your first sync.
+- [Generators](generators.md) — pages written from your test reports (and later source docs),
+  synced like any other page.
 - [Using the MCP server](mcp-server.md) — let an AI agent learn LoreMaster's nesting rules and
   check its files against them.
 
