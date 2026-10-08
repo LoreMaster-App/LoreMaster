@@ -13,6 +13,7 @@ import { EDIT_STORAGE_COMMAND, editStorageCommand } from './storage-editing'
 import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
 import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
+import { TOGGLE_WATCH_COMMAND, WatchMode } from './watch-mode'
 
 export function activate (context: vscode.ExtensionContext): void {
   const engine = createEngineClient({
@@ -43,14 +44,17 @@ export function activate (context: vscode.ExtensionContext): void {
 
   const syncDeps = { engine, connections, targets, output }
   const storages = new StoragesViewProvider(engine)
+  const watchMode = new WatchMode(syncDeps)
 
   context.subscriptions.push(
+    watchMode,
     registerSyncView(),
     registerPagesView(syncDeps),
     registerGeneratorsView({ engine, output }),
     vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),
+    vscode.commands.registerCommand(TOGGLE_WATCH_COMMAND, () => watchMode.toggle()),
     vscode.commands.registerCommand(SYNC_TO_COMMAND, () => syncTo(syncDeps)),
     vscode.commands.registerCommand(SYNC_CURRENT_FILE_COMMAND, () => syncCurrentFile(syncDeps)),
     vscode.commands.registerCommand(PUBLISH_PAGES_COMMAND, () => publishPagesCommand({ engine, output })),

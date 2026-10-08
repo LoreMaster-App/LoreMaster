@@ -20,6 +20,7 @@ export const PAGES_PUBLISH_METHOD = 'pages/publish'
 export const WORKSPACE_TREE_METHOD = 'workspace/tree'
 export const GENERATORS_RUN_METHOD = 'generators/run'
 export const AGENT_INSTRUCTIONS_METHOD = 'agent/instructions'
+export const WATCH_ROUTE_METHOD = 'watch/route'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -350,4 +351,21 @@ export interface RenderDiagramResult {
 
 export interface CancelParams {
   id: number | string
+}
+
+// ---- watch/route ---------------------------------------------------------------------
+
+export interface WatchRouteParams {
+  workspaceRoot: string
+  /** Workspace-relative, '/'-separated paths. */
+  changed:       string[]
+}
+
+export interface WatchRouteResult {
+  /** True when the settings file changed: run every generator and sync everything. */
+  everything: boolean
+  /** Indexes into the settings' generators list that read a changed file. */
+  generators: number[]
+  /** The changed Markdown files. */
+  markdown:   string[]
 }

@@ -25,7 +25,7 @@ describe('activate', () => {
 
     activate(context)
 
-    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.addConnection', 'loreMaster.addStorage', 'loreMaster.openConfig', 'loreMaster.removeStorage', 'loreMaster.refreshStorages', 'loreMaster.copyMcpConfig', 'loreMaster.refreshPages', 'loreMaster.checkRemote', 'loreMaster.togglePageLabel', 'loreMaster.syncPage', 'loreMaster.editStorage', 'loreMaster.runGenerators', 'loreMaster.createAgent', 'loreMaster.addGenerator', 'loreMaster.runGenerator', 'loreMaster.editGenerator', 'loreMaster.removeGenerator', 'loreMaster.refreshGenerators', 'loreMaster.generateAndSync'])
+    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.addConnection', 'loreMaster.addStorage', 'loreMaster.openConfig', 'loreMaster.removeStorage', 'loreMaster.refreshStorages', 'loreMaster.copyMcpConfig', 'loreMaster.refreshPages', 'loreMaster.checkRemote', 'loreMaster.togglePageLabel', 'loreMaster.syncPage', 'loreMaster.editStorage', 'loreMaster.runGenerators', 'loreMaster.createAgent', 'loreMaster.addGenerator', 'loreMaster.runGenerator', 'loreMaster.editGenerator', 'loreMaster.removeGenerator', 'loreMaster.refreshGenerators', 'loreMaster.generateAndSync', 'loreMaster.toggleWatch'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
     // The commands plus the engine client, output channel, diagram renderer, its
     // host/renderDiagram subscription, the Confluence authentication provider, the MCP
@@ -34,6 +34,6 @@ describe('activate', () => {
     // Generators view and its six commands (the five it contributes and Run generators).
     const pagesViewCommands = 4
     const generatorsViewCommands = 6
-    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands + 10)
+    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands + 11)
   })
 })

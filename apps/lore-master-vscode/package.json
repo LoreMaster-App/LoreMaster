@@ -161,6 +161,12 @@
         "title": "Generate and sync documentation",
         "category": "LoreMaster",
         "icon": "$(debug-start)"
+      },
+      {
+        "command": "loreMaster.toggleWatch",
+        "title": "Toggle watch mode",
+        "category": "LoreMaster",
+        "icon": "$(eye)"
       }
     ],
     "viewsContainers": {
@@ -238,6 +244,11 @@
           "command": "loreMaster.generateAndSync",
           "when": "view == loreMaster.generators",
           "group": "navigation@2"
+        },
+        {
+          "command": "loreMaster.toggleWatch",
+          "when": "view == loreMaster.generators",
+          "group": "navigation@5"
         }
       ],
       "view/item/context": [
@@ -342,6 +353,13 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Run the generators (test results, API documentation) before every **Sync**, so the pages they write are as fresh as the code. **Generate and sync documentation** always does."
+        },
+        "loreMaster.watchDebounceSeconds": {
+          "type": "number",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 300,
+          "markdownDescription": "In **watch mode**, how many seconds nothing may change before the changes are synced, so a burst of saves is one sync."
         }
       }
     }
