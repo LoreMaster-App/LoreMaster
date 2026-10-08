@@ -59,3 +59,58 @@ func replaceKeepingComments(existing *yaml.Node, updated *yaml.Node) {
 	*existing = *updated
 	existing.HeadComment, existing.LineComment, existing.FootComment = head, line, foot
 }
+
+// optionalKeys are the keys the settings leave out when they are empty, by the path of the
+// mapping that holds them. mergeInto keeps keys that are only in the file, which is right for
+// keys this version does not know, but an optional key this version does know that is missing
+// from the update was cleared, and must go.
+var optionalKeys = map[string][]string{
+	"":                {"skipGitignored", "ignore", "generators"},
+	"outputs":         {"repo", "branch"},
+	"outputs.content": {"excludes"},
+	"generators":      {"input", "title"},
+}
+
+// dropClearedKeys removes from existing the optional keys that updated no longer has, walking
+// the two trees together; sequences of mappings are matched by position, as mergeInto does.
+func dropClearedKeys(existing *yaml.Node, updated *yaml.Node, path string) {
+	if existing.Kind == yaml.DocumentNode && updated.Kind == yaml.DocumentNode && len(existing.Content) > 0 && len(updated.Content) > 0 {
+		dropClearedKeys(existing.Content[0], updated.Content[0], path)
+
+		return
+	}
+	if existing.Kind != yaml.MappingNode || updated.Kind != yaml.MappingNode {
+		return
+	}
+
+	for _, key := range optionalKeys[path] {
+		if valueOf(existing, key) != nil && valueOf(updated, key) == nil {
+			removeKey(existing, key)
+		}
+	}
+	for i := 0; i+1 < len(existing.Content); i += 2 {
+		key := existing.Content[i].Value
+		current, replacement := existing.Content[i+1], valueOf(updated, key)
+		if replacement == nil || current.Kind != yaml.SequenceNode || replacement.Kind != yaml.SequenceNode {
+			continue
+		}
+		child := key
+		if path != "" {
+			child = path + "." + key
+		}
+		for j := 0; j < len(current.Content) && j < len(replacement.Content); j++ {
+			dropClearedKeys(current.Content[j], replacement.Content[j], child)
+		}
+	}
+}
+
+// removeKey deletes a key and its value from a mapping.
+func removeKey(mapping *yaml.Node, key string) {
+	for i := 0; i+1 < len(mapping.Content); i += 2 {
+		if mapping.Content[i].Value == key {
+			mapping.Content = append(mapping.Content[:i], mapping.Content[i+2:]...)
+
+			return
+		}
+	}
+}

@@ -12,8 +12,9 @@ import (
 // it is without looking anything up.
 const newFileHeader = `LoreMaster configuration. Commit this file; it never holds a secret
 (the editor keeps credentials in its own secret store).
-Planned values, accepted later: content types test-results and code-docs (#96),
-custom templates (#97).`
+Generators (test-results, go-docs, openapi-docs) write Markdown into the workspace from
+other project artifacts; see docs/generators.md. Planned, accepted later: custom
+templates (#97).`
 
 // SaveSettings writes settings back. When the file existed, the new values are merged
 // into its YAML tree, so the author's comments and key order survive; a new file gets
@@ -33,6 +34,7 @@ func SaveSettings(loaded Loaded, settings Settings) error {
 		if err := yaml.Unmarshal(loaded.tree, &existing); err != nil {
 			return err
 		}
+		dropClearedKeys(&existing, document, "")
 		mergeInto(&existing, document)
 		document = &existing
 	} else {
