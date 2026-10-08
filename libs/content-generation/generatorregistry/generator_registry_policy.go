@@ -7,6 +7,7 @@ import (
 	"lore-master/libs/content-generation/godocs"
 	"lore-master/libs/content-generation/openapidocs"
 	"lore-master/libs/content-generation/testreporting"
+	"lore-master/libs/content-generation/pythondocs"
 	"lore-master/libs/content-generation/tsdocs"
 )
 
@@ -14,6 +15,7 @@ import (
 var generators = map[string]generatedfile.GenerateFunc{
 	"go-docs":      godocs.Generate,
 	"openapi-docs": openapidocs.Generate,
+	"python-docs":  pythondocs.Generate,
 	"test-results": testreporting.Generate,
 	"ts-docs":      tsdocs.Generate,
 }

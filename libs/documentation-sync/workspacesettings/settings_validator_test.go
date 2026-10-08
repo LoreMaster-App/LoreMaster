@@ -128,8 +128,8 @@ func TestValidateRefusesAGeneratorThatCannotBeUsed(t *testing.T) {
 		generator Generator
 		want      string
 	}{
-		{"unknown type", Generator{Type: "crayon", Output: "docs/x"}, `generators[0].type "crayon" is not one of test-results, go-docs, openapi-docs, ts-docs`},
-		{"reserved type", Generator{Type: "python-docs", Output: "docs/x"}, "#269"},
+		{"unknown type", Generator{Type: "crayon", Output: "docs/x"}, `generators[0].type "crayon" is not one of test-results, go-docs, openapi-docs, python-docs, ts-docs`},
+		{"reserved type", Generator{Type: "csharp-docs", Output: "docs/x"}, "#270"},
 		{"no output", Generator{Type: "test-results"}, "generators[0].output is empty"},
 		{"output is the workspace", Generator{Type: "test-results", Output: "."}, "must be a folder inside the workspace"},
 		{"output escapes", Generator{Type: "test-results", Output: "../out"}, "must be a folder inside the workspace"},

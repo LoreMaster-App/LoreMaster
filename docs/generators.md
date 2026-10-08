@@ -27,7 +27,7 @@ outputs:
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `go-docs`, `openapi-docs` or `ts-docs`. `python-docs`, `csharp-docs` and `dart-docs` are reserved for generators not built yet. |
+| `type` | `test-results`, `go-docs`, `openapi-docs`, `ts-docs` or `python-docs`. `csharp-docs` and `dart-docs` are reserved for generators not built yet. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -104,6 +104,36 @@ generators:
   nested like the folders. A monorepo gets one section per project, and a title that two
   projects share gets the folder added in brackets, since a wiki space needs unique titles.
   Source links and page headers are left out because they change with the commit.
+
+## `python-docs`
+
+Documents **Python** projects with [pydoc-markdown](https://github.com/NiklasRosenstein/pydoc-markdown),
+which reads the source statically: nothing is imported or run, so no dependency needs installing.
+Install the tool once, in the workspace's `.venv` or anywhere on the `PATH`:
+
+```bash
+pip install pydoc-markdown
+```
+
+If it is missing, the generator stops and says exactly this; it never installs anything itself.
+
+```yaml
+generators:
+  - type: python-docs
+    input: ["services/", "!services/legacy/"]   # project folders; default is every project
+    output: docs/python
+    title: Python API
+```
+
+- **Which projects:** every folder with a `pyproject.toml`, `setup.py` or `setup.cfg`, narrowed by
+  `input`. Its packages (folders with an `__init__.py`) and modules are read from `src/` when that
+  holds any, else from the project folder. Tests, docs, examples, virtual environments, build
+  output and `setup.py` are left out, and so are private (`_name`) members and undocumented ones.
+- **Pages:** an index, then a page per module. A package is the `README.md` of its folder
+  (`shop/billing/README.md`) and a module a file beside its siblings (`shop/cart.md`), so the
+  pages nest like the packages. Docstrings in the Sphinx, Google and NumPy styles are rendered by
+  pydoc-markdown. Titles are the dotted module names, which are unique; a title that two projects
+  share gets the folder added in brackets.
 
 ## `openapi-docs`
 
