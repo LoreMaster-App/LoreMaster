@@ -73,6 +73,11 @@
         "title": "Refresh storages",
         "category": "LoreMaster",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "loreMaster.copyMcpConfig",
+        "title": "Copy MCP Server Config",
+        "category": "LoreMaster"
       }
     ],
     "viewsContainers": {

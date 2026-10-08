@@ -83,6 +83,22 @@ export const authentication = {
   },
 }
 
+// A minimal vscode.env.clipboard: writeText stores, readText returns what was stored, so a
+// test can assert what a command copied.
+let clipboardContent = ''
+export const env = {
+  clipboard: {
+    writeText (text: string): Promise<void> {
+      clipboardContent = text
+
+      return Promise.resolve()
+    },
+    readText (): Promise<string> {
+      return Promise.resolve(clipboardContent)
+    },
+  },
+}
+
 export const workspace = {
   workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
   getWorkspaceFolder (_uri: unknown): { uri: { fsPath: string } } | undefined {

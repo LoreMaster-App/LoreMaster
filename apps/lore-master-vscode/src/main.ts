@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { ADD_CONNECTION_COMMAND, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
-import { registerMcpServer } from './mcp-server'
+import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { createConnectionStore } from './secret-storage'
 import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
@@ -51,6 +51,7 @@ export function activate (context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(REMOVE_STORAGE_COMMAND, async (node: StorageNode | undefined) => { await removeStorageCommand({ engine }, node); storages.refresh() }),
     vscode.commands.registerCommand(REFRESH_STORAGES_COMMAND, () => storages.refresh()),
     vscode.commands.registerCommand(ADD_CONNECTION_COMMAND, () => setUpConnection({ engine, store: connections, ui: createConnectionUI() })),
+    vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )
 }
 
