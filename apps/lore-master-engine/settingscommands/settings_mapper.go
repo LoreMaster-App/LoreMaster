@@ -11,7 +11,7 @@ func toWire(settings workspacesettings.Settings) rpcprotocol.Settings {
 		wire.Outputs[i] = rpcprotocol.Output{
 			Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
 			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode,
-			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode,
+			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode, Repo: output.Repo, Branch: output.Branch,
 			Content: make([]rpcprotocol.Content, len(output.Content)),
 		}
 		for j, content := range output.Content {
@@ -28,7 +28,7 @@ func fromWire(wire rpcprotocol.Settings) workspacesettings.Settings {
 		settings.Outputs[i] = workspacesettings.Output{
 			Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
 			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode,
-			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode,
+			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode, Repo: output.Repo, Branch: output.Branch,
 			Content: make([]workspacesettings.Content, len(output.Content)),
 		}
 		for j, content := range output.Content {

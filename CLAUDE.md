@@ -93,6 +93,7 @@ npm run lint      # ESLint (TS shell) + golangci-lint (Go) + tools/slicecheck
 npm run test      # jest + go test ./...
 npm run build     # engine binaries + extension bundle
 npm run format    # eslint --fix (there is no Prettier)
+npx nx run lore-master-vscode:test-integration   # the extension in a real VS Code host (not in CI); run it after changing package.json contributions
 VERSION=1.2.3 npx nx run lore-master-engine:build-all   # six static engine binaries, stamped
 npx nx run lore-master-vscode:package   # 8 .vsix in dist/drop, engine in bin/, stamped with the extension version
 ```

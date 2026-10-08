@@ -6,7 +6,7 @@ first feature is syncing a workspace's Markdown into Confluence.
 ## 1. Install
 
 In VS Code: **Extensions** → search **LoreMaster** (`LoreMaster.loremaster`) → **Install**.
-It needs VS Code **1.96 or later**. The extension bundles its own engine, so there is
+It needs VS Code **1.101 or later**. The extension bundles its own engine, so there is
 nothing else to install.
 
 ## 2. Open a workspace
@@ -72,6 +72,20 @@ changes, so the view never shows a platform state it has not just asked for.
 - The tree follows `roots`, `excludes`, `ignore` and `skipGitignored` from
   `.lore-master.yaml`, so what you see is what a sync would read.
 
+## 6. Change a storage's settings
+
+In the **Storages** view, click the pencil on a storage (or run **LoreMaster: Edit storage**).
+Pick a setting, then its new value:
+
+- **Confluence:** title prefix, direction (`to-platform` or `two-way`), Mermaid diagrams
+  (`image` or `code`), how pages link to each other, what to do when a title already exists,
+  the folders to sync, and paths to leave out.
+- **GitHub Pages:** the repository, the branch, the folders to sync, and paths to leave out.
+
+The value is checked and saved to `.lore-master.yaml` with your comments kept; a value that is
+not allowed is refused with the reason and nothing is written. For anything else, **Open
+config** opens the file.
+
 ## What you get
 
 - A page tree mirroring your files: nesting from `parent:` annotations, dotted filenames
@@ -88,7 +102,7 @@ changes, so the view never shows a platform state it has not just asked for.
 
 ## Troubleshooting
 
-- **"not compatible with this version of Visual Studio Code"** — update VS Code to 1.96+.
+- **"not compatible with this version of Visual Studio Code"** — update VS Code to 1.101+.
 - **No connection yet** — run *LoreMaster: Add Connection* first; a sync with no connection
   just prompts you to add one.
 - **A custom engine build** — point `loreMaster.engine.path` at a binary if you are
