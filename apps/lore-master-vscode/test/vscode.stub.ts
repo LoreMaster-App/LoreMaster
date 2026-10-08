@@ -120,11 +120,35 @@ export const env = {
 
 const noDisposable = (): { dispose: () => void } => ({ dispose () {} })
 
+/** Test helpers: the files and folders workspace.fs holds; clear between tests. */
+export const virtualFiles = new Map<string, Uint8Array>()
+export const virtualDirectories = new Set<string>()
+
 /** Test helper: the stored settings, keyed "section.key"; clear between tests. */
 export const settings = new Map<string, unknown>()
 
 export const workspace = {
   workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
+  fs:               {
+    async readFile (uri: { fsPath: string }): Promise<Uint8Array> {
+      const content = virtualFiles.get(uri.fsPath)
+      if (content === undefined) {
+        throw Object.assign(new Error(`${uri.fsPath} does not exist`), { code: 'FileNotFound' })
+      }
+
+      return content
+    },
+    writeFile (uri: { fsPath: string }, content: Uint8Array): Promise<void> {
+      virtualFiles.set(uri.fsPath, content)
+
+      return Promise.resolve()
+    },
+    createDirectory (uri: { fsPath: string }): Promise<void> {
+      virtualDirectories.add(uri.fsPath)
+
+      return Promise.resolve()
+    },
+  },
   getWorkspaceFolder (_uri: unknown): { uri: { fsPath: string } } | undefined {
     return undefined
   },
@@ -155,6 +179,9 @@ export const workspace = {
 export const Uri = {
   file (fsPath: string): { fsPath: string; scheme: string } {
     return { fsPath, scheme: 'file' }
+  },
+  joinPath (base: { fsPath: string }, ...segments: string[]): { fsPath: string; scheme: string } {
+    return { fsPath: [base.fsPath.replace(/\/+$/, ''), ...segments].join('/'), scheme: 'file' }
   },
 }
 
