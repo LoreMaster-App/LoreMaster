@@ -10,7 +10,8 @@ const path = require('node:path')
 const fs = require('node:fs')
 const vscode = require('vscode')
 
-const EXTENSION_ID = 'russoedu.lore-master'
+const manifest = require(path.resolve(__dirname, '..', '..', 'package.json'))
+const EXTENSION_ID = `${manifest.publisher}.${manifest.name}`
 
 // A fake Confluence Data Center: enough for edition detection and credential verification.
 function fakeConfluence () {

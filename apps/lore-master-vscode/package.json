@@ -25,6 +25,12 @@
         "label": "LoreMaster"
       }
     ],
+    "authentication": [
+      {
+        "id": "lore-master-confluence",
+        "label": "Confluence (LoreMaster)"
+      }
+    ],
     "commands": [
       {
         "command": "loreMaster.sync",
