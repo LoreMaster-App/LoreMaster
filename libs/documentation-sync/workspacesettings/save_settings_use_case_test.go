@@ -100,3 +100,91 @@ func TestSavingRefusesInvalidSettings(t *testing.T) {
 		t.Fatal("an invalid save must not write the file")
 	}
 }
+
+const withOptionalKeys = `version: 1
+# Keep these generators in step with the CI reports.
+skipGitignored: false
+ignore: [drafts/]
+generators:
+  - type: test-results
+    input: [reports/]
+    output: docs/tests
+    title: CI results
+outputs:
+  - platform: github-pages
+    repo: acme/handbook # published here
+    branch: docs-site
+    content:
+      - type: markdown
+        roots: [docs]
+        excludes: ["drafts/**"]
+        template: default
+`
+
+// Clearing an optional value in the editor sends it as absent; saving must remove it from the
+// file rather than keep what was there, or the change silently does not happen.
+func TestSavingRemovesAnOptionalValueThatWasCleared(t *testing.T) {
+	root := workspaceWith(t, withOptionalKeys)
+	loaded, err := LoadSettings(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings := loaded.Settings
+	settings.SkipGitignored = nil
+	settings.Ignore = nil
+	settings.Generators = nil
+	settings.Outputs[0].Repo, settings.Outputs[0].Branch = "", ""
+	settings.Outputs[0].Content[0].Excludes = nil
+	if err := SaveSettings(loaded, settings); err != nil {
+		t.Fatal(err)
+	}
+
+	written, _ := os.ReadFile(filepath.Join(root, FileName))
+	text := string(written)
+	for _, gone := range []string{"skipGitignored", "ignore:", "generators:", "test-results", "docs/tests", "repo:", "acme/handbook", "branch:", "docs-site", "excludes", "drafts"} {
+		if strings.Contains(text, gone) {
+			t.Errorf("a cleared value survived (%q):\n%s", gone, text)
+		}
+	}
+	if !strings.Contains(text, "roots: [docs]") {
+		t.Errorf("a value that was not cleared was lost:\n%s", text)
+	}
+	again, err := LoadSettings(root)
+	if err != nil || len(again.Settings.Generators) != 0 || again.Settings.Outputs[0].Repo != "" {
+		t.Fatalf("reloaded %+v (%v)", again.Settings, err)
+	}
+}
+
+func TestSavingRemovesOneEntryFromAListAndKeepsTheComments(t *testing.T) {
+	root := workspaceWith(t, withOptionalKeys)
+	loaded, err := LoadSettings(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings := loaded.Settings
+	settings.Generators = append(settings.Generators, Generator{Type: "go-docs", Output: "docs/api"})
+	if err := SaveSettings(loaded, settings); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err = LoadSettings(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings = loaded.Settings
+	settings.Generators = settings.Generators[1:]
+	if err := SaveSettings(loaded, settings); err != nil {
+		t.Fatal(err)
+	}
+
+	written, _ := os.ReadFile(filepath.Join(root, FileName))
+	text := string(written)
+	if strings.Contains(text, "test-results") || !strings.Contains(text, "go-docs") || !strings.Contains(text, "# Keep these generators in step with the CI reports.") {
+		t.Fatalf("saved file:\n%s", text)
+	}
+}
+
+func TestANewFileHeaderMentionsGeneratorsNotReservedContentTypes(t *testing.T) {
+	if strings.Contains(newFileHeader, "test-results and code-docs") || !strings.Contains(newFileHeader, "generators") {
+		t.Fatalf("header %q", newFileHeader)
+	}
+}
