@@ -158,7 +158,8 @@ function reportResult (result: SyncExecuteResult, ui: SyncUI): void {
 }
 
 /** Two base URLs point at the same site when they match but for a trailing slash or case. */
-function sameSite (a: string, b: string): boolean {
+/** Whether two Confluence base URLs name the same site (trailing slashes and case ignored). */
+export function sameSite (a: string, b: string): boolean {
   return normaliseUrl(a) === normaliseUrl(b)
 }
 
