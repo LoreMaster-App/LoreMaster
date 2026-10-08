@@ -17,7 +17,7 @@ func NestingConventions() []Convention {
 	return []Convention{
 		{
 			Key:     string(RuleExplicitParent),
-			Summary: "A front-matter `parent:` wins: it names another synced document — a path relative to this file, or absolute from the workspace root with a leading `/` — matched case-insensitively. If it names no synced document, or the document itself, the next rule applies.",
+			Summary: "A `parent:` line in the file's `<!-- lore-master ... -->` annotation block wins (not YAML front matter, which is ignored): it names another synced document — a path relative to this file, or absolute from the workspace root with a leading `/` — matched case-insensitively. If it names no synced document, or the document itself, the next rule applies.",
 		},
 		{
 			Key:     string(RuleDottedName),
@@ -33,7 +33,7 @@ func NestingConventions() []Convention {
 		},
 		{
 			Key:     "title",
-			Summary: "A page's title is its first `# H1`; a front-matter `title:` overrides it; with no H1, the file name is used.",
+			Summary: "A page's title is its first `# H1`; a `title:` line in the `<!-- lore-master ... -->` annotation block overrides it (not YAML front matter, which is ignored); with no H1, the file name is used.",
 		},
 		{
 			Key:     "title-prefix",

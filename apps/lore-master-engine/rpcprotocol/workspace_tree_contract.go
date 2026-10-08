@@ -35,7 +35,7 @@ type WorkspaceTreeResult struct {
 type TreeNode struct {
 	// Path is the workspace-relative file, '/'-separated.
 	Path string `json:"path"`
-	// Title is the page title from the file (its H1, a front-matter or annotation
+	// Title is the page title from the file (its H1, or an annotation
 	// title, else the file name); PageTitle is what the platform shows, with the
 	// output's title prefix.
 	Title     string `json:"title"`

@@ -46,10 +46,10 @@ Without VS Code, run the engine yourself: `lore-master-engine --mcp --workspace 
 ### `loremaster_nesting_rules`
 
 No input. Returns the rules the sync applies, in order, so the agent can follow them while
-it writes: a front-matter `parent:` wins; then a dotted file name
+it writes: a `parent:` line in the file's `<!-- lore-master -->` annotation wins; then a dotted file name
 (`readme.architecture.md` under `readme.md`); then the directory's `README.md` or
 `index.md`; otherwise the page goes under the parent you picked for the sync. Titles are the
-first `# H1` (or front-matter `title:`), published as `<titlePrefix>: <title>`, and must be
+first `# H1` (or a `title:` line in the annotation), published as `<titlePrefix>: <title>`, and must be
 unique within the Confluence space.
 
 ### `preview_tree`
