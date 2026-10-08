@@ -126,3 +126,47 @@ func TestBadSettingsAreRefusedWithTheReason(t *testing.T) {
 		t.Fatalf("relative: %v", err)
 	}
 }
+
+func TestAGitHubPagesOutputKeepsItsRepoAndBranchThroughASave(t *testing.T) {
+	conn, root := connect(t), t.TempDir()
+	settings := read(t, conn, root).Settings
+	settings.Outputs[0] = rpcprotocol.Output{
+		Platform: "github-pages", Direction: "to-platform", Repo: "acme/handbook", Branch: "docs-site",
+		Content: []rpcprotocol.Content{{Type: "markdown", Roots: []string{"docs"}, Template: "default"}},
+	}
+	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsSave, rpcprotocol.SettingsSaveParams{WorkspaceRoot: root, Settings: settings}, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	saved := read(t, conn, root).Settings.Outputs[0]
+	if saved.Repo != "acme/handbook" || saved.Branch != "docs-site" {
+		t.Fatalf("repo and branch were lost: %+v", saved)
+	}
+	content, _ := os.ReadFile(filepath.Join(root, ".lore-master.yaml"))
+	if !strings.Contains(string(content), "repo: acme/handbook") || !strings.Contains(string(content), "branch: docs-site") {
+		t.Fatalf("the file lacks them:\n%s", content)
+	}
+}
+
+func TestTheDiscoveryScopeSurvivesAReadAndSave(t *testing.T) {
+	conn, root := connect(t), t.TempDir()
+	file := filepath.Join(root, ".lore-master.yaml")
+	authored := "version: 1\nskipGitignored: false\nignore:\n  - drafts/**\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"98306\"\n    titlePrefix: ENG\n"
+	if err := os.WriteFile(file, []byte(authored), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	loaded := read(t, conn, root).Settings
+	if loaded.SkipGitignored == nil || *loaded.SkipGitignored || len(loaded.Ignore) != 1 || loaded.Ignore[0] != "drafts/**" {
+		t.Fatalf("read dropped the scope: %+v", loaded)
+	}
+
+	loaded.Ignore = append(loaded.Ignore, "NOTES.md")
+	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsSave, rpcprotocol.SettingsSaveParams{WorkspaceRoot: root, Settings: loaded}, nil); err != nil {
+		t.Fatal(err)
+	}
+	again := read(t, conn, root).Settings
+	if again.SkipGitignored == nil || *again.SkipGitignored || len(again.Ignore) != 2 || again.Ignore[1] != "NOTES.md" {
+		t.Fatalf("save dropped the scope: %+v", again)
+	}
+}

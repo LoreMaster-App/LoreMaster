@@ -55,6 +55,11 @@ type Output struct {
 	TitleCollision string `json:"titleCollision"`
 	// LinkMode is title or id.
 	LinkMode string `json:"linkMode"`
+	// Repo is the GitHub repository of a github-pages output ("owner/name" or a clone URL);
+	// empty means the workspace's own origin remote.
+	Repo string `json:"repo,omitempty"`
+	// Branch is the branch a github-pages output publishes to; empty means gh-pages.
+	Branch string `json:"branch,omitempty"`
 }
 
 // Content is one kind of lore an output syncs.
