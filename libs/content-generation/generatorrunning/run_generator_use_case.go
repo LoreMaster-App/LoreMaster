@@ -206,7 +206,7 @@ func pruneEmptyFolders(root string) {
 
 // marker is the annotation a new generated page starts with: no page yet, only who made it.
 func marker(generatorType string) syncannotation.Annotation {
-	return syncannotation.Annotation{Unknown: []syncannotation.Field{{Key: generatedfile.MarkerKey, Value: generatorType}}}
+	return syncannotation.Annotation{Generated: generatorType}
 }
 
 func isGeneratedBy(annotation *syncannotation.Annotation, generatorType string) bool {
@@ -214,5 +214,5 @@ func isGeneratedBy(annotation *syncannotation.Annotation, generatorType string) 
 		return false
 	}
 
-	return slices.Contains(annotation.Unknown, syncannotation.Field{Key: generatedfile.MarkerKey, Value: generatorType})
+	return annotation.Generated == generatorType
 }

@@ -135,6 +135,9 @@ func TestGeneratedPagesJoinTheTreeLikeAnyOtherMarkdown(t *testing.T) {
 	if err != nil || len(documents.Problems) != 0 {
 		t.Fatalf("load: %v %q", err, documents.Problems)
 	}
+	if len(documents.Warnings) != 0 {
+		t.Fatalf("generated pages should not make the loader warn: %q", documents.Warnings)
+	}
 	tree, err := documenttree.BuildTree(documents.Documents)
 	if err != nil {
 		t.Fatal(err)

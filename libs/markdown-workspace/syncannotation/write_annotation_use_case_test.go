@@ -220,3 +220,55 @@ func TestWrite(t *testing.T) {
 		t.Fatalf("temporary files left behind: %v", entries)
 	}
 }
+
+func TestReadKnowsTheGeneratedKeyAndDoesNotWarnAboutIt(t *testing.T) {
+	document, err := Read([]byte("<!-- lore-master\ngenerated:  go-docs \npage-id: 7\n-->\n# Title\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if document.Annotation == nil || document.Annotation.Generated != "go-docs" || document.Annotation.PageID != "7" {
+		t.Fatalf("annotation %+v", document.Annotation)
+	}
+	if len(document.Warnings) != 0 || len(document.Annotation.Unknown) != 0 {
+		t.Fatalf("warnings %q, unknown %+v", document.Warnings, document.Annotation.Unknown)
+	}
+}
+
+func TestRenderWritesTheGeneratedKeyAfterTheOthersAndKeepsItOnRewrite(t *testing.T) {
+	rendered, err := Render([]byte("# Title\n"), Annotation{Generated: "test-results", PageID: "9", Version: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "<!-- lore-master\npage-id: 9\nversion: 2\ngenerated: test-results\n-->\n# Title\n"
+	if string(rendered) != want {
+		t.Fatalf("rendered %q, want %q", rendered, want)
+	}
+
+	document, err := Read(rendered)
+	if err != nil {
+		t.Fatal(err)
+	}
+	annotation := *document.Annotation
+	annotation.Version = 3
+	again, err := Render(rendered, annotation)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := "<!-- lore-master\npage-id: 9\nversion: 3\ngenerated: test-results\n-->\n# Title\n"; string(again) != want {
+		t.Fatalf("rewritten %q, want %q", again, want)
+	}
+}
+
+func TestRenderLeavesABlockWithTheSameGeneratedKeyUntouched(t *testing.T) {
+	content := []byte("<!-- lore-master\ngenerated: test-results\n-->\n# Title\n")
+	document, err := Read(content)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rendered, err := Render(content, *document.Annotation)
+	if err != nil || string(rendered) != string(content) {
+		t.Fatalf("rendered %q (%v)", rendered, err)
+	}
+}

@@ -2,11 +2,6 @@ package generatedfile
 
 import "context"
 
-// MarkerKey is the key a generated file carries in its lore-master annotation, with the
-// generator type as its value. The sync preserves unknown annotation keys, so the marker
-// survives every sync, and a generator only ever overwrites or deletes files that carry it.
-const MarkerKey = "generated"
-
 // Spec is one generator as configured in .lore-master.yaml.
 type Spec struct {
 	// Type names the generator, for example "test-results".

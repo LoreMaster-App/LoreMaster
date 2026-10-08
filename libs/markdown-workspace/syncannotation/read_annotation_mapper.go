@@ -100,6 +100,8 @@ func annotationFrom(fields []Field) (Annotation, []string, error) {
 			annotation.Title = field.Value
 		case KeyParent:
 			annotation.Parent = field.Value
+		case KeyGenerated:
+			annotation.Generated = field.Value
 		default:
 			annotation.Unknown = append(annotation.Unknown, field)
 			warnings = append(warnings, fmt.Sprintf("the lore-master annotation has an unknown key %q; it is kept as is", field.Key))
