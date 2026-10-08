@@ -7,6 +7,7 @@ import (
 	"lore-master/libs/content-generation/godocs"
 	"lore-master/libs/content-generation/openapidocs"
 	"lore-master/libs/content-generation/testreporting"
+	"lore-master/libs/content-generation/tsdocs"
 )
 
 // generators maps a configured type to the function that generates it.
@@ -14,6 +15,7 @@ var generators = map[string]generatedfile.GenerateFunc{
 	"go-docs":      godocs.Generate,
 	"openapi-docs": openapidocs.Generate,
 	"test-results": testreporting.Generate,
+	"ts-docs":      tsdocs.Generate,
 }
 
 // For returns the generator for a configured type.

@@ -27,7 +27,7 @@ outputs:
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `go-docs` or `openapi-docs`. `ts-docs` is reserved for a generator not built yet. |
+| `type` | `test-results`, `go-docs`, `openapi-docs` or `ts-docs`. `python-docs`, `csharp-docs` and `dart-docs` are reserved for generators not built yet. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -72,6 +72,38 @@ Folders named `node_modules`, `vendor`, `testdata`, `dist`, or starting with `.`
 skipped. A package with no exported declarations and no package comment is left out. Build
 constraints are ignored (so the pages are the same on every OS), except files marked
 `//go:build ignore`. A file that does not parse is reported and skipped.
+
+## `ts-docs`
+
+Documents **TypeScript and JavaScript** projects with [TypeDoc](https://typedoc.org) and its
+Markdown plugin. Install them once in the workspace:
+
+```bash
+npm i -D typedoc typedoc-plugin-markdown
+```
+
+If they are missing, the generator stops and says exactly this; it never installs anything
+itself. Node.js must be on the `PATH`.
+
+```yaml
+generators:
+  - type: ts-docs
+    input: ["libs/", "apps/web/", "!libs/legacy/"]   # project folders; default is every project
+    output: docs/typescript
+    title: TypeScript API
+```
+
+- **Which projects:** every folder with a `tsconfig.json` (or `jsconfig.json`) that has
+  something to document, narrowed by `input`. A folder with only references and no `src` — such
+  as a monorepo root — is skipped.
+- **What is documented:** a library's `src/index.ts` documents what it exports, which is its
+  public API; a project without an index (an app) documents every module under `src`; a project
+  with its own `typedoc.json` is left to it. Nx's `tsconfig.lib.json` / `tsconfig.app.json` are
+  preferred over a solution-style `tsconfig.json`.
+- **Pages:** an index, then a page per class, interface, function, type alias and variable,
+  nested like the folders. A monorepo gets one section per project, and a title that two
+  projects share gets the folder added in brackets, since a wiki space needs unique titles.
+  Source links and page headers are left out because they change with the commit.
 
 ## `openapi-docs`
 
