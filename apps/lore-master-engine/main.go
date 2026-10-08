@@ -21,6 +21,7 @@ import (
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
 	"lore-master/apps/lore-master-engine/settingscommands"
 	"lore-master/apps/lore-master-engine/synccommands"
+	"lore-master/apps/lore-master-engine/treecommands"
 )
 
 // version is stamped at build time: -ldflags "-X main.version=<tag>".
@@ -90,6 +91,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodSettingsRead:  settingscommands.ReadSettings(),
 		rpcprotocol.MethodSettingsSave:  settingscommands.SaveSettings(),
 		rpcprotocol.MethodPagesPublish:  pagescommands.PublishPages(),
+		rpcprotocol.MethodWorkspaceTree:  treecommands.WorkspaceTree(),
 	}
 }
 
