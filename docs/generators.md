@@ -27,7 +27,7 @@ outputs:
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs` or `csharp-docs`. `dart-docs` is reserved for generators not built yet. |
+| `type` | `test-results`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs`, `csharp-docs` or `dart-docs`. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -167,6 +167,40 @@ generators:
   `Shop/Billing/README.md`, `Shop.Billing.Invoice` is `Shop/Billing/Invoice.md`. A type's title is
   its full name and kind (`Shop.Cart Class`), so titles are unique; links between pages follow
   the new paths.
+
+## `dart-docs`
+
+Documents **Dart and Flutter** packages. dartdoc itself has no Markdown output, so the generator
+runs [dartdoc_json](https://pub.dev/packages/dartdoc_json), which parses the source, and writes
+the Markdown itself. Install the tool once (the Dart SDK, or Flutter, must be on the `PATH`):
+
+```bash
+dart pub global activate dartdoc_json
+```
+
+If it is missing, the generator stops and says exactly this; it never installs anything itself.
+
+```yaml
+generators:
+  - type: dart-docs
+    input: ["packages/", "!packages/legacy/"]   # package folders; default is every package
+    output: docs/dart
+    title: Dart API
+```
+
+- **Which packages:** every folder with a `pubspec.yaml`, narrowed by `input`. Every `.dart` file
+  under its `lib/` is documented, except generated code (`*.g.dart`, `*.freezed.dart`,
+  `*.mocks.dart`, ...), a `generated/` folder and files starting with `_`. Private (`_name`)
+  declarations are left out.
+- **Pages:** an index, then a page per library file, laid out like `lib/` (`lib/src/cart.dart` is
+  `src/cart.md`) and titled by its import path (`package:shop/src/cart.dart`), which is unique.
+  Each page has its classes, mixins, enums (with their values), extensions, extension types,
+  typedefs, functions and variables, each with its signature and doc comment, and a class's
+  constructors, fields, getters, setters and methods.
+- **Limits:** the source is parsed, not analysed, so types are as written (no inferred types);
+  a `this.x` parameter shows its field's type; a typedef shows its name only; and a top-level
+  getter is written as a function. Headings inside doc comments become bold text so they cannot
+  disturb the page's outline.
 
 ## `openapi-docs`
 

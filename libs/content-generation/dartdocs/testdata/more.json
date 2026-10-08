@@ -1,0 +1,230 @@
+[
+  {
+    "declarations": [
+      {
+        "kind": "enum",
+        "name": "Kind",
+        "description": "Kinds of thing.\n",
+        "values": [
+          {
+            "name": "one",
+            "description": "The first.\n"
+          },
+          {
+            "name": "two",
+            "description": "The second.\n"
+          }
+        ],
+        "members": [
+          {
+            "kind": "getter",
+            "name": "label",
+            "description": "Label.\n",
+            "returns": "String"
+          }
+        ]
+      },
+      {
+        "kind": "mixin",
+        "name": "Readable",
+        "description": "Can be read.\n",
+        "members": [
+          {
+            "kind": "method",
+            "name": "read",
+            "description": "Reads.\n",
+            "returns": "String"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "Repo",
+        "typeParameters": [
+          {
+            "name": "T",
+            "extends": "Object"
+          }
+        ],
+        "abstract": true,
+        "extends": "Base",
+        "implements": [
+          "Readable"
+        ],
+        "description": "A repo of [T].\n",
+        "members": [
+          {
+            "kind": "constructor",
+            "name": "Repo.named",
+            "description": "Named ctor.\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "this.id"
+                },
+                {
+                  "name": "this.tag",
+                  "required": true
+                }
+              ],
+              "named": 1
+            }
+          },
+          {
+            "kind": "constructor",
+            "name": "Repo.make",
+            "factory": true,
+            "description": "Factory.\n"
+          },
+          {
+            "kind": "field",
+            "name": "id",
+            "type": "int",
+            "description": "The id.\n",
+            "final": true
+          },
+          {
+            "kind": "field",
+            "name": "tag",
+            "type": "String",
+            "description": "A tag.\n",
+            "late": true
+          },
+          {
+            "kind": "field",
+            "name": "max",
+            "type": "int",
+            "description": "Static const.\n",
+            "static": true,
+            "const": true
+          },
+          {
+            "kind": "method",
+            "name": "find",
+            "description": "Finds one.\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "id",
+                  "type": "int"
+                },
+                {
+                  "name": "hint",
+                  "type": "String?"
+                }
+              ],
+              "positional": 1
+            },
+            "returns": "Future<T?>"
+          },
+          {
+            "kind": "getter",
+            "name": "size",
+            "description": "Size.\n",
+            "returns": "int"
+          },
+          {
+            "kind": "setter",
+            "name": "size",
+            "parameters": {
+              "all": [
+                {
+                  "name": "v",
+                  "type": "int"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "method",
+            "name": "operator+",
+            "description": "Plus.\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "other",
+                  "type": "Repo<T>"
+                }
+              ]
+            },
+            "returns": "Repo<T>"
+          },
+          {
+            "kind": "method",
+            "name": "read",
+            "returns": "String",
+            "annotations": [
+              {
+                "name": "@override"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "Base"
+      },
+      {
+        "kind": "function",
+        "name": "run",
+        "typeParameters": [
+          {
+            "name": "T"
+          }
+        ],
+        "description": "A function.\n",
+        "parameters": {
+          "all": [
+            {
+              "name": "items",
+              "type": "List<T>"
+            },
+            {
+              "name": "retries",
+              "type": "int",
+              "default": "3"
+            }
+          ],
+          "named": 1
+        },
+        "returns": "Future<void>",
+        "annotations": [
+          {
+            "name": "@Deprecated",
+            "arguments": [
+              "'use x'"
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "typedef",
+        "name": "Callback",
+        "description": "A typedef.\n"
+      },
+      {
+        "kind": "extension",
+        "name": "Shout",
+        "on": "on String",
+        "description": "Extension on String.\n",
+        "members": [
+          {
+            "kind": "method",
+            "name": "shout",
+            "description": "Shouts.\n",
+            "returns": "String"
+          }
+        ]
+      },
+      {
+        "kind": "variable",
+        "name": "version",
+        "type": "String",
+        "description": "A constant.\n",
+        "const": true
+      }
+    ],
+    "source": "lib/src/more.dart"
+  }
+]

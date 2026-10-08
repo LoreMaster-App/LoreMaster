@@ -1,0 +1,186 @@
+[
+  {
+    "declarations": [
+      {
+        "kind": "class",
+        "name": "Shape",
+        "sealed": true,
+        "description": "Sealed.\n"
+      },
+      {
+        "kind": "class",
+        "name": "B1",
+        "base": true,
+        "description": "Base.\n"
+      },
+      {
+        "kind": "class",
+        "name": "F1",
+        "final": true,
+        "description": "Final.\n"
+      },
+      {
+        "kind": "class",
+        "name": "I1",
+        "interface": true,
+        "description": "Interface.\n"
+      },
+      {
+        "kind": "class",
+        "name": "MC",
+        "mixinClass": true,
+        "description": "Mixin class.\n"
+      },
+      {
+        "kind": "class",
+        "name": "W",
+        "extends": "B1",
+        "with": [
+          "MC"
+        ],
+        "implements": [
+          "I1",
+          "F1"
+        ],
+        "description": "With.\n",
+        "members": [
+          {
+            "kind": "method",
+            "name": "make",
+            "typeParameters": [
+              {
+                "name": "X"
+              }
+            ],
+            "description": "Static method.\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "x",
+                  "type": "X"
+                }
+              ]
+            },
+            "returns": "int",
+            "static": true
+          },
+          {
+            "kind": "method",
+            "name": "ext",
+            "description": "External.\n",
+            "returns": "void"
+          },
+          {
+            "kind": "method",
+            "name": "opt",
+            "description": "Opt.\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "a",
+                  "type": "int?"
+                },
+                {
+                  "name": "b",
+                  "type": "String",
+                  "required": true
+                },
+                {
+                  "name": "c",
+                  "type": "int",
+                  "default": "2"
+                }
+              ],
+              "named": 3
+            },
+            "returns": "void"
+          },
+          {
+            "kind": "method",
+            "name": "cb",
+            "description": "Cb.\n",
+            "parameters": {
+              "all": [
+                {
+                  "name": "f",
+                  "type": "void Function(int)"
+                },
+                {
+                  "name": "g",
+                  "type": "int Function()"
+                }
+              ]
+            },
+            "returns": "void"
+          }
+        ]
+      },
+      {
+        "kind": "extension-type",
+        "name": "Meters",
+        "representation": {
+          "name": "v",
+          "type": "int"
+        },
+        "description": "Ext type.\n",
+        "members": [
+          {
+            "kind": "method",
+            "name": "double",
+            "description": "Doubles.\n",
+            "returns": "int"
+          }
+        ]
+      },
+      {
+        "kind": "mixin",
+        "name": "Logs",
+        "implements": [
+          "I1"
+        ],
+        "on": [
+          "W"
+        ],
+        "description": "Mixin on.\n"
+      },
+      {
+        "kind": "function",
+        "name": "top",
+        "description": "Top getter.\n",
+        "returns": "int"
+      },
+      {
+        "kind": "function",
+        "name": "top",
+        "description": "Top set.\n",
+        "parameters": {
+          "all": [
+            {
+              "name": "v",
+              "type": "int"
+            }
+          ]
+        }
+      },
+      {
+        "kind": "typedef",
+        "name": "Pair",
+        "typeParameters": [
+          {
+            "name": "A"
+          },
+          {
+            "name": "B"
+          }
+        ],
+        "description": "Generic typedef.\n"
+      },
+      {
+        "kind": "variable",
+        "name": "counter",
+        "description": "Var.\n"
+      }
+    ],
+    "source": "lib/src/mods.dart"
+  }
+]
