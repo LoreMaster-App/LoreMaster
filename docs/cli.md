@@ -9,6 +9,8 @@ lore-master-engine generate [--workspace DIR] [--generator N]... [--json]
 lore-master-engine tree     [--workspace DIR] [--output N]... [--json]
 lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate]
                             [--yes] [--dry-run] [--force] [--prune] [--json]
+lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
+                            [--debounce 2s] [--poll 1s]
 lore-master-engine version
 ```
 
@@ -17,6 +19,8 @@ lore-master-engine version
 - `sync` plans each output. **Without `--yes` it only shows the plan.** `--generate` runs the
   generators first; `--force` overwrites pages edited on the platform; `--prune` trashes pages
   whose file is gone.
+
+- `watch` keeps the storage up to date as files change, regenerating and syncing only what changed. See [watch mode](watch.md).
 
 Outputs and generators are numbered by position in the settings file. `--json` prints one
 document on stdout; progress lines always go to stderr.

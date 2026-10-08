@@ -16,6 +16,23 @@ export const commands = {
   },
 }
 
+/** Test helper: a status bar item that remembers what it was given; every item created is kept here. */
+export class FakeStatusBarItem {
+  text = ''
+  tooltip: string | undefined
+  command: string | undefined
+  visible = false
+  disposed = false
+
+  show (): void { this.visible = true }
+  hide (): void { this.visible = false }
+  dispose (): void { this.disposed = true }
+}
+
+export const statusBarItems: FakeStatusBarItem[] = []
+
+export const StatusBarAlignment = { Left: 1, Right: 2 } as const
+
 // Each window prompt is a replaceable function so a test can script what the user does
 // (reassign it), then restore it. They return "cancelled" by default.
 export const window = {
@@ -39,6 +56,12 @@ export const window = {
   },
   registerTreeDataProvider (_viewId: string, _provider: unknown): { dispose: () => void } {
     return { dispose () {} }
+  },
+  createStatusBarItem (_alignment?: number, _priority?: number): FakeStatusBarItem {
+    const item = new FakeStatusBarItem()
+    statusBarItems.push(item)
+
+    return item
   },
   withProgress<T> (_options: unknown, task: () => Promise<T>): Promise<T> {
     return task()
@@ -118,14 +141,56 @@ export const env = {
   },
 }
 
-const noDisposable = (): { dispose: () => void } => ({ dispose () {} })
-
 /** Test helpers: the files and folders workspace.fs holds; clear between tests. */
 export const virtualFiles = new Map<string, Uint8Array>()
 export const virtualDirectories = new Set<string>()
 
 /** Test helper: the stored settings, keyed "section.key"; clear between tests. */
 export const settings = new Map<string, unknown>()
+
+/** Test helper: a file watcher a test can fire events on; every watcher created is kept here. */
+export class FakeFileSystemWatcher {
+  private readonly listeners: Record<'create' | 'change' | 'delete', ((uri: { fsPath: string }) => unknown)[]> = { create: [], change: [], delete: [] }
+  disposed = false
+
+  onDidCreate = (listener: (uri: { fsPath: string }) => unknown): { dispose: () => void } => {
+    this.listeners.create.push(listener)
+
+    return { dispose () {} }
+  }
+
+  onDidChange = (listener: (uri: { fsPath: string }) => unknown): { dispose: () => void } => {
+    this.listeners.change.push(listener)
+
+    return { dispose () {} }
+  }
+
+  onDidDelete = (listener: (uri: { fsPath: string }) => unknown): { dispose: () => void } => {
+    this.listeners.delete.push(listener)
+
+    return { dispose () {} }
+  }
+
+  constructor (public pattern: unknown) {}
+
+  fire (kind: 'create' | 'change' | 'delete', fsPath: string): void {
+    const listeners = this.listeners[kind]
+    for (const listener of listeners) {
+      listener({ fsPath })
+    }
+  }
+
+  dispose (): void {
+    this.disposed = true
+  }
+}
+
+export const fileSystemWatchers: FakeFileSystemWatcher[] = []
+
+/** A minimal vscode.RelativePattern: keeps the base and the pattern. */
+export class RelativePattern {
+  constructor (public base: unknown, public pattern: string) {}
+}
 
 export const workspace = {
   workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
@@ -167,8 +232,11 @@ export const workspace = {
   onDidChangeConfiguration (_listener: (event: { affectsConfiguration: (section: string) => boolean }) => unknown): { dispose: () => void } {
     return { dispose () {} }
   },
-  createFileSystemWatcher (_pattern: unknown): { onDidCreate: (l: () => unknown) => { dispose: () => void }; onDidChange: (l: () => unknown) => { dispose: () => void }; onDidDelete: (l: () => unknown) => { dispose: () => void }; dispose: () => void } {
-    return { onDidCreate: noDisposable, onDidChange: noDisposable, onDidDelete: noDisposable, dispose () {} }
+  createFileSystemWatcher (pattern: unknown): FakeFileSystemWatcher {
+    const watcher = new FakeFileSystemWatcher(pattern)
+    fileSystemWatchers.push(watcher)
+
+    return watcher
   },
   onDidChangeWorkspaceFolders (_listener: () => unknown): { dispose: () => void } {
     return { dispose () {} }

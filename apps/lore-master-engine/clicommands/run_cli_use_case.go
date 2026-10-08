@@ -44,6 +44,7 @@ var commands = map[string]func(context.Context, Environment, rpcserver.Methods, 
 	"generate": generateCommand,
 	"sync":     syncCommand,
 	"tree":     treeCommand,
+	"watch":    watchCommand,
 }
 
 // IsCommand reports whether name is a command of the command line, so the binary can tell it
@@ -84,6 +85,8 @@ Usage:
   lore-master-engine tree     [--workspace DIR] [--output N]... [--json]
   lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate]
                               [--yes] [--dry-run] [--force] [--prune] [--json]
+  lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
+                              [--debounce 2s] [--poll 1s]
   lore-master-engine version
 
 generate   run the generators of .lore-master.yaml (test results, Go, OpenAPI, TypeScript docs)
@@ -91,6 +94,9 @@ tree       show the page tree each output would sync, with each page's local sta
 sync       plan the sync of each output and, with --yes, apply it. Without --yes it only shows the plan.
            --generate runs the generators first. --force overwrites pages edited on the platform;
            --prune moves pages whose file is gone to the trash.
+
+watch       keep the storage up to date: when files change and stay quiet for --debounce, regenerate only the
+           generators that read them and sync only the pages that changed. Applies nothing without --yes.
 
 Credentials come from the environment, never from a file:
   LORE_MASTER_EMAIL and LORE_MASTER_TOKEN   Confluence Cloud (email and API token)

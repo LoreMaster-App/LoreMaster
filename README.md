@@ -32,6 +32,7 @@ not named after Confluence or Markdown: more platforms and more kinds of lore co
 - **Generates pages from your artifacts** — JUnit test reports, Go package docs and OpenAPI descriptions — as
   plain Markdown that syncs like any other page, managed from a **Generators** view. See [`docs/generators.md`](docs/generators.md).
 - **Command line.** The engine also runs `generate`, `sync` and `tree` unattended for CI. See [`docs/cli.md`](docs/cli.md).
+- **Watch mode.** Edit a source comment and the page updates within seconds, without a full sync: `lore-master-engine watch` or the editor's *Toggle watch mode*. See [`docs/watch.md`](docs/watch.md).
 - **Teaches your AI agent the rules** through an [MCP server](docs/mcp-server.md): the agent
   asks LoreMaster where a new page nests and how it is titled, and can preview and validate
   against your actual workspace.

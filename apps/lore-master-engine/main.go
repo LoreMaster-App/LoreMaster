@@ -28,6 +28,7 @@ import (
 	"lore-master/apps/lore-master-engine/settingscommands"
 	"lore-master/apps/lore-master-engine/synccommands"
 	"lore-master/apps/lore-master-engine/treecommands"
+	"lore-master/apps/lore-master-engine/watchcommands"
 )
 
 // version is stamped at build time: -ldflags "-X main.version=<tag>".
@@ -106,6 +107,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodWorkspaceTree:     treecommands.WorkspaceTree(),
 		rpcprotocol.MethodGeneratorsRun:     generatorcommands.RunGenerators(),
 		rpcprotocol.MethodAgentInstructions: agentcommands.AgentInstructions(),
+		rpcprotocol.MethodWatchRoute:        watchcommands.RouteChanges(),
 	}
 }
 
