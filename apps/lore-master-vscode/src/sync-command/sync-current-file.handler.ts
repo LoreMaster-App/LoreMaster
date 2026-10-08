@@ -20,15 +20,18 @@ export async function syncCurrentFile (deps: SyncCommandDeps): Promise<void> {
     return
   }
 
-  const scope = [relative(folder, editor.document.uri.fsPath).replaceAll(/[/\\]/g, '/')]
+  await syncFile(deps, folder, relative(folder, editor.document.uri.fsPath).replaceAll(/[/\\]/g, '/'))
+}
 
+/** Syncs one file, given as a path relative to the workspace folder, the same way. */
+export async function syncFile (deps: SyncCommandDeps, folder: string, relativePath: string): Promise<void> {
   await syncOutputs(
     {
       engine:        deps.engine,
       connections:   deps.connections,
       targets:       deps.targets,
       workspaceRoot: folder,
-      scope,
+      scope:         [relativePath],
       ui:            createSyncUI(deps.output),
       addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
     },

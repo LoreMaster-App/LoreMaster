@@ -25,6 +25,8 @@ not named after Confluence or Markdown: more platforms and more kinds of lore co
   renamed, adopted, left unchanged, or flagged as a conflict — and refuses to overwrite a
   page someone edited on the platform since the last sync.
 - **Executes** parents-first, so links resolve on the first pass without a second write.
+- **Shows where everything stands** in a **Pages** view: your Markdown as the tree it is on the storage,
+  with an icon per page — new, synced, local changes, remote changes, conflict — and a title or file name label, as you prefer.
 - **Teaches your AI agent the rules** through an [MCP server](docs/mcp-server.md): the agent
   asks LoreMaster where a new page nests and how it is titled, and can preview and validate
   against your actual workspace.
@@ -106,7 +108,7 @@ outputs:
 ```
 
 `skipGitignored` (default `true`) skips Markdown that the workspace's `.gitignore` files (nested ones
-included) ignore � usually drafts, vendored copies or build output; set it to `false` to sync them. `ignore`
+included) ignore — usually drafts, vendored copies or build output; set it to `false` to sync them. `ignore`
 is a list of gitignore-style patterns, matched against workspace-relative paths, that every output leaves out
 on top of its own `content[].excludes`. `node_modules`, `.git`, `dist`, `out-tsc`, `coverage` and `.venv` are
 always skipped.

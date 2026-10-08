@@ -78,6 +78,30 @@
         "command": "loreMaster.copyMcpConfig",
         "title": "Copy MCP Server Config",
         "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.refreshPages",
+        "title": "Refresh pages",
+        "category": "LoreMaster",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "loreMaster.checkRemote",
+        "title": "Check remote status",
+        "category": "LoreMaster",
+        "icon": "$(cloud)"
+      },
+      {
+        "command": "loreMaster.togglePageLabel",
+        "title": "Show page titles or file names",
+        "category": "LoreMaster",
+        "icon": "$(symbol-string)"
+      },
+      {
+        "command": "loreMaster.syncPage",
+        "title": "Sync this page",
+        "category": "LoreMaster",
+        "icon": "$(cloud-upload)"
       }
     ],
     "viewsContainers": {
@@ -96,6 +120,10 @@
           "name": "Sync"
         },
         {
+          "id": "loreMaster.pages",
+          "name": "Pages"
+        },
+        {
           "id": "loreMaster.storages",
           "name": "Storages"
         }
@@ -112,12 +140,32 @@
           "command": "loreMaster.refreshStorages",
           "when": "view == loreMaster.storages",
           "group": "navigation@2"
+        },
+        {
+          "command": "loreMaster.checkRemote",
+          "when": "view == loreMaster.pages",
+          "group": "navigation@1"
+        },
+        {
+          "command": "loreMaster.togglePageLabel",
+          "when": "view == loreMaster.pages",
+          "group": "navigation@2"
+        },
+        {
+          "command": "loreMaster.refreshPages",
+          "when": "view == loreMaster.pages",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
         {
           "command": "loreMaster.removeStorage",
           "when": "view == loreMaster.storages && viewItem == loreMasterStorage",
+          "group": "inline"
+        },
+        {
+          "command": "loreMaster.syncPage",
+          "when": "view == loreMaster.pages && viewItem == loreMasterPage",
           "group": "inline"
         }
       ],
@@ -129,10 +177,18 @@
         {
           "command": "loreMaster.refreshStorages",
           "when": "false"
+        },
+        {
+          "command": "loreMaster.syncPage",
+          "when": "false"
         }
       ]
     },
     "viewsWelcome": [
+      {
+        "view": "loreMaster.pages",
+        "contents": "No Markdown pages to show yet.\n[Add sync storage](command:loreMaster.addStorage)"
+      },
       {
         "view": "loreMaster.storages",
         "contents": "No sync storages yet.\n[Add sync storage](command:loreMaster.addStorage)"
@@ -145,6 +201,19 @@
           "type": "string",
           "default": "",
           "markdownDescription": "Absolute path to a locally built `lore-master-engine` binary, for development. Leave blank to use the engine bundled with the extension."
+        },
+        "loreMaster.pages.label": {
+          "type": "string",
+          "enum": [
+            "title",
+            "fileName"
+          ],
+          "default": "title",
+          "enumDescriptions": [
+            "Name each page by its content title (its first heading).",
+            "Name each page by its file name."
+          ],
+          "markdownDescription": "How the **Pages** view names each page. The other name is shown beside it. Switch with the button in the view title."
         }
       }
     }

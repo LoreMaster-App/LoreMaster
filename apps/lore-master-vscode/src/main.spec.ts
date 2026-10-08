@@ -25,12 +25,13 @@ describe('activate', () => {
 
     activate(context)
 
-    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.addConnection', 'loreMaster.addStorage', 'loreMaster.openConfig', 'loreMaster.removeStorage', 'loreMaster.refreshStorages', 'loreMaster.copyMcpConfig'])
+    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.addConnection', 'loreMaster.addStorage', 'loreMaster.openConfig', 'loreMaster.removeStorage', 'loreMaster.refreshStorages', 'loreMaster.copyMcpConfig', 'loreMaster.refreshPages', 'loreMaster.checkRemote', 'loreMaster.togglePageLabel', 'loreMaster.syncPage'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
     // The commands plus the engine client, output channel, diagram renderer, its
     // host/renderDiagram subscription, the Confluence authentication provider, the MCP
     // server provider and the two sidebar views (Sync, Storages) — all disposed on
-    // deactivate.
-    expect(context.subscriptions).toHaveLength(contributed.length + 8)
+    // deactivate. The Pages view and its four commands are one disposable.
+    const pagesViewCommands = 4
+    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands + 9)
   })
 })

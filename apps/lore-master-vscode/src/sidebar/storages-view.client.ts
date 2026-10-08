@@ -47,7 +47,7 @@ export class StoragesViewProvider implements vscode.TreeDataProvider<StorageNode
 
     return read.settings.outputs
       .map((output, index) => ({ index, output }))
-      .filter(node => isConfigured(node.output))
+      .filter(node => isConfiguredOutput(node.output))
   }
 
   getTreeItem (node: StorageNode): vscode.TreeItem {
@@ -61,7 +61,7 @@ export class StoragesViewProvider implements vscode.TreeDataProvider<StorageNode
 }
 
 /** An output shows in the list once it is actually configured (the blank scaffold is hidden). */
-function isConfigured (output: Output): boolean {
+export function isConfiguredOutput (output: Output): boolean {
   if (output.platform === 'github-pages') {
     return true
   }

@@ -37,7 +37,19 @@ export const window = {
   registerTreeDataProvider (_viewId: string, _provider: unknown): { dispose: () => void } {
     return { dispose () {} }
   },
+  withProgress<T> (_options: unknown, task: () => Promise<T>): Promise<T> {
+    return task()
+  },
   activeTextEditor: undefined as { document: { uri: unknown } } | undefined,
+}
+
+export const ProgressLocation = { SourceControl: 1, Window: 10, Notification: 15 } as const
+
+export const ConfigurationTarget = { Global: 1, Workspace: 2, WorkspaceFolder: 3 } as const
+
+/** A minimal vscode.ThemeColor: keeps the colour id. */
+export class ThemeColor {
+  constructor (public id: string) {}
 }
 
 /** How a tree item can expand; matches vscode's enum values. */
@@ -45,15 +57,19 @@ export const TreeItemCollapsibleState = { None: 0, Collapsed: 1, Expanded: 2 } a
 
 /** A minimal vscode.TreeItem: holds the label and whatever the provider sets on it. */
 export class TreeItem {
-  command?:  { command: string; title: string }
-  iconPath?: unknown
+  id?:           string
+  description?:  string
+  tooltip?:      string
+  contextValue?: string
+  command?:      { command: string; title: string; arguments?: unknown[] }
+  iconPath?:     unknown
 
   constructor (public label: string, public collapsibleState: number = TreeItemCollapsibleState.None) {}
 }
 
 /** A minimal vscode.ThemeIcon: keeps the icon id. */
 export class ThemeIcon {
-  constructor (public id: string) {}
+  constructor (public id: string, public color?: { id: string }) {}
 }
 
 // A minimal EventEmitter matching vscode's: `event` registers a listener, `fire` notifies.
@@ -99,13 +115,33 @@ export const env = {
   },
 }
 
+const noDisposable = (): { dispose: () => void } => ({ dispose () {} })
+
+/** Test helper: the stored settings, keyed "section.key"; clear between tests. */
+export const settings = new Map<string, unknown>()
+
 export const workspace = {
   workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
   getWorkspaceFolder (_uri: unknown): { uri: { fsPath: string } } | undefined {
     return undefined
   },
-  getConfiguration (_section?: string): { get: <T>(key: string, defaultValue?: T) => T | undefined } {
-    return { get: <T>(_key: string, defaultValue?: T) => defaultValue }
+  getConfiguration (section?: string): { get: <T>(key: string, defaultValue?: T) => T | undefined; update: (key: string, value: unknown, target?: unknown) => Promise<void> } {
+    const qualified = (key: string): string => section === undefined ? key : `${section}.${key}`
+
+    return {
+      get:    <T>(key: string, defaultValue?: T) => (settings.has(qualified(key)) ? settings.get(qualified(key)) as T : defaultValue),
+      update: (key: string, value: unknown) => {
+        settings.set(qualified(key), value)
+
+        return Promise.resolve()
+      },
+    }
+  },
+  onDidChangeConfiguration (_listener: (event: { affectsConfiguration: (section: string) => boolean }) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  createFileSystemWatcher (_pattern: unknown): { onDidCreate: (l: () => unknown) => { dispose: () => void }; onDidChange: (l: () => unknown) => { dispose: () => void }; onDidDelete: (l: () => unknown) => { dispose: () => void }; dispose: () => void } {
+    return { onDidCreate: noDisposable, onDidChange: noDisposable, onDidDelete: noDisposable, dispose () {} }
   },
   onDidChangeWorkspaceFolders (_listener: () => unknown): { dispose: () => void } {
     return { dispose () {} }

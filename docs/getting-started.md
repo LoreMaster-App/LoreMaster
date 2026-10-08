@@ -43,6 +43,35 @@ and waits for you to confirm before writing anything. Confirm, and it creates th
 parents-first, uploads images, renders Mermaid diagrams to images, and links pages to each
 other by title.
 
+## 5. See where everything stands: the Pages view
+
+Open the LoreMaster icon in the activity bar and expand **Pages**. It lists every Markdown
+file as the tree it is, or will be, on the storage — the same nesting the sync applies —
+each with an icon:
+
+| Icon | Meaning |
+|---|---|
+| `+` new | Not on the platform yet; the next sync creates it. |
+| ✓ synced | The file is the one last synced. |
+| ✎ local changes | The file changed since the last sync; the next sync updates the page. |
+| ☁↓ remote changes | The page was edited on the platform since the last sync. |
+| ⚠ conflict | Both the file and the page changed. |
+| 🔗 will adopt | A page with this title exists; the next sync takes it over. |
+
+Without a connection the view knows the **local** half: new, synced or local changes, read
+from the files and their annotations. Click **Check remote status** (the cloud button in the
+view's title bar) to ask the platform too — it only reads, and adds remote changes,
+conflicts and pages whose file is gone. The answer is dropped again as soon as a file
+changes, so the view never shows a platform state it has not just asked for.
+
+- **Titles or file names:** the button next to it switches how pages are named — their
+  content title (first heading) or their file name. The other one is shown beside it, and
+  the choice is the `loreMaster.pages.label` setting.
+- Click a page to open its file; the cloud-upload button on a row syncs just that page.
+- With several storages, each gets its own group.
+- The tree follows `roots`, `excludes`, `ignore` and `skipGitignored` from
+  `.lore-master.yaml`, so what you see is what a sync would read.
+
 ## What you get
 
 - A page tree mirroring your files: nesting from `parent:` annotations, dotted filenames
