@@ -10,9 +10,13 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 
 	"lore-master/apps/lore-master-engine/agentcommands"
 	"lore-master/apps/lore-master-engine/catalogqueries"
+	"lore-master/apps/lore-master-engine/clicommands"
 	"lore-master/apps/lore-master-engine/editiondetect"
 	"lore-master/apps/lore-master-engine/generatorcommands"
 	"lore-master/apps/lore-master-engine/hostbridge"
@@ -34,6 +38,12 @@ func main() {
 }
 
 func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) int {
+	// The editors pass flags or nothing; a word that is not a flag is a command, or a typo that must not
+	// start a server waiting on a terminal.
+	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
+		return runCommandLine(ctx, args, stdout, stderr)
+	}
+
 	flags := flag.NewFlagSet("lore-master-engine", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	showVersion := flags.Bool("version", false, "print the version and exit")
@@ -107,3 +117,16 @@ type stdio struct {
 }
 
 func (stdio) Close() error { return nil }
+
+// runCommandLine runs one of the command-line commands (generate, sync, tree) with the same
+// method handlers the editors call, stopping cleanly on Ctrl+C. Nothing is logged to stderr but
+// what the command prints itself.
+func runCommandLine(ctx context.Context, args []string, stdout io.Writer, stderr io.Writer) int {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	workingDir, _ := os.Getwd()
+	environment := clicommands.Environment{Getenv: os.Getenv, Stdout: stdout, Stderr: stderr, WorkingDir: workingDir, Version: version}
+
+	return clicommands.Run(ctx, args, environment, engineMethods(slog.New(slog.NewTextHandler(io.Discard, nil))))
+}

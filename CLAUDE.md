@@ -23,7 +23,7 @@ Markdown.
 |---|---|---|
 | Name | LoreMaster; extension id `<publisher>.lore-master` | #43, #44 |
 | Engine language | **Go**, one sidecar binary spoken to over JSON-RPC on stdio by every editor shell | `docs/architecture/engine-and-shells.md` |
-| Distribution | No npm packages, no CLI product. Only the VS Code Marketplace (later the Visual Studio Marketplace). The binary ships inside each extension | E5 #6, #65 |
+| Distribution | No npm packages. The engine binary doubles as a small CLI (`generate`, `sync`, `tree`; `docs/cli.md`, #273) for CI and hooks, distributed by #201. The extension goes to the VS Code Marketplace (later the Visual Studio Marketplace). The binary ships inside each extension | E5 #6, #65 |
 | Layout | Vertical feature slices in Go **and** TypeScript, even where no lint enforces it | `docs/architecture/vertical-feature-slices.md`, #47 |
 | Page titles | `<titlePrefix>: <H1>`; prefix asked once at first sync, default = selected parent page's title | E3 #4 |
 | Config file | `.lore-master.yaml` (YAML for readability; `version`, `outputs[]` with platform, location, `direction`, `content[]` types, `template`). `direction: two-way` is accepted (#163); still-reserved values (other content types, templates) are in the schema but refused until built | #92, #32; #95 #96 #97 |
