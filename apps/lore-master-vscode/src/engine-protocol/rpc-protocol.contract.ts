@@ -17,6 +17,7 @@ export const SYNC_EXECUTE_METHOD = 'sync/execute'
 export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const PAGES_PUBLISH_METHOD = 'pages/publish'
+export const WORKSPACE_TREE_METHOD = 'workspace/tree'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -171,6 +172,41 @@ export interface SettingsReadResult {
 export interface SettingsSaveParams {
   workspaceRoot: string
   settings:      Settings
+}
+
+// ---- workspace/tree ------------------------------------------------------------------
+
+export interface WorkspaceTreeParams {
+  workspaceRoot: string
+  /** Index of the output in the settings' outputs list. */
+  output:        number
+}
+
+/** What the files alone say about a page; the remote half comes from a read-only sync/plan. */
+export type TreeStatus = 'new' | 'synced' | 'local-changes'
+
+export interface TreeNode {
+  /** Workspace-relative file, '/'-separated. */
+  path:      string
+  /** The title from the file (H1, front-matter or annotation title, else the file name). */
+  title:     string
+  /** What the platform shows: the title with the output's prefix. */
+  pageTitle: string
+  /** The file this page nests under; absent means directly under the configured parent. */
+  parent?:   string
+  rule:      string
+  depth:     number
+  /** Absent for an output that does not track pages in the files (github-pages). */
+  status?:   TreeStatus
+  pageId?:   string
+  warnings?: string[]
+}
+
+export interface WorkspaceTreeResult {
+  /** Parents first. */
+  nodes:     TreeNode[]
+  warnings?: string[]
+  problems?: string[]
 }
 
 // ---- sync/plan, sync/execute ---------------------------------------------------------

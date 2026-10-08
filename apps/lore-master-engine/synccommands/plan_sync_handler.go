@@ -8,6 +8,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
 	"lore-master/libs/documentation-sync/confluenceplatform"
+	"lore-master/libs/documentation-sync/documentloading"
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/syncexecution"
 	"lore-master/libs/documentation-sync/syncplanning"
@@ -40,10 +41,11 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 			return nil, err
 		}
 
-		documents, warnings, problems, err := loadDocuments(ctx, params.WorkspaceRoot, output, discovery)
+		loaded, err := documentloading.LoadOutputDocuments(ctx, params.WorkspaceRoot, output, discovery)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
+		documents, warnings, problems := loaded.Documents, loaded.Warnings, loaded.Problems
 		tree, err := documenttree.BuildTree(documents)
 		if err != nil {
 			problems = append(problems, err.Error())

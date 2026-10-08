@@ -8,6 +8,7 @@ import (
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/libs/documentation-sync/documentloading"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/github-pages/sitepublish"
 	"lore-master/libs/github-pages/siterender"
@@ -31,10 +32,11 @@ func PublishPages() rpcserver.Method {
 			return nil, err
 		}
 
-		documents, warnings, problems, err := loadMarkdown(ctx, params.WorkspaceRoot, output, scope)
+		loaded, err := documentloading.LoadOutputDocuments(ctx, params.WorkspaceRoot, output, scope)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
+		documents, warnings, problems := loaded.Documents, loaded.Warnings, loaded.Problems
 		tree, err := documenttree.BuildTree(documents)
 		if err != nil {
 			problems = append(problems, err.Error())
