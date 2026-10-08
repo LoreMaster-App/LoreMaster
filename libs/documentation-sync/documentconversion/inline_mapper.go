@@ -123,6 +123,8 @@ func (c *converter) link(n *ast.Link) []platformport.Inline {
 		return []platformport.Inline{platformport.Link{Target: *target, Inlines: text}}
 	case documentparsing.IsRemote(destination):
 		return []platformport.Inline{platformport.Link{Target: &platformport.URLRef{URL: destination}, Inlines: text}}
+	case documentparsing.IsBareWebHost(destination):
+		return []platformport.Inline{platformport.Link{Target: &platformport.URLRef{URL: "https://" + destination}, Inlines: text}}
 	case destination == "" || strings.HasSuffix(strings.ToLower(strings.SplitN(destination, "#", 2)[0]), ".md"):
 		// No destination, or a Markdown file outside the workspace, which the
 		// inventory has already reported.

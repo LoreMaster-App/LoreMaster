@@ -125,3 +125,33 @@ func TestInventoryLinks(t *testing.T) {
 		})
 	}
 }
+
+func TestInventoryLinksLinkedFiles(t *testing.T) {
+	cases := []struct {
+		name    string
+		content string
+		want    []string
+	}{
+		{"a document with an extension is a linked file", "[r](report.pdf)\n", []string{"report.pdf"}},
+		{"a site route is not a file", "[m](/manual/configuration?section=admins) [p](process) [t](**TC**)\n", nil},
+		{"a scheme-less www host is not a file", "[s](www.adobe.com/uk/acrobat/business/sign.html)\n", nil},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			document, err := ParseDocument("docs/a.md", []byte(tc.content))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got []string
+			for _, file := range InventoryLinks(document).LinkedFiles {
+				got = append(got, string(file.Path))
+			}
+			if tc.want != nil {
+				tc.want = []string{"docs/" + tc.want[0]}
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}

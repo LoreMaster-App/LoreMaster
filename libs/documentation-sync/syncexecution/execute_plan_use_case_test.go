@@ -526,7 +526,7 @@ func TestAMissingImageIsAWarningNotAFailure(t *testing.T) {
 	delete(w.files, "img/flow.png")
 	_, report := w.sync()
 	if report.Count(Written) != 3 || !slices.ContainsFunc(report.Warnings, func(warning string) bool {
-		return strings.HasPrefix(warning, "readme.guide.md: the image img/flow.png cannot be read")
+		return strings.HasPrefix(warning, "readme.guide.md: the file img/flow.png cannot be read")
 	}) {
 		t.Fatalf("%q %q", outcomes(report), report.Warnings)
 	}
