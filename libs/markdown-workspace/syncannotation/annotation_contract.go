@@ -42,11 +42,12 @@ const (
 	KeySyncedAt    = "synced-at"
 	KeyTitle       = "title"
 	KeyParent      = "parent"
+	KeyGenerated   = "generated"
 )
 
 var knownKeys = []string{
 	KeyPlatform, KeyBaseURL, KeySpace, KeyPageID, KeyParentID, KeyVersion,
-	KeyContentHash, KeyRenderHash, KeyAttachments, KeySyncedAt, KeyTitle, KeyParent,
+	KeyContentHash, KeyRenderHash, KeyAttachments, KeySyncedAt, KeyTitle, KeyParent, KeyGenerated,
 }
 
 // Annotation is what a file remembers about its page. The sync writes everything but
@@ -70,6 +71,10 @@ type Annotation struct {
 	Title string
 	// Parent is an explicit parent document, relative to this file's directory.
 	Parent string
+	// Generated names the generator that wrote the file (for example "test-results"); a
+	// generator only ever overwrites or removes files that carry its own name. The sync
+	// keeps it, like Title and Parent.
+	Generated string
 	// Unknown holds keys this version does not know, so writing never loses them.
 	Unknown []Field
 }

@@ -63,7 +63,7 @@ func TestRunCreatesPagesMarkedAsGeneratedAndSortedByPath(t *testing.T) {
 	}
 	content := read(t, root, "docs/tests/README.md")
 	document, err := syncannotation.Read([]byte(content))
-	if err != nil || document.Annotation == nil || !slices.Contains(document.Annotation.Unknown, syncannotation.Field{Key: "generated", Value: "test-results"}) {
+	if err != nil || document.Annotation == nil || document.Annotation.Generated != "test-results" {
 		t.Fatalf("no marker in %q (%v)", content, err)
 	}
 	if string(document.Body) != "# Results\n" {
@@ -103,7 +103,7 @@ func TestRunKeepsTheSyncAnnotationWhenTheBodyChanges(t *testing.T) {
 	full := filepath.Join(root, "docs", "tests", "README.md")
 	synced := syncannotation.Annotation{
 		Platform: "confluence", Space: "ENG", PageID: "42", Version: 3, ContentHash: "sha256:abc",
-		Unknown: []syncannotation.Field{{Key: "generated", Value: "test-results"}},
+		Generated: "test-results",
 	}
 	if _, err := syncannotation.Write(full, synced); err != nil {
 		t.Fatal(err)

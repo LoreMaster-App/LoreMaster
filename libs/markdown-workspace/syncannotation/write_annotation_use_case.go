@@ -134,6 +134,7 @@ func blockLines(annotation Annotation) ([]string, error) {
 		KeyRenderHash:  annotation.RenderHash,
 		KeyTitle:       annotation.Title,
 		KeyParent:      annotation.Parent,
+		KeyGenerated:   annotation.Generated,
 	}
 	if annotation.Version != 0 {
 		values[KeyVersion] = strconv.Itoa(annotation.Version)
@@ -186,6 +187,7 @@ func normalised(annotation Annotation) Annotation {
 	annotation.PageID, annotation.ParentID, annotation.ContentHash = trim(annotation.PageID), trim(annotation.ParentID), trim(annotation.ContentHash)
 	annotation.RenderHash = trim(annotation.RenderHash)
 	annotation.Title, annotation.Parent = trim(annotation.Title), trim(annotation.Parent)
+	annotation.Generated = trim(annotation.Generated)
 	if len(annotation.Attachments) == 0 {
 		annotation.Attachments = nil
 	}
