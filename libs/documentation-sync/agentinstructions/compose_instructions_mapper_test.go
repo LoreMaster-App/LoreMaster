@@ -97,7 +97,9 @@ func TestComposeTellsTheAgentWhatItMayWriteInTheAnnotation(t *testing.T) {
 func TestComposeIsDeterministic(t *testing.T) {
 	settings := workspacesettings.Settings{Version: 1, Outputs: []workspacesettings.Output{confluence("ENG", "to-platform", "image", []string{"docs"}, nil)}}
 
-	if Compose(settings, true, documenttree.NestingConventions()) != Compose(settings, true, documenttree.NestingConventions()) {
+	first := Compose(settings, true, documenttree.NestingConventions())
+	second := Compose(settings, true, documenttree.NestingConventions())
+	if first != second {
 		t.Fatal("the same input gave different instructions")
 	}
 }
