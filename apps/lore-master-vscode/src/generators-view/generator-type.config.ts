@@ -30,6 +30,14 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     inputHint:     'Folders with Go code, separated by commas, e.g. libs/, apps/, !**/internal/. Leave empty for every package.',
   },
   {
+    type:          'ts-docs',
+    label:         'TypeScript API docs',
+    description:   'Classes, interfaces and functions of TypeScript or JavaScript projects, with TypeDoc',
+    icon:          'symbol-class',
+    defaultOutput: 'docs/typescript',
+    inputHint:     'Project folders, separated by commas, e.g. libs/, apps/web/. Needs typedoc and typedoc-plugin-markdown installed in the workspace. Leave empty for every project.',
+  },
+  {
     type:          'openapi-docs',
     label:         'OpenAPI docs',
     description:   'OpenAPI 3 descriptions (YAML or JSON): operations, parameters, schemas',

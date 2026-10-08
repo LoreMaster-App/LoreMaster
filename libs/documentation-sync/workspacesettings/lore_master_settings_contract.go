@@ -23,8 +23,9 @@ type Settings struct {
 
 // Generator is one generator: what it reads, and the folder it writes its pages to.
 type Generator struct {
-	// Type is test-results (JUnit XML), go-docs (Go package documentation) or openapi-docs
-	// (OpenAPI 3 descriptions); the other types the format names are reserved.
+	// Type is test-results (JUnit XML), go-docs (Go package documentation), openapi-docs
+	// (OpenAPI 3 descriptions) or ts-docs (TypeScript/JavaScript, via TypeDoc); the other types the
+	// format names are reserved.
 	Type string `yaml:"type"`
 	// Input is gitignore-style patterns selecting what to read; empty means the type's own
 	// default.
