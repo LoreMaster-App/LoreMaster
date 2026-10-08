@@ -25,6 +25,9 @@ not named after Confluence or Markdown: more platforms and more kinds of lore co
   renamed, adopted, left unchanged, or flagged as a conflict — and refuses to overwrite a
   page someone edited on the platform since the last sync.
 - **Executes** parents-first, so links resolve on the first pass without a second write.
+- **Teaches your AI agent the rules** through an [MCP server](docs/mcp-server.md): the agent
+  asks LoreMaster where a new page nests and how it is titled, and can preview and validate
+  against your actual workspace.
 - **Is idempotent**: run it again and nothing changes unless a file did. It tracks each
   page with a small annotation written back into the file (page id, version, content and
   attachment hashes), so it never creates duplicates and only writes what actually moved.

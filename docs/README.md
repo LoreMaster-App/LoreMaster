@@ -5,6 +5,8 @@ Start here, then dive into the architecture decisions.
 ## Using it
 
 - [Getting started](getting-started.md) — install, connect, and run your first sync.
+- [Using the MCP server](mcp-server.md) — let an AI agent learn LoreMaster's nesting rules and
+  check its files against them.
 
 ## Architecture (the decisions the design rests on)
 
@@ -12,6 +14,8 @@ Start here, then dive into the architecture decisions.
   thin editor shells, and the alternatives rejected.
 - [Confluence editions](architecture/confluence-editions.md) — the verified per-edition API
   facts the client is built on.
+- [The MCP server](architecture/mcp-server.md) — why it lives in the engine, the four tools,
+  and the "one source of truth" invariant.
 - [Vertical feature slices](architecture/vertical-feature-slices.md) — how the Go and
   TypeScript code is organised.
 
