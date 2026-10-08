@@ -19,6 +19,7 @@ export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const PAGES_PUBLISH_METHOD = 'pages/publish'
 export const WORKSPACE_TREE_METHOD = 'workspace/tree'
 export const GENERATORS_RUN_METHOD = 'generators/run'
+export const AGENT_INSTRUCTIONS_METHOD = 'agent/instructions'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -245,6 +246,19 @@ export interface GeneratorRun {
 
 export interface GeneratorsRunResult {
   runs: GeneratorRun[]
+}
+
+// ---- agent/instructions --------------------------------------------------------------
+
+export interface AgentInstructionsParams {
+  workspaceRoot: string
+}
+
+export interface AgentInstructionsResult {
+  /** Markdown without a top-level heading, composed from the live rules and the workspace. */
+  instructions: string
+  /** False when the workspace has no .lore-master.yaml yet. */
+  hasConfig:    boolean
 }
 
 // ---- sync/plan, sync/execute ---------------------------------------------------------

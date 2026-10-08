@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { CREATE_AGENT_COMMAND, createAgentCommand } from './agent-creation'
 import { ADD_CONNECTION_COMMAND, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
@@ -51,6 +52,7 @@ export function activate (context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(SYNC_CURRENT_FILE_COMMAND, () => syncCurrentFile(syncDeps)),
     vscode.commands.registerCommand(PUBLISH_PAGES_COMMAND, () => publishPagesCommand({ engine, output })),
     vscode.commands.registerCommand(RUN_GENERATORS_COMMAND, () => runGeneratorsCommand({ engine, output })),
+    vscode.commands.registerCommand(CREATE_AGENT_COMMAND, () => createAgentCommand({ engine })),
     vscode.commands.registerCommand(ADD_STORAGE_COMMAND, async () => { await addStorageCommand({ engine, connections, output }); storages.refresh() }),
     vscode.commands.registerCommand(OPEN_CONFIG_COMMAND, () => openConfig()),
     vscode.commands.registerCommand(REMOVE_STORAGE_COMMAND, async (node: StorageNode | undefined) => { await removeStorageCommand({ engine }, node); storages.refresh() }),

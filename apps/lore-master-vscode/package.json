@@ -119,6 +119,11 @@
         "command": "loreMaster.runGenerators",
         "title": "Run generators",
         "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.createAgent",
+        "title": "Create documentation agent",
+        "category": "LoreMaster"
       }
     ],
     "viewsContainers": {

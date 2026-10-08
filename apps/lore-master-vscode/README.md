@@ -32,6 +32,8 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
   how it is titled, and can preview and validate against your workspace. It is registered
   for the editor's agent automatically; **LoreMaster: Copy MCP Server Config** gives you the
   entry for Claude Desktop, Claude Code and other clients.
+- **Create a documentation agent.** One command writes an agent definition (Claude Code, VS Code,
+  `AGENTS.md`) taught the rules the sync applies and where your pages live.
 - **Generate pages from your project.** JUnit test reports, Go package documentation and OpenAPI
   descriptions become plain Markdown pages that sync like any other (`LoreMaster: Run generators`).
 - **Leave things out.** `.gitignore`d Markdown is skipped by default (`skipGitignored`), and
@@ -71,6 +73,7 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 | **LoreMaster: Open config** | Open `.lore-master.yaml`. |
 | **LoreMaster: Check remote status** | Ask the platform where each page stands (read-only) and show it in the Pages view. |
 | **LoreMaster: Show page titles or file names** | Switch how the Pages view names pages (setting `loreMaster.pages.label`). |
+| **LoreMaster: Create documentation agent** | Write an agent for Claude Code, VS Code or `AGENTS.md` that follows LoreMaster's structure and your workspace's layout. |
 | **LoreMaster: Run generators** | Write Markdown from your test reports, Go packages and OpenAPI descriptions (configured under `generators:` in `.lore-master.yaml`); the next sync publishes it. |
 | **LoreMaster: Copy MCP Server Config** | Copy the MCP server entry for an external AI client. |
 
