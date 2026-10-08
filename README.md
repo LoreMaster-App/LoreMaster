@@ -29,8 +29,8 @@ not named after Confluence or Markdown: more platforms and more kinds of lore co
   with an icon per page — new, synced, local changes, remote changes, conflict — and a title or file name label, as you prefer.
 - **Creates a documentation agent** for Claude Code, VS Code or `AGENTS.md`, taught the nesting rules and
   your workspace's layout. See [`docs/agent.md`](docs/agent.md).
-- **Generates pages from your artifacts** — JUnit test reports today — as plain Markdown that syncs like
-  any other page. See [`docs/generators.md`](docs/generators.md).
+- **Generates pages from your artifacts** — JUnit test reports, Go package docs and OpenAPI descriptions — as
+  plain Markdown that syncs like any other page, managed from a **Generators** view. See [`docs/generators.md`](docs/generators.md).
 - **Teaches your AI agent the rules** through an [MCP server](docs/mcp-server.md): the agent
   asks LoreMaster where a new page nests and how it is titled, and can preview and validate
   against your actual workspace.

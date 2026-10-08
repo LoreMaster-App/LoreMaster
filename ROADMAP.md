@@ -81,7 +81,7 @@ Done in E0 since: #43 (the repository), #157 (moved to the `LoreMaster-App` org,
 | E9 Visual Studio extension | #10 | #68 scaffold + RPC client · #69 the rest | E4; mnci VSIX gap (to file) |
 | E10 Beyond docs sync | #11 | #95 two-way sync · #96 more content types (test results, code docs) · #97 templates — reserved in `.lore-master.yaml` (#92), not scheduled | the first feature shipping |
 | E11 MCP server (teach agents the rules) ✅ | #211 | #212 engine `--mcp` + `loremaster_nesting_rules` · #213 `preview_tree`/`validate_document` · #214 `place_document` · #215 VS Code auto-register · #216 copy-config command · #217 docs | — |
-| E12 Real plugin (sidebar, visual config) ✅ | #187 | #202 sidebar · #203/#237 add, edit, remove a storage · #206 inline Add Connection · #234 Pages view (tree + status icons, title/file-name label) · audit fixes #238 #240 #241 #242 — the Generators view moved to #243 (waits for #96) | E4 |
+| E12 Real plugin (sidebar, visual config) ✅ | #187 | #202 sidebar · #203/#237 add, edit, remove a storage · #206 inline Add Connection · #234 Pages view (tree + status icons, title/file-name label) · audit fixes #238 #240 #241 #242 — the Generators view #243 (built on the generators of #96) | E4 |
 | E13 Documentation agent ✅ | #233 | #258 engine `agent/instructions` · #259 the create-agent command · #260 the rules text corrected (annotation, not front matter) | E11 |
 
 ## Open decisions (maintainer)

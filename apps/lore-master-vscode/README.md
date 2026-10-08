@@ -21,7 +21,7 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 - **Many destinations at once.** Configure as many outputs as you like; one **Sync** fans
   out across all of them.
 - **A sidebar, not just commands.** The LoreMaster icon in the activity bar has three views:
-  **Sync** (add a storage, sync, open the config), **Pages** and **Storages**.
+  **Sync** (add a storage, sync, open the config), **Pages**, **Generators** and **Storages**.
 - **See where everything stands.** The **Pages** view shows your Markdown as the tree it is on
   the storage, with an icon per page — new, synced, local changes, and (after a read-only
   *Check remote status*) remote changes or a conflict. Name pages by their title or their file
@@ -35,7 +35,8 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 - **Create a documentation agent.** One command writes an agent definition (Claude Code, VS Code,
   `AGENTS.md`) taught the rules the sync applies and where your pages live.
 - **Generate pages from your project.** JUnit test reports, Go package documentation and OpenAPI
-  descriptions become plain Markdown pages that sync like any other (`LoreMaster: Run generators`).
+  descriptions become plain Markdown pages that sync like any other. Add, run, edit and remove
+  them from the **Generators** view (or `LoreMaster: Run generators`).
 - **Leave things out.** `.gitignore`d Markdown is skipped by default (`skipGitignored`), and
   an `ignore` list takes gitignore-style patterns.
 
@@ -74,6 +75,7 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 | **LoreMaster: Check remote status** | Ask the platform where each page stands (read-only) and show it in the Pages view. |
 | **LoreMaster: Show page titles or file names** | Switch how the Pages view names pages (setting `loreMaster.pages.label`). |
 | **LoreMaster: Create documentation agent** | Write an agent for Claude Code, VS Code or `AGENTS.md` that follows LoreMaster's structure and your workspace's layout. |
+| **LoreMaster: Add generator** | Add a generator (test results, Go docs, OpenAPI docs) from the Generators view. |
 | **LoreMaster: Run generators** | Write Markdown from your test reports, Go packages and OpenAPI descriptions (configured under `generators:` in `.lore-master.yaml`); the next sync publishes it. |
 | **LoreMaster: Copy MCP Server Config** | Copy the MCP server entry for an external AI client. |
 

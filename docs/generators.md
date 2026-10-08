@@ -94,8 +94,14 @@ file that is not an OpenAPI description, is reported and skipped; the rest are s
 
 ## Running it
 
-The engine's `generators/run` method runs one or all generators; the editor's **Run
-generators** command and the **Generators** view call it. Output is deterministic — the same
+You do not have to edit the YAML. The **Generators** view in the LoreMaster sidebar lists your
+generators — what each one is, where it writes, and what its last run did — and its buttons add,
+run, edit and remove them: **Add generator** asks which kind, the output folder and what to read,
+saves it with your comments kept, warns if no storage syncs that folder, and offers to run it at
+once. Removing a generator never deletes the pages it wrote.
+
+The editor's **Run generators** command, the view's run buttons and the engine's `generators/run`
+method all run the same thing. Output is deterministic — the same
 reports give the same bytes — so running it again with nothing new rewrites nothing and shows
 no diff.
 
