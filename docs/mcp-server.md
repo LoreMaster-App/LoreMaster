@@ -11,7 +11,7 @@ agent (for example Copilot Chat in agent mode) can see it:
 1. Install the extension and open the folder you document.
 2. Open the chat's tools list (or run **MCP: List Servers**). A server named **LoreMaster**
    is listed. Start it if the editor asks.
-3. Ask the agent to write documentation. It can now call the four tools below.
+3. Ask the agent to write documentation. It can now call the six tools below.
 
 The server reads the **first workspace folder**. It uses the engine bundled with the
 extension, or the one named by the `loreMaster.engine.path` setting.
@@ -70,6 +70,24 @@ Input: `h1` (required), `parent` (optional: an existing page's title or file pat
 `directory` (optional: workspace-relative). Returns the file path and any annotation that
 nests a new page under that parent. It **writes nothing**: the agent creates the file with
 what it returns.
+
+### `site_publishing_plan`
+
+No input. Reads the repository's `.github/workflows` and `.lore-master.yaml` and says how the
+repository deploys to GitHub Pages and which setting puts the docs site **beside** that deploy:
+build into the app's artifact folder (an Actions-source deploy), publish into a `path` folder of
+the branch (a branch push), or own the branch (nothing else deploys). Returns the
+`.lore-master.yaml` output and the workflow step to use, and warns about what would go wrong: an
+app deploy that deletes the docs folder, a branch publish without `path`, a workflow `paths:`
+filter that will not redeploy on a docs change. It **writes nothing**.
+
+### `preview_site`
+
+Input: `output` (optional: the position of the github-pages output; needed only when there are
+several). Renders the site in memory and returns how many pages and files it would contain, the
+file list, and the Markdown problems that would stop a build. It **writes nothing**; the build
+itself is `lore-master-engine pages build --out DIR` or the
+[GitHub Action](github-action.md).
 
 ## Troubleshooting
 

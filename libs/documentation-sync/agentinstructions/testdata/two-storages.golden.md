@@ -21,6 +21,8 @@ Only Markdown under `docs` is synced; a file anywhere else never reaches the pla
 
 Files ignored by `.gitignore` are still synced here (`skipGitignored: false`).
 
+**The site.** The GitHub Pages output is built by LoreMaster, never by copying files into a deploy folder. To change how it is deployed (beside a web app, or into a folder of a branch), call `site_publishing_plan`: it reads the repository's workflows and returns the `.lore-master.yaml` output and the workflow step to use. Call `preview_site` to check that the site builds. The build is `lore-master-engine pages build --out DIR` or the `LoreMaster-App/LoreMaster/actions/pages` action; the output's `path` keeps a branch publish inside one folder. Ask the user before editing a deploy workflow.
+
 ## How to work
 
 1. **Look before you write.** If the LoreMaster tools are available, call `loremaster_nesting_rules` once and `preview_tree` to see the pages that exist and how they nest. Otherwise read the existing `.md` files and follow the rules above.
