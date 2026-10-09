@@ -75,7 +75,9 @@ async function pickStorage (engine: EngineClient, folder: string): Promise<{ ind
 /** The settings as saved, or undefined when they cannot be read (the picks still work; a field then shows no current value). */
 async function readSettings (engine: EngineClient, folder: string): Promise<Settings | undefined> {
   try {
-    return (await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })).settings
+    const read = await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })
+
+    return read.settings
   } catch {
     return undefined
   }
