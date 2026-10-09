@@ -42,6 +42,7 @@ type Environment struct {
 // commands maps a subcommand to the function that runs it.
 var commands = map[string]func(context.Context, Environment, rpcserver.Methods, []string) int{
 	"generate": generateCommand,
+	"pages":    pagesCommand,
 	"sync":     syncCommand,
 	"tree":     treeCommand,
 	"watch":    watchCommand,
@@ -87,6 +88,8 @@ Usage:
                               [--yes] [--dry-run] [--force] [--prune] [--json]
   lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
                               [--debounce 2s] [--poll 1s]
+  lore-master-engine pages build   --out DIR [--workspace DIR] [--output N] [--json]
+  lore-master-engine pages publish [--workspace DIR] [--output N] [--json]
   lore-master-engine version
 
 generate   run the generators of .lore-master.yaml (test results, Go, OpenAPI, TypeScript docs)
@@ -94,6 +97,9 @@ tree       show the page tree each output would sync, with each page's local sta
 sync       plan the sync of each output and, with --yes, apply it. Without --yes it only shows the plan.
            --generate runs the generators first. --force overwrites pages edited on the platform;
            --prune moves pages whose file is gone to the trash.
+
+pages      build writes a github-pages output's static site into --out (replaced when an earlier build wrote it,
+           refused when the folder holds other files); publish pushes it to the output's branch.
 
 watch       keep the storage up to date: when files change and stay quiet for --debounce, regenerate only the
            generators that read them and sync only the pages that changed. Applies nothing without --yes.

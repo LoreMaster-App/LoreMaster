@@ -58,6 +58,10 @@ type Output struct {
 	Repo string `yaml:"repo,omitempty"`
 	// Branch is the branch a github-pages output publishes to; empty means gh-pages.
 	Branch string `yaml:"branch,omitempty"`
+	// Path is the folder inside the branch the site is published to, relative to the branch
+	// root; empty means the root. Only that folder is replaced, so another site can share the
+	// branch.
+	Path string `yaml:"path,omitempty"`
 }
 
 // Content is one source feeding an output.

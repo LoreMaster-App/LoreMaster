@@ -1,0 +1,118 @@
+name: LoreMaster docs site
+description: Build the GitHub Pages site of a repository's Markdown into a folder (to deploy beside another site) or publish it to a branch.
+author: LoreMaster
+
+branding:
+  icon: book-open
+  color: blue
+
+inputs:
+  mode:
+    description: "build writes the site into `out` (no git, no network); publish pushes it to the output's branch."
+    default: build
+  out:
+    description: "build mode: the folder to write the site into, relative to the working directory. Created, replaced when an earlier build wrote it, refused when it holds other files."
+    default: lore-master-site
+  workspace:
+    description: The folder holding .lore-master.yaml, relative to the working directory.
+    default: .
+  output:
+    description: "Position of the github-pages output in the outputs list. Needed only when the settings have several."
+    default: ""
+  generate:
+    description: "Run the generators of .lore-master.yaml (code documentation, test results) before building. Their own toolchains must be installed by earlier steps."
+    default: "false"
+  token:
+    description: "publish mode: the token git uses to push. The job needs `permissions: contents: write`."
+    default: ${{ github.token }}
+
+outputs:
+  path:
+    description: "build mode: the absolute path of the folder the site was written into."
+    value: ${{ steps.run.outputs.path }}
+  files:
+    description: The number of files in the site.
+    value: ${{ steps.run.outputs.files }}
+
+runs:
+  using: composite
+  steps:
+    # The engine has no release binaries yet (#201), so it is built from this action's own
+    # checkout. This step is replaced by a download once releases carry the binaries.
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: ${{ github.action_path }}/../../go.mod
+        cache-dependency-path: ${{ github.action_path }}/../../go.sum
+
+    - name: Build the LoreMaster engine
+      shell: bash
+      working-directory: ${{ github.action_path }}/../..
+      env:
+        ACTION_REF: ${{ github.action_ref }}
+      run: |
+        exe=""
+        if [ "$RUNNER_OS" = "Windows" ]; then exe=".exe"; fi
+        go build -trimpath -ldflags "-X main.version=${ACTION_REF:-local}" \
+          -o "$RUNNER_TEMP/lore-master-engine$exe" ./apps/lore-master-engine
+        echo "LORE_MASTER_ENGINE=$RUNNER_TEMP/lore-master-engine$exe" >> "$GITHUB_ENV"
+
+    - name: Let git push in publish mode
+      if: inputs.mode == 'publish'
+      shell: bash
+      env:
+        TOKEN: ${{ inputs.token }}
+      run: |
+        echo "::add-mask::$TOKEN"
+        git config --global "url.https://x-access-token:${TOKEN}@github.com/.insteadOf" "https://github.com/"
+
+    - id: run
+      name: Generate the site
+      shell: bash
+      env:
+        MODE: ${{ inputs.mode }}
+        OUT: ${{ inputs.out }}
+        WORKSPACE: ${{ inputs.workspace }}
+        OUTPUT: ${{ inputs.output }}
+        GENERATE: ${{ inputs.generate }}
+      run: |
+        set -euo pipefail
+
+        case "$MODE" in
+          build | publish) ;;
+          *) echo "::error::mode must be build or publish, got '$MODE'"; exit 64 ;;
+        esac
+
+        select=()
+        if [ -n "$OUTPUT" ]; then select=(--output "$OUTPUT"); fi
+
+        if [ "$GENERATE" = "true" ]; then
+          "$LORE_MASTER_ENGINE" generate --workspace "$WORKSPACE"
+        fi
+
+        report="$RUNNER_TEMP/lore-master-pages.json"
+        code=0
+        if [ "$MODE" = "build" ]; then
+          "$LORE_MASTER_ENGINE" pages build --workspace "$WORKSPACE" --out "$OUT" ${select[@]+"${select[@]}"} --json > "$report" || code=$?
+        else
+          "$LORE_MASTER_ENGINE" pages publish --workspace "$WORKSPACE" ${select[@]+"${select[@]}"} --json > "$report" || code=$?
+        fi
+
+        cat "$report"
+        if command -v jq > /dev/null && [ -s "$report" ]; then
+          jq -r '.warnings[]? | "::warning::" + .' "$report"
+          jq -r '.errors[]? | "::error::" + .' "$report"
+        fi
+        if [ "$code" -ne 0 ]; then exit "$code"; fi
+
+        echo "files=$(grep -o '"files": *[0-9]*' "$report" | grep -o '[0-9]*$' | head -n 1)" >> "$GITHUB_OUTPUT"
+        if [ "$MODE" = "build" ]; then
+          echo "path=$(cd "$OUT" && pwd)" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Forget the git credentials
+      if: always() && inputs.mode == 'publish'
+      shell: bash
+      run: |
+        git config --global --name-only --get-regexp 'x-access-token.*insteadof' | while read -r key; do
+          git config --global --unset-all "$key"
+        done || true

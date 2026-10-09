@@ -88,6 +88,15 @@ func TestValidateGitHubPages(t *testing.T) {
 		{"bad branch", func(s *Settings) { s.Outputs[0].Branch = "feature branch" }, `outputs[0].branch "feature branch" is not a valid branch name`},
 		{"repo with spaces", func(s *Settings) { s.Outputs[0].Repo = "owner name" }, `outputs[0].repo "owner name" must not contain spaces`},
 		{"same destination twice", func(s *Settings) { s.Outputs = append(s.Outputs, validPagesOutput()) }, "outputs[1] publishes to the same repo and branch as outputs[0]; two outputs would overwrite each other"},
+		{"absolute path", func(s *Settings) { s.Outputs[0].Path = "/docs" }, `outputs[0].path "/docs" must be relative to the branch root, without a leading slash`},
+		{"path climbs out", func(s *Settings) { s.Outputs[0].Path = "../docs" }, `outputs[0].path "../docs" must be a plain folder path inside the branch, without "..", ".", ".git" or empty segments`},
+		{"path with a backslash", func(s *Settings) { s.Outputs[0].Path = `docs\site` }, `outputs[0].path "docs\\site" must not contain spaces or backslashes; use forward slashes`},
+		{"same destination and path twice", func(s *Settings) {
+			s.Outputs[0].Path = "docs"
+			second := validPagesOutput()
+			second.Path = "docs/"
+			s.Outputs = append(s.Outputs, second)
+		}, "outputs[1] publishes to the same repo and branch as outputs[0]; two outputs would overwrite each other"},
 		{"content still checked", func(s *Settings) { s.Outputs[0].Content[0].Template = "fancy" }, `outputs[0].content[0].template "fancy": custom templates are planned but not available yet (#97); use default`},
 	}
 	for _, tc := range cases {
@@ -98,6 +107,15 @@ func TestValidateGitHubPages(t *testing.T) {
 				t.Fatalf("\n got: %v\nwant: %s", err, tc.want)
 			}
 		})
+	}
+}
+
+func TestValidateAllowsTwoPagesOutputsInDifferentFoldersOfOneBranch(t *testing.T) {
+	first, second := validPagesOutput(), validPagesOutput()
+	first.Path, second.Path = "docs", "api"
+
+	if err := Validate(Settings{Version: 1, Outputs: []Output{first, second}}); err != nil {
+		t.Fatalf("two folders of one branch were refused: %v", err)
 	}
 }
 

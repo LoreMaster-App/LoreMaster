@@ -17,6 +17,7 @@ export const SYNC_EXECUTE_METHOD = 'sync/execute'
 export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const PAGES_PUBLISH_METHOD = 'pages/publish'
+export const PAGES_BUILD_METHOD = 'pages/build'
 export const WORKSPACE_TREE_METHOD = 'workspace/tree'
 export const GENERATORS_RUN_METHOD = 'generators/run'
 export const AGENT_INSTRUCTIONS_METHOD = 'agent/instructions'
@@ -147,10 +148,12 @@ export interface Output {
   mermaidMode:    string
   titleCollision: string
   linkMode:       string
-  /** github-pages: the repo ("owner/name" or a URL; empty = the workspace's own origin)
-   *  and the branch to publish to (empty = gh-pages). */
+  /** github-pages: the repo ("owner/name" or a URL; empty = the workspace's own origin),
+   *  the branch to publish to (empty = gh-pages) and the folder inside it (empty = the root,
+   *  which the publish owns entirely; a path leaves the rest of the branch alone). */
   repo?:          string
   branch?:        string
+  path?:          string
 }
 
 /** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */
@@ -311,6 +314,22 @@ export interface SyncExecuteResult {
   pages:      PageOutcome[]
   rewritten?: string[]
   warnings?:  string[]
+}
+
+// ---- pages/build ---------------------------------------------------------------------
+
+export interface PagesBuildParams {
+  workspaceRoot: string
+  output:        number
+  /** An absolute folder; created, replaced when an earlier build wrote it, refused otherwise. */
+  outDir:        string
+}
+
+export interface PagesBuildResult {
+  outDir?:   string
+  files:     number
+  warnings?: string[]
+  errors?:   string[]
 }
 
 // ---- pages/publish -------------------------------------------------------------------

@@ -10,6 +10,9 @@ type PublishOptions struct {
 	Repo string
 	// Branch is the branch to publish to; empty means gh-pages.
 	Branch string
+	// Path is the folder inside the branch to publish into, relative to the branch root and
+	// '/'-separated; empty means the root. Only that folder is replaced.
+	Path string
 	// CommitMessage is the publish commit's message; empty means a default.
 	CommitMessage string
 }

@@ -92,15 +92,39 @@ func validateGitHubPagesOutput(add func(string, ...any), where string, output Ou
 		add("%s.repo %q must not contain spaces", where, output.Repo)
 	}
 
+	if reason := invalidSitePath(output.Path); reason != "" {
+		add("%s.path %q %s", where, output.Path, reason)
+	}
+
 	branch := output.Branch
 	if branch == "" {
 		branch = "gh-pages"
 	}
-	key := output.Repo + "\x00" + branch
+	key := output.Repo + "\x00" + branch + "\x00" + strings.Trim(output.Path, "/")
 	if first, duplicate := seen[key]; duplicate {
 		add("%s publishes to the same repo and branch as outputs[%d]; two outputs would overwrite each other", where, first)
 	}
 	seen[key] = index
+}
+
+// invalidSitePath says why a github-pages path cannot be used, or "" when it can: it names a
+// folder inside the branch, so it is relative and never climbs out.
+func invalidSitePath(path string) string {
+	switch {
+	case path == "":
+		return ""
+	case strings.ContainsAny(path, " \t\\"):
+		return "must not contain spaces or backslashes; use forward slashes"
+	case strings.HasPrefix(path, "/"):
+		return "must be relative to the branch root, without a leading slash"
+	}
+	for _, part := range strings.Split(strings.TrimSuffix(path, "/"), "/") {
+		if part == ".." || part == "." || part == "" || part == ".git" {
+			return "must be a plain folder path inside the branch, without \"..\", \".\", \".git\" or empty segments"
+		}
+	}
+
+	return ""
 }
 
 // validateContent checks the content sources an output feeds from, which every platform

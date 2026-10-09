@@ -46,7 +46,7 @@ const enumField = (key: 'direction' | 'mermaidMode' | 'linkMode' | 'titleCollisi
   write: (output, value) => ({ ...output, [key]: value }),
 })
 
-const textField = (key: 'titlePrefix' | 'repo' | 'branch', label: string, hint: string): StorageField => ({
+const textField = (key: 'titlePrefix' | 'repo' | 'branch' | 'path', label: string, hint: string): StorageField => ({
   key,
   label,
   kind:  'text',
@@ -90,6 +90,7 @@ const CONFLUENCE_FIELDS: readonly StorageField[] = [
 const GITHUB_PAGES_FIELDS: readonly StorageField[] = [
   textField('repo', 'Repository', 'owner/name or a clone URL. Leave empty for this workspace\'s own origin.'),
   textField('branch', 'Branch', 'The branch the site is published to. Leave empty for gh-pages.'),
+  textField('path', 'Folder in the branch', 'Publish into this folder and leave the rest of the branch alone, so another site can share it. Leave empty to own the whole branch.'),
   rootsField,
   excludesField,
 ]
