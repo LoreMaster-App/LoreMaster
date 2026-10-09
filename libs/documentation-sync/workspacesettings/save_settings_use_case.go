@@ -14,7 +14,10 @@ const newFileHeader = `LoreMaster configuration. Commit this file; it never hold
 (the editor keeps credentials in its own secret store).
 Generators (test-results, go-docs, openapi-docs) write Markdown into the workspace from
 other project artifacts; see docs/generators.md. Planned, accepted later: custom
-templates (#97).`
+templates (#97).
+Leave files out with a top-level "ignore:" list (every output) or a content entry's
+"excludes:" (one output), both gitignore-style; .gitignore files are honoured too
+(skipGitignored). The Pages view lists what was left out and why.`
 
 // SaveSettings writes settings back. When the file existed, the new values are merged
 // into its YAML tree, so the author's comments and key order survive; a new file gets

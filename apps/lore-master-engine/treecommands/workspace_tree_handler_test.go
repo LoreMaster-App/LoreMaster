@@ -203,3 +203,42 @@ func TestTreeWithNoSettingsFileUsesTheDefaults(t *testing.T) {
 		t.Fatalf("nodes %+v", result.Nodes)
 	}
 }
+
+func TestTreeReportsTheFilesLeftOutAndTheRuleThatLeftEachOut(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{
+		workspacesettings.FileName: "version: 1\nignore:\n  - CLAUDE.md\noutputs:\n  - platform: github-pages\n    direction: to-platform\n    content:\n      - type: markdown\n        roots: [\"docs\"]\n        excludes: [\"docs/drafts/\"]\n        template: default\n",
+		"docs/README.md":           "# Docs\n",
+		"docs/drafts/idea.md":      "# Idea\n",
+		"CLAUDE.md":                "# Guide\n",
+		"notes/other.md":           "# Other\n",
+	})
+
+	result, err := tree(t, connect(t), root, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := map[string]string{}
+	for _, left := range result.LeftOut {
+		got[left.Path] = left.Rule + "|" + left.Pattern
+	}
+	want := map[string]string{
+		"CLAUDE.md":           "ignore|CLAUDE.md",
+		"docs/drafts/idea.md": "excludes|docs/drafts/",
+		"notes/other.md":      "outside-roots|",
+	}
+	if !slices.Equal(sortedPairs(got), sortedPairs(want)) || result.LeftOutTotal != 3 {
+		t.Fatalf("left out %v (total %d), want %v", got, result.LeftOutTotal, want)
+	}
+}
+
+func sortedPairs(values map[string]string) []string {
+	pairs := make([]string, 0, len(values))
+	for path, rule := range values {
+		pairs = append(pairs, path+"="+rule)
+	}
+	slices.Sort(pairs)
+
+	return pairs
+}

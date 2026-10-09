@@ -40,6 +40,14 @@ func WorkspaceTree() rpcserver.Method {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
 		result := rpcprotocol.WorkspaceTreeResult{Nodes: []rpcprotocol.TreeNode{}, Warnings: loaded.Warnings, Problems: loaded.Problems}
+		leftOut, err := documentloading.ExplainOutputLeftOut(ctx, params.WorkspaceRoot, output, settings.Settings.DiscoveryScope(), loaded)
+		if err != nil {
+			result.Warnings = append(result.Warnings, "could not list the files left out: "+err.Error())
+		}
+		for _, left := range leftOut.Documents {
+			result.LeftOut = append(result.LeftOut, rpcprotocol.LeftOutFile{Path: string(left.Path), Rule: string(left.Rule), Pattern: left.Pattern, Source: left.Source})
+		}
+		result.LeftOutTotal = leftOut.Total
 
 		tree, err := documenttree.BuildTree(loaded.Documents)
 		if err != nil {

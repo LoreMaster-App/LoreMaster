@@ -38,6 +38,15 @@ function engine (settings: Settings, saves: unknown[], refuse?: string): Storage
 const field = (key: string) => fieldsFor(confluence).find(each => each.key === key)!
 
 describe('editStorage', () => {
+  it('saves the ignore list on the settings and leaves every storage as it was', async () => {
+    const saves: unknown[] = []
+    const settings: Settings = { version: 1, outputs: [confluence, second] }
+
+    await editStorage({ engine: engine(settings, saves), workspaceRoot: '/w', index: 0 }, field('ignore'), 'CLAUDE.md, internal/')
+
+    expect(saves).toEqual([{ workspaceRoot: '/w', settings: { version: 1, ignore: ['CLAUDE.md', 'internal/'], outputs: [confluence, second] } }])
+  })
+
   it('changes one setting of one storage and saves everything else as it was', async () => {
     const saves: unknown[] = []
     const settings: Settings = { version: 1, skipGitignored: false, ignore: ['drafts/'], outputs: [confluence, second] }

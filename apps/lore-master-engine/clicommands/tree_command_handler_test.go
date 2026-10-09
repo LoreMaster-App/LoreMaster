@@ -121,3 +121,35 @@ func TestTreePrintsJSONKeyedByOutput(t *testing.T) {
 		t.Fatalf("exit %d: %s", code, stdout)
 	}
 }
+
+func TestTreeListsTheFilesLeftOutWithTheirRule(t *testing.T) {
+	double := newEngineDouble(map[string]func(rpcserver.Call) (any, error){
+		rpcprotocol.MethodSettingsRead: settingsAnswer(pagesOutput),
+		rpcprotocol.MethodWorkspaceTree: treeAnswer(map[int]rpcprotocol.WorkspaceTreeResult{0: {
+			Nodes: []rpcprotocol.TreeNode{{Path: "README.md", Title: "Home"}},
+			LeftOut: []rpcprotocol.LeftOutFile{
+				{Path: "CLAUDE.md", Rule: "ignore", Pattern: "CLAUDE.md"},
+				{Path: "build/x.md", Rule: "gitignore", Pattern: "build/", Source: ".gitignore"},
+				{Path: "notes/y.md", Rule: "outside-roots"},
+			},
+			LeftOutTotal: 5,
+		}}),
+	})
+
+	stdout, _, code := double.run(t, nil, "tree")
+
+	if code != ExitOK {
+		t.Fatalf("exit %d", code)
+	}
+	for _, want := range []string{
+		"left out (5):",
+		"CLAUDE.md  - ignore (CLAUDE.md)",
+		"build/x.md  - gitignore (.gitignore: build/)",
+		"notes/y.md  - outside the roots",
+		"... and 2 more",
+	} {
+		if !strings.Contains(stdout, want) {
+			t.Errorf("missing %q in\n%s", want, stdout)
+		}
+	}
+}

@@ -1,4 +1,4 @@
-import type { Content, Output } from '../engine-protocol'
+import type { Content, Output, Settings } from '../engine-protocol'
 
 /** How a setting is asked for: a pick from allowed values, a line of text, or a list. */
 export type FieldKind = 'enum' | 'text' | 'list'
@@ -12,10 +12,14 @@ export interface StorageField {
   options?: readonly string[]
   /** What to tell the user when asking for text or a list. */
   hint?:    string
-  /** The current value as the user would type it ('' when unset). */
-  read (output: Output): string
+  /** The current value as the user would type it ('' when unset). A field that lives on the
+   *  whole settings reads it from `settings`. */
+  read (output: Output, settings?: Settings): string
   /** The output with the value applied. Validation is the engine's, on save. */
   write (output: Output, value: string): Output
+  /** Present for a field that applies to every storage and lives on the settings, not on one
+   *  output (the ignore list): the settings with the value applied. */
+  writeSettings? (settings: Settings, value: string): Settings
 }
 
 /** A comma- or line-separated list, trimmed, without empty entries. */
@@ -77,6 +81,20 @@ const excludesField: StorageField = {
   write: (output, value) => withContent(output, content => ({ ...content, excludes: parseList(value) })),
 }
 
+const ignoreField: StorageField = {
+  key:   'ignore',
+  label: 'Ignored paths (all storages)',
+  kind:  'list',
+  hint:  'Gitignore-style patterns, separated by commas, that every storage leaves out, for example CLAUDE.md, internal/. Leave empty for none.',
+  read:  (_output, settings) => (settings?.ignore ?? []).join(', '),
+  write: output => output,
+  writeSettings (settings, value) {
+    const patterns = parseList(value)
+
+    return { ...settings, ignore: patterns.length > 0 ? patterns : undefined }
+  },
+}
+
 const CONFLUENCE_FIELDS: readonly StorageField[] = [
   textField('titlePrefix', 'Title prefix', 'Pages are titled "<prefix>: <first heading>".'),
   enumField('direction', 'Direction', ['to-platform', 'two-way']),
@@ -85,6 +103,7 @@ const CONFLUENCE_FIELDS: readonly StorageField[] = [
   enumField('titleCollision', 'When a page title already exists', ['fail', 'adopt']),
   rootsField,
   excludesField,
+  ignoreField,
 ]
 
 const GITHUB_PAGES_FIELDS: readonly StorageField[] = [
@@ -93,6 +112,7 @@ const GITHUB_PAGES_FIELDS: readonly StorageField[] = [
   textField('path', 'Folder in the branch', 'Publish into this folder and leave the rest of the branch alone, so another site can share it. Leave empty to own the whole branch.'),
   rootsField,
   excludesField,
+  ignoreField,
 ]
 
 /** The settings that can be changed for a storage of this platform. */

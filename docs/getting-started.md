@@ -71,6 +71,22 @@ changes, so the view never shows a platform state it has not just asked for.
 - With several storages, each gets its own group.
 - The tree follows `roots`, `excludes`, `ignore` and `skipGitignored` from
   `.lore-master.yaml`, so what you see is what a sync would read.
+- **Left out** (collapsed, under the pages) lists the Markdown files the sync does not read, each
+  with the setting that left it out: the `ignore` list, the storage's `excludes`, a `.gitignore`,
+  or being outside the folders to sync. Click one to open it. `lore-master-engine tree` prints
+  the same list.
+
+### Leaving files out
+
+There are three independent ways, and a file is left out if any applies:
+
+| Setting | Applies to | |
+|---|---|---|
+| `ignore:` (top level) | every storage | gitignore-style patterns, e.g. `CLAUDE.md`, `internal/` |
+| `excludes:` (on a content entry) | that storage | same patterns |
+| `skipGitignored` | the workspace | `true` by default: Markdown a `.gitignore` ignores is not synced |
+
+Change the `ignore` list from **Edit storage → Ignored paths (all storages)**, or in the file.
 
 ## 6. Change a storage's settings
 

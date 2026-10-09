@@ -29,6 +29,21 @@ type WorkspaceTreeResult struct {
 	// be read and errors that stop a tree from being built.
 	Warnings []string `json:"warnings,omitempty"`
 	Problems []string `json:"problems,omitempty"`
+	// LeftOut are the Markdown files the scan did not read, each with the rule that left it
+	// out; LeftOutTotal counts them all when the list was capped.
+	LeftOut      []LeftOutFile `json:"leftOut,omitempty"`
+	LeftOutTotal int           `json:"leftOutTotal,omitempty"`
+}
+
+// LeftOutFile is a Markdown file the scan skipped.
+type LeftOutFile struct {
+	Path string `json:"path"`
+	// Rule is ignore, excludes, gitignore or outside-roots.
+	Rule string `json:"rule"`
+	// Pattern is the line that matched, and Source the .gitignore it is in (empty for the
+	// settings' own lists).
+	Pattern string `json:"pattern,omitempty"`
+	Source  string `json:"source,omitempty"`
 }
 
 // TreeNode is one page.
