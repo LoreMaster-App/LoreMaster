@@ -34,11 +34,11 @@ describe('parseList', () => {
 
 describe('fieldsFor', () => {
   it('offers the Confluence settings for a Confluence storage', () => {
-    expect(fieldsFor(confluence).map(each => each.key)).toEqual(['titlePrefix', 'direction', 'mermaidMode', 'linkMode', 'titleCollision', 'roots', 'excludes'])
+    expect(fieldsFor(confluence).map(each => each.key)).toEqual(['titlePrefix', 'direction', 'mermaidMode', 'linkMode', 'titleCollision', 'roots', 'excludes', 'ignore'])
   })
 
   it('offers the repository and branch for GitHub Pages, and no Confluence settings', () => {
-    expect(fieldsFor(pages).map(each => each.key)).toEqual(['repo', 'branch', 'path', 'roots', 'excludes'])
+    expect(fieldsFor(pages).map(each => each.key)).toEqual(['repo', 'branch', 'path', 'roots', 'excludes', 'ignore'])
   })
 
   it('reads the current values the way a user would type them', () => {
@@ -68,6 +68,9 @@ describe('fieldsFor', () => {
     expect(field(confluence, 'titlePrefix').write(confluence, '  OPS ').titlePrefix).toBe('OPS')
     expect(field(pages, 'branch').write(pages, ' docs-site ').branch).toBe('docs-site')
     expect(field(pages, 'path').write(pages, ' docs ').path).toBe('docs')
+    expect(field(pages, 'ignore').writeSettings?.({ version: 1, outputs: [pages] }, ' CLAUDE.md, internal/ ,').ignore).toEqual(['CLAUDE.md', 'internal/'])
+    expect(field(pages, 'ignore').writeSettings?.({ version: 1, ignore: ['x'], outputs: [pages] }, '').ignore).toBeUndefined()
+    expect(field(pages, 'ignore').read(pages, { version: 1, ignore: ['CLAUDE.md', 'internal/'], outputs: [pages] })).toBe('CLAUDE.md, internal/')
     expect(field(pages, 'repo').write(pages, '').repo).toBe('')
   })
 

@@ -217,3 +217,88 @@ func TestLookup(t *testing.T) {
 		}
 	}
 }
+
+func TestExplainLeftOutNamesTheRuleThatLeftEachFileOut(t *testing.T) {
+	root := writeTree(t, map[string]string{
+		"README.md":          "# Home",
+		"CLAUDE.md":          "# Guide",
+		"internal/notes.md":  "# Notes",
+		"drafts/idea.md":     "# Idea",
+		"build/output.md":    "# Built",
+		"build/.gitignore":   "",
+		".gitignore":         "build/\n",
+		"elsewhere/other.md": "# Other",
+		"docs/guide.md":      "# Guide",
+		"node_modules/x.md":  "# Dependency",
+	})
+	options := Options{WorkspaceRoot: root, Roots: []string{"docs", "."}, Excludes: []string{"CLAUDE.md", "internal/", "drafts/"}}
+	found, err := DiscoverDocuments(context.Background(), options)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	report, err := ExplainLeftOut(context.Background(), LeftOutOptions{
+		WorkspaceRoot: root, Roots: []string{"docs", "."},
+		Ignore: []string{"CLAUDE.md"}, Excludes: []string{"internal/", "drafts/"},
+		Included: found.Documents,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	got := map[string]string{}
+	for _, left := range report.Documents {
+		got[string(left.Path)] = string(left.Rule) + "|" + left.Pattern + "|" + left.Source
+	}
+	want := map[string]string{
+		"CLAUDE.md":         "ignore|CLAUDE.md|",
+		"internal/notes.md": "excludes|internal/|",
+		"drafts/idea.md":    "excludes|drafts/|",
+		"build/output.md":   "gitignore|build/|.gitignore",
+	}
+	for path, reason := range want {
+		if got[path] != reason {
+			t.Errorf("%s: got %q, want %q", path, got[path], reason)
+		}
+	}
+	for _, unexpected := range []string{"README.md", "docs/guide.md", "node_modules/x.md"} {
+		if _, reported := got[unexpected]; reported {
+			t.Errorf("%s must not be reported", unexpected)
+		}
+	}
+	if report.Total != len(report.Documents) {
+		t.Errorf("total %d for %d documents", report.Total, len(report.Documents))
+	}
+}
+
+func TestExplainLeftOutReportsFilesOutsideTheRoots(t *testing.T) {
+	root := writeTree(t, map[string]string{"docs/a.md": "# A", "notes/b.md": "# B"})
+
+	report, err := ExplainLeftOut(context.Background(), LeftOutOptions{
+		WorkspaceRoot: root, Roots: []string{"docs"}, Included: []DocumentPath{"docs/a.md"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(report.Documents) != 1 || report.Documents[0].Path != "notes/b.md" || report.Documents[0].Rule != RuleOutsideRoots {
+		t.Fatalf("unexpected: %+v", report.Documents)
+	}
+}
+
+func TestExplainLeftOutCapsTheListButCountsEverything(t *testing.T) {
+	files := map[string]string{}
+	for _, name := range []string{"a", "b", "c", "d"} {
+		files["x/"+name+".md"] = "# " + name
+	}
+	root := writeTree(t, files)
+
+	report, err := ExplainLeftOut(context.Background(), LeftOutOptions{WorkspaceRoot: root, Roots: []string{"."}, Excludes: []string{"x/"}, Limit: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(report.Documents) != 2 || report.Total != 4 {
+		t.Fatalf("listed %d of %d", len(report.Documents), report.Total)
+	}
+}

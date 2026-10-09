@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import * as vscode from 'vscode'
 import {
+  type LeftOutFile,
   type Output,
   SETTINGS_READ_METHOD,
   type SettingsReadResult,
@@ -9,6 +10,7 @@ import {
 } from '../engine-protocol'
 import { isConfiguredOutput } from '../sidebar'
 import { buildPageEntries } from './build-page-entries.algorithm'
+import { leftOutReason } from './left-out-reason.policy'
 import { pageDescription, pageLabel } from './page-label.policy'
 import { statusPresentation } from './page-status.policy'
 import type { LabelMode, PageEntry, RemoteCheck } from './page-tree.contract'
@@ -32,6 +34,8 @@ export type PagesNode =
   | { kind: 'storage'; index: number; output: Output } |
   { kind: 'page'; index: number; entry: PageEntry } |
   { kind: 'orphan'; index: number; title: string; url?: string } |
+  { kind: 'left-out'; index: number; files: LeftOutFile[]; total: number } |
+  { kind: 'left-out-file'; file: LeftOutFile } |
   { kind: 'notice'; message: string }
 
 /**
@@ -68,6 +72,9 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
     const orphans = remote?.orphans ?? []
     for (const orphan of orphans) {
       rows.push({ kind: 'orphan', index, title: orphan.title, url: orphan.url })
+    }
+    if ((tree.leftOut ?? []).length > 0) {
+      rows.push({ kind: 'left-out', index, files: tree.leftOut ?? [], total: tree.leftOutTotal ?? (tree.leftOut ?? []).length })
     }
 
     return rows
@@ -117,6 +124,30 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
     }
     lines.push(...(entry.node.warnings ?? []).map(warning => `! ${warning}`))
     item.tooltip = lines.join('\n')
+
+    return item
+  }
+
+  private leftOutItem (node: { index: number; total: number }): vscode.TreeItem {
+    const item = new vscode.TreeItem(`Left out (${node.total})`, vscode.TreeItemCollapsibleState.Collapsed)
+    item.id = `left-out:${node.index}`
+    item.description = 'Markdown the sync does not read'
+    item.iconPath = new vscode.ThemeIcon('eye-closed')
+    item.tooltip = 'Markdown files this storage leaves out, and the setting that leaves each one out.'
+    item.contextValue = 'loreMasterLeftOut'
+
+    return item
+  }
+
+  private leftOutFileItem (node: { file: LeftOutFile }): vscode.TreeItem {
+    const reason = leftOutReason(node.file)
+    const item = new vscode.TreeItem(node.file.path, vscode.TreeItemCollapsibleState.None)
+    item.description = reason.description
+    item.iconPath = new vscode.ThemeIcon('markdown', new vscode.ThemeColor('disabledForeground'))
+    item.tooltip = `${node.file.path}
+${reason.detail}`
+    item.command = { command: 'vscode.open', title: 'Open', arguments: [vscode.Uri.file(join(this.folder, node.file.path))] }
+    item.contextValue = 'loreMasterLeftOutFile'
 
     return item
   }
@@ -174,6 +205,14 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
     if (node?.kind === 'storage') {
       return this.pagesOf(node.index)
     }
+    if (node?.kind === 'left-out') {
+      const rows: PagesNode[] = node.files.map(file => ({ kind: 'left-out-file', file }))
+      if (node.total > node.files.length) {
+        rows.push({ kind: 'notice', message: `… and ${node.total - node.files.length} more` })
+      }
+
+      return rows
+    }
     if (node) {
       return []
     }
@@ -194,6 +233,10 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
       case 'page': { return this.pageItem(node)
       }
       case 'orphan': { return this.orphanItem(node)
+      }
+      case 'left-out': { return this.leftOutItem(node)
+      }
+      case 'left-out-file': { return this.leftOutFileItem(node)
       }
       case 'notice': { return noticeItem(node)
       }

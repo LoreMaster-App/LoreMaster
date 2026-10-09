@@ -56,6 +56,9 @@ func treeCommand(ctx context.Context, env Environment, methods rpcserver.Methods
 			for _, warning := range tree.Warnings {
 				_, _ = fmt.Fprintln(env.Stdout, "  warning: "+warning)
 			}
+			for _, line := range leftOutLines(tree) {
+				_, _ = fmt.Fprintln(env.Stdout, line)
+			}
 		}
 		if parsed.json {
 			printJSON(env.Stdout, map[string]any{"outputs": shown})
@@ -117,4 +120,30 @@ func selectedOutputs(ctx context.Context, engine *connection, workspace string, 
 	}
 
 	return outputs, nil
+}
+
+// leftOutLines lists the files the scan skipped, each with the rule that skipped it, under a
+// count; nothing when every Markdown file is read.
+func leftOutLines(tree rpcprotocol.WorkspaceTreeResult) []string {
+	if len(tree.LeftOut) == 0 {
+		return nil
+	}
+	lines := []string{fmt.Sprintf("  left out (%d):", tree.LeftOutTotal)}
+	for _, left := range tree.LeftOut {
+		reason := left.Rule
+		switch {
+		case left.Rule == "outside-roots":
+			reason = "outside the roots"
+		case left.Source != "":
+			reason = fmt.Sprintf("%s (%s: %s)", left.Rule, left.Source, left.Pattern)
+		case left.Pattern != "":
+			reason = fmt.Sprintf("%s (%s)", left.Rule, left.Pattern)
+		}
+		lines = append(lines, fmt.Sprintf("    %s  - %s", left.Path, reason))
+	}
+	if tree.LeftOutTotal > len(tree.LeftOut) {
+		lines = append(lines, fmt.Sprintf("    ... and %d more", tree.LeftOutTotal-len(tree.LeftOut)))
+	}
+
+	return lines
 }

@@ -221,11 +221,24 @@ export interface TreeNode {
   warnings?: string[]
 }
 
+/** A Markdown file the scan did not read, and the rule that left it out. */
+export interface LeftOutFile {
+  path:     string
+  /** ignore | excludes | gitignore | outside-roots */
+  rule:     string
+  /** The line that matched, and the .gitignore it is in (empty for the settings' own lists). */
+  pattern?: string
+  source?:  string
+}
+
 export interface WorkspaceTreeResult {
   /** Parents first. */
-  nodes:     TreeNode[]
-  warnings?: string[]
-  problems?: string[]
+  nodes:         TreeNode[]
+  warnings?:     string[]
+  problems?:     string[]
+  /** Files the scan skipped, sorted, capped; leftOutTotal counts them all. */
+  leftOut?:      LeftOutFile[]
+  leftOutTotal?: number
 }
 
 // ---- generators/run ------------------------------------------------------------------

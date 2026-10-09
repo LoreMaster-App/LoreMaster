@@ -64,6 +64,35 @@ describe('PagesViewProvider', () => {
   beforeEach(() => { setFolders([{ uri: { fsPath: '/w' }, name: 'w' }]) })
   afterEach(() => { setFolders(undefined) })
 
+  it('lists the files left out under a collapsed group, each with the rule that left it out', async () => {
+    const view = provider([confluence], {
+      0: {
+        nodes,
+        leftOut: [
+          { path: 'CLAUDE.md', rule: 'ignore', pattern: 'CLAUDE.md' },
+          { path: 'build/x.md', rule: 'gitignore', pattern: 'build/', source: '.gitignore' },
+          { path: 'notes/y.md', rule: 'outside-roots' },
+        ],
+        leftOutTotal: 4,
+      },
+    })
+
+    const rows = await view.getChildren()
+    const group = rows.find(row => row.kind === 'left-out')!
+    const item = view.getTreeItem(group)
+    const files = await view.getChildren(group)
+
+    expect(item.label).toBe('Left out (4)')
+    expect(files.map(row => view.getTreeItem(row).label)).toEqual(['CLAUDE.md', 'build/x.md', 'notes/y.md', '… and 1 more'])
+    expect(files.slice(0, 3).map(row => view.getTreeItem(row).description)).toEqual(['ignore: CLAUDE.md', '.gitignore: build/', 'outside the folders to sync'])
+  })
+
+  it('shows no left-out group when nothing is left out', async () => {
+    const rows = await provider([confluence], { 0: { nodes } }).getChildren()
+
+    expect(rows.some(row => row.kind === 'left-out')).toBe(false)
+  })
+
   it('shows nothing without a workspace folder or a configured storage', async () => {
     setFolders(undefined)
     expect(await provider([confluence], { 0: { nodes } }).getChildren()).toEqual([])

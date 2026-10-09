@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
-import { type Output, SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
+import { type Output, SETTINGS_READ_METHOD, type Settings, type SettingsReadResult } from '../engine-protocol'
 import { isConfiguredOutput, REFRESH_STORAGES_COMMAND, storageDescription, storageLabel, type StorageNode } from '../sidebar'
 import { editStorage } from './edit-storage.use-case'
 import { fieldsFor, type StorageField } from './storage-field.config'
@@ -25,11 +25,12 @@ export async function editStorageCommand (deps: { engine: EngineClient }, node: 
   if (!target) {
     return
   }
-  const field = await pickField(target.output)
+  const settings = await readSettings(deps.engine, folder)
+  const field = await pickField(target.output, settings)
   if (!field) {
     return
   }
-  const value = await askValue(field, field.read(target.output))
+  const value = await askValue(field, field.read(target.output, settings))
   if (value === undefined) {
     return
   }
@@ -71,9 +72,20 @@ async function pickStorage (engine: EngineClient, folder: string): Promise<{ ind
   return picked?.each
 }
 
-async function pickField (output: Output): Promise<StorageField | undefined> {
+/** The settings as saved, or undefined when they cannot be read (the picks still work; a field then shows no current value). */
+async function readSettings (engine: EngineClient, folder: string): Promise<Settings | undefined> {
+  try {
+    const read = await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })
+
+    return read.settings
+  } catch {
+    return undefined
+  }
+}
+
+async function pickField (output: Output, settings: Settings | undefined): Promise<StorageField | undefined> {
   const picked = await vscode.window.showQuickPick(
-    fieldsFor(output).map(field => ({ label: field.label, description: field.read(output) || '(default)', field })),
+    fieldsFor(output).map(field => ({ label: field.label, description: field.read(output, settings) || '(default)', field })),
     { title: `LoreMaster: change a setting of ${storageLabel(output)}` },
   ) as { field: StorageField } | undefined
 
