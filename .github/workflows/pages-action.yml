@@ -1,0 +1,67 @@
+# Checks the composite action in actions/pages against this repository's own docs, on the
+# runners people use it on. Hand-kept, separate from ci.yml (which mnci owns).
+name: Pages action
+
+on:
+  pull_request:
+    paths:
+      - 'actions/pages/**'
+      - 'apps/lore-master-engine/**'
+      - 'libs/github-pages/**'
+      - 'libs/documentation-sync/**'
+      - 'libs/markdown-workspace/**'
+      - '.github/workflows/pages-action.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-mode:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: docs
+        uses: ./actions/pages
+        with:
+          out: ${{ runner.temp }}/docs-site
+
+      - name: The site is there
+        shell: bash
+        env:
+          SITE: ${{ steps.docs.outputs.path }}
+          FILES: ${{ steps.docs.outputs.files }}
+        run: |
+          test -f "$SITE/index.html"
+          test -f "$SITE/assets/lore-master.css"
+          test "$FILES" -gt 0
+
+      - name: A rebuild replaces what the first build wrote
+        uses: ./actions/pages
+        with:
+          out: ${{ runner.temp }}/docs-site
+
+      - name: Put somebody else's site where the build would write
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/seeded"
+          echo "the app" > "$RUNNER_TEMP/seeded/app.js"
+
+      - id: seeded
+        continue-on-error: true
+        uses: ./actions/pages
+        with:
+          out: ${{ runner.temp }}/seeded
+
+      - name: That folder was refused and kept
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.seeded.outcome }}
+        run: |
+          test "$OUTCOME" = "failure"
+          test "$(cat "$RUNNER_TEMP/seeded/app.js")" = "the app"
