@@ -12,7 +12,7 @@ import (
 	"lore-master/libs/github-pages/sitepublish"
 )
 
-// PublishPages handles pages/publish: the rendered site (see renderSite) and the git
+// PublishPages handles pages/publish: the rendered site (see RenderSite) and the git
 // publish. When the Markdown has errors nothing is published; they come back in the result so
 // the editor can show them.
 func PublishPages() rpcserver.Method {
@@ -21,7 +21,7 @@ func PublishPages() rpcserver.Method {
 		if err := call.Decode(&params); err != nil {
 			return nil, err
 		}
-		site, err := renderSite(ctx, params.WorkspaceRoot, params.Output)
+		site, err := RenderSite(ctx, params.WorkspaceRoot, params.Output)
 		if err != nil {
 			return nil, err
 		}

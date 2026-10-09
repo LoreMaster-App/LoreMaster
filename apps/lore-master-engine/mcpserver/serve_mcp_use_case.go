@@ -1,7 +1,8 @@
 // Package mcpserver runs LoreMaster's engine as an MCP server over stdio, so a
-// documentation-authoring agent can learn the rules the sync enforces. The transport is
-// newline-delimited JSON-RPC 2.0 (the MCP stdio transport); this is deliberately a small
-// hand-rolled server — one tool, no resources or prompts yet — rather than a dependency,
+// documentation-authoring agent can learn the rules the sync enforces and how the docs
+// site is published. The transport is newline-delimited JSON-RPC 2.0 (the MCP stdio
+// transport); this is deliberately a small hand-rolled server — read-only tools, no
+// resources or prompts yet — rather than a dependency,
 // and it can be revisited (see issue #212) if the tool surface grows.
 package mcpserver
 
@@ -75,6 +76,8 @@ func dispatch(ctx context.Context, message request, version string, workspaceRoo
 			previewTreeTool(),
 			validateDocumentTool(),
 			placeDocumentTool(),
+			sitePublishingPlanTool(),
+			previewSiteTool(),
 		}}), true
 	case "tools/call":
 		result, err := callTool(ctx, message.Params, workspaceRoot)
@@ -114,6 +117,10 @@ func callTool(ctx context.Context, params json.RawMessage, workspaceRoot string)
 		return validateDocumentResult(ctx, workspaceRoot, call.Arguments), nil
 	case placeDocumentToolName:
 		return placeDocumentResult(ctx, workspaceRoot, call.Arguments), nil
+	case sitePublishingPlanToolName:
+		return sitePublishingPlanResult(workspaceRoot), nil
+	case previewSiteToolName:
+		return previewSiteResult(ctx, workspaceRoot, call.Arguments), nil
 	default:
 		return toolCallResult{}, fmt.Errorf("unknown tool %q", call.Name)
 	}

@@ -17,7 +17,7 @@ that choice can be revisited if the tool surface grows (#212).
 ```
 VS Code ───registers───▶  lore-master-engine --mcp --workspace <folder>
 external client ─config─▶        │
-                                 ├─ mcpserver            protocol + the four tools
+                                 ├─ mcpserver            protocol + the six tools
                                  ├─ markdown-workspace   discovery, parsing, the nesting rules
                                  └─ workspacesettings    .lore-master.yaml: roots, excludes, ignore
 ```
@@ -44,6 +44,8 @@ the tools without any MCP-side edit.
 | `loremaster_nesting_rules` | none | The rules in the order they apply, as readable text and as structured `conventions` (`key`, `summary`): explicit `parent:`, dotted file name, directory index, selected parent, then titling (H1, `<titlePrefix>: <title>`, per-space uniqueness). |
 | `preview_tree` | none | The pages the sync would create, as a tree: each page's file, title, parent and the rule that placed it, plus discovery and parse notes. |
 | `validate_document` | `path` (required): workspace-relative path to a Markdown file | Where the file will nest and why, whether its title clashes with another page, whether it lacks an H1, and whether the sync includes it at all. |
+| `site_publishing_plan` | none | How the repository deploys to GitHub Pages (from its workflows) and the setting that puts the docs site beside it: the approach (`build`, `publish` into a `path`, or `publish-root`), the `.lore-master.yaml` output and workflow step to use, and warnings. Detection and recommendation are the pure `sitedeployment` lib. Writes nothing. |
+| `preview_site` | `output` (optional): position of the github-pages output | Renders the site in memory through the same code as `pages build`: page and file counts, the file list, Markdown problems and warnings. Writes nothing. |
 | `place_document` | `h1` (required); `parent` (optional): a page title or workspace-relative file path; `directory` (optional): workspace-relative directory | The file path, and any annotation, that nests a new page under the chosen parent. It writes nothing; the agent creates the file. |
 
 The three workspace-aware tools need the workspace root. Without one they return a tool

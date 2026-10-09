@@ -18,7 +18,7 @@ Start here, then dive into the architecture decisions.
   thin editor shells, and the alternatives rejected.
 - [Confluence editions](architecture/confluence-editions.md) — the verified per-edition API
   facts the client is built on.
-- [The MCP server](architecture/mcp-server.md) — why it lives in the engine, the four tools,
+- [The MCP server](architecture/mcp-server.md) — why it lives in the engine, the six tools,
   and the "one source of truth" invariant.
 - [Vertical feature slices](architecture/vertical-feature-slices.md) — how the Go and
   TypeScript code is organised.

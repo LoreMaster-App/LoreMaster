@@ -11,9 +11,9 @@ import (
 	"lore-master/libs/markdown-workspace/documenttree"
 )
 
-// renderedSite is one github-pages output turned into site files, before anything is
+// RenderedSite is one github-pages output turned into site files, before anything is
 // published or written.
-type renderedSite struct {
+type RenderedSite struct {
 	Output   workspacesettings.Output
 	Files    []siterender.SiteFile
 	Warnings []string
@@ -22,21 +22,21 @@ type renderedSite struct {
 	Problems []string
 }
 
-// renderSite does everything the build and the publish share: settings, discovery, parsing,
+// RenderSite does everything the build and the publish share: settings, discovery, parsing,
 // the page tree, the site's pages and the images and files they reference. The returned
 // error is already an RPC error.
-func renderSite(ctx context.Context, workspaceRoot string, outputIndex int) (renderedSite, error) {
+func RenderSite(ctx context.Context, workspaceRoot string, outputIndex int) (RenderedSite, error) {
 	if !filepath.IsAbs(workspaceRoot) {
-		return renderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "workspaceRoot must be an absolute path, got %q", workspaceRoot)
+		return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "workspaceRoot must be an absolute path, got %q", workspaceRoot)
 	}
 	output, scope, err := pagesOutput(workspaceRoot, outputIndex)
 	if err != nil {
-		return renderedSite{}, err
+		return RenderedSite{}, err
 	}
 
 	loaded, err := documentloading.LoadOutputDocuments(ctx, workspaceRoot, output, scope)
 	if err != nil {
-		return renderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	documents, warnings, problems := loaded.Documents, loaded.Warnings, loaded.Problems
 	tree, err := documenttree.BuildTree(documents)
@@ -44,18 +44,18 @@ func renderSite(ctx context.Context, workspaceRoot string, outputIndex int) (ren
 		problems = append(problems, err.Error())
 	}
 	if len(problems) > 0 {
-		return renderedSite{Output: output, Warnings: warnings, Problems: problems}, nil
+		return RenderedSite{Output: output, Warnings: warnings, Problems: problems}, nil
 	}
 
 	files, err := siterender.GenerateSite(deriveSiteTitle(output, workspaceRoot), tree)
 	if err != nil {
-		return renderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
+		return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
 	}
 	// Include the images and linked files the pages reference, so their relative src/href
 	// resolve on the site instead of 404ing.
 	assets, assetWarnings := collectSiteAssets(workspaceRoot, documents)
 
-	return renderedSite{
+	return RenderedSite{
 		Output:   output,
 		Files:    append(files, assets...),
 		Warnings: append(warnings, assetWarnings...),

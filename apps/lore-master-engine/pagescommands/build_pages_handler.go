@@ -10,7 +10,7 @@ import (
 	"lore-master/libs/github-pages/sitepublish"
 )
 
-// BuildPages handles pages/build: the rendered site (see renderSite) written into a local
+// BuildPages handles pages/build: the rendered site (see RenderSite) written into a local
 // folder. When the Markdown has errors nothing is written; they come back in the result.
 func BuildPages() rpcserver.Method {
 	return func(ctx context.Context, call rpcserver.Call) (any, error) {
@@ -25,7 +25,7 @@ func BuildPages() rpcserver.Method {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "outDir %q would replace the workspace; choose a folder inside it, such as dist/docs", params.OutDir)
 		}
 
-		site, err := renderSite(ctx, params.WorkspaceRoot, params.Output)
+		site, err := RenderSite(ctx, params.WorkspaceRoot, params.Output)
 		if err != nil {
 			return nil, err
 		}

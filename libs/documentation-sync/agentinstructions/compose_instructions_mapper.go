@@ -28,6 +28,7 @@ func Compose(settings workspacesettings.Settings, exists bool, conventions []doc
 	out.WriteString("\n")
 
 	writeWorkspace(&out, settings, exists)
+	writeSite(&out, settings)
 	writeWorkflow(&out)
 	writeStyle(&out)
 
@@ -70,6 +71,26 @@ func writeWorkspace(out *strings.Builder, settings workspacesettings.Settings, e
 		}
 		out.WriteString("\n")
 	}
+}
+
+// writeSite explains how the static site is built and deployed, when the workspace has one,
+// so an agent asked to put it beside another site uses the tools instead of guessing.
+func writeSite(out *strings.Builder, settings workspacesettings.Settings) {
+	hasSite := false
+	for _, output := range settings.Outputs {
+		if output.Platform == "github-pages" {
+			hasSite = true
+		}
+	}
+	if !hasSite {
+		return
+	}
+
+	out.WriteString("**The site.** The GitHub Pages output is built by LoreMaster, never by copying files into a deploy folder. " +
+		"To change how it is deployed (beside a web app, or into a folder of a branch), call `site_publishing_plan`: it reads the " +
+		"repository's workflows and returns the `.lore-master.yaml` output and the workflow step to use. Call `preview_site` to check " +
+		"that the site builds. The build is `lore-master-engine pages build --out DIR` or the `LoreMaster-App/LoreMaster/actions/pages` " +
+		"action; the output's `path` keeps a branch publish inside one folder. Ask the user before editing a deploy workflow.\n\n")
 }
 
 // describeOutput is one storage in a sentence, with what matters to a writer.

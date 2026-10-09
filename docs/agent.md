@@ -36,7 +36,8 @@ so they cannot say anything the sync does not do:
   and leave running the sync to you.
 
 It uses the LoreMaster MCP tools when it has them (`loremaster_nesting_rules`, `preview_tree`,
-`place_document`, `validate_document`) and works from the written rules when it does not. In
+`place_document`, `validate_document`, and for the GitHub Pages site `site_publishing_plan` and
+`preview_site`) and works from the written rules when it does not. In
 VS Code the MCP server is registered for you; for Claude Code and other clients, **LoreMaster:
 Copy MCP Server Config** gives you the entry (the command offers it when it finishes). See
 [Using the MCP server](mcp-server.md).
