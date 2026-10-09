@@ -86,3 +86,23 @@ deploy instead of publishing a branch:
 The app stays at `/` and the docs appear at `/docs/`. Every link in the site is relative, so it
 works under any subpath. `upload-pages-artifact` leaves dotfiles out, so the marker is not
 deployed.
+
+If the repository deploys from a **branch** instead (for example `gh-pages` written by another
+tool), publish the docs into a folder of that branch with the output's `path` setting:
+
+```yaml
+outputs:
+  - platform: github-pages
+    direction: to-platform
+    branch: gh-pages
+    path: docs          # only this folder is replaced
+    content:
+      - type: markdown
+        roots: ["."]
+        template: default
+```
+
+The other deploy must keep what it did not write (`keep_files: true` for
+`peaceiris/actions-gh-pages`). Publishing without `path` to a branch that holds another site is
+refused and the branch is left untouched; a branch an earlier LoreMaster published to is
+recognised and replaced as before.

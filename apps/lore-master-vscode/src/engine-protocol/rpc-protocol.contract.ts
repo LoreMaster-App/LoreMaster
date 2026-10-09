@@ -147,10 +147,12 @@ export interface Output {
   mermaidMode:    string
   titleCollision: string
   linkMode:       string
-  /** github-pages: the repo ("owner/name" or a URL; empty = the workspace's own origin)
-   *  and the branch to publish to (empty = gh-pages). */
+  /** github-pages: the repo ("owner/name" or a URL; empty = the workspace's own origin),
+   *  the branch to publish to (empty = gh-pages) and the folder inside it (empty = the root,
+   *  which the publish owns entirely; a path leaves the rest of the branch alone). */
   repo?:          string
   branch?:        string
+  path?:          string
 }
 
 /** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */

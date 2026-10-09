@@ -19,11 +19,13 @@ const (
 	commitAuthorEmail = "lore-master@users.noreply.github.com"
 )
 
-// PublishSite writes the generated site as the entire content of the target branch and
-// pushes it, shelling out to the user's git so their existing credentials and remotes are
+// PublishSite writes the generated site as the entire content of the target folder (the
+// branch root, or opts.Path inside it) and pushes it, shelling out to the user's git so their existing credentials and remotes are
 // used. It never touches the workspace's working tree: it clones the remote into a
 // temporary directory, replaces its contents with the site, commits and pushes. When the
-// site already matches the branch the result is a no-op (Changed is false).
+// site already matches the branch the result is a no-op (Changed is false). A folder that
+// holds other content LoreMaster did not write is refused, so a branch shared with another
+// site is never wiped.
 func PublishSite(ctx context.Context, opts PublishOptions, files []siterender.SiteFile) (PublishResult, error) {
 	git := newGitClient()
 
@@ -45,7 +47,11 @@ func PublishSite(ctx context.Context, opts PublishOptions, files []siterender.Si
 	if err := checkoutBranch(ctx, git, remote, branch, tmp); err != nil {
 		return PublishResult{}, err
 	}
-	if err := replaceContents(tmp, files); err != nil {
+	target := tmp
+	if opts.Path != "" {
+		target = filepath.Join(tmp, filepath.FromSlash(opts.Path))
+	}
+	if err := WriteSite(target, files); err != nil {
 		return PublishResult{}, err
 	}
 	if _, err := git.run(ctx, tmp, "add", "-A"); err != nil {
@@ -111,34 +117,6 @@ func checkoutBranch(ctx context.Context, git gitClient, remote, branch, tmp stri
 	}
 	if _, err := git.run(ctx, tmp, "switch", "--orphan", branch); err != nil {
 		return fmt.Errorf("start branch %s: %w", branch, err)
-	}
-
-	return nil
-}
-
-// replaceContents clears everything in dir except the .git directory, then writes the site
-// files, so the branch ends up holding exactly the generated site.
-func replaceContents(dir string, files []siterender.SiteFile) error {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		if entry.Name() == ".git" {
-			continue
-		}
-		if err := os.RemoveAll(filepath.Join(dir, entry.Name())); err != nil {
-			return err
-		}
-	}
-	for _, file := range files {
-		target := filepath.Join(dir, filepath.FromSlash(file.Path))
-		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-			return err
-		}
-		if err := os.WriteFile(target, file.Content, 0o644); err != nil {
-			return err
-		}
 	}
 
 	return nil

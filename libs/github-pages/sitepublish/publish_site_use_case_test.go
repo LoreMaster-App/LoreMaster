@@ -142,3 +142,64 @@ func TestResolveRemoteBuildsAGitHubURLFromOwnerName(t *testing.T) {
 		t.Fatalf("got %q", url)
 	}
 }
+
+// seedBranch puts an unrelated site (somebody's web app) on a branch of the remote, the way
+// another deploy would have, and returns to main.
+func seedBranch(t *testing.T, work, branch string) {
+	t.Helper()
+	runGit(t, work, "checkout", "--orphan", branch)
+	runGit(t, work, "rm", "-rf", "--quiet", ".")
+	if err := os.WriteFile(filepath.Join(work, "index.html"), []byte("the web app"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, work, "add", "-A")
+	runGit(t, work, "commit", "-m", "deploy the app")
+	runGit(t, work, "push", "origin", branch)
+	runGit(t, work, "checkout", "main")
+}
+
+func TestPublishSiteIntoAPathLeavesTheRestOfTheBranchAlone(t *testing.T) {
+	work := workspaceWithRemote(t)
+	seedBranch(t, work, "gh-pages")
+	ctx := context.Background()
+
+	result, err := PublishSite(ctx, PublishOptions{WorkspaceRoot: work, Path: "docs"}, site("<h1>Docs home</h1>"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Changed {
+		t.Fatalf("unexpected result: %+v", result)
+	}
+
+	published := cloneBranch(t, work, "gh-pages")
+	if app, _ := os.ReadFile(filepath.Join(published, "index.html")); string(app) != "the web app" {
+		t.Errorf("the other site's home page was replaced: %q", app)
+	}
+	if docs, _ := os.ReadFile(filepath.Join(published, "docs", "index.html")); string(docs) != "<h1>Docs home</h1>" {
+		t.Errorf("the docs were not published under docs/: %q", docs)
+	}
+
+	// A second publish replaces only the docs folder again, and is a no-op when unchanged.
+	again, err := PublishSite(ctx, PublishOptions{WorkspaceRoot: work, Path: "docs"}, site("<h1>Docs home</h1>"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.Changed {
+		t.Errorf("an unchanged republish should be a no-op: %+v", again)
+	}
+}
+
+func TestPublishSiteRefusesABranchHoldingAnotherSite(t *testing.T) {
+	work := workspaceWithRemote(t)
+	seedBranch(t, work, "gh-pages")
+
+	_, err := PublishSite(context.Background(), PublishOptions{WorkspaceRoot: work}, site("<h1>Home</h1>"))
+	if !IsForeignFolder(err) {
+		t.Fatalf("want a foreign-folder refusal, got %v", err)
+	}
+
+	published := cloneBranch(t, work, "gh-pages")
+	if app, _ := os.ReadFile(filepath.Join(published, "index.html")); string(app) != "the web app" {
+		t.Errorf("the other site was modified: %q", app)
+	}
+}

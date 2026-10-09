@@ -70,6 +70,8 @@ type Output struct {
 	Repo string `json:"repo,omitempty"`
 	// Branch is the branch a github-pages output publishes to; empty means gh-pages.
 	Branch string `json:"branch,omitempty"`
+	// Path is the folder inside the branch the site is published to; empty means the root.
+	Path string `json:"path,omitempty"`
 }
 
 // Content is one kind of lore an output syncs.

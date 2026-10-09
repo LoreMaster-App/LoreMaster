@@ -44,6 +44,15 @@ func TestValidate(t *testing.T) {
 		{"http address", func(s *Settings) { s.Outputs[0].BaseURL = "http://acme.com" }, `outputs[0].baseUrl "http://acme.com" must be an https address`},
 		{"root outside", func(s *Settings) { s.Outputs[0].Content[0].Roots = []string{"../other"} }, `outputs[0].content[0].roots entry "../other" must be a path inside the workspace`},
 		{"no content", func(s *Settings) { s.Outputs[0].Content = nil }, "outputs[0].content is empty; add at least one content entry"},
+		{"absolute path", func(s *Settings) { s.Outputs[0].Path = "/docs" }, `outputs[0].path "/docs" must be relative to the branch root, without a leading slash`},
+		{"path climbs out", func(s *Settings) { s.Outputs[0].Path = "../docs" }, `outputs[0].path "../docs" must be a plain folder path inside the branch`},
+		{"path with a backslash", func(s *Settings) { s.Outputs[0].Path = `docs\site` }, "must not contain spaces or backslashes"},
+		{"same destination twice with the same path", func(s *Settings) {
+			s.Outputs[0].Path = "docs"
+			second := validPagesOutput()
+			second.Path = "docs/"
+			s.Outputs = append(s.Outputs, second)
+		}, "outputs[1] publishes to the same repo and branch as outputs[0]; two outputs would overwrite each other"},
 		{"same destination twice", func(s *Settings) { s.Outputs = append(s.Outputs, s.Outputs[0]) }, "outputs[1] syncs to the same space and parent page as outputs[0]; two outputs would overwrite each other's pages"},
 	}
 	for _, tc := range cases {

@@ -80,7 +80,7 @@ Pick a setting, then its new value:
 - **Confluence:** title prefix, direction (`to-platform` or `two-way`), Mermaid diagrams
   (`image` or `code`), how pages link to each other, what to do when a title already exists,
   the folders to sync, and paths to leave out.
-- **GitHub Pages:** the repository, the branch, the folders to sync, and paths to leave out.
+- **GitHub Pages:** the repository, the branch, the folder inside the branch (so another site can share it), the folders to sync, and paths to leave out.
 
 The value is checked and saved to `.lore-master.yaml` with your comments kept; a value that is
 not allowed is refused with the reason and nothing is written. For anything else, **Open

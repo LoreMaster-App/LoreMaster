@@ -38,7 +38,7 @@ describe('fieldsFor', () => {
   })
 
   it('offers the repository and branch for GitHub Pages, and no Confluence settings', () => {
-    expect(fieldsFor(pages).map(each => each.key)).toEqual(['repo', 'branch', 'roots', 'excludes'])
+    expect(fieldsFor(pages).map(each => each.key)).toEqual(['repo', 'branch', 'path', 'roots', 'excludes'])
   })
 
   it('reads the current values the way a user would type them', () => {
@@ -67,6 +67,7 @@ describe('fieldsFor', () => {
   it('trims text and writes the GitHub Pages fields', () => {
     expect(field(confluence, 'titlePrefix').write(confluence, '  OPS ').titlePrefix).toBe('OPS')
     expect(field(pages, 'branch').write(pages, ' docs-site ').branch).toBe('docs-site')
+    expect(field(pages, 'path').write(pages, ' docs ').path).toBe('docs')
     expect(field(pages, 'repo').write(pages, '').repo).toBe('')
   })
 

@@ -30,7 +30,7 @@ func PublishPages() rpcserver.Method {
 		}
 
 		published, err := sitepublish.PublishSite(ctx, sitepublish.PublishOptions{
-			WorkspaceRoot: params.WorkspaceRoot, Repo: site.Output.Repo, Branch: site.Output.Branch,
+			WorkspaceRoot: params.WorkspaceRoot, Repo: site.Output.Repo, Branch: site.Output.Branch, Path: site.Output.Path,
 		}, site.Files)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodePlatformUnreachable, "%s", err.Error())
