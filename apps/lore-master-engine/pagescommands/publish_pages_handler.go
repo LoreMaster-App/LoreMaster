@@ -8,56 +8,30 @@ import (
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
-	"lore-master/libs/documentation-sync/documentloading"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/github-pages/sitepublish"
-	"lore-master/libs/github-pages/siterender"
-	"lore-master/libs/markdown-workspace/documenttree"
 )
 
-// PublishPages handles pages/publish: settings, discovery, parsing, tree, site generation
-// and the git publish. When the Markdown has errors nothing is published; they come back in
-// the result so the editor can show them.
+// PublishPages handles pages/publish: the rendered site (see renderSite) and the git
+// publish. When the Markdown has errors nothing is published; they come back in the result so
+// the editor can show them.
 func PublishPages() rpcserver.Method {
 	return func(ctx context.Context, call rpcserver.Call) (any, error) {
 		var params rpcprotocol.PagesPublishParams
 		if err := call.Decode(&params); err != nil {
 			return nil, err
 		}
-		if !filepath.IsAbs(params.WorkspaceRoot) {
-			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "workspaceRoot must be an absolute path, got %q", params.WorkspaceRoot)
-		}
-		output, scope, err := pagesOutput(params)
+		site, err := renderSite(ctx, params.WorkspaceRoot, params.Output)
 		if err != nil {
 			return nil, err
 		}
-
-		loaded, err := documentloading.LoadOutputDocuments(ctx, params.WorkspaceRoot, output, scope)
-		if err != nil {
-			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		if len(site.Problems) > 0 {
+			return rpcprotocol.PagesPublishResult{Warnings: site.Warnings, Errors: site.Problems}, nil
 		}
-		documents, warnings, problems := loaded.Documents, loaded.Warnings, loaded.Problems
-		tree, err := documenttree.BuildTree(documents)
-		if err != nil {
-			problems = append(problems, err.Error())
-		}
-		if len(problems) > 0 {
-			return rpcprotocol.PagesPublishResult{Warnings: warnings, Errors: problems}, nil
-		}
-
-		files, err := siterender.GenerateSite(deriveSiteTitle(output, params.WorkspaceRoot), tree)
-		if err != nil {
-			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
-		}
-		// Publish the images and linked files the pages reference, so their relative src/href
-		// resolve on the site instead of 404ing.
-		assets, assetWarnings := collectSiteAssets(params.WorkspaceRoot, documents)
-		files = append(files, assets...)
-		warnings = append(warnings, assetWarnings...)
 
 		published, err := sitepublish.PublishSite(ctx, sitepublish.PublishOptions{
-			WorkspaceRoot: params.WorkspaceRoot, Repo: output.Repo, Branch: output.Branch,
-		}, files)
+			WorkspaceRoot: params.WorkspaceRoot, Repo: site.Output.Repo, Branch: site.Output.Branch,
+		}, site.Files)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodePlatformUnreachable, "%s", err.Error())
 		}
@@ -65,27 +39,27 @@ func PublishPages() rpcserver.Method {
 		return rpcprotocol.PagesPublishResult{
 			Branch: published.Branch, Remote: published.Remote, Commit: published.Commit,
 			Changed: published.Changed, Files: published.Files, URL: pagesURL(published.Remote),
-			Warnings: warnings,
+			Warnings: site.Warnings,
 		}, nil
 	}
 }
 
 // pagesOutput loads and checks the settings and picks the output, which must be a
 // github-pages output.
-func pagesOutput(params rpcprotocol.PagesPublishParams) (workspacesettings.Output, workspacesettings.DiscoveryScope, error) {
-	loaded, err := workspacesettings.LoadSettings(params.WorkspaceRoot)
+func pagesOutput(workspaceRoot string, outputIndex int) (workspacesettings.Output, workspacesettings.DiscoveryScope, error) {
+	loaded, err := workspacesettings.LoadSettings(workspaceRoot)
 	if err != nil {
 		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if err := workspacesettings.Validate(loaded.Settings); err != nil {
 		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
-	if params.Output < 0 || params.Output >= len(loaded.Settings.Outputs) {
-		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(loaded.Settings.Outputs))
+	if outputIndex < 0 || outputIndex >= len(loaded.Settings.Outputs) {
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", outputIndex, workspacesettings.FileName, len(loaded.Settings.Outputs))
 	}
-	output := loaded.Settings.Outputs[params.Output]
+	output := loaded.Settings.Outputs[outputIndex]
 	if output.Platform != "github-pages" {
-		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d is a %q output, not github-pages", params.Output, output.Platform)
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d is a %q output, not github-pages", outputIndex, output.Platform)
 	}
 
 	return output, loaded.Settings.DiscoveryScope(), nil

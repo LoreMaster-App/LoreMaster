@@ -104,6 +104,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodSettingsRead:      settingscommands.ReadSettings(),
 		rpcprotocol.MethodSettingsSave:      settingscommands.SaveSettings(),
 		rpcprotocol.MethodPagesPublish:      pagescommands.PublishPages(),
+		rpcprotocol.MethodPagesBuild:        pagescommands.BuildPages(),
 		rpcprotocol.MethodWorkspaceTree:     treecommands.WorkspaceTree(),
 		rpcprotocol.MethodGeneratorsRun:     generatorcommands.RunGenerators(),
 		rpcprotocol.MethodAgentInstructions: agentcommands.AgentInstructions(),

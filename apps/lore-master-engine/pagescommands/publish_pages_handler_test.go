@@ -24,6 +24,7 @@ func connect(t *testing.T) *jsonrpc2.Conn {
 	go func() {
 		_ = rpcserver.Serve(context.Background(), engineEnd, rpcserver.Methods{
 			rpcprotocol.MethodPagesPublish: PublishPages(),
+			rpcprotocol.MethodPagesBuild:   BuildPages(),
 		}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}()
 	conn := jsonrpc2.NewConn(context.Background(), jsonrpc2.NewBufferedStream(editorEnd, jsonrpc2.VSCodeObjectCodec{}), jsonrpc2.AsyncHandler(jsonrpc2.HandlerWithError(func(context.Context, *jsonrpc2.Conn, *jsonrpc2.Request) (any, error) { return nil, nil })))
