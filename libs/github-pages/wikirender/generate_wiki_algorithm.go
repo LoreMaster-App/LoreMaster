@@ -3,6 +3,7 @@ package wikirender
 import (
 	"path"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -29,6 +30,9 @@ var invalidNameChars = strings.NewReplacer(
 	"/", "-", "\\", "-", ":", "-", "*", "-", "?", "-", "\"", "-", "<", "-", ">", "-", "|", "-", "#", "-", "%", "-",
 	",", "", "'", "", "’", "",
 )
+
+// markdownSuffixes are the file extensions the sync reads as documents.
+var markdownSuffixes = []string{".md", ".markdown", ".mdown", ".mkd"}
 
 // wikiPage is one document's place in the wiki.
 type wikiPage struct {
@@ -137,6 +141,49 @@ func pageName(title string) string {
 	return name
 }
 
+// LeftOutLinks lists the links of the tree's documents to Markdown files that are not part of
+// the tree, one warning per link, in page order. Such a link cannot work on the published site
+// or wiki and would name a file that is not published; a wiki turns it into plain text.
+func LeftOutLinks(tree documenttree.DocumentTree) []string {
+	pages := collectPages(tree)
+	byPath := make(map[string]string, len(pages))
+	for _, page := range pages {
+		byPath[page.source] = page.name
+	}
+
+	var warnings []string
+	for _, page := range pages {
+		dir := path.Dir(page.source)
+		fenced := false
+		fence := ""
+		for _, line := range strings.Split(string(page.body), "\n") {
+			trimmed := strings.TrimSpace(line)
+			if marker, ok := fenceMarker(trimmed); ok {
+				switch {
+				case !fenced:
+					fenced, fence = true, marker
+				case strings.HasPrefix(trimmed, fence):
+					fenced = false
+				}
+
+				continue
+			}
+			if fenced {
+				continue
+			}
+			for _, m := range inlineLink.FindAllStringSubmatchIndex(line, -1) {
+				target := line[m[2]:m[3]]
+				start, ok := linkTextStart(line, m[0])
+				if ok && !(start > 0 && line[start-1] == '!') && leftOutDocument(target, dir, byPath) {
+					warnings = append(warnings, page.source+": links to "+target+", which this output leaves out")
+				}
+			}
+		}
+	}
+
+	return warnings
+}
+
 // sidebar is the navigation list shown on every wiki page.
 func sidebar(pages []wikiPage) []byte {
 	escape := strings.NewReplacer("[", "\\[", "]", "\\]")
@@ -172,14 +219,78 @@ func rewriteLinks(page wikiPage, byPath map[string]string) []byte {
 		if fenced {
 			continue
 		}
-		lines[i] = inlineLink.ReplaceAllStringFunc(line, func(match string) string {
-			parts := inlineLink.FindStringSubmatch(match)
-
-			return "](" + rewriteTarget(parts[1], dir, byPath) + parts[2] + ")"
-		})
+		lines[i] = rewriteLine(line, dir, byPath)
 	}
 
 	return []byte(strings.Join(lines, "\n"))
+}
+
+// rewriteLine rewrites the links of one line. A link to another Markdown document that is not
+// in the wiki (the output leaves it out) loses its link and keeps its text, so the page never
+// points at a page that does not exist or names a file that is not published.
+func rewriteLine(line, dir string, byPath map[string]string) string {
+	matches := inlineLink.FindAllStringSubmatchIndex(line, -1)
+	if matches == nil {
+		return line
+	}
+	var out strings.Builder
+	last := 0
+	for _, m := range matches {
+		target := line[m[2]:m[3]]
+		start, ok := linkTextStart(line, m[0])
+		if ok && start >= last && !(start > 0 && line[start-1] == '!') && leftOutDocument(target, dir, byPath) {
+			out.WriteString(line[last:start])
+			out.WriteString(line[start+1 : m[0]])
+			last = m[1]
+
+			continue
+		}
+		out.WriteString(line[last:m[0]])
+		out.WriteString("](" + rewriteTarget(target, dir, byPath) + line[m[4]:m[5]] + ")")
+		last = m[1]
+	}
+	out.WriteString(line[last:])
+
+	return out.String()
+}
+
+// linkTextStart is the index of the "[" that opens the link text closed by the "]" at close.
+func linkTextStart(line string, close int) (int, bool) {
+	depth := 0
+	for i := close - 1; i >= 0; i-- {
+		switch line[i] {
+		case ']':
+			depth++
+		case '[':
+			if depth == 0 {
+				return i, true
+			}
+			depth--
+		}
+	}
+
+	return 0, false
+}
+
+// leftOutDocument reports whether target is a relative link to a Markdown file that is not one
+// of the wiki's pages.
+func leftOutDocument(target, dir string, byPath map[string]string) bool {
+	if target == "" || strings.HasPrefix(target, "#") || strings.HasPrefix(target, "/") || strings.Contains(target, ":") {
+		return false
+	}
+	local := target
+	if cut := strings.IndexAny(target, "#?"); cut >= 0 {
+		local = target[:cut]
+	}
+	resolved := path.Clean(path.Join(dir, local))
+	if resolved == ".." || strings.HasPrefix(resolved, "../") {
+		return false
+	}
+	if _, inWiki := byPath[resolved]; inWiki {
+		return false
+	}
+
+	return slices.Contains(markdownSuffixes, strings.ToLower(path.Ext(resolved)))
 }
 
 func fenceMarker(trimmed string) (string, bool) {
