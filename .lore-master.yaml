@@ -8,3 +8,10 @@ outputs:
         roots:
           - docs
         template: default
+  - platform: github-wiki
+    direction: to-platform
+    content:
+      - type: markdown
+        roots:
+          - docs
+        template: default

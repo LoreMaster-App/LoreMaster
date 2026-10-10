@@ -68,3 +68,16 @@ func TestGenerateWikiKeepsPageNamesUnique(t *testing.T) {
 		t.Fatalf("a clashing title should get a numbered name: %v", got)
 	}
 }
+
+func TestPageNameReadsAsAnAddress(t *testing.T) {
+	cases := map[string]string{
+		"ADR: One Go engine, thin editor shells": "ADR-One-Go-engine-thin-editor-shells",
+		"Generators: pages from your project's":  "Generators-pages-from-your-projects",
+		"  ":                                     "Page",
+	}
+	for title, want := range cases {
+		if got := pageName(title); got != want {
+			t.Errorf("pageName(%q) = %q, want %q", title, got, want)
+		}
+	}
+}

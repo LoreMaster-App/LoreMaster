@@ -27,6 +27,7 @@ var inlineLink = regexp.MustCompile(`\]\(([^)\s<>]+)((?:\s+"[^"]*")?)\)`)
 // a file name.
 var invalidNameChars = strings.NewReplacer(
 	"/", "-", "\\", "-", ":", "-", "*", "-", "?", "-", "\"", "-", "<", "-", ">", "-", "|", "-", "#", "-", "%", "-",
+	",", "", "'", "", "’", "",
 )
 
 // wikiPage is one document's place in the wiki.
@@ -125,6 +126,9 @@ func isHomeName(source string) bool {
 func pageName(title string) string {
 	name := invalidNameChars.Replace(strings.TrimSpace(title))
 	name = strings.Join(strings.Fields(name), "-")
+	for strings.Contains(name, "--") {
+		name = strings.ReplaceAll(name, "--", "-")
+	}
 	name = strings.Trim(name, "-.")
 	if name == "" {
 		return "Page"
