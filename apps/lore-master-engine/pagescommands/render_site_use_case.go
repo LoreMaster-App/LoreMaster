@@ -8,10 +8,11 @@ import (
 	"lore-master/libs/documentation-sync/documentloading"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/github-pages/siterender"
+	"lore-master/libs/github-pages/wikirender"
 	"lore-master/libs/markdown-workspace/documenttree"
 )
 
-// RenderedSite is one github-pages output turned into site files, before anything is
+// RenderedSite is one github-pages or github-wiki output turned into files, before anything is
 // published or written.
 type RenderedSite struct {
 	Output   workspacesettings.Output
@@ -47,9 +48,14 @@ func RenderSite(ctx context.Context, workspaceRoot string, outputIndex int) (Ren
 		return RenderedSite{Output: output, Warnings: warnings, Problems: problems}, nil
 	}
 
-	files, err := siterender.GenerateSite(deriveSiteTitle(output, workspaceRoot), tree)
-	if err != nil {
-		return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
+	var files []siterender.SiteFile
+	if output.Platform == "github-wiki" {
+		files = wikirender.GenerateWiki(tree)
+	} else {
+		files, err = siterender.GenerateSite(deriveSiteTitle(output, workspaceRoot), tree)
+		if err != nil {
+			return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
+		}
 	}
 	// Include the images and linked files the pages reference, so their relative src/href
 	// resolve on the site instead of 404ing.

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { type Output, SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
+import { isGitHubOutput, type Output, SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
 
 /** The view id contributed in package.json (inside the LoreMaster view container). */
 export const STORAGES_VIEW_ID = 'loreMaster.storages'
@@ -53,7 +53,7 @@ export class StoragesViewProvider implements vscode.TreeDataProvider<StorageNode
   getTreeItem (node: StorageNode): vscode.TreeItem {
     const item = new vscode.TreeItem(storageLabel(node.output), vscode.TreeItemCollapsibleState.None)
     item.description = storageDescription(node.output)
-    item.iconPath = new vscode.ThemeIcon(node.output.platform === 'github-pages' ? 'globe' : 'book')
+    item.iconPath = new vscode.ThemeIcon(storageIcon(node.output))
     item.contextValue = 'loreMasterStorage'
 
     return item
@@ -62,17 +62,28 @@ export class StoragesViewProvider implements vscode.TreeDataProvider<StorageNode
 
 /** An output shows in the list once it is actually configured (the blank scaffold is hidden). */
 export function isConfiguredOutput (output: Output): boolean {
-  if (output.platform === 'github-pages') {
+  if (isGitHubOutput(output)) {
     return true
   }
 
   return output.platform === 'confluence' && output.baseUrl !== '' && output.space !== ''
 }
 
+const STORAGE_ICONS: Record<string, string> = { 'github-pages': 'globe', 'github-wiki': 'notebook' }
+
+/** The codicon a storage row shows: a globe for a site, a notebook for a wiki, a book otherwise. */
+export function storageIcon (output: Output): string {
+  return STORAGE_ICONS[output.platform] ?? 'book'
+}
+
 export function storageLabel (output: Output): string {
+  if (output.platform === 'github-wiki') {
+    return 'GitHub Wiki'
+  }
+
   return output.platform === 'github-pages' ? `GitHub Pages · ${output.branch || 'gh-pages'}` : `Confluence · ${output.space}`
 }
 
 export function storageDescription (output: Output): string {
-  return output.platform === 'github-pages' ? (output.repo || "this repo's origin") : output.baseUrl
+  return isGitHubOutput(output) ? (output.repo || "this repo's origin") : output.baseUrl
 }

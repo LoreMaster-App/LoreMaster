@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import type { Output } from '../engine-protocol'
+import { isGitHubOutput, type Output } from '../engine-protocol'
 import type { ConnectionMeta } from '../secret-storage'
 import type { StorageType } from '../storage-setup'
 import { createSyncTargetUI } from '../sync-target'
@@ -29,6 +29,7 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
         [
           { label: 'Confluence', description: 'Sync Markdown to a Confluence space', value: 'confluence' as StorageType, picked: true },
           { label: 'GitHub Pages', description: 'Publish Markdown as a static site on a gh-pages branch', value: 'github-pages' as StorageType },
+          { label: 'GitHub Wiki', description: "Publish Markdown as the repository's wiki pages", value: 'github-wiki' as StorageType },
         ],
         { title: 'LoreMaster: where to sync', placeHolder: 'Choose one or more storages', canPickMany: true },
       )
@@ -111,12 +112,16 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
 
 /** A short, human label for an output in the "sync to…" picker. */
 function outputLabel (output: Output): string {
+  if (output.platform === 'github-wiki') {
+    return 'GitHub Wiki'
+  }
+
   return output.platform === 'github-pages' ? `GitHub Pages — ${output.branch || 'gh-pages'}` : `Confluence — ${output.space}`
 }
 
 /** The second line in the "sync to…" picker: where the output goes. */
 function outputDescription (output: Output): string {
-  if (output.platform === 'github-pages') {
+  if (isGitHubOutput(output)) {
     return output.repo || "this repository's origin"
   }
 

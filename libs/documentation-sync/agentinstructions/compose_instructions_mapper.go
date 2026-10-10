@@ -114,6 +114,8 @@ func describeOutput(output workspacesettings.Output) string {
 		return text + "."
 	case "github-pages":
 		return "A static site on GitHub Pages: the Markdown is published as written and rendered in the browser."
+	case "github-wiki":
+		return "The repository's GitHub wiki: each Markdown file becomes a wiki page named after its title, with a sidebar that mirrors the tree. Pages written by hand on GitHub are left alone."
 	default:
 		return fmt.Sprintf("A `%s` storage.", output.Platform)
 	}

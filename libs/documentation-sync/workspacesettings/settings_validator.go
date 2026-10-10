@@ -36,11 +36,11 @@ func Validate(settings Settings) error {
 	pagesSeen := map[string]int{}
 	for i, output := range settings.Outputs {
 		where := fmt.Sprintf("outputs[%d]", i)
-		choose(add, where+".platform", output.Platform, []string{"confluence", "github-pages"}, reservedPlatforms)
+		choose(add, where+".platform", output.Platform, []string{"confluence", "github-pages", "github-wiki"}, reservedPlatforms)
 		switch output.Platform {
 		case "confluence":
 			validateConfluenceOutput(add, where, output, confluenceSeen, i)
-		case "github-pages":
+		case "github-pages", "github-wiki":
 			validateGitHubPagesOutput(add, where, output, pagesSeen, i)
 		}
 		validateContent(add, where, output)
@@ -71,7 +71,7 @@ func validateConfluenceOutput(add func(string, ...any), where string, output Out
 	}
 }
 
-// validateGitHubPagesOutput checks a github-pages output: it is one-way, it uses a repo
+// validateGitHubPagesOutput checks a github-pages or github-wiki output: it is one-way, it uses a repo
 // and branch rather than Confluence's targeting fields, and no two outputs publish to the
 // same place.
 func validateGitHubPagesOutput(add func(string, ...any), where string, output Output, seen map[string]int, index int) {
@@ -82,7 +82,7 @@ func validateGitHubPagesOutput(add func(string, ...any), where string, output Ou
 		{"titlePrefix", output.TitlePrefix}, {"baseUrl", output.BaseURL},
 	} {
 		if field.value != "" {
-			add("%s.%s is not used by a github-pages output; remove it", where, field.name)
+			add("%s.%s is not used by a %s output; remove it", where, field.name, output.Platform)
 		}
 	}
 	if output.Branch != "" && (strings.ContainsAny(output.Branch, " \t") || strings.HasPrefix(output.Branch, "/") || strings.HasSuffix(output.Branch, "/")) {
@@ -92,7 +92,9 @@ func validateGitHubPagesOutput(add func(string, ...any), where string, output Ou
 		add("%s.repo %q must not contain spaces", where, output.Repo)
 	}
 
-	if reason := invalidSitePath(output.Path); reason != "" {
+	if output.Platform == "github-wiki" && output.Path != "" {
+		add("%s.path is not used by a github-wiki output; a wiki is a flat folder of pages", where)
+	} else if reason := invalidSitePath(output.Path); reason != "" {
 		add("%s.path %q %s", where, output.Path, reason)
 	}
 
@@ -100,7 +102,7 @@ func validateGitHubPagesOutput(add func(string, ...any), where string, output Ou
 	if branch == "" {
 		branch = "gh-pages"
 	}
-	key := output.Repo + "\x00" + branch + "\x00" + strings.Trim(output.Path, "/")
+	key := output.Platform + "\x00" + output.Repo + "\x00" + branch + "\x00" + strings.Trim(output.Path, "/")
 	if first, duplicate := seen[key]; duplicate {
 		add("%s publishes to the same repo and branch as outputs[%d]; two outputs would overwrite each other", where, first)
 	}

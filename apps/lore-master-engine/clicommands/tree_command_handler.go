@@ -79,6 +79,8 @@ func (o output) describe() string {
 	switch o.settings.Platform {
 	case "github-pages":
 		return fmt.Sprintf("output %d: GitHub Pages", o.index)
+	case "github-wiki":
+		return fmt.Sprintf("output %d: GitHub Wiki", o.index)
 	default:
 		return fmt.Sprintf("output %d: Confluence %s (%s)", o.index, o.settings.Space, o.settings.BaseURL)
 	}
@@ -87,7 +89,7 @@ func (o output) describe() string {
 // configured reports whether the output has what it needs to be used: a site and a space for
 // Confluence (the blank scaffold a first sync would fill in is not an output yet).
 func (o output) configured() bool {
-	if o.settings.Platform == "github-pages" {
+	if o.settings.Platform == "github-pages" || o.settings.Platform == "github-wiki" {
 		return true
 	}
 

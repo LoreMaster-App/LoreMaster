@@ -112,7 +112,7 @@ func runSync(ctx context.Context, env Environment, engine *connection, parsed co
 		say("%s", output.describe())
 		entry := outputReport{Index: output.index, Platform: output.settings.Platform}
 		var outputCode int
-		if output.settings.Platform == "github-pages" {
+		if output.settings.Platform == "github-pages" || output.settings.Platform == "github-wiki" {
 			outputCode = publishSite(ctx, env, engine, parsed, options, output, &entry, say)
 		} else {
 			outputCode = syncConfluence(ctx, env, engine, parsed, options, output, &entry, say)

@@ -29,6 +29,7 @@ func CheckPages() rpcserver.Method {
 
 		checked, err := sitepublish.CheckSite(ctx, sitepublish.PublishOptions{
 			WorkspaceRoot: params.WorkspaceRoot, Repo: site.Output.Repo, Branch: site.Output.Branch, Path: site.Output.Path,
+			Wiki: site.Output.Platform == "github-wiki",
 		}, site.Files)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodePlatformUnreachable, "%s", err.Error())

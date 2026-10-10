@@ -8,7 +8,7 @@ import {
   WORKSPACE_TREE_METHOD,
   type WorkspaceTreeResult,
 } from '../engine-protocol'
-import { isConfiguredOutput } from '../sidebar'
+import { isConfiguredOutput, storageDescription, storageIcon, storageLabel } from '../sidebar'
 import { buildPageEntries } from './build-page-entries.algorithm'
 import { leftOutReason } from './left-out-reason.policy'
 import { pageDescription, pageLabel } from './page-label.policy'
@@ -92,10 +92,10 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
 
   private storageItem (node: { index: number; output: Output }): vscode.TreeItem {
     const { output } = node
-    const item = new vscode.TreeItem(output.platform === 'github-pages' ? `GitHub Pages · ${output.branch || 'gh-pages'}` : `Confluence · ${output.space}`, vscode.TreeItemCollapsibleState.Expanded)
+    const item = new vscode.TreeItem(storageLabel(output), vscode.TreeItemCollapsibleState.Expanded)
     item.id = `storage:${node.index}`
-    item.description = output.platform === 'github-pages' ? (output.repo || "this repo's origin") : output.baseUrl
-    item.iconPath = new vscode.ThemeIcon(output.platform === 'github-pages' ? 'globe' : 'book')
+    item.description = storageDescription(output)
+    item.iconPath = new vscode.ThemeIcon(storageIcon(output))
     item.contextValue = 'loreMasterPagesStorage'
 
     return item

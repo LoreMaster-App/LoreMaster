@@ -33,8 +33,8 @@ func TestValidate(t *testing.T) {
 	}{
 		{"future version", func(s *Settings) { s.Version = 2 }, "version 2 is not supported; this version of LoreMaster reads version 1"},
 		{"no outputs", func(s *Settings) { s.Outputs = nil }, "outputs is empty; add at least one output"},
-		{"unknown platform", func(s *Settings) { s.Outputs[0].Platform = "wiki" }, `outputs[0].platform "wiki" is not one of confluence, github-pages`},
-		{"reserved platform", func(s *Settings) { s.Outputs[0].Platform = "notion" }, `outputs[0].platform "notion" is planned but not available yet (#166); use confluence or github-pages`},
+		{"unknown platform", func(s *Settings) { s.Outputs[0].Platform = "wiki" }, `outputs[0].platform "wiki" is not one of confluence, github-pages, github-wiki`},
+		{"reserved platform", func(s *Settings) { s.Outputs[0].Platform = "notion" }, `outputs[0].platform "notion" is planned but not available yet (#166); use confluence or github-pages or github-wiki`},
 		{"bad direction", func(s *Settings) { s.Outputs[0].Direction = "sideways" }, `outputs[0].direction "sideways" is not one of to-platform, two-way`},
 		{"html macro reserved", func(s *Settings) { s.Outputs[0].MermaidMode = "html-macro" }, `outputs[0].mermaidMode "html-macro" is planned but not available yet (#40); use image or code`},
 		{"test results reserved", func(s *Settings) { s.Outputs[0].Content[0].Type = "test-results" }, `outputs[0].content[0].type "test-results" is planned but not available yet (#96); use markdown`},
@@ -116,6 +116,28 @@ func TestValidateAllowsTwoPagesOutputsInDifferentFoldersOfOneBranch(t *testing.T
 
 	if err := Validate(Settings{Version: 1, Outputs: []Output{first, second}}); err != nil {
 		t.Fatalf("two folders of one branch were refused: %v", err)
+	}
+}
+
+func TestValidateAcceptsAWikiBesideASiteOfTheSameRepo(t *testing.T) {
+	site, wiki := validPagesOutput(), validPagesOutput()
+	wiki.Platform = "github-wiki"
+
+	if err := Validate(Settings{Version: 1, Outputs: []Output{site, wiki}}); err != nil {
+		t.Fatalf("a wiki and a site of one repo were refused: %v", err)
+	}
+}
+
+func TestValidateRefusesAPathOnAWiki(t *testing.T) {
+	wiki := validPagesOutput()
+	wiki.Platform = "github-wiki"
+	wiki.Path = "docs"
+
+	err := Validate(Settings{Version: 1, Outputs: []Output{wiki}})
+
+	want := "outputs[0].path is not used by a github-wiki output; a wiki is a flat folder of pages"
+	if err == nil || err.Error() != want {
+		t.Fatalf("\n got: %v\nwant: %s", err, want)
 	}
 }
 

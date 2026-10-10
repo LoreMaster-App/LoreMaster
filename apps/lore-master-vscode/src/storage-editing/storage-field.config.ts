@@ -115,7 +115,19 @@ const GITHUB_PAGES_FIELDS: readonly StorageField[] = [
   ignoreField,
 ]
 
+const GITHUB_WIKI_FIELDS: readonly StorageField[] = [
+  textField('repo', 'Repository', "owner/name or a clone URL of the repository whose wiki this is. Leave empty for this workspace's own origin."),
+  textField('branch', 'Branch', "The wiki branch. Leave empty to follow the wiki's default branch."),
+  rootsField,
+  excludesField,
+  ignoreField,
+]
+
 /** The settings that can be changed for a storage of this platform. */
 export function fieldsFor (output: Output): readonly StorageField[] {
+  if (output.platform === 'github-wiki') {
+    return GITHUB_WIKI_FIELDS
+  }
+
   return output.platform === 'github-pages' ? GITHUB_PAGES_FIELDS : CONFLUENCE_FIELDS
 }
