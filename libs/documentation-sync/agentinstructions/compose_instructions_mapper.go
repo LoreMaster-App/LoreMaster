@@ -146,6 +146,11 @@ func syncedRoots(settings workspacesettings.Settings) []string {
 func leftOut(settings workspacesettings.Settings) []string {
 	left := slices.Clone(settings.Ignore)
 	for _, output := range settings.Outputs {
+		for _, pattern := range output.Exclude {
+			if !slices.Contains(left, pattern) {
+				left = append(left, pattern)
+			}
+		}
 		for _, content := range output.Content {
 			for _, pattern := range content.Excludes {
 				if !slices.Contains(left, pattern) {

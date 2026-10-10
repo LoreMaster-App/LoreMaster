@@ -19,6 +19,15 @@ func (settings Settings) DiscoveryScope() DiscoveryScope {
 	}
 }
 
+// ScanFor is what a scan of one content entry of output leaves out and takes back: the scope's
+// ignore list, the output's Exclude and the entry's excludes, and the output's Include.
+func (scope DiscoveryScope) ScanFor(output Output, content Content) (excludes []string, includes []string) {
+	excludes = scope.ExcludesFor(content)
+	excludes = append(excludes, output.Exclude...)
+
+	return excludes, output.Include
+}
+
 // ExcludesFor is the patterns to leave out for one content entry: the scope's ignore list
 // followed by the entry's own excludes.
 func (scope DiscoveryScope) ExcludesFor(content Content) []string {

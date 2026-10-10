@@ -106,7 +106,8 @@ func loadWorkspaceDocuments(ctx context.Context, root string) ([]documentparsing
 			if content.Type != "markdown" {
 				continue
 			}
-			found, err := documentdiscovery.DiscoverDocuments(ctx, documentdiscovery.Options{WorkspaceRoot: root, Roots: content.Roots, Excludes: scope.ExcludesFor(content), IncludeGitignored: !scope.SkipGitignored})
+			excludes, includes := scope.ScanFor(output, content)
+			found, err := documentdiscovery.DiscoverDocuments(ctx, documentdiscovery.Options{WorkspaceRoot: root, Roots: content.Roots, Excludes: excludes, Includes: includes, IncludeGitignored: !scope.SkipGitignored})
 			if err != nil {
 				return nil, nil, err
 			}

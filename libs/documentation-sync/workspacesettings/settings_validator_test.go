@@ -43,6 +43,11 @@ func TestValidate(t *testing.T) {
 		{"bad link mode", func(s *Settings) { s.Outputs[0].LinkMode = "url" }, `outputs[0].linkMode "url" is not one of title, id`},
 		{"http address", func(s *Settings) { s.Outputs[0].BaseURL = "http://acme.com" }, `outputs[0].baseUrl "http://acme.com" must be an https address`},
 		{"root outside", func(s *Settings) { s.Outputs[0].Content[0].Roots = []string{"../other"} }, `outputs[0].content[0].roots entry "../other" must be a path inside the workspace`},
+		{"include outside", func(s *Settings) { s.Outputs[0].Include = []string{"../private.md"} }, `outputs[0].include[0] "../private.md" must be a non-empty path or pattern inside the workspace`},
+		{"exclude empty", func(s *Settings) { s.Outputs[0].Exclude = []string{" "} }, `outputs[0].exclude[0] " " must be a non-empty path or pattern inside the workspace`},
+		{"in both lists", func(s *Settings) {
+			s.Outputs[0].Include, s.Outputs[0].Exclude = []string{"docs/"}, []string{"docs/"}
+		}, `outputs[0] lists "docs/" in both include and exclude; keep it in one`},
 		{"no content", func(s *Settings) { s.Outputs[0].Content = nil }, "outputs[0].content is empty; add at least one content entry"},
 		{"same destination twice", func(s *Settings) { s.Outputs = append(s.Outputs, s.Outputs[0]) }, "outputs[1] syncs to the same space and parent page as outputs[0]; two outputs would overwrite each other's pages"},
 	}

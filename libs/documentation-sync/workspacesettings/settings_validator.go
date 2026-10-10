@@ -132,6 +132,7 @@ func invalidSitePath(path string) string {
 // validateContent checks the content sources an output feeds from, which every platform
 // shares.
 func validateContent(add func(string, ...any), where string, output Output) {
+	validateSelection(add, where, output)
 	if len(output.Content) == 0 {
 		add("%s.content is empty; add at least one content entry", where)
 	}
@@ -148,6 +149,27 @@ func validateContent(add func(string, ...any), where string, output Output) {
 			if root == "" || path.IsAbs(root) || clean == ".." || strings.HasPrefix(clean, "../") {
 				add("%s.roots entry %q must be a path inside the workspace", at, root)
 			}
+		}
+	}
+}
+
+// validateSelection checks an output's include and exclude lists: entries stay inside the
+// workspace, and the same entry is not both included and excluded, which would say nothing.
+func validateSelection(add func(string, ...any), where string, output Output) {
+	for _, list := range []struct {
+		name    string
+		entries []string
+	}{{"include", output.Include}, {"exclude", output.Exclude}} {
+		for i, entry := range list.entries {
+			clean := path.Clean(strings.TrimPrefix(entry, "!"))
+			if strings.TrimSpace(entry) == "" || path.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, "../") {
+				add("%s.%s[%d] %q must be a non-empty path or pattern inside the workspace", where, list.name, i, entry)
+			}
+		}
+	}
+	for _, entry := range output.Include {
+		if slices.Contains(output.Exclude, entry) {
+			add("%s lists %q in both include and exclude; keep it in one", where, entry)
 		}
 	}
 }

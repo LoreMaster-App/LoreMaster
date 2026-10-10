@@ -35,7 +35,7 @@ func ExplainLeftOut(ctx context.Context, options LeftOutOptions) (LeftOutReport,
 	matchers := leftOutMatchers{
 		ignore:     ignore.CompileIgnoreLines(options.Ignore...),
 		excludes:   ignore.CompileIgnoreLines(options.Excludes...),
-		gitignores: newIgnoreRules(options.WorkspaceRoot, nil, true),
+		gitignores: newIgnoreRules(options.WorkspaceRoot, nil, nil, true),
 		honourGit:  !options.IncludeGitignored,
 	}
 

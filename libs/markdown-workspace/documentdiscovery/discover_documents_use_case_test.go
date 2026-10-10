@@ -302,3 +302,51 @@ func TestExplainLeftOutCapsTheListButCountsEverything(t *testing.T) {
 		t.Fatalf("listed %d of %d", len(report.Documents), report.Total)
 	}
 }
+
+func TestDiscoverDocumentsIncludeBringsBackOneFileOfAnExcludedFolder(t *testing.T) {
+	root := writeTree(t, map[string]string{
+		"README.md":              "# Root",
+		"internal/plan.md":       "# Plan",
+		"internal/public-faq.md": "# FAQ",
+		"internal/adr/one.md":    "# ADR",
+		"internal/adr/two.md":    "# ADR two",
+		"internal/.gitignore":    "ignored.md\n",
+		"internal/ignored.md":    "# Ignored by git",
+		"docs/guide.md":          "# Guide",
+		"docs/drafts/wip.md":     "# Draft",
+		"docs/drafts/keep.md":    "# Keep",
+	})
+
+	cases := []struct {
+		name     string
+		excludes []string
+		includes []string
+		want     []string
+	}{
+		{"no includes leaves the folder out", []string{"internal/"}, nil,
+			[]string{"README.md", "docs/drafts/keep.md", "docs/drafts/wip.md", "docs/guide.md"}},
+		{"a file inside an excluded folder comes back", []string{"internal/"}, []string{"internal/public-faq.md"},
+			[]string{"README.md", "docs/drafts/keep.md", "docs/drafts/wip.md", "docs/guide.md", "internal/public-faq.md"}},
+		{"a folder include takes the folder back", []string{"internal/"}, []string{"internal/"},
+			[]string{"README.md", "docs/drafts/keep.md", "docs/drafts/wip.md", "docs/guide.md", "internal/adr/one.md", "internal/adr/two.md", "internal/plan.md", "internal/public-faq.md"}},
+		{"the deeper exclude beats the shallower include", []string{"internal/adr/"}, []string{"internal/"},
+			[]string{"README.md", "docs/drafts/keep.md", "docs/drafts/wip.md", "docs/guide.md", "internal/plan.md", "internal/public-faq.md"}},
+		{"the deeper include beats the shallower exclude", []string{"docs/"}, []string{"docs/drafts/keep.md"},
+			[]string{"README.md", "docs/drafts/keep.md", "internal/adr/one.md", "internal/adr/two.md", "internal/plan.md", "internal/public-faq.md"}},
+		{"a tie goes to the include", []string{"docs/guide.md"}, []string{"docs/guide.md"},
+			[]string{"README.md", "docs/drafts/keep.md", "docs/drafts/wip.md", "docs/guide.md", "internal/adr/one.md", "internal/adr/two.md", "internal/plan.md", "internal/public-faq.md"}},
+		{"git-ignored stays out whatever is included", []string{"internal/"}, []string{"internal/ignored.md"},
+			[]string{"README.md", "docs/drafts/keep.md", "docs/drafts/wip.md", "docs/guide.md"}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			found, err := DiscoverDocuments(context.Background(), Options{WorkspaceRoot: root, Excludes: tc.excludes, Includes: tc.includes})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := paths(found.Documents); !slices.Equal(got, tc.want) {
+				t.Errorf("got  %v\nwant %v", got, tc.want)
+			}
+		})
+	}
+}

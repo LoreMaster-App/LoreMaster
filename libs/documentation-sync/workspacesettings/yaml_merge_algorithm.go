@@ -66,7 +66,7 @@ func replaceKeepingComments(existing *yaml.Node, updated *yaml.Node) {
 // from the update was cleared, and must go.
 var optionalKeys = map[string][]string{
 	"":                {"skipGitignored", "ignore", "generators"},
-	"outputs":         {"repo", "branch"},
+	"outputs":         {"repo", "branch", "include", "exclude"},
 	"outputs.content": {"excludes"},
 	"generators":      {"input", "title"},
 }

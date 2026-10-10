@@ -19,7 +19,7 @@ func DiscoverDocuments(ctx context.Context, options Options) (Discovery, error) 
 	if err != nil {
 		return Discovery{}, err
 	}
-	rules := newIgnoreRules(options.WorkspaceRoot, options.Excludes, !options.IncludeGitignored)
+	rules := newIgnoreRules(options.WorkspaceRoot, options.Excludes, options.Includes, !options.IncludeGitignored)
 	found := map[DocumentPath]bool{}
 	var warnings []string
 
