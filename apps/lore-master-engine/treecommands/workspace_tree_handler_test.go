@@ -242,3 +242,63 @@ func sortedPairs(values map[string]string) []string {
 
 	return pairs
 }
+
+func TestLocalTreeShowsEveryFileWithWhereItSyncsAndWhetherGitIgnoresIt(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{
+		workspacesettings.FileName: `version: 1
+ignore: ["notes/"]
+outputs:
+  - platform: confluence
+    baseUrl: https://acme.atlassian.net/wiki
+    space: ENG
+    parentPageId: "100"
+    titlePrefix: ENG
+    content:
+      - type: markdown
+        roots: ["docs"]
+  - platform: github-pages
+    content:
+      - type: markdown
+        roots: ["."]
+    include: ["notes/public.md"]
+`,
+		".gitignore":      "scratch.md\n",
+		"README.md":       "# Home\n",
+		"docs/guide.md":   "# Guide\n",
+		"notes/plan.md":   "# Plan\n",
+		"notes/public.md": "# Public\n",
+		"scratch.md":      "# Scratch\n",
+	})
+
+	var result rpcprotocol.WorkspaceTreeResult
+	err := connect(t).Call(context.Background(), rpcprotocol.MethodWorkspaceTree,
+		rpcprotocol.WorkspaceTreeParams{WorkspaceRoot: root, Scope: rpcprotocol.TreeScopeLocal}, &result)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type view struct {
+		Ignored  bool
+		SyncedTo []int
+	}
+	got := map[string]view{}
+	for _, node := range result.Nodes {
+		got[node.Path] = view{node.GitIgnored, node.SyncedTo}
+	}
+	want := map[string]view{
+		"README.md":       {false, []int{1}},
+		"docs/guide.md":   {false, []int{0, 1}},
+		"notes/plan.md":   {false, nil},
+		"notes/public.md": {false, []int{1}},
+		"scratch.md":      {true, nil},
+	}
+	if len(got) != len(want) {
+		t.Fatalf("files %v, want %v", got, want)
+	}
+	for path, expected := range want {
+		if actual := got[path]; actual.Ignored != expected.Ignored || !slices.Equal(actual.SyncedTo, expected.SyncedTo) {
+			t.Errorf("%s: got %+v, want %+v", path, actual, expected)
+		}
+	}
+}

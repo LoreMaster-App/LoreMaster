@@ -10,9 +10,17 @@ const MethodWorkspaceTree = "workspace/tree"
 type WorkspaceTreeParams struct {
 	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
-	// Output is the index of the output in the settings' outputs list.
+	// Output is the index of the output in the settings' outputs list. It is ignored when
+	// Scope is "local".
 	Output int `json:"output"`
+	// Scope is empty for one output's tree, or TreeScopeLocal for every Markdown file of the
+	// workspace whatever the outputs leave out.
+	Scope string `json:"scope,omitempty"`
 }
+
+// TreeScopeLocal asks for every Markdown file, each marked with whether git ignores it and
+// which outputs sync it.
+const TreeScopeLocal = "local"
 
 // Local statuses a tree node can carry; see syncplanning.LocalStatus.
 const (
@@ -67,4 +75,8 @@ type TreeNode struct {
 	// PageID is the platform page the file's annotation points at, when it has one.
 	PageID   string   `json:"pageId,omitempty"`
 	Warnings []string `json:"warnings,omitempty"`
+	// GitIgnored and SyncedTo are set only in the local scope: whether git ignores the file
+	// (so it is never synced), and the indexes of the outputs that sync it.
+	GitIgnored bool  `json:"gitIgnored,omitempty"`
+	SyncedTo   []int `json:"syncedTo,omitempty"`
 }
