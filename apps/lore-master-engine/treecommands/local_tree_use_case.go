@@ -24,7 +24,7 @@ func localTree(ctx context.Context, root string, settings workspacesettings.Sett
 	if err != nil {
 		return result, err
 	}
-	tracked, err := documentdiscovery.DiscoverDocuments(ctx, documentdiscovery.Options{WorkspaceRoot: root})
+	tracked, err := documentdiscovery.DiscoverDocuments(ctx, documentdiscovery.Options{WorkspaceRoot: root, IncludeGitignored: !settings.DiscoveryScope().SkipGitignored})
 	if err != nil {
 		return result, err
 	}
