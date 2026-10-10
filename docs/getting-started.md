@@ -68,7 +68,8 @@ changes, so the view never shows a platform state it has not just asked for.
   content title (first heading) or their file name. The other one is shown beside it, and
   the choice is the `loreMaster.pages.label` setting.
 - Click a page to open its file; the cloud-upload button on a row syncs just that page.
-- With several storages, each gets its own group.
+- A **Local** node above the storages lists every Markdown file in the repository and which
+  storages sync it; each storage gets its own group.
 - The tree follows `roots`, `excludes`, `ignore` and `skipGitignored` from
   `.lore-master.yaml`, so what you see is what a sync would read.
 - **Left out** (collapsed, under the pages) lists the Markdown files the sync does not read, each
@@ -78,15 +79,19 @@ changes, so the view never shows a platform state it has not just asked for.
 
 ### Leaving files out
 
-There are three independent ways, and a file is left out if any applies:
+A file is left out if any of these applies, unless a storage's `include:` takes it back with a
+more specific entry:
 
 | Setting | Applies to | |
 |---|---|---|
 | `ignore:` (top level) | every storage | gitignore-style patterns, e.g. `CLAUDE.md`, `internal/` |
-| `excludes:` (on a content entry) | that storage | same patterns |
+| `exclude:` / `excludes:` (on a storage / its content entry) | that storage | same patterns |
+| `include:` (on a storage) | that storage | takes a file or folder back from an exclusion |
 | `skipGitignored` | the workspace | `true` by default: Markdown a `.gitignore` ignores is not synced |
 
-Change the `ignore` list from **Edit storage → Ignored paths (all storages)**, or in the file.
+Change the `ignore` list from **Edit storage → Ignored paths (all storages)**, or in the file,
+and right-click a page or folder in the **Pages** view for **Do not sync…**. The **Local** node
+lists every file with where it goes. See [Choosing what goes where](choosing-what-goes-where.md).
 
 ## 6. Change a storage's settings
 
