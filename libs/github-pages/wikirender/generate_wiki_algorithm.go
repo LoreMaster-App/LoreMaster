@@ -174,7 +174,7 @@ func LeftOutLinks(tree documenttree.DocumentTree) []string {
 			for _, m := range inlineLink.FindAllStringSubmatchIndex(line, -1) {
 				target := line[m[2]:m[3]]
 				start, ok := linkTextStart(line, m[0])
-				if ok && !(start > 0 && line[start-1] == '!') && leftOutDocument(target, dir, byPath) {
+				if ok && !isImage(line, start) && leftOutDocument(target, dir, byPath) {
 					warnings = append(warnings, page.source+": links to "+target+", which this output leaves out")
 				}
 			}
@@ -238,7 +238,7 @@ func rewriteLine(line, dir string, byPath map[string]string) string {
 	for _, m := range matches {
 		target := line[m[2]:m[3]]
 		start, ok := linkTextStart(line, m[0])
-		if ok && start >= last && !(start > 0 && line[start-1] == '!') && leftOutDocument(target, dir, byPath) {
+		if ok && start >= last && !isImage(line, start) && leftOutDocument(target, dir, byPath) {
 			out.WriteString(line[last:start])
 			out.WriteString(line[start+1 : m[0]])
 			last = m[1]
@@ -252,6 +252,11 @@ func rewriteLine(line, dir string, byPath map[string]string) string {
 	out.WriteString(line[last:])
 
 	return out.String()
+}
+
+// isImage reports whether the link text opening at start belongs to an image ("![...](...)").
+func isImage(line string, start int) bool {
+	return start > 0 && line[start-1] == '!'
 }
 
 // linkTextStart is the index of the "[" that opens the link text closed by the "]" at close.
