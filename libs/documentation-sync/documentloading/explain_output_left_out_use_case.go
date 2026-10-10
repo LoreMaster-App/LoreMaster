@@ -26,6 +26,12 @@ func ExplainOutputLeftOut(ctx context.Context, workspaceRoot string, output work
 		}
 	}
 
+	for _, pattern := range output.Exclude {
+		if !slices.Contains(excludes, pattern) {
+			excludes = append(excludes, pattern)
+		}
+	}
+
 	included := make([]documentdiscovery.DocumentPath, 0, len(loaded.Documents))
 	for _, document := range loaded.Documents {
 		included = append(included, document.Path)

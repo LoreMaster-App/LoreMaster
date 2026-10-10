@@ -60,6 +60,7 @@ func RenderSite(ctx context.Context, workspaceRoot string, outputIndex int) (Ren
 	// Include the images and linked files the pages reference, so their relative src/href
 	// resolve on the site instead of 404ing.
 	assets, assetWarnings := collectSiteAssets(workspaceRoot, documents)
+	warnings = append(warnings, wikirender.LeftOutLinks(tree)...)
 
 	return RenderedSite{
 		Output:   output,

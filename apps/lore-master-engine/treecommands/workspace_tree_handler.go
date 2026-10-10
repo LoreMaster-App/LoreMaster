@@ -29,6 +29,9 @@ func WorkspaceTree() rpcserver.Method {
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
+		if params.Scope == rpcprotocol.TreeScopeLocal {
+			return localTree(ctx, params.WorkspaceRoot, settings.Settings)
+		}
 		outputs := settings.Settings.Outputs
 		if params.Output < 0 || params.Output >= len(outputs) {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(outputs))

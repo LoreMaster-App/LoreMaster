@@ -33,9 +33,10 @@ func LoadOutputDocuments(ctx context.Context, workspaceRoot string, output works
 		if content.Type != "markdown" {
 			continue
 		}
+		excludes, includes := scope.ScanFor(output, content)
 		found, err := documentdiscovery.DiscoverDocuments(ctx, documentdiscovery.Options{
 			WorkspaceRoot: workspaceRoot, Roots: content.Roots,
-			Excludes: scope.ExcludesFor(content), IncludeGitignored: !scope.SkipGitignored,
+			Excludes: excludes, Includes: includes, IncludeGitignored: !scope.SkipGitignored,
 		})
 		if err != nil {
 			return Loaded{}, err

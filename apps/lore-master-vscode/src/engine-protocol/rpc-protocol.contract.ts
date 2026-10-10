@@ -155,6 +155,11 @@ export interface Output {
   repo?:          string
   branch?:        string
   path?:          string
+  /** Gitignore-syntax entries (files, or folders ending in "/") this storage reads although the
+   *  top-level ignore list or its own exclude leaves them out; the most specific entry wins. */
+  include?:       string[]
+  /** Entries this storage leaves out, on top of the top-level ignore list. */
+  exclude?:       string[]
 }
 
 /** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */
@@ -198,8 +203,10 @@ export interface SettingsSaveParams {
 
 export interface WorkspaceTreeParams {
   workspaceRoot: string
-  /** Index of the output in the settings' outputs list. */
+  /** Index of the output in the settings' outputs list; ignored when scope is "local". */
   output:        number
+  /** "local" asks for every Markdown file of the workspace, whatever the storages leave out. */
+  scope?:        'local'
 }
 
 /** What the files alone say about a page; the remote half comes from a read-only sync/plan. */
@@ -207,19 +214,23 @@ export type TreeStatus = 'new' | 'synced' | 'local-changes'
 
 export interface TreeNode {
   /** Workspace-relative file, '/'-separated. */
-  path:      string
+  path:        string
   /** The title from the file (H1, front-matter or annotation title, else the file name). */
-  title:     string
+  title:       string
   /** What the platform shows: the title with the output's prefix. */
-  pageTitle: string
+  pageTitle:   string
   /** The file this page nests under; absent means directly under the configured parent. */
-  parent?:   string
-  rule:      string
-  depth:     number
+  parent?:     string
+  rule:        string
+  depth:       number
   /** Absent for an output that does not track pages in the files (github-pages). */
-  status?:   TreeStatus
-  pageId?:   string
-  warnings?: string[]
+  status?:     TreeStatus
+  pageId?:     string
+  warnings?:   string[]
+  /** Local scope only: git ignores the file, so no storage ever syncs it. */
+  gitIgnored?: boolean
+  /** Local scope only: the indexes of the storages that sync the file. */
+  syncedTo?:   number[]
 }
 
 /** A Markdown file the scan did not read, and the rule that left it out. */

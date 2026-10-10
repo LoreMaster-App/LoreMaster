@@ -62,6 +62,14 @@ type Output struct {
 	// root; empty means the root. Only that folder is replaced, so another site can share the
 	// branch.
 	Path string `yaml:"path,omitempty"`
+	// Include is gitignore-syntax patterns (files, or folders ending in "/") this output reads
+	// even though the top-level ignore list, its Exclude or a content entry's excludes leave
+	// them out. The most specific entry wins; on a tie the include does. Git-ignored files
+	// stay out, and Include never reaches outside the content roots.
+	Include []string `yaml:"include,omitempty"`
+	// Exclude is gitignore-syntax patterns (files, or folders ending in "/") this output
+	// leaves out, on top of the top-level ignore list and the content entries' excludes.
+	Exclude []string `yaml:"exclude,omitempty"`
 }
 
 // Content is one source feeding an output.

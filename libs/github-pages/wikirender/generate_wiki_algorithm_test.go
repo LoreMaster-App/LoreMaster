@@ -81,3 +81,30 @@ func TestPageNameReadsAsAnAddress(t *testing.T) {
 		}
 	}
 }
+
+func TestGenerateWikiTurnsALinkToALeftOutDocumentIntoPlainText(t *testing.T) {
+	got := contents(GenerateWiki(tree(t, map[string]string{
+		"README.md": "# Project\n\nSee [the plan](internal/plan.md#risks), [the guide](guide.md) and ![a](internal/plan.md).\n",
+		"guide.md":  "# Guide\n",
+	})))
+
+	home := got["Home.md"]
+	if !strings.Contains(home, "See the plan, [the guide](Guide) and ![a](internal/plan.md).") {
+		t.Errorf("a left-out document link should be plain text and the rest kept:\n%s", home)
+	}
+}
+
+func TestLeftOutLinksNamesEachLinkToADocumentTheOutputDoesNotPublish(t *testing.T) {
+	warnings := LeftOutLinks(tree(t, map[string]string{
+		"README.md": "# Project\n\n[plan](internal/plan.md), [guide](guide.md), ![shot](internal/a.png)\n\n```\n[x](other.md)\n```\n",
+		"guide.md":  "# Guide\n\nBack: [home](README.md) and [adr](docs/adr.md#top).\n",
+	}))
+
+	want := []string{
+		"README.md: links to internal/plan.md, which this output leaves out",
+		"guide.md: links to docs/adr.md#top, which this output leaves out",
+	}
+	if len(warnings) != len(want) || warnings[0] != want[0] || warnings[1] != want[1] {
+		t.Fatalf("warnings %q, want %q", warnings, want)
+	}
+}

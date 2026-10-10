@@ -8,6 +8,10 @@ type Options struct {
 	Roots []string
 	// Excludes are gitignore-syntax patterns matched against workspace-relative paths.
 	Excludes []string
+	// Includes are gitignore-syntax patterns that read a file Excludes would leave out, when
+	// the include is the more specific: the deeper matching path wins, and a tie goes to the
+	// include. Git-ignored files and DefaultExcludedDirectories are never re-included.
+	Includes []string
 	// IncludeGitignored also reads files the workspace's .gitignore files ignore. The zero
 	// value skips them, which is what a sync wants.
 	IncludeGitignored bool

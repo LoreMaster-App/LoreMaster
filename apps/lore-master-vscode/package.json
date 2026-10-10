@@ -167,6 +167,28 @@
         "title": "Toggle watch mode",
         "category": "LoreMaster",
         "icon": "$(eye)"
+      },
+      {
+        "command": "loreMaster.choosePagesView",
+        "title": "Arrange pages: storage tree, flat list or repository tree",
+        "category": "LoreMaster",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "loreMaster.togglePagesExcluded",
+        "title": "Show or hide the files a storage leaves out",
+        "category": "LoreMaster",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "loreMaster.excludeFromSync",
+        "title": "Do not sync...",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.includeInSync",
+        "title": "Sync this file...",
+        "category": "LoreMaster"
       }
     ],
     "viewsContainers": {
@@ -223,7 +245,7 @@
         {
           "command": "loreMaster.refreshPages",
           "when": "view == loreMaster.pages",
-          "group": "navigation@3"
+          "group": "navigation@5"
         },
         {
           "command": "loreMaster.addGenerator",
@@ -249,6 +271,16 @@
           "command": "loreMaster.toggleWatch",
           "when": "view == loreMaster.generators",
           "group": "navigation@5"
+        },
+        {
+          "command": "loreMaster.choosePagesView",
+          "when": "view == loreMaster.pages",
+          "group": "navigation@3"
+        },
+        {
+          "command": "loreMaster.togglePagesExcluded",
+          "when": "view == loreMaster.pages",
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [
@@ -281,6 +313,16 @@
           "command": "loreMaster.removeGenerator",
           "when": "view == loreMaster.generators && viewItem == loreMasterGenerator",
           "group": "inline@3"
+        },
+        {
+          "command": "loreMaster.excludeFromSync",
+          "when": "view == loreMaster.pages && viewItem =~ /^(loreMasterPage|loreMasterFolder)/",
+          "group": "2_selection@1"
+        },
+        {
+          "command": "loreMaster.includeInSync",
+          "when": "view == loreMaster.pages && viewItem == loreMasterLeftOutFile",
+          "group": "2_selection@1"
         }
       ],
       "commandPalette": [
@@ -348,6 +390,34 @@
             "Name each page by its file name."
           ],
           "markdownDescription": "How the **Pages** view names each page. The other name is shown beside it. Switch with the button in the view title."
+        },
+        "loreMaster.pages.view": {
+          "type": "string",
+          "enum": [
+            "storage",
+            "flat",
+            "repo"
+          ],
+          "default": "storage",
+          "enumDescriptions": [
+            "The pages as the storage will nest them.",
+            "Every page in one list.",
+            "The files where they sit in the repository, folders included."
+          ],
+          "markdownDescription": "How the **Pages** view arranges files. Change it with the button in the view title."
+        },
+        "loreMaster.pages.excluded": {
+          "type": "string",
+          "enum": [
+            "faded",
+            "hidden"
+          ],
+          "default": "faded",
+          "enumDescriptions": [
+            "Show the files a storage leaves out, faded, with the reason.",
+            "Hide them."
+          ],
+          "markdownDescription": "What the **Pages** view does with the files a storage leaves out. Switch with the eye button in the view title."
         },
         "loreMaster.generateBeforeSync": {
           "type": "boolean",

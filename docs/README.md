@@ -5,6 +5,8 @@ Start here, then dive into the architecture decisions.
 ## Using it
 
 - [Getting started](getting-started.md) — install, connect, and run your first sync.
+- [Choosing what goes where](choosing-what-goes-where.md) — send some pages to Pages, some to
+  Confluence and some to the wiki, with exclude and include lists.
 - [GitHub wiki](github-wiki.md) — publish the Markdown as the repository's wiki pages, beside
   or instead of a Pages site.
 - [Generators](generators.md) — pages written from your test reports (and later source docs),

@@ -16,17 +16,24 @@ import (
 type ignoreRules struct {
 	workspaceRoot string
 	excludes      *ignore.GitIgnore
+	excludeSet    *patternSet
+	includeSet    *patternSet
 	gitignored    bool
 	gitignores    map[string]*ignore.GitIgnore
 }
 
-func newIgnoreRules(workspaceRoot string, excludes []string, honourGitignore bool) *ignoreRules {
-	return &ignoreRules{
+func newIgnoreRules(workspaceRoot string, excludes []string, includes []string, honourGitignore bool) *ignoreRules {
+	rules := &ignoreRules{
 		workspaceRoot: workspaceRoot,
 		excludes:      ignore.CompileIgnoreLines(excludes...),
 		gitignored:    honourGitignore,
 		gitignores:    map[string]*ignore.GitIgnore{},
 	}
+	if len(includes) > 0 {
+		rules.excludeSet, rules.includeSet = newPatternSet(excludes), newPatternSet(includes)
+	}
+
+	return rules
 }
 
 // ignored reports whether rel ('/'-separated, relative to the workspace root) is excluded.
@@ -36,7 +43,12 @@ func (r *ignoreRules) ignored(rel string, isDir bool) (bool, error) {
 	if isDir && slices.Contains(DefaultExcludedDirectories, path.Base(rel)) {
 		return true, nil
 	}
-	if r.excludes.MatchesPath(withDirectorySlash(rel, isDir)) {
+	switch {
+	case r.includeSet == nil:
+		if r.excludes.MatchesPath(withDirectorySlash(rel, isDir)) {
+			return true, nil
+		}
+	case !isDir && r.leftOutByLists(rel):
 		return true, nil
 	}
 	if !r.gitignored {
@@ -54,6 +66,18 @@ func (r *ignoreRules) ignored(rel string, isDir bool) (bool, error) {
 			return false, nil
 		}
 	}
+}
+
+// leftOutByLists decides a file when the settings carry includes: an exclude leaves it out
+// unless an include at least as specific takes it back. A folder is never decided here, so
+// the walk goes into an excluded folder to find what is included below it.
+func (r *ignoreRules) leftOutByLists(rel string) bool {
+	excluded := r.excludeSet.specificity(rel, false)
+	if excluded == 0 {
+		return false
+	}
+
+	return r.includeSet.specificity(rel, false) < excluded
 }
 
 func (r *ignoreRules) gitignoreIn(dir string) (*ignore.GitIgnore, error) {
