@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import type { ConnectionStore } from '../secret-storage'
 import { checkRemote } from './check-remote.use-case'
+import { checkPages } from './check-pages.use-case'
 import type { PagesViewProvider } from './pages-view.client'
 
 /** The command id contributed in package.json. */
@@ -13,29 +14,50 @@ export interface CheckRemoteCommandDeps {
 }
 
 /**
- * Asks the platform where the Pages view's pages stand (read-only) and shows the answer in
- * the view. With several Confluence storages it asks which; GitHub Pages has no remote
- * state to compare.
+ * Asks where the Pages view's pages stand, read-only. For a Confluence storage the answer
+ * lands in the view; for a GitHub Pages output it is a message saying whether a publish would
+ * change anything, because a site has no per-page remote state. With several storages it asks
+ * which.
  */
 export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider: PagesViewProvider): Promise<void> {
   const { folder, outputs } = await provider.configuredOutputs()
-  const confluence = outputs.filter(each => each.output.platform === 'confluence')
-  if (confluence.length === 0) {
-    await vscode.window.showInformationMessage('LoreMaster: there is no Confluence storage to check. Add one with "Add sync storage".')
+  const checkable = outputs.filter(each => each.output.platform === 'confluence' || each.output.platform === 'github-pages')
+  if (checkable.length === 0) {
+    await vscode.window.showInformationMessage('LoreMaster: there is no storage to check. Add one with "Add sync storage".')
 
     return
   }
 
-  let chosen = confluence[0]
-  if (confluence.length > 1) {
+  let chosen = checkable[0]
+  if (checkable.length > 1) {
     const picked = await vscode.window.showQuickPick(
-      confluence.map(each => ({ label: `Confluence · ${each.output.space}`, description: each.output.baseUrl, each })),
+      checkable.map(each => ({
+        label:       each.output.platform === 'github-pages' ? 'GitHub Pages' : `Confluence · ${each.output.space}`,
+        description: each.output.platform === 'github-pages' ? each.output.branch : each.output.baseUrl,
+        each,
+      })),
       { title: 'LoreMaster: check which storage?' },
     ) as { each: typeof chosen } | undefined
     if (!picked) {
       return
     }
     chosen = picked.each
+  }
+
+  if (chosen.output.platform === 'github-pages') {
+    const site = await vscode.window.withProgress(
+      { location: vscode.ProgressLocation.Window, title: 'LoreMaster: comparing the site with the published branch' },
+      () => checkPages(deps.engine, folder, chosen.index),
+    )
+    if (!site.ok) {
+      await vscode.window.showErrorMessage(`LoreMaster: ${site.reason}`)
+    } else if (site.upToDate) {
+      await vscode.window.showInformationMessage(`LoreMaster: ${site.message}`)
+    } else {
+      await vscode.window.showWarningMessage(`LoreMaster: ${site.message}`)
+    }
+
+    return
   }
 
   const outcome = await vscode.window.withProgress(

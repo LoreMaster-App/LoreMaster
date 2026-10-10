@@ -97,3 +97,47 @@ func TestPagesWithoutASubcommandIsAUsageError(t *testing.T) {
 		t.Fatalf("exit %d\n%s", code, stderr)
 	}
 }
+
+func pagesCheckDouble(result rpcprotocol.PagesCheckResult) *engineDouble {
+	return newEngineDouble(map[string]func(rpcserver.Call) (any, error){
+		rpcprotocol.MethodSettingsRead: settingsAnswer(pagesOutput),
+		rpcprotocol.MethodPagesCheck:   func(rpcserver.Call) (any, error) { return result, nil },
+	})
+}
+
+func TestPagesCheckSaysUpToDateAndExitsOK(t *testing.T) {
+	double := pagesCheckDouble(rpcprotocol.PagesCheckResult{Branch: "gh-pages", UpToDate: true, Files: 9})
+
+	stdout, _, code := double.run(t, nil, "pages", "check", "--exit-code")
+
+	if code != ExitOK || !strings.Contains(stdout, "gh-pages is up to date (9 files)") {
+		t.Fatalf("exit %d\n%s", code, stdout)
+	}
+}
+
+func TestPagesCheckListsTheChangesAndOnlyFailsWithExitCode(t *testing.T) {
+	result := rpcprotocol.PagesCheckResult{
+		Branch: "gh-pages", ChangesTotal: 3, Files: 9,
+		Changes: []rpcprotocol.PagesChange{{Path: "index.html", Kind: "modified"}, {Path: "docs/new.html", Kind: "added"}},
+	}
+
+	stdout, _, code := pagesCheckDouble(result).run(t, nil, "pages", "check")
+	if code != ExitOK || !strings.Contains(stdout, "3 files would change") || !strings.Contains(stdout, "modified index.html") || !strings.Contains(stdout, "and 1 more") {
+		t.Fatalf("exit %d\n%s", code, stdout)
+	}
+
+	_, _, code = pagesCheckDouble(result).run(t, nil, "pages", "check", "--exit-code")
+	if code != ExitBlocked {
+		t.Fatalf("want exit %d with --exit-code, got %d", ExitBlocked, code)
+	}
+}
+
+func TestPagesCheckStopsWhenTheMarkdownHasErrors(t *testing.T) {
+	double := pagesCheckDouble(rpcprotocol.PagesCheckResult{Errors: []string{"docs/a.md: two H1 headings"}})
+
+	_, stderr, code := double.run(t, nil, "pages", "check")
+
+	if code != ExitBlocked || !strings.Contains(stderr, "two H1 headings") {
+		t.Fatalf("exit %d\n%s", code, stderr)
+	}
+}

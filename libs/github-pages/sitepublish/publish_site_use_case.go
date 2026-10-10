@@ -29,36 +29,14 @@ const (
 func PublishSite(ctx context.Context, opts PublishOptions, files []siterender.SiteFile) (PublishResult, error) {
 	git := newGitClient()
 
-	branch := opts.Branch
-	if branch == "" {
-		branch = defaultBranch
-	}
-	remote, err := resolveRemote(ctx, git, opts)
+	staged, err := stageSite(ctx, git, opts, files)
 	if err != nil {
 		return PublishResult{}, err
 	}
+	defer staged.cleanup()
+	tmp, branch, remote := staged.dir, staged.branch, staged.remote
 
-	tmp, err := os.MkdirTemp("", "lore-master-pages-*")
-	if err != nil {
-		return PublishResult{}, err
-	}
-	defer func() { _ = os.RemoveAll(tmp) }()
-
-	if err := checkoutBranch(ctx, git, remote, branch, tmp); err != nil {
-		return PublishResult{}, err
-	}
-	target := tmp
-	if opts.Path != "" {
-		target = filepath.Join(tmp, filepath.FromSlash(opts.Path))
-	}
-	if err := WriteSite(target, files); err != nil {
-		return PublishResult{}, err
-	}
-	if _, err := git.run(ctx, tmp, "add", "-A"); err != nil {
-		return PublishResult{}, err
-	}
-
-	status, err := git.run(ctx, tmp, "status", "--porcelain")
+	status, err := git.run(ctx, tmp, "status", "--porcelain", "--no-renames")
 	if err != nil {
 		return PublishResult{}, err
 	}
@@ -120,4 +98,52 @@ func checkoutBranch(ctx context.Context, git gitClient, remote, branch, tmp stri
 	}
 
 	return nil
+}
+
+// stagedSite is a temporary clone of the target branch with the generated site laid over the
+// target folder and added to the index, ready to be inspected or committed.
+type stagedSite struct {
+	dir, branch, remote string
+	cleanup             func()
+}
+
+// stageSite clones the target branch and replaces the target folder with the site, exactly as
+// a publish would, without committing. The caller must call cleanup.
+func stageSite(ctx context.Context, git gitClient, opts PublishOptions, files []siterender.SiteFile) (stagedSite, error) {
+	branch := opts.Branch
+	if branch == "" {
+		branch = defaultBranch
+	}
+	remote, err := resolveRemote(ctx, git, opts)
+	if err != nil {
+		return stagedSite{}, err
+	}
+
+	tmp, err := os.MkdirTemp("", "lore-master-pages-*")
+	if err != nil {
+		return stagedSite{}, err
+	}
+	cleanup := func() { _ = os.RemoveAll(tmp) }
+
+	if err := checkoutBranch(ctx, git, remote, branch, tmp); err != nil {
+		cleanup()
+
+		return stagedSite{}, err
+	}
+	target := tmp
+	if opts.Path != "" {
+		target = filepath.Join(tmp, filepath.FromSlash(opts.Path))
+	}
+	if err := WriteSite(target, files); err != nil {
+		cleanup()
+
+		return stagedSite{}, err
+	}
+	if _, err := git.run(ctx, tmp, "add", "-A"); err != nil {
+		cleanup()
+
+		return stagedSite{}, err
+	}
+
+	return stagedSite{dir: tmp, branch: branch, remote: remote, cleanup: cleanup}, nil
 }
