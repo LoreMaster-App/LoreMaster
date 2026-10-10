@@ -195,6 +195,8 @@ creation, annotation write-back, an idempotent re-run, and page adoption.
   or rebase).
 - Releases are automated: a merge to `main` versions the extension from the commit history
   and publishes it to the Marketplace through Microsoft Entra ID (OIDC — no stored secret).
+  The same packages go to Open VSX (VSCodium, Cursor, Windsurf, Gitpod) when the `OVSX_PAT`
+  secret exists; create the `LoreMaster` namespace once with `npx ovsx create-namespace`.
 
 See [`docs/`](docs/) for architecture and contributing guides, and
 [`ROADMAP.md`](ROADMAP.md) for every epic and its issues.

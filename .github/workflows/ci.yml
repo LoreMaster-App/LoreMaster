@@ -180,4 +180,21 @@ jobs:
       # mnci:phase-end release
 
       # mnci:slot after-release  (your own steps go between these two lines; mnci upgrade keeps them)
+      # Open VSX (VSCodium, Cursor, Windsurf, Gitpod, Theia): the same platform-specific
+      # .vsix files the release just packaged. Skips itself when the OVSX_PAT secret is missing, so
+      # nothing changes until the token is added. The namespace is created once with
+      # 'npx ovsx create-namespace LoreMaster -p <token>'.
+      - name: Publish to Open VSX
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then echo 'No OVSX_PAT secret - skipping Open VSX.'; exit 0; fi
+          shopt -s nullglob
+          files=(dist/drop/*.vsix)
+          if [ ${#files[@]} -eq 0 ]; then echo 'No .vsix to publish.'; exit 0; fi
+          for file in "${files[@]}"; do
+            base="$(basename "$file" .vsix)"; target="${base#lore-master-vscode-}"
+            npx --yes ovsx@1.2.0 publish "$file" --target "$target" --skip-duplicate
+          done
       # mnci:slot-end after-release
