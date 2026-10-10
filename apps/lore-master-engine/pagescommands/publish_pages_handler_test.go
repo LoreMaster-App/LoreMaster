@@ -148,3 +148,56 @@ func TestPublishPagesNeedsAnAbsoluteWorkspace(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 }
+
+const wikiConfig = `version: 1
+outputs:
+  - platform: github-wiki
+    direction: to-platform
+    content:
+      - type: markdown
+        roots: ["."]
+        template: default
+`
+
+func TestPublishPagesPublishesAWikiOutputAsMarkdownPages(t *testing.T) {
+	conn := connect(t)
+	work := pagesWorkspace(t, wikiConfig)
+	origin, err := exec.Command("git", "-C", work, "remote", "get-url", "origin").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wiki := strings.TrimSpace(string(origin)) + ".wiki.git"
+	if err := os.MkdirAll(wiki, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, wiki, "init", "--bare", "--initial-branch=master")
+	seed := t.TempDir()
+	runGit(t, "", "clone", wiki, seed)
+	runGit(t, seed, "config", "user.name", "Test")
+	runGit(t, seed, "config", "user.email", "test@example.com")
+	write(t, seed, "Home.md", "created on GitHub")
+	runGit(t, seed, "add", "-A")
+	runGit(t, seed, "commit", "-m", "Initial Home page")
+	runGit(t, seed, "push", "origin", "HEAD:master")
+
+	result, err := publish(t, conn, work, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Changed || result.Branch != "master" {
+		t.Fatalf("unexpected result: %+v", result)
+	}
+
+	clone := t.TempDir()
+	runGit(t, "", "clone", wiki, clone)
+	home, err := os.ReadFile(filepath.Join(clone, "Home.md"))
+	if err != nil || !strings.Contains(string(home), "Welcome.") {
+		t.Fatalf("the readme should be the wiki home: %v %q", err, home)
+	}
+	if _, err := os.Stat(filepath.Join(clone, "_Sidebar.md")); err != nil {
+		t.Errorf("missing sidebar: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(clone, "index.html")); !os.IsNotExist(err) {
+		t.Errorf("a wiki must not get site files, got %v", err)
+	}
+}

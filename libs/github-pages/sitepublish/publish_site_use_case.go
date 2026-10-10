@@ -12,6 +12,7 @@ import (
 
 const (
 	defaultBranch        = "gh-pages"
+	defaultWikiBranch    = "master"
 	defaultCommitMessage = "docs: publish site with LoreMaster"
 	// commitIdentity is used only when the repository has no configured author, so a
 	// publish from a bare CI checkout still commits.
@@ -65,6 +66,25 @@ func PublishSite(ctx context.Context, opts PublishOptions, files []siterender.Si
 // resolveRemote is the clone URL to publish to: the workspace's own origin when Repo is
 // empty, otherwise Repo itself (a URL) or a github.com URL built from "owner/name".
 func resolveRemote(ctx context.Context, git gitClient, opts PublishOptions) (string, error) {
+	remote, err := resolveRepository(ctx, git, opts)
+	if err != nil || !opts.Wiki {
+		return remote, err
+	}
+
+	return wikiRemote(remote), nil
+}
+
+// wikiRemote is the wiki repository of a clone URL: ".wiki" goes before the ".git" suffix
+// (or at the end when there is none).
+func wikiRemote(remote string) string {
+	if strings.HasSuffix(remote, ".wiki.git") || strings.HasSuffix(remote, ".wiki") {
+		return remote
+	}
+
+	return strings.TrimSuffix(remote, ".git") + ".wiki.git"
+}
+
+func resolveRepository(ctx context.Context, git gitClient, opts PublishOptions) (string, error) {
 	if opts.Repo == "" {
 		url, err := git.run(ctx, opts.WorkspaceRoot, "remote", "get-url", "origin")
 		if err != nil {
@@ -100,6 +120,15 @@ func checkoutBranch(ctx context.Context, git gitClient, remote, branch, tmp stri
 	return nil
 }
 
+// checkoutDefaultBranch clones the remote's default branch into tmp and returns its name.
+func checkoutDefaultBranch(ctx context.Context, git gitClient, remote, tmp string) (string, error) {
+	if _, err := git.run(ctx, "", "clone", "--depth", "1", remote, tmp); err != nil {
+		return "", fmt.Errorf("clone %s: %w", remote, err)
+	}
+
+	return git.run(ctx, tmp, "rev-parse", "--abbrev-ref", "HEAD")
+}
+
 // stagedSite is a temporary clone of the target branch with the generated site laid over the
 // target folder and added to the index, ready to be inspected or committed.
 type stagedSite struct {
@@ -113,6 +142,9 @@ func stageSite(ctx context.Context, git gitClient, opts PublishOptions, files []
 	branch := opts.Branch
 	if branch == "" {
 		branch = defaultBranch
+		if opts.Wiki {
+			branch = defaultWikiBranch
+		}
 	}
 	remote, err := resolveRemote(ctx, git, opts)
 	if err != nil {
@@ -125,16 +157,30 @@ func stageSite(ctx context.Context, git gitClient, opts PublishOptions, files []
 	}
 	cleanup := func() { _ = os.RemoveAll(tmp) }
 
-	if err := checkoutBranch(ctx, git, remote, branch, tmp); err != nil {
+	var checkoutErr error
+	if opts.Wiki && opts.Branch == "" {
+		// A wiki has whatever default branch GitHub gave it; follow it rather than guess.
+		branch, checkoutErr = checkoutDefaultBranch(ctx, git, remote, tmp)
+	} else {
+		checkoutErr = checkoutBranch(ctx, git, remote, branch, tmp)
+	}
+	if checkoutErr != nil {
 		cleanup()
+		if opts.Wiki {
+			return stagedSite{}, fmt.Errorf("%w (a wiki exists only after its first page is created on GitHub: open the repository's Wiki tab and create Home)", checkoutErr)
+		}
 
-		return stagedSite{}, err
+		return stagedSite{}, checkoutErr
 	}
 	target := tmp
-	if opts.Path != "" {
+	if opts.Path != "" && !opts.Wiki {
 		target = filepath.Join(tmp, filepath.FromSlash(opts.Path))
 	}
-	if err := WriteSite(target, files); err != nil {
+	write := WriteSite
+	if opts.Wiki {
+		write = WriteOverlay
+	}
+	if err := write(target, files); err != nil {
 		cleanup()
 
 		return stagedSite{}, err

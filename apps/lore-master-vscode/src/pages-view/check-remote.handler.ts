@@ -1,6 +1,8 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
+import { isGitHubOutput } from '../engine-protocol'
 import type { ConnectionStore } from '../secret-storage'
+import { storageDescription, storageLabel } from '../sidebar'
 import { checkRemote } from './check-remote.use-case'
 import { checkPages } from './check-pages.use-case'
 import type { PagesViewProvider } from './pages-view.client'
@@ -21,7 +23,7 @@ export interface CheckRemoteCommandDeps {
  */
 export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider: PagesViewProvider): Promise<void> {
   const { folder, outputs } = await provider.configuredOutputs()
-  const checkable = outputs.filter(each => each.output.platform === 'confluence' || each.output.platform === 'github-pages')
+  const checkable = outputs.filter(each => each.output.platform === 'confluence' || isGitHubOutput(each.output))
   if (checkable.length === 0) {
     await vscode.window.showInformationMessage('LoreMaster: there is no storage to check. Add one with "Add sync storage".')
 
@@ -32,8 +34,8 @@ export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider
   if (checkable.length > 1) {
     const picked = await vscode.window.showQuickPick(
       checkable.map(each => ({
-        label:       each.output.platform === 'github-pages' ? 'GitHub Pages' : `Confluence · ${each.output.space}`,
-        description: each.output.platform === 'github-pages' ? each.output.branch : each.output.baseUrl,
+        label:       isGitHubOutput(each.output) ? storageLabel(each.output) : `Confluence · ${each.output.space}`,
+        description: isGitHubOutput(each.output) ? storageDescription(each.output) : each.output.baseUrl,
         each,
       })),
       { title: 'LoreMaster: check which storage?' },
@@ -44,7 +46,7 @@ export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider
     chosen = picked.each
   }
 
-  if (chosen.output.platform === 'github-pages') {
+  if (isGitHubOutput(chosen.output)) {
     const site = await vscode.window.withProgress(
       { location: vscode.ProgressLocation.Window, title: 'LoreMaster: comparing the site with the published branch' },
       () => checkPages(deps.engine, folder, chosen.index),

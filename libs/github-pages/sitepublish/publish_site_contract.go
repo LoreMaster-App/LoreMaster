@@ -13,6 +13,10 @@ type PublishOptions struct {
 	// Path is the folder inside the branch to publish into, relative to the branch root and
 	// '/'-separated; empty means the root. Only that folder is replaced.
 	Path string
+	// Wiki publishes to the repository's wiki (<repo>.wiki.git, branch master by default)
+	// instead of a site branch, and lays the pages over what is there rather than replacing
+	// the whole folder, so pages written on GitHub survive.
+	Wiki bool
 	// CommitMessage is the publish commit's message; empty means a default.
 	CommitMessage string
 }

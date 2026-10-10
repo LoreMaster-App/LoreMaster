@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"lore-master/libs/github-pages/siterender"
@@ -201,5 +202,100 @@ func TestPublishSiteRefusesABranchHoldingAnotherSite(t *testing.T) {
 	published := cloneBranch(t, work, "gh-pages")
 	if app, _ := os.ReadFile(filepath.Join(published, "index.html")); string(app) != "the web app" {
 		t.Errorf("the other site was modified: %q", app)
+	}
+}
+
+// workspaceWithWiki is workspaceWithRemote plus the repository's wiki: a bare
+// "<remote>.wiki.git" holding the Home page GitHub makes when the wiki is first created.
+func workspaceWithWiki(t *testing.T) (work, wikiRemotePath string) {
+	t.Helper()
+	work = workspaceWithRemote(t)
+	origin, err := exec.Command("git", "-C", work, "remote", "get-url", "origin").Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wikiRemotePath = strings.TrimSpace(string(origin)) + ".wiki.git"
+	if err := os.MkdirAll(wikiRemotePath, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, wikiRemotePath, "init", "--bare", "--initial-branch=master")
+
+	seed := t.TempDir()
+	runGit(t, "", "clone", wikiRemotePath, seed)
+	runGit(t, seed, "config", "user.name", "Test")
+	runGit(t, seed, "config", "user.email", "test@example.com")
+	if err := os.WriteFile(filepath.Join(seed, "Home.md"), []byte("Welcome to the wiki"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(seed, "Notes.md"), []byte("written on GitHub"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, seed, "add", "-A")
+	runGit(t, seed, "commit", "-m", "Initial Home page")
+	runGit(t, seed, "push", "origin", "HEAD:master")
+
+	return work, wikiRemotePath
+}
+
+func wikiFiles() []siterender.SiteFile {
+	return []siterender.SiteFile{
+		{Path: "Home.md", Content: []byte("# Project\n")},
+		{Path: "Guide.md", Content: []byte("# Guide\n")},
+		{Path: "_Sidebar.md", Content: []byte("- [Project](Home)\n")},
+	}
+}
+
+func TestPublishSiteToTheWikiOverlaysPagesAndKeepsTheOnesWrittenOnGitHub(t *testing.T) {
+	work, wiki := workspaceWithWiki(t)
+
+	result, err := PublishSite(context.Background(), PublishOptions{WorkspaceRoot: work, Wiki: true}, wikiFiles())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Changed || result.Branch != "master" || !strings.HasSuffix(result.Remote, ".wiki.git") {
+		t.Fatalf("unexpected result: %+v", result)
+	}
+
+	clone := t.TempDir()
+	runGit(t, "", "clone", wiki, clone)
+	for _, name := range []string{"Home.md", "Guide.md", "_Sidebar.md", "Notes.md"} {
+		if _, err := os.Stat(filepath.Join(clone, name)); err != nil {
+			t.Errorf("wiki is missing %s: %v", name, err)
+		}
+	}
+	if got, _ := os.ReadFile(filepath.Join(clone, "Home.md")); strings.TrimSpace(string(got)) != "# Project" {
+		t.Errorf("Home.md was not replaced: %q", got)
+	}
+
+	again, err := CheckSite(context.Background(), PublishOptions{WorkspaceRoot: work, Wiki: true}, wikiFiles())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !again.UpToDate {
+		t.Errorf("a published wiki should be up to date: %+v", again.Changes)
+	}
+}
+
+func TestPublishSiteToAWikiThatDoesNotExistExplainsHowToCreateIt(t *testing.T) {
+	work := workspaceWithRemote(t)
+
+	_, err := PublishSite(context.Background(), PublishOptions{WorkspaceRoot: work, Wiki: true}, wikiFiles())
+
+	if err == nil || !strings.Contains(err.Error(), "first page is created on GitHub") {
+		t.Fatalf("want guidance about creating the wiki, got %v", err)
+	}
+}
+
+func TestWikiRemoteInsertsWikiBeforeTheGitSuffix(t *testing.T) {
+	cases := map[string]string{
+		"https://github.com/o/r.git":      "https://github.com/o/r.wiki.git",
+		"https://github.com/o/r":          "https://github.com/o/r.wiki.git",
+		"git@github.com:o/r.git":          "git@github.com:o/r.wiki.git",
+		"https://github.com/o/r.wiki.git": "https://github.com/o/r.wiki.git",
+	}
+	for in, want := range cases {
+		if got := wikiRemote(in); got != want {
+			t.Errorf("wikiRemote(%q) = %q, want %q", in, got, want)
+		}
 	}
 }

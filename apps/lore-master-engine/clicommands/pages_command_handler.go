@@ -201,15 +201,15 @@ func pagesOutputIndex(ctx context.Context, engine *connection, workspace string,
 
 	var pages []output
 	for _, candidate := range outputs {
-		if candidate.settings.Platform == "github-pages" {
+		if candidate.settings.Platform == "github-pages" || candidate.settings.Platform == "github-wiki" {
 			pages = append(pages, candidate)
 		}
 	}
 	switch {
 	case len(pages) == 0:
-		return 0, fmt.Errorf("no github-pages output in .lore-master.yaml")
+		return 0, fmt.Errorf("no github-pages or github-wiki output in .lore-master.yaml")
 	case len(pages) > 1:
-		return 0, fmt.Errorf("%d github-pages outputs; choose one with --output N", len(pages))
+		return 0, fmt.Errorf("%d github-pages or github-wiki outputs; choose one with --output N", len(pages))
 	}
 
 	return pages[0].index, nil

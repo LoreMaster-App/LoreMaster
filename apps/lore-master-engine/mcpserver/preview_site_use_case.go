@@ -106,7 +106,7 @@ func pagesOutputIndex(workspaceRoot string, arguments []byte) (int, error) {
 	}
 	var positions []int
 	for index, output := range loaded.Settings.Outputs {
-		if output.Platform == "github-pages" {
+		if output.Platform == "github-pages" || output.Platform == "github-wiki" {
 			positions = append(positions, index)
 		}
 	}
@@ -118,7 +118,7 @@ func pagesOutputIndex(workspaceRoot string, arguments []byte) (int, error) {
 			}
 		}
 
-		return 0, fmt.Errorf("output %d is not a github-pages output", chosen)
+		return 0, fmt.Errorf("output %d is not a github-pages or github-wiki output", chosen)
 	}
 	switch len(positions) {
 	case 0:

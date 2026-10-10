@@ -68,7 +68,7 @@ func TestPagesBuildFailsWhenThereIsNoPagesOutput(t *testing.T) {
 
 	_, stderr, code := double.run(t, nil, "pages", "build", "--out", "dist/docs")
 
-	if code != ExitFailed || !strings.Contains(stderr, "no github-pages output") {
+	if code != ExitFailed || !strings.Contains(stderr, "no github-pages or github-wiki output") {
 		t.Fatalf("exit %d\n%s", code, stderr)
 	}
 }

@@ -4,9 +4,10 @@ import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
 import type { SyncTargetUI } from '../sync-target'
 import { configureConfluence } from './configure-confluence.use-case'
 import { configureGitHubPages } from './configure-github-pages.use-case'
+import { configureGitHubWiki } from './configure-github-wiki.use-case'
 
 /** A storage type the first-run setup can configure. */
-export type StorageType = 'confluence' | 'github-pages'
+export type StorageType = 'confluence' | 'github-pages' | 'github-wiki'
 
 /** What configuring a Confluence output asks of the editor: the target pickers, plus
  *  choosing or being told there is no connection. */
@@ -58,6 +59,13 @@ export async function setUpStorages (deps: StorageSetupDeps): Promise<Output[] |
   }
   if (types.includes('github-pages')) {
     const output = await configureGitHubPages(ui)
+    if (output) {
+      outputs.push(output)
+    }
+  }
+
+  if (types.includes('github-wiki')) {
+    const output = await configureGitHubWiki(ui)
     if (output) {
       outputs.push(output)
     }

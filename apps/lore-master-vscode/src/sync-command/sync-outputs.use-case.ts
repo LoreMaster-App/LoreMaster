@@ -1,4 +1,5 @@
 import {
+  isGitHubOutput,
   type Output,
   SETTINGS_READ_METHOD,
   SETTINGS_SAVE_METHOD,
@@ -65,7 +66,7 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
 
   for (const index of indices) {
     const output = outputs[index]
-    if (output.platform === 'github-pages') {
+    if (isGitHubOutput(output)) {
       await publishPagesOutput({ engine, workspaceRoot, output: index, ui })
     } else {
       await syncConfluenceOutput(deps, { output, index })
@@ -76,7 +77,7 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
 /** An output can be synced when it is a GitHub Pages output, or a Confluence output whose
  *  first-sync answers are all filled in. */
 function isSyncable (output: Output): boolean {
-  if (output.platform === 'github-pages') {
+  if (isGitHubOutput(output)) {
     return true
   }
 

@@ -23,6 +23,8 @@ lore-master-engine version
   generators first; `--force` overwrites pages edited on the platform; `--prune` trashes pages
   whose file is gone.
 
+- `pages build`, `pages publish` and `pages check` also take a `github-wiki` output; see
+  [GitHub wiki](github-wiki.md).
 - `pages build` renders a GitHub Pages output's static site into `--out` with no git and no
   network. The folder is created, replaced when an earlier build wrote it (it carries a
   `.lore-master-site` marker), and **refused when it holds other files**, so a build can never
