@@ -13,17 +13,21 @@ import (
 const pagesUsage = "usage: lore-master-engine pages build --out DIR [--workspace DIR] [--output N] [--json]\n" +
 	"       lore-master-engine pages publish [--workspace DIR] [--output N] [--json]\n"
 
-// pagesCommand builds or publishes the static site of a github-pages output: build writes it
-// into a folder (for a pipeline that deploys the folder itself), publish pushes it to the
-// output's branch.
+// pagesCommand builds, publishes or checks the static site of a github-pages output: build
+// writes it into a folder (for a pipeline that deploys the folder itself), publish pushes it
+// to the output's branch, check says whether a publish would change anything.
 func pagesCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
-	if len(args) == 0 || (args[0] != "build" && args[0] != "publish") {
+	if len(args) == 0 || (args[0] != "build" && args[0] != "publish" && args[0] != "check") {
 		_, _ = fmt.Fprint(env.Stderr, pagesUsage)
 
 		return ExitUsage
 	}
 	if args[0] == "build" {
 		return pagesBuildCommand(ctx, env, methods, args[1:])
+	}
+
+	if args[0] == "check" {
+		return pagesCheckCommand(ctx, env, methods, args[1:])
 	}
 
 	return pagesPublishCommand(ctx, env, methods, args[1:])
@@ -124,6 +128,67 @@ func pagesPublishCommand(ctx context.Context, env Environment, methods rpcserver
 
 		return ExitOK
 	})
+}
+
+func pagesCheckCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
+	var only intList
+	var exitCode bool
+	parsed, code, ok := parseFlags("pages check", env, args, func(flags *flag.FlagSet) {
+		flags.Var(&only, "output", "the github-pages output at this position in the outputs list (default: the only one)")
+		flags.BoolVar(&exitCode, "exit-code", false, "exit 2 when the published site is out of date, so a pipeline can fail on it")
+	})
+	if !ok {
+		return code
+	}
+
+	return withEngine(ctx, env, methods, func(engine *connection) int {
+		index, err := pagesOutputIndex(ctx, engine, parsed.workspace, only)
+		if err != nil {
+			_, _ = fmt.Fprintln(env.Stderr, "error:", err)
+
+			return ExitFailed
+		}
+
+		var result rpcprotocol.PagesCheckResult
+		params := rpcprotocol.PagesCheckParams{WorkspaceRoot: parsed.workspace, Output: index}
+		if err := engine.call(ctx, rpcprotocol.MethodPagesCheck, params, &result); err != nil {
+			_, _ = fmt.Fprintln(env.Stderr, "error:", err)
+
+			return ExitFailed
+		}
+		if parsed.json {
+			printJSON(env.Stdout, result)
+		} else {
+			printProblems(env, result.Warnings, result.Errors)
+			printCheck(env, result)
+		}
+		switch {
+		case len(result.Errors) > 0:
+			return ExitBlocked
+		case exitCode && !result.UpToDate:
+			return ExitBlocked
+		}
+
+		return ExitOK
+	})
+}
+
+// printCheck writes the outcome of a check: one line when up to date, otherwise a line per
+// file a publish would touch.
+func printCheck(env Environment, result rpcprotocol.PagesCheckResult) {
+	switch {
+	case len(result.Errors) > 0:
+	case result.UpToDate:
+		_, _ = fmt.Fprintf(env.Stdout, "%s is up to date (%d files)\n", result.Branch, result.Files)
+	default:
+		_, _ = fmt.Fprintf(env.Stdout, "%s is out of date: %d files would change\n", result.Branch, result.ChangesTotal)
+		for _, change := range result.Changes {
+			_, _ = fmt.Fprintf(env.Stdout, "  %-8s %s\n", change.Kind, change.Path)
+		}
+		if result.ChangesTotal > len(result.Changes) {
+			_, _ = fmt.Fprintf(env.Stdout, "  … and %d more\n", result.ChangesTotal-len(result.Changes))
+		}
+	}
 }
 
 // pagesOutputIndex is the position of the github-pages output to use: the one named, or the

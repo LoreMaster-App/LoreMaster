@@ -18,6 +18,7 @@ export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const PAGES_PUBLISH_METHOD = 'pages/publish'
 export const PAGES_BUILD_METHOD = 'pages/build'
+export const PAGES_CHECK_METHOD = 'pages/check'
 export const WORKSPACE_TREE_METHOD = 'workspace/tree'
 export const GENERATORS_RUN_METHOD = 'generators/run'
 export const AGENT_INSTRUCTIONS_METHOD = 'agent/instructions'
@@ -343,6 +344,31 @@ export interface PagesBuildResult {
   files:     number
   warnings?: string[]
   errors?:   string[]
+}
+
+// ---- pages/check ---------------------------------------------------------------------
+
+export interface PagesCheckParams {
+  workspaceRoot: string
+  output:        number
+}
+
+export interface PagesChange {
+  path: string
+  /** added, modified or removed. */
+  kind: string
+}
+
+export interface PagesCheckResult {
+  branch?:      string
+  remote?:      string
+  /** True when a publish would change nothing. */
+  upToDate:     boolean
+  changes?:     PagesChange[]
+  changesTotal: number
+  files:        number
+  warnings?:    string[]
+  errors?:      string[]
 }
 
 // ---- pages/publish -------------------------------------------------------------------

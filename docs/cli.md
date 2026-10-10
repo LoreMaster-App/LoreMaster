@@ -13,6 +13,7 @@ lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
                             [--debounce 2s] [--poll 1s]
 lore-master-engine pages build   --out DIR [--workspace DIR] [--output N] [--json]
 lore-master-engine pages publish [--workspace DIR] [--output N] [--json]
+lore-master-engine pages check   [--workspace DIR] [--output N] [--exit-code] [--json]
 lore-master-engine version
 ```
 
@@ -29,6 +30,10 @@ lore-master-engine version
   (a Pages artifact, an object store); see [Docs beside another site](#docs-beside-another-site).
   `--output` is needed only when the settings have several GitHub Pages outputs.
 - `pages publish` pushes the same site to the output's branch (default `gh-pages`).
+- `pages check` says whether a publish would change anything, and lists the files it would add,
+  modify or remove, without publishing. `--exit-code` exits 2 when the published site is out of
+  date, so a pipeline can fail on stale docs. The VS Code **Check remote status** button does the
+  same for a GitHub Pages output.
 - `watch` keeps the storage up to date as files change, regenerating and syncing only what changed. See [watch mode](watch.md).
 
 Outputs and generators are numbered by position in the settings file. `--json` prints one
