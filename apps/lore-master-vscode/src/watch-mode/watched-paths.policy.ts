@@ -10,7 +10,8 @@ const WATCHED_EXTENSIONS = new Set([
   '.py', '.toml', '.cfg', '.cs', '.csproj', '.props', '.dart',
 ])
 
-const SETTINGS_FILE = '.lore-master.yaml'
+/** The configuration: the editor's settings, and the deprecated yaml until it is gone. */
+const SETTINGS_FILES = new Set(['.lore-master.yaml', '.vscode/settings.json'])
 
 /** The workspace-relative, '/'-separated path of a file, or undefined when it is outside the folder. */
 export function workspacePath (folder: string, fsPath: string): string | undefined {
@@ -24,14 +25,14 @@ export function workspacePath (folder: string, fsPath: string): string | undefin
 
 /** Whether a change to this file (workspace-relative, '/'-separated) can matter to the sync. */
 export function isWatchedPath (path: string): boolean {
-  const segments = path.split('/')
-  const name = segments.at(-1) ?? ''
-  if (name === SETTINGS_FILE) {
+  if (SETTINGS_FILES.has(path)) {
     return true
   }
+  const segments = path.split('/')
   if (segments.slice(0, -1).some(segment => segment.startsWith('.') || SKIPPED_FOLDERS.has(segment.toLowerCase()))) {
     return false
   }
+  const name = segments.at(-1) ?? ''
   const dot = name.lastIndexOf('.')
 
   return !name.startsWith('.') && dot > 0 && WATCHED_EXTENSIONS.has(name.slice(dot).toLowerCase())

@@ -14,13 +14,28 @@ inputs:
     description: "build mode: the folder to write the site into, relative to the working directory. Created, replaced when an earlier build wrote it, refused when it holds other files."
     default: lore-master-site
   workspace:
-    description: The folder holding .lore-master.yaml, relative to the working directory.
+    description: The folder to document, relative to the working directory. Its .vscode/settings.json (loreMaster.* keys) is read unless the inputs below say it all.
     default: .
+  settings:
+    description: 'Settings that win over the folder''s, as JSON of loreMaster.* keys, e.g. {"loreMaster.ignore": ["internal/"]}. The inputs below are merged on top of it.'
+    default: ""
+  outputs:
+    description: 'The loreMaster.outputs setting, as a JSON array. With it the action needs no settings file in the repository.'
+    default: ""
+  ignore:
+    description: "The loreMaster.ignore setting: gitignore-style patterns to leave out, one per line."
+    default: ""
+  skip-gitignored:
+    description: "The loreMaster.skipGitignored setting (true or false). Empty keeps the setting's value."
+    default: ""
+  generators:
+    description: 'The loreMaster.generators setting, as a JSON array.'
+    default: ""
   output:
     description: "Position of the github-pages output in the outputs list. Needed only when the settings have several."
     default: ""
   generate:
-    description: "Run the generators of .lore-master.yaml (code documentation, test results) before building. Their own toolchains must be installed by earlier steps."
+    description: "Run the generators of the loreMaster.generators setting (code documentation, test results) before building. Their own toolchains must be installed by earlier steps."
     default: "false"
   token:
     description: "publish mode: the token git uses to push. The job needs `permissions: contents: write`."
@@ -74,8 +89,27 @@ runs:
         WORKSPACE: ${{ inputs.workspace }}
         OUTPUT: ${{ inputs.output }}
         GENERATE: ${{ inputs.generate }}
+        SETTINGS: ${{ inputs.settings }}
+        OUTPUTS: ${{ inputs.outputs }}
+        IGNORE: ${{ inputs.ignore }}
+        SKIP_GITIGNORED: ${{ inputs.skip-gitignored }}
+        GENERATORS: ${{ inputs.generators }}
       run: |
         set -euo pipefail
+
+        # The inputs are the most specific layer of the configuration (#313): the engine merges
+        # them over the folder's settings, so a repository can configure the action entirely here.
+        overrides="$SETTINGS"
+        if [ -z "$overrides" ]; then overrides='{}'; fi
+        if [ -n "$OUTPUTS$GENERATORS$SKIP_GITIGNORED$IGNORE" ]; then
+          # jq ships on GitHub-hosted runners; a self-hosted runner needs it for these inputs.
+          command -v jq > /dev/null || { echo "::error::the outputs, generators, skip-gitignored and ignore inputs need jq on the runner"; exit 1; }
+          if [ -n "$OUTPUTS" ];         then overrides=$(jq -c --argjson v "$OUTPUTS" '. + {"loreMaster.outputs": $v}' <<< "$overrides"); fi
+          if [ -n "$GENERATORS" ];      then overrides=$(jq -c --argjson v "$GENERATORS" '. + {"loreMaster.generators": $v}' <<< "$overrides"); fi
+          if [ -n "$SKIP_GITIGNORED" ]; then overrides=$(jq -c --argjson v "$SKIP_GITIGNORED" '. + {"loreMaster.skipGitignored": $v}' <<< "$overrides"); fi
+          if [ -n "$IGNORE" ];          then overrides=$(jq -c --arg v "$IGNORE" '. + {"loreMaster.ignore": ($v | split("\n") | map(select(length > 0)))}' <<< "$overrides"); fi
+        fi
+        export LORE_MASTER_SETTINGS="$overrides"
 
         case "$MODE" in
           build | publish) ;;

@@ -207,7 +207,7 @@ func pagesOutputIndex(ctx context.Context, engine *connection, workspace string,
 	}
 	switch {
 	case len(pages) == 0:
-		return 0, fmt.Errorf("no github-pages or github-wiki output in .lore-master.yaml")
+		return 0, fmt.Errorf("no github-pages or github-wiki output in the loreMaster.outputs setting")
 	case len(pages) > 1:
 		return 0, fmt.Errorf("%d github-pages or github-wiki outputs; choose one with --output N", len(pages))
 	}

@@ -97,7 +97,7 @@ describe('updateGenerator', () => {
   it('refuses a generator that is no longer there, writing nothing', async () => {
     const saves: Settings[] = []
 
-    await expect(updateGenerator(engine(settings, saves), '/w', 5, { output: 'x' })).rejects.toThrow('no longer in .lore-master.yaml')
+    await expect(updateGenerator(engine(settings, saves), '/w', 5, { output: 'x' })).rejects.toThrow('no longer in your LoreMaster settings')
     expect(saves).toEqual([])
   })
 })
@@ -121,6 +121,6 @@ describe('removeGenerator', () => {
   })
 
   it('refuses a generator that is no longer there', async () => {
-    await expect(removeGenerator(engine({ version: 1, outputs: [output], generators: [tests] }), '/w', 3)).rejects.toThrow('no longer in .lore-master.yaml')
+    await expect(removeGenerator(engine({ version: 1, outputs: [output], generators: [tests] }), '/w', 3)).rejects.toThrow('no longer in your LoreMaster settings')
   })
 })

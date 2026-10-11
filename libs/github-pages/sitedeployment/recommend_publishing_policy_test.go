@@ -27,7 +27,7 @@ func TestABranchDeployGetsAPathAndAWarningWhenItWouldDeleteTheDocs(t *testing.T)
 
 	plan := Recommend(deploy, []Output{{Branch: "gh-pages"}})
 
-	if plan.Approach != "publish" || plan.Path != "docs" || !strings.Contains(plan.OutputSnippet, "path: docs") {
+	if plan.Approach != "publish" || plan.Path != "docs" || !strings.Contains(plan.OutputSnippet, `"path": "docs"`) {
 		t.Fatalf("unexpected: %+v", plan)
 	}
 	joined := strings.Join(plan.Warnings, "\n")

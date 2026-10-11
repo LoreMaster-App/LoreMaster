@@ -8,7 +8,7 @@ const MethodWatchRoute = "watch/route"
 
 // WatchRouteParams names the workspace and the files that changed.
 type WatchRouteParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Changed are workspace-relative, '/'-separated paths.
 	Changed []string `json:"changed"`

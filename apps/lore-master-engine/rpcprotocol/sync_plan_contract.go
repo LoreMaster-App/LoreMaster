@@ -1,6 +1,6 @@
 package rpcprotocol
 
-// MethodSyncPlan reads the workspace and its .lore-master.yaml and plans a sync of one
+// MethodSyncPlan reads the workspace and its settings and plans a sync of one
 // output, writing nothing. The plan is kept in the engine under PlanID for
 // sync/execute.
 const MethodSyncPlan = "sync/plan"
@@ -8,7 +8,7 @@ const MethodSyncPlan = "sync/plan"
 // SyncPlanParams asks for a plan.
 type SyncPlanParams struct {
 	SessionID string `json:"sessionId"`
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Output is the index of the output in the settings' outputs list.
 	Output int `json:"output"`

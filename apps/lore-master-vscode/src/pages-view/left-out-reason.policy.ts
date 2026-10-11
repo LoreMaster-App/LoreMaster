@@ -13,7 +13,7 @@ export function leftOutReason (file: LeftOutFile): LeftOutReason {
     case 'ignore': {
       return {
         description: `ignore: ${file.pattern ?? ''}`,
-        detail:      `Matched \`${file.pattern ?? ''}\` in the "ignore" list of .lore-master.yaml, which every storage leaves out.`,
+        detail:      `Matched \`${file.pattern ?? ''}\` in the \`loreMaster.ignore\` setting, which every storage leaves out.`,
       }
     }
     case 'excludes': {

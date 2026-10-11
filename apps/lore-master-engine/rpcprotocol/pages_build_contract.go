@@ -1,6 +1,6 @@
 package rpcprotocol
 
-// MethodPagesBuild reads the workspace and its .lore-master.yaml, generates the static site
+// MethodPagesBuild reads the workspace and its settings, generates the static site
 // for one github-pages output and writes it into a local folder. It involves no git and no
 // network: a pipeline that deploys the folder itself (a Pages artifact, an object store)
 // uses this instead of MethodPagesPublish.
@@ -8,7 +8,7 @@ const MethodPagesBuild = "pages/build"
 
 // PagesBuildParams asks to build one github-pages output into a folder.
 type PagesBuildParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Output is the index of the github-pages output in the settings' outputs list.
 	Output int `json:"output"`

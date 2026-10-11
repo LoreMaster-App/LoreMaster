@@ -36,7 +36,7 @@ open file).
 
 The **first** sync asks where things go — the space, the parent page everything nests
 under, and a title prefix (pages are titled `<prefix>: <H1>`). Your answers are written to
-**`.lore-master.yaml`** in the workspace, so later syncs do not ask again.
+**`.vscode/settings.json`** of the workspace (`loreMaster.outputs`), so later syncs do not ask again.
 
 Then LoreMaster shows a **plan** — what it would create, update, move, or leave unchanged —
 and waits for you to confirm before writing anything. Confirm, and it creates the pages
@@ -71,7 +71,7 @@ changes, so the view never shows a platform state it has not just asked for.
 - A **Local** node above the storages lists every Markdown file in the repository and which
   storages sync it; each storage gets its own group.
 - The tree follows `roots`, `excludes`, `ignore` and `skipGitignored` from
-  `.lore-master.yaml`, so what you see is what a sync would read.
+  your LoreMaster settings, so what you see is what a sync would read.
 - **Left out** (collapsed, under the pages) lists the Markdown files the sync does not read, each
   with the setting that left it out: the `ignore` list, the storage's `excludes`, a `.gitignore`,
   or being outside the folders to sync. Click one to open it. `lore-master-engine tree` prints
@@ -103,9 +103,9 @@ Pick a setting, then its new value:
   the folders to sync, and paths to leave out.
 - **GitHub Pages:** the repository, the branch, the folder inside the branch (so another site can share it), the folders to sync, and paths to leave out.
 
-The value is checked and saved to `.lore-master.yaml` with your comments kept; a value that is
-not allowed is refused with the reason and nothing is written. For anything else, **Open
-config** opens the file.
+The value is checked and saved to the workspace's `.vscode/settings.json` with your comments kept; a
+value that is not allowed is refused with the reason and nothing is written. For anything else,
+**Open settings** opens the Settings editor on LoreMaster's options.
 
 ## What you get
 
@@ -117,9 +117,9 @@ config** opens the file.
 
 ## Configuration
 
-`.lore-master.yaml` is created for you; see the schema and options (space, `titlePrefix`,
-`mermaidMode`, `titleCollision`, `linkMode`, content roots) in the project
-[`README.md`](../README.md).
+The settings are `loreMaster.*` in the editor's settings; see [configuration](configuration.md) for the
+layers (folder > workspace > user) and the options (space, `titlePrefix`, `mermaidMode`,
+`titleCollision`, `linkMode`, content roots), which the Settings UI also describes.
 
 ## Troubleshooting
 

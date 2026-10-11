@@ -17,7 +17,7 @@ lore-master-engine pages check   [--workspace DIR] [--output N] [--exit-code] [-
 lore-master-engine version
 ```
 
-- `generate` runs the generators of `.lore-master.yaml`.
+- `generate` runs the generators of the `loreMaster.generators` setting.
 - `tree` shows the page tree each output would sync, with each page's local status.
 - `sync` plans each output. **Without `--yes` it only shows the plan.** `--generate` runs the
   generators first; `--force` overwrites pages edited on the platform; `--prune` trashes pages
@@ -38,7 +38,12 @@ lore-master-engine version
   same for a GitHub Pages output.
 - `watch` keeps the storage up to date as files change, regenerating and syncing only what changed. See [watch mode](watch.md).
 
-Outputs and generators are numbered by position in the settings file. `--json` prints one
+Outputs and generators are numbered by position in the settings.
+
+Every command also takes `--settings JSON|@FILE` (settings that win over every settings file, the
+way to configure a CI job with no settings file) and `--workspace-file FILE` (a `.code-workspace`
+file whose settings sit between the user's and the folder's). See
+[configuration](configuration.md#overrides-for-ci). `--json` prints one
 document on stdout; progress lines always go to stderr.
 
 ## Credentials

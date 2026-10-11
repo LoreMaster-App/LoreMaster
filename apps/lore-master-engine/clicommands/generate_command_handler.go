@@ -9,7 +9,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcserver"
 )
 
-// generateCommand runs the generators of .lore-master.yaml: each writes ordinary Markdown into
+// generateCommand runs the generators of the loreMaster.generators setting: each writes ordinary Markdown into
 // its output folder, which the next sync publishes like any other page.
 func generateCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
 	var only intList

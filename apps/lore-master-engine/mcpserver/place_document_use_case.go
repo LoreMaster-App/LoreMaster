@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"lore-master/libs/documentation-sync/workspacesettings"
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/markdown-workspace/documentparsing"
 	"lore-master/libs/markdown-workspace/documenttree"
@@ -273,7 +273,7 @@ func titleClashAmong(documents []documentparsing.MarkdownDocument, candidate str
 }
 
 func firstTitlePrefix(root string) string {
-	loaded, err := workspacesettings.LoadSettings(root)
+	loaded, err := editorsettings.LoadConfiguration(root)
 	if err != nil {
 		return ""
 	}

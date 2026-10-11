@@ -12,6 +12,7 @@ import (
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/syncexecution"
 	"lore-master/libs/documentation-sync/syncplanning"
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/markdown-workspace/documenttree"
@@ -76,7 +77,7 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 // outputToSync loads and checks the settings and picks the output, which must belong
 // to the session's site.
 func outputToSync(params rpcprotocol.SyncPlanParams, sessionURL string) (workspacesettings.Output, workspacesettings.DiscoveryScope, error) {
-	loaded, err := workspacesettings.LoadSettings(params.WorkspaceRoot)
+	loaded, err := editorsettings.LoadConfiguration(params.WorkspaceRoot)
 	if err != nil {
 		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}

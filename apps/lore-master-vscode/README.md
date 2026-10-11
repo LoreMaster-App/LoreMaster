@@ -51,7 +51,7 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 
 1. **Run `LoreMaster: Sync`** (Command Palette). On a fresh workspace it asks **where to
    sync** — tick the storages you want (Confluence, GitHub Pages) and configure each. Your
-   choices are saved to `.lore-master.yaml` in the workspace root.
+   choices are saved to the workspace's `.vscode/settings.json` (`loreMaster.outputs`).
    - **Confluence:** first run `LoreMaster: Add Connection` (site URL + API token for
      Cloud, PAT for Data Center). Then Sync walks you through the space, parent page and
      title prefix.
@@ -71,42 +71,47 @@ or publishes them as a **static site on GitHub Pages** — directly from VS Code
 | **LoreMaster: Add Connection** | Sign in to a Confluence site. |
 | **LoreMaster: Add sync storage** | Set up another destination for this workspace. |
 | **LoreMaster: Edit storage** | Change one setting of a storage (also the pencil in the Storages view). |
-| **LoreMaster: Open config** | Open `.lore-master.yaml`. |
+| **LoreMaster: Open settings** | Open VS Code's Settings editor on LoreMaster's settings, with every option described. |
 | **LoreMaster: Check remote status** | Ask the platform where each page stands (read-only) and show it in the Pages view. |
 | **LoreMaster: Show page titles or file names** | Switch how the Pages view names pages (setting `loreMaster.pages.label`). |
 | **LoreMaster: Create documentation agent** | Write an agent for Claude Code, VS Code or `AGENTS.md` that follows LoreMaster's structure and your workspace's layout. |
 | **LoreMaster: Generate and sync documentation** | Run the generators, then sync, so generated pages are as fresh as the code (setting `loreMaster.generateBeforeSync` does it on every Sync). |
 | **LoreMaster: Add generator** | Add a generator (test results, Go docs, OpenAPI docs) from the Generators view. |
-| **LoreMaster: Run generators** | Write Markdown from your test reports, Go packages and OpenAPI descriptions (configured under `generators:` in `.lore-master.yaml`); the next sync publishes it. |
+| **LoreMaster: Run generators** | Write Markdown from your test reports, Go packages and OpenAPI descriptions (configured in the `loreMaster.generators` setting); the next sync publishes it. |
 | **LoreMaster: Copy MCP Server Config** | Copy the MCP server entry for an external AI client. |
 
 ## Configuration
 
-Settings live in **`.lore-master.yaml`** at the workspace root (created for you on first
-sync). Each entry under `outputs` is one destination:
+Everything is configured in VS Code's settings, under `loreMaster.*` (Settings, filtered with
+`@ext:LoreMaster.loremaster`). Settings layer **folder > workspace > user**, so set your Confluence
+address once in User settings. Each entry of `loreMaster.outputs` is one destination:
 
-```yaml
-version: 1
-outputs:
-  - platform: confluence
-    baseUrl: https://your-site.atlassian.net/wiki
-    space: DOCS
-    parentPageId: "123456"
-    titlePrefix: Docs
-    direction: two-way        # or to-platform
-    content:
-      - type: markdown
-        roots: ["."]
-        template: default
-  - platform: github-pages
-    direction: to-platform
-    content:
-      - type: markdown
-        roots: ["docs"]
-        template: default
+```jsonc
+// .vscode/settings.json
+{
+  "loreMaster.confluence.baseUrl": "https://your-site.atlassian.net/wiki",
+  "loreMaster.outputs": [
+    {
+      "platform": "confluence",
+      "space": "DOCS",
+      "parentPageId": "123456",
+      "titlePrefix": "Docs",
+      "direction": "two-way",        // or "to-platform"
+      "content": [{ "type": "markdown", "roots": ["."], "template": "default" }]
+    },
+    {
+      "platform": "github-pages",
+      "direction": "to-platform",
+      "content": [{ "type": "markdown", "roots": ["docs"], "template": "default" }]
+    }
+  ]
+}
 ```
 
-Credentials are **never** stored in this file — they live in VS Code's secret store.
+A `.lore-master.yaml` from an earlier version is imported into `.vscode/settings.json` the first
+time the extension activates.
+
+Credentials are **never** stored in settings — they live in VS Code's secret store.
 
 ## Learn more
 

@@ -38,14 +38,14 @@ export async function addStorage (deps: AddStorageDeps): Promise<void> {
 
   const outputs: Output[] = read.firstSync ? created : [...read.settings.outputs, ...created]
   try {
-    await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { version: read.settings.version || 1, outputs } })
+    await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { ...read.settings, version: read.settings.version || 1, outputs } })
   } catch (error) {
     await ui.error(messageOf(error))
 
     return
   }
 
-  ui.report([`Added ${created.length} storage${created.length === 1 ? '' : 's'} to .lore-master.yaml.`])
+  ui.report([`Added ${created.length} storage${created.length === 1 ? '' : 's'} to your LoreMaster settings.`])
 }
 
 function messageOf (error: unknown): string {

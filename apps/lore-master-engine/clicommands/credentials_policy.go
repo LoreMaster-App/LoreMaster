@@ -8,7 +8,7 @@ import (
 )
 
 // The environment variables a Confluence credential is read from. Secrets never go in
-// .lore-master.yaml; in CI they are the pipeline's secrets.
+// the settings; in CI they are the pipeline's secrets.
 const (
 	envEmail    = "LORE_MASTER_EMAIL"
 	envToken    = "LORE_MASTER_TOKEN"

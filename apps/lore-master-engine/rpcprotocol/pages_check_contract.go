@@ -8,7 +8,7 @@ const MethodPagesCheck = "pages/check"
 
 // PagesCheckParams asks to check one github-pages output.
 type PagesCheckParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Output is the index of the github-pages output in the settings' outputs list.
 	Output int `json:"output"`

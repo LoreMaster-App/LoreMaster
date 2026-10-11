@@ -1,8 +1,9 @@
 # GitHub Action: the docs site in one step
 
-`LoreMaster-App/LoreMaster/actions/pages` renders the GitHub Pages output of
-`.lore-master.yaml` (see [getting started](getting-started.md)) either into a folder, so it can
-be deployed **beside another site**, or onto a branch.
+`LoreMaster-App/LoreMaster/actions/pages` renders the GitHub Pages output of your LoreMaster
+settings (the folder's `.vscode/settings.json`, or the inputs below; see
+[configuration](configuration.md)) either into a folder, so it can be deployed **beside another
+site**, or onto a branch.
 
 ## Beside a web app (the Actions source)
 
@@ -24,7 +25,7 @@ jobs:
           path: dist
 ```
 
-Add `docs/**` and `.lore-master.yaml` to the workflow's `paths:` so a docs change redeploys.
+Add `docs/**` and `.vscode/settings.json` to the workflow's `paths:` so a docs change redeploys.
 
 ## To a branch
 
@@ -38,8 +39,29 @@ steps:
       mode: publish
 ```
 
-Set `path:` on the output in `.lore-master.yaml` to publish into a folder of the branch and leave
+Set `path` on the output (in `loreMaster.outputs`) to publish into a folder of the branch and leave
 the rest alone. A branch holding another site is refused without it.
+
+## Configure it in the workflow
+
+The inputs are the most specific layer of the configuration: they win over the repository's
+`.vscode/settings.json`, so a repository can configure the action entirely here and keep no
+settings file:
+
+```yaml
+- uses: LoreMaster-App/LoreMaster/actions/pages@main
+  with:
+    out: dist/docs
+    outputs: |
+      [{ "platform": "github-pages", "direction": "to-platform",
+         "content": [{ "type": "markdown", "roots": ["docs"] }] }]
+    ignore: |
+      drafts/
+      NOTES.md
+```
+
+`outputs` and `generators` are JSON arrays, `ignore` is one pattern per line, and `settings` takes
+any other `loreMaster.*` keys as a JSON object. They need `jq`, which GitHub-hosted runners have.
 
 ## Inputs and outputs
 
@@ -47,7 +69,12 @@ the rest alone. A branch holding another site is refused without it.
 |---|---|---|
 | `mode` | `build` | `build` writes `out`; `publish` pushes to the output's branch |
 | `out` | `lore-master-site` | build: the folder (created, replaced when LoreMaster wrote it, refused otherwise) |
-| `workspace` | `.` | the folder holding `.lore-master.yaml` |
+| `workspace` | `.` | the folder to document; its `.vscode/settings.json` is read |
+| `outputs` | | the `loreMaster.outputs` setting, as a JSON array |
+| `ignore` | | the `loreMaster.ignore` setting, one pattern per line |
+| `skip-gitignored` | | the `loreMaster.skipGitignored` setting, `true` or `false` |
+| `generators` | | the `loreMaster.generators` setting, as a JSON array |
+| `settings` | | any `loreMaster.*` keys as a JSON object; the inputs above are merged over it |
 | `output` | | position of the github-pages output; needed only when there are several |
 | `generate` | `false` | run the generators first (their toolchains must already be installed) |
 | `token` | `github.token` | publish: the token git pushes with |

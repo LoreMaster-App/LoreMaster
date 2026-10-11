@@ -10,6 +10,7 @@ import (
 	"lore-master/libs/content-generation/generatedfile"
 	"lore-master/libs/content-generation/generatorregistry"
 	"lore-master/libs/content-generation/generatorrunning"
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 )
 
@@ -25,7 +26,7 @@ func RunGenerators() rpcserver.Method {
 		if !filepath.IsAbs(params.WorkspaceRoot) {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "workspaceRoot must be an absolute path, got %q", params.WorkspaceRoot)
 		}
-		loaded, err := workspacesettings.LoadSettings(params.WorkspaceRoot)
+		loaded, err := editorsettings.LoadConfiguration(params.WorkspaceRoot)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}

@@ -65,7 +65,7 @@
       },
       {
         "command": "loreMaster.openConfig",
-        "title": "Open config",
+        "title": "Open settings",
         "category": "LoreMaster"
       },
       {
@@ -430,6 +430,277 @@
           "minimum": 1,
           "maximum": 300,
           "markdownDescription": "In **watch mode**, how many seconds nothing may change before the changes are synced, so a burst of saves is one sync."
+        },
+        "loreMaster.confluence.baseUrl": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "The Confluence address every output uses unless it sets its own `baseUrl`, for example `https://example.atlassian.net/wiki`. Set it once in **User** settings; a workspace or folder overrides it. The token is never a setting: it is asked for and kept in the editor's secret store."
+        },
+        "loreMaster.outputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "platform"
+            ],
+            "properties": {
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "confluence",
+                  "github-pages",
+                  "github-wiki"
+                ],
+                "enumDescriptions": [
+                  "Atlassian Confluence: Cloud, Data Center or Server.",
+                  "A static site published to a branch of a GitHub repository.",
+                  "The repository's GitHub wiki."
+                ],
+                "markdownDescription": "Where the lore goes."
+              },
+              "baseUrl": {
+                "type": "string",
+                "markdownDescription": "The Confluence address, for example `https://example.atlassian.net/wiki`. Leave empty to use `loreMaster.confluence.baseUrl`. Must be `https`."
+              },
+              "space": {
+                "type": "string",
+                "markdownDescription": "The Confluence space key the pages go in."
+              },
+              "parentPageId": {
+                "type": "string",
+                "markdownDescription": "The id of the Confluence page the tree hangs under."
+              },
+              "titlePrefix": {
+                "type": "string",
+                "markdownDescription": "Pages are titled `<prefix>: <first heading>`. Asked once at the first sync."
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "to-platform",
+                  "two-way"
+                ],
+                "enumDescriptions": [
+                  "Files are the source; the platform is overwritten.",
+                  "Edits made on the platform are pulled back into the files."
+                ],
+                "markdownDescription": "Which way changes flow. Empty uses `loreMaster.defaults.direction`."
+              },
+              "content": {
+                "type": "array",
+                "markdownDescription": "The kinds of lore this output syncs, each with the folders it reads. Leave out for the whole workspace as Markdown.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "markdown"
+                      ],
+                      "default": "markdown",
+                      "markdownDescription": "The kind of lore. Only `markdown` is built."
+                    },
+                    "roots": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "default": [
+                        "."
+                      ],
+                      "markdownDescription": "Folders, relative to the workspace, this content is read from. `.` is the whole workspace."
+                    },
+                    "excludes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "markdownDescription": "Gitignore-style patterns this content leaves out, on top of `loreMaster.ignore`."
+                    },
+                    "template": {
+                      "type": "string",
+                      "enum": [
+                        "default"
+                      ],
+                      "default": "default",
+                      "markdownDescription": "How the pages are laid out. Only `default` is built (#97)."
+                    }
+                  }
+                }
+              },
+              "mermaidMode": {
+                "type": "string",
+                "enum": [
+                  "image",
+                  "code"
+                ],
+                "enumDescriptions": [
+                  "A code macro plus an SVG attachment rendered by the editor.",
+                  "A code macro only."
+                ],
+                "markdownDescription": "How Mermaid diagrams are stored. Empty uses `loreMaster.defaults.mermaidMode`."
+              },
+              "titleCollision": {
+                "type": "string",
+                "enum": [
+                  "fail",
+                  "adopt"
+                ],
+                "enumDescriptions": [
+                  "Stop when an unsynced file's title already exists on the platform.",
+                  "Adopt the existing page."
+                ],
+                "markdownDescription": "What to do when an unsynced file's title already exists. Empty uses `loreMaster.defaults.titleCollision`."
+              },
+              "linkMode": {
+                "type": "string",
+                "enum": [
+                  "title",
+                  "id"
+                ],
+                "enumDescriptions": [
+                  "Link by page title.",
+                  "Link by page id."
+                ],
+                "markdownDescription": "How links between pages are written. Empty uses `loreMaster.defaults.linkMode`."
+              },
+              "repo": {
+                "type": "string",
+                "markdownDescription": "GitHub Pages or wiki: `owner/name` or a clone URL. Empty means the workspace's own `origin`."
+              },
+              "branch": {
+                "type": "string",
+                "markdownDescription": "GitHub Pages or wiki: the branch published to. Empty means `gh-pages` (Pages) or the wiki's default branch."
+              },
+              "path": {
+                "type": "string",
+                "markdownDescription": "GitHub Pages: the folder inside the branch the site is published to, so another site can share the branch. Empty owns the whole branch."
+              },
+              "include": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "markdownDescription": "Gitignore-style patterns this output reads even though an ignore or exclude list leaves them out. The most specific entry wins; on a tie the include does. See *Choosing what goes where*."
+              },
+              "exclude": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "markdownDescription": "Gitignore-style patterns this output leaves out, on top of `loreMaster.ignore`."
+              }
+            }
+          },
+          "default": [],
+          "scope": "resource",
+          "markdownDescription": "The places the lore goes. Edit in `settings.json`, or use the **LoreMaster** sidebar. A folder's list replaces the user's; it is not merged."
+        },
+        "loreMaster.ignore": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "markdownDescription": "Gitignore-style patterns every output leaves out of the scan, for example `CLAUDE.md` or `internal/`."
+        },
+        "loreMaster.skipGitignored": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "markdownDescription": "Leave out Markdown that the workspace's `.gitignore` files ignore."
+        },
+        "loreMaster.generators": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "output"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "test-results",
+                  "go-docs",
+                  "openapi-docs",
+                  "ts-docs",
+                  "python-docs",
+                  "csharp-docs",
+                  "dart-docs"
+                ],
+                "markdownDescription": "What is turned into Markdown."
+              },
+              "input": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "markdownDescription": "Gitignore-style patterns selecting what to read. Empty means the type's own default."
+              },
+              "output": {
+                "type": "string",
+                "markdownDescription": "The workspace-relative folder the pages are written to. Include it in an output's content roots for them to sync."
+              },
+              "title": {
+                "type": "string",
+                "markdownDescription": "Heads the generated index page. Empty means the type's own default."
+              }
+            }
+          },
+          "default": [],
+          "scope": "resource",
+          "markdownDescription": "Generators write Markdown into the workspace from other project artifacts (test reports, source documentation) so it syncs like any other page."
+        },
+        "loreMaster.defaults.direction": {
+          "type": "string",
+          "enum": [
+            "",
+            "to-platform",
+            "two-way"
+          ],
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "The direction of an output that does not set `direction`. Empty means `to-platform`."
+        },
+        "loreMaster.defaults.mermaidMode": {
+          "type": "string",
+          "enum": [
+            "",
+            "image",
+            "code"
+          ],
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "How Mermaid diagrams are stored in an output that does not set `mermaidMode`. Empty means `image`."
+        },
+        "loreMaster.defaults.linkMode": {
+          "type": "string",
+          "enum": [
+            "",
+            "title",
+            "id"
+          ],
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "How links are written in an output that does not set `linkMode`. Empty means `title`."
+        },
+        "loreMaster.defaults.titleCollision": {
+          "type": "string",
+          "enum": [
+            "",
+            "fail",
+            "adopt"
+          ],
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "What an output that does not set `titleCollision` does when a title already exists. Empty means `fail`."
         }
       }
     }

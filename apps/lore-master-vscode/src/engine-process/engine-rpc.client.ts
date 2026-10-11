@@ -16,12 +16,15 @@ export interface EngineChild {
 }
 
 /** Starts the engine binary. Injected so tests can supply a fake child. */
-export type SpawnEngine = (binaryPath: string) => EngineChild
+export type SpawnEngine = (binaryPath: string, env?: Readonly<Record<string, string>>) => EngineChild
 
 /** How to build {@link createEngineClient}. */
 export interface EngineClientOptions {
   /** Absolute path to the engine binary (see `resolveEngineBinary`). */
   binaryPath: string
+  /** Extra environment for the engine, on top of the editor's own: where the multi-root
+   *  workspace's `.code-workspace` file is, so the engine reads its settings layer. */
+  env?:       Readonly<Record<string, string>>
   /** Defaults to spawning the real binary with piped stdio. */
   spawn?:     SpawnEngine
   /** Receives the engine's stderr lines (it logs there). */
@@ -49,7 +52,7 @@ export interface EngineClient {
 
 const DEFAULT_BACKOFF_MS = [250, 1000, 5000] as const
 
-const spawnEngine: SpawnEngine = binaryPath => nodeSpawn(binaryPath, [], { stdio: ['pipe', 'pipe', 'pipe'] })
+const spawnEngine: SpawnEngine = (binaryPath, env) => nodeSpawn(binaryPath, [], { stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, ...env } })
 
 const sleep = (ms: number): Promise<void> => new Promise(resolve => { setTimeout(resolve, ms) })
 
@@ -96,7 +99,7 @@ export function createEngineClient (options: EngineClientOptions): EngineClient 
       throw new Error('engine client disposed')
     }
 
-    const started = spawn(options.binaryPath)
+    const started = options.env ? spawn(options.binaryPath, options.env) : spawn(options.binaryPath)
     const established = createMessageConnection(new StreamMessageReader(started.stdout), new StreamMessageWriter(started.stdin))
 
     started.stderr.on('data', (chunk: Buffer | string) => options.onLog?.(chunk.toString().replace(/\n$/, '')))

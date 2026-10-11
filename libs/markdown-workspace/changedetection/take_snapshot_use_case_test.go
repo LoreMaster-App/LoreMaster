@@ -133,3 +133,20 @@ func TestWatchedFileNames(t *testing.T) {
 		}
 	}
 }
+
+func TestOnlyTheFolderOwnSettingsInsideDotVscodeAreWatched(t *testing.T) {
+	for path, want := range map[string]bool{
+		".vscode/settings.json":     true,
+		".vscode/launch.json":       false,
+		"pkg/.vscode/settings.json": false,
+		".lore-master.yaml":         true,
+		"docs/readme.md":            true,
+	} {
+		if got := IsWatchedFile(path); got != want {
+			t.Errorf("IsWatchedFile(%q) = %v, want %v", path, got, want)
+		}
+	}
+	if IsSkippedFolder(".vscode") || !IsSkippedFolder(".git") {
+		t.Error(".vscode must be looked into and .git skipped")
+	}
+}

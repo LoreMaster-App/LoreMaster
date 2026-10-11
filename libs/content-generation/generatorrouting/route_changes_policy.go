@@ -21,8 +21,8 @@ type Plan struct {
 	Markdown []string
 }
 
-// settingsFile is the configuration file's name.
-const settingsFile = ".lore-master.yaml"
+// settingsFiles are the configuration: the folder's editor settings (#308) and the deprecated yaml.
+var settingsFiles = []string{".vscode/settings.json", ".lore-master.yaml"}
 
 // reads says which files a generator type reads: extensions and file names, and the patterns
 // that select its inputs when the generator has no input of its own.
@@ -52,7 +52,7 @@ func Route(changed []string, generators []generatedfile.Spec) Plan {
 	}
 
 	for _, file := range changed {
-		if file == settingsFile {
+		if slices.Contains(settingsFiles, file) {
 			plan.Everything = true
 		}
 		if strings.EqualFold(path.Ext(file), ".md") {

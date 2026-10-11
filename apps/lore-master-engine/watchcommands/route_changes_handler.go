@@ -8,7 +8,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/content-generation/generatedfile"
 	"lore-master/libs/content-generation/generatorrouting"
-	"lore-master/libs/documentation-sync/workspacesettings"
+	"lore-master/libs/documentation-sync/editorsettings"
 )
 
 // RouteChanges handles watch/route. Settings that are not valid are an invalid-settings error
@@ -22,7 +22,7 @@ func RouteChanges() rpcserver.Method {
 		if !filepath.IsAbs(params.WorkspaceRoot) {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "workspaceRoot must be an absolute path, got %q", params.WorkspaceRoot)
 		}
-		loaded, err := workspacesettings.LoadSettings(params.WorkspaceRoot)
+		loaded, err := editorsettings.LoadConfiguration(params.WorkspaceRoot)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}

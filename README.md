@@ -43,7 +43,7 @@ not named after Confluence or Markdown: more platforms and more kinds of lore co
 ## How the sync works
 
 1. **Discover & build the tree.** Find `.md` files (roots and excludes from
-   `.lore-master.yaml`), parse them with goldmark, take the title from the first `# H1`,
+   the `loreMaster.*` settings), parse them with goldmark, take the title from the first `# H1`,
    and build the hierarchy. A page's parent is decided, in order, by: an explicit
    `parent:` in the file's annotation → a **dotted filename**
    (`readme.architecture.md` nests under `readme.md`) → a **directory index**
@@ -79,7 +79,7 @@ Confluence has no native Mermaid, so `mermaidMode` chooses how diagrams appear:
 
 ## Authentication
 
-Credentials never touch this repository or `.lore-master.yaml`. They live in the editor's
+Credentials never touch this repository or your settings files. They live in the editor's
 **secret store** and travel to the engine per session over stdio.
 
 | Edition | Credential |
@@ -88,33 +88,40 @@ Credentials never touch this repository or `.lore-master.yaml`. They live in the
 | **Data Center** | personal access token (≥ 7.9) |
 | **Server** (EOL) | personal access token (≥ 7.9), else user name + password |
 
-## Configuration — `.lore-master.yaml`
+## Configuration: the editor's settings
 
-The sync is driven by a per-workspace YAML file (written for you on the first sync):
+LoreMaster is configured in your editor's settings, under `loreMaster.*`, with descriptions, allowed
+values and defaults in the Settings UI (**LoreMaster: Open settings**). Settings layer
+**folder > workspace > user**, so a Confluence address set once in your user settings serves every
+workspace. The sync reads the folder's `.vscode/settings.json`, for example:
 
-```yaml
-version: 1
-skipGitignored: true         # default; leave out .md files your .gitignore files ignore
-ignore: []                    # gitignore-style patterns every output leaves out, e.g. [drafts/**, NOTES.md]
-outputs:
-  - platform: confluence
-    baseUrl: https://your-site.atlassian.net/wiki
-    space: DOCS
-    parentPageId: "123456"      # the page everything nests under
-    titlePrefix: "LoreMaster"  # pages are titled "<prefix>: <H1>"
-    direction: to-platform      # to-platform (push) | two-way (also pull remote edits back)
-    mermaidMode: image          # image | code | html-macro | marketplace-macro
-    titleCollision: adopt       # adopt | fail
-    linkMode: title             # title | id
-    content:
-      - type: markdown
-        roots: [docs]           # folders to sync
-        excludes: []
-        template: default
+```jsonc
+{
+  "loreMaster.confluence.baseUrl": "https://your-site.atlassian.net/wiki",
+  "loreMaster.skipGitignored": true,    // default; leave out .md files your .gitignore files ignore
+  "loreMaster.ignore": [],               // gitignore-style patterns every output leaves out, e.g. ["drafts/**", "NOTES.md"]
+  "loreMaster.outputs": [
+    {
+      "platform": "confluence",
+      "space": "DOCS",
+      "parentPageId": "123456",        // the page everything nests under
+      "titlePrefix": "LoreMaster",     // pages are titled "<prefix>: <H1>"
+      "direction": "to-platform",      // to-platform (push) | two-way (also pull remote edits back)
+      "mermaidMode": "image",          // image | code | html-macro | marketplace-macro
+      "titleCollision": "adopt",       // adopt | fail
+      "linkMode": "title",             // title | id
+      "content": [{ "type": "markdown", "roots": ["docs"], "excludes": [], "template": "default" }]
+    }
+  ]
+}
 ```
 
-`skipGitignored` (default `true`) skips Markdown that the workspace's `.gitignore` files (nested ones
-included) ignore — usually drafts, vendored copies or build output; set it to `false` to sync them. `ignore`
+The guide, with the layers, the command line and the GitHub Action, is
+[`docs/configuration.md`](docs/configuration.md). A workspace that still has a `.lore-master.yaml` is
+imported into the folder's settings the first time the extension activates.
+
+`loreMaster.skipGitignored` (default `true`) skips Markdown that the workspace's `.gitignore` files (nested ones
+included) ignore — usually drafts, vendored copies or build output; set it to `false` to sync them. `loreMaster.ignore`
 is a list of gitignore-style patterns, matched against workspace-relative paths, that every output leaves out
 on top of its own `content[].excludes`. `node_modules`, `.git`, `dist`, `out-tsc`, `coverage` and `.venv` are
 always skipped.

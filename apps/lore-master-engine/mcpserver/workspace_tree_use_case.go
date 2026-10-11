@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"lore-master/libs/documentation-sync/workspacesettings"
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/markdown-workspace/documentparsing"
 	"lore-master/libs/markdown-workspace/documenttree"
@@ -93,7 +93,7 @@ func previewTreeResult(ctx context.Context, workspaceRoot string) toolCallResult
 // defaulting to the whole workspace when there is no settings file. Notes are discovery
 // and parse warnings.
 func loadWorkspaceDocuments(ctx context.Context, root string) ([]documentparsing.MarkdownDocument, []string, error) {
-	loaded, err := workspacesettings.LoadSettings(root)
+	loaded, err := editorsettings.LoadConfiguration(root)
 	if err != nil {
 		return nil, nil, err
 	}

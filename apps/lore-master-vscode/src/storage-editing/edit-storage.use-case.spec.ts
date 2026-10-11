@@ -63,7 +63,7 @@ describe('editStorage', () => {
     const saves: unknown[] = []
 
     await expect(editStorage({ engine: engine({ version: 1, outputs: [confluence] }, saves), workspaceRoot: '/w', index: 3 }, field('direction'), 'two-way'))
-      .rejects.toThrow('no longer in .lore-master.yaml')
+      .rejects.toThrow('no longer in your LoreMaster settings')
     expect(saves).toEqual([])
   })
 

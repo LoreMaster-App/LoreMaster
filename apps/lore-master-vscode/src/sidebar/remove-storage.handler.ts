@@ -18,7 +18,7 @@ export async function removeStorageCommand (deps: { engine: EngineClient }, node
     return
   }
 
-  const confirmed = await vscode.window.showWarningMessage('Remove this storage from .lore-master.yaml?', { modal: true }, 'Remove')
+  const confirmed = await vscode.window.showWarningMessage('Remove this storage from your LoreMaster settings?', { modal: true }, 'Remove')
   if (confirmed !== 'Remove') {
     return
   }
@@ -26,7 +26,7 @@ export async function removeStorageCommand (deps: { engine: EngineClient }, node
   try {
     const result = await removeStorage({ engine: deps.engine, workspaceRoot: folder, index: node.index })
     if (result === 'last') {
-      await vscode.window.showInformationMessage('That is the only storage — add another first, or open .lore-master.yaml to remove it by hand.')
+      await vscode.window.showInformationMessage('That is the only storage — add another first, or edit loreMaster.outputs in your settings to remove it by hand.')
     }
   } catch (error) {
     await vscode.window.showErrorMessage(`LoreMaster: ${error instanceof Error ? error.message : String(error)}`)

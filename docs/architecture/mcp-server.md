@@ -19,7 +19,7 @@ VS Code ───registers───▶  lore-master-engine --mcp --workspace <fo
 external client ─config─▶        │
                                  ├─ mcpserver            protocol + the six tools
                                  ├─ markdown-workspace   discovery, parsing, the nesting rules
-                                 └─ workspacesettings    .lore-master.yaml: roots, excludes, ignore
+                                 └─ workspacesettings    loreMaster.* settings: roots, excludes, ignore
 ```
 
 ## One source of truth
@@ -31,10 +31,10 @@ restate the rules; they call the code that applies them.
   `NestingPolicy`, the code that places pages. Change one and the other is changed in the
   same file.
 - `preview_tree`, `validate_document` and `place_document` load the workspace through the
-  same discovery (`documentdiscovery`, driven by the `.lore-master.yaml` roots, excludes and
+  same discovery (`documentdiscovery`, driven by the settings' roots, excludes and
   ignore list) and build the tree with the same `documenttree.BuildTree` the sync uses.
 
-So the advice cannot drift from the behaviour, and a `.lore-master.yaml` change shows up in
+So the advice cannot drift from the behaviour, and a settings change shows up in
 the tools without any MCP-side edit.
 
 ## The tools

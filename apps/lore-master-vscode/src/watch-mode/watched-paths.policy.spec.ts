@@ -14,7 +14,7 @@ describe('workspacePath', () => {
 
 describe('isWatchedPath', () => {
   it.each([
-    'README.md', 'docs/a.MD', '.lore-master.yaml', 'libs/core/a.go', 'src/app.ts', 'svc/main.py', 'reports/junit.xml',
+    'README.md', 'docs/a.MD', '.lore-master.yaml', '.vscode/settings.json', 'libs/core/a.go', 'src/app.ts', 'svc/main.py', 'reports/junit.xml',
     'src/Shop/Shop.csproj', 'pkg/lib/cart.dart', 'api/openapi.yaml',
   ])('watches %s', path => {
     expect(isWatchedPath(path)).toBe(true)

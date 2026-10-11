@@ -37,7 +37,7 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
       return
     }
     try {
-      await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { version: read.settings.version || 1, outputs: created } })
+      await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { ...read.settings, version: read.settings.version || 1, outputs: created } })
     } catch (error) {
       await ui.error(messageOf(error))
 

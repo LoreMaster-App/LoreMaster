@@ -23,7 +23,13 @@ var watchedExtensions = map[string]bool{
 
 // IsSkippedFolder reports whether a folder is left out of the look: hidden folders, and the usual
 // dependency and build-output folders.
+//
+// .vscode is looked into: its settings.json holds the configuration (#308).
 func IsSkippedFolder(name string) bool {
+	if name == ".vscode" {
+		return false
+	}
+
 	return strings.HasPrefix(name, ".") || skippedFolders[strings.ToLower(name)]
 }
 
@@ -33,6 +39,9 @@ func IsWatchedFile(rel string) bool {
 	name := path.Base(rel)
 	if name == ".lore-master.yaml" {
 		return true
+	}
+	if strings.Contains("/"+rel, "/.vscode/") {
+		return rel == ".vscode/settings.json"
 	}
 
 	return !strings.HasPrefix(name, ".") && watchedExtensions[strings.ToLower(path.Ext(name))]

@@ -19,7 +19,7 @@ export async function editStorage (deps: { engine: StoragesEngine; workspaceRoot
     return
   }
   if (index < 0 || index >= read.settings.outputs.length) {
-    throw new Error('That storage is no longer in .lore-master.yaml.')
+    throw new Error('That storage is no longer in your LoreMaster settings.')
   }
   const outputs = read.settings.outputs.map((output, position) => position === index ? field.write(output, value) : output)
 

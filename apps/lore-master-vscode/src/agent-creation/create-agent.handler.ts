@@ -64,7 +64,7 @@ async function pickTargets (): Promise<AgentTarget[] | undefined> {
 
 async function report (folder: string, result: CreateAgentResult): Promise<void> {
   const lines = result.outcomes.map(({ target, outcome }) => `${outcome} ${target.path}`)
-  const note = result.hasConfig ? '' : ' There is no .lore-master.yaml yet, so the instructions are general; run it again after the first sync.'
+  const note = result.hasConfig ? '' : ' LoreMaster has no configuration yet, so the instructions are general; run it again after the first sync.'
   const written = result.outcomes.find(entry => entry.outcome !== 'skipped' && entry.outcome !== 'unchanged')
   const answer = await vscode.window.showInformationMessage(
     `LoreMaster agent: ${lines.join('; ')}.${note} For the place and validate tools, add the LoreMaster MCP server.`,

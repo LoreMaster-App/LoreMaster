@@ -8,6 +8,7 @@ import (
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/github-pages/sitepublish"
 )
@@ -48,7 +49,7 @@ func PublishPages() rpcserver.Method {
 // pagesOutput loads and checks the settings and picks the output, which must be a
 // github-pages output.
 func pagesOutput(workspaceRoot string, outputIndex int) (workspacesettings.Output, workspacesettings.DiscoveryScope, error) {
-	loaded, err := workspacesettings.LoadSettings(workspaceRoot)
+	loaded, err := editorsettings.LoadConfiguration(workspaceRoot)
 	if err != nil {
 		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}

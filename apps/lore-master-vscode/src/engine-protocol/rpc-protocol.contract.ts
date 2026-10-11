@@ -16,6 +16,7 @@ export const SYNC_PLAN_METHOD = 'sync/plan'
 export const SYNC_EXECUTE_METHOD = 'sync/execute'
 export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
+export const SETTINGS_MIGRATE_METHOD = 'settings/migrate'
 export const PAGES_PUBLISH_METHOD = 'pages/publish'
 export const PAGES_BUILD_METHOD = 'pages/build'
 export const PAGES_CHECK_METHOD = 'pages/check'
@@ -129,7 +130,14 @@ export interface PageSearchParams {
   limit?:    number
 }
 
-// ---- settings/read, settings/save ----------------------------------------------------
+// ---- settings/read, settings/save, settings/migrate ----------------------------------
+
+/** What `settings/migrate` did: `migrated` is true when .lore-master.yaml was imported into
+ *  the folder's .vscode/settings.json on this call; `path` is the file written. */
+export interface SettingsMigrateResult {
+  migrated: boolean
+  path?:    string
+}
 
 export interface Content {
   type:      string

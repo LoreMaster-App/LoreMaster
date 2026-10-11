@@ -9,11 +9,18 @@ import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { registerPagesView } from './pages-view'
 import { createConnectionStore } from './secret-storage'
+import { runSettingsMigration } from './settings-migration'
 import { EDIT_STORAGE_COMMAND, editStorageCommand } from './storage-editing'
 import { ADD_STORAGE_COMMAND, addStorageCommand, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
 import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
 import { TOGGLE_WATCH_COMMAND, WatchMode } from './watch-mode'
+
+/** A multi-root workspace's `.code-workspace` file is a settings layer; the engine reads it
+ *  from this variable (a single folder, or a remote file, has none). */
+function workspaceFileEnvironment (workspaceFile: vscode.Uri | undefined): Record<string, string> | undefined {
+  return workspaceFile?.scheme === 'file' ? { LORE_MASTER_WORKSPACE_FILE: workspaceFile.fsPath } : undefined
+}
 
 export function activate (context: vscode.ExtensionContext): void {
   const engine = createEngineClient({
@@ -22,6 +29,7 @@ export function activate (context: vscode.ExtensionContext): void {
       extensionPath:  context.extensionPath,
       configuredPath: vscode.workspace.getConfiguration('loreMaster').get<string>('engine.path'),
     }),
+    env: workspaceFileEnvironment(vscode.workspace.workspaceFile),
   })
   context.subscriptions.push(engine)
 
@@ -67,6 +75,11 @@ export function activate (context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(ADD_CONNECTION_COMMAND, () => setUpConnection({ engine, store: connections, ui: createConnectionUI() })),
     vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )
+
+  // A workspace configured by the deprecated .lore-master.yaml moves into VS Code settings.
+  void runSettingsMigration({ engine, onMigrated: () => storages.refresh() }).catch((error: unknown) => {
+    output.appendLine(`Settings migration failed: ${error instanceof Error ? error.message : String(error)}`)
+  })
 }
 
 export function deactivate (): void {}

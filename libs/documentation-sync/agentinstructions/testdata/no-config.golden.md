@@ -14,7 +14,7 @@ The nesting rules are tried in this order; the first that applies decides a page
 
 ## This workspace
 
-There is no `.lore-master.yaml` yet; the first sync creates it and asks where the pages go. Until then, write pages anywhere under the workspace following the rules above.
+There is no LoreMaster configuration yet; the first sync writes `loreMaster.outputs` to `.vscode/settings.json` and asks where the pages go. Until then, write pages anywhere under the workspace following the rules above.
 
 ## How to work
 

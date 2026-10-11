@@ -78,7 +78,7 @@ async function ensureGitHubPagesOutput (engine: PagesEngine, workspaceRoot: stri
   }
 
   const outputs = read.firstSync ? [gitHubPagesOutput()] : [...read.settings.outputs, gitHubPagesOutput()]
-  await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { version: read.settings.version || 1, outputs } })
+  await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { ...read.settings, version: read.settings.version || 1, outputs } })
 
   return outputs.length - 1
 }

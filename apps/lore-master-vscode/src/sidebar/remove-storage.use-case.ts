@@ -17,7 +17,7 @@ export async function removeStorage (deps: { engine: StoragesEngine; workspaceRo
     return 'last'
   }
 
-  await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { version: read.settings.version || 1, outputs } })
+  await engine.request(SETTINGS_SAVE_METHOD, { workspaceRoot, settings: { ...read.settings, version: read.settings.version || 1, outputs } })
 
   return 'removed'
 }

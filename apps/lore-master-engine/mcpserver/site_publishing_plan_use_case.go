@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/github-pages/sitedeployment"
 )
@@ -35,7 +36,7 @@ func sitePublishingPlanResult(workspaceRoot string) toolCallResult {
 
 	var outputs []sitedeployment.Output
 	var notes []string
-	loaded, err := workspacesettings.LoadSettings(workspaceRoot)
+	loaded, err := editorsettings.LoadConfiguration(workspaceRoot)
 	if err != nil {
 		notes = append(notes, fmt.Sprintf("%s could not be read: %v", workspacesettings.FileName, err))
 	}
@@ -119,7 +120,7 @@ func describePlan(plan sitedeployment.Plan, workflowDir string) string {
 	}
 
 	if plan.OutputSnippet != "" {
-		fmt.Fprintf(&text, "\n.lore-master.yaml output (under `outputs:`):\n```yaml\n%s```\n", plan.OutputSnippet)
+		fmt.Fprintf(&text, "\nloreMaster.outputs entry (in .vscode/settings.json):\n```json\n%s```\n", plan.OutputSnippet)
 	}
 	if plan.WorkflowSnippet != "" {
 		fmt.Fprintf(&text, "\nWorkflow step:\n```yaml\n%s```\n", plan.WorkflowSnippet)

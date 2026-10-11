@@ -83,7 +83,7 @@ func TestInstructionsForAWorkspaceWithoutAConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if result.HasConfig || !strings.Contains(result.Instructions, "There is no `.lore-master.yaml` yet") {
+	if result.HasConfig || !strings.Contains(result.Instructions, "There is no LoreMaster configuration yet") {
 		t.Fatalf("result %+v", result)
 	}
 }

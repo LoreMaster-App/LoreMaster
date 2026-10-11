@@ -60,7 +60,7 @@ export async function addGenerator (engine: GeneratorsViewEngine, workspaceRoot:
 export async function updateGenerator (engine: GeneratorsViewEngine, workspaceRoot: string, index: number, patch: GeneratorPatch): Promise<void> {
   await saveGenerators(engine, workspaceRoot, generators => {
     if (index < 0 || index >= generators.length) {
-      throw new Error('That generator is no longer in .lore-master.yaml.')
+      throw new Error('That generator is no longer in your LoreMaster settings.')
     }
     const current = generators[index]
     generators[index] = {
@@ -78,7 +78,7 @@ export async function updateGenerator (engine: GeneratorsViewEngine, workspaceRo
 export async function removeGenerator (engine: GeneratorsViewEngine, workspaceRoot: string, index: number): Promise<void> {
   await saveGenerators(engine, workspaceRoot, generators => {
     if (index < 0 || index >= generators.length) {
-      throw new Error('That generator is no longer in .lore-master.yaml.')
+      throw new Error('That generator is no longer in your LoreMaster settings.')
     }
 
     return generators.filter((_, position) => position !== index)

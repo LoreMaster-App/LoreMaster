@@ -9,6 +9,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/documentation-sync/documentloading"
 	"lore-master/libs/documentation-sync/syncplanning"
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documenttree"
 )
@@ -25,7 +26,7 @@ func WorkspaceTree() rpcserver.Method {
 		if !filepath.IsAbs(params.WorkspaceRoot) {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "workspaceRoot must be an absolute path, got %q", params.WorkspaceRoot)
 		}
-		settings, err := workspacesettings.LoadSettings(params.WorkspaceRoot)
+		settings, err := editorsettings.LoadConfiguration(params.WorkspaceRoot)
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}

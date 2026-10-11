@@ -31,7 +31,7 @@ export async function runGeneratorsCommand (deps: RunGeneratorsDeps): Promise<Ge
   try {
     const configured = await listGenerators(deps.engine, folder)
     if (configured.length === 0) {
-      await vscode.window.showInformationMessage('LoreMaster: no generators are configured. Add a "generators:" list to .lore-master.yaml (see docs/generators.md), or add one from the Generators view.')
+      await vscode.window.showInformationMessage('LoreMaster: no generators are configured. Add a loreMaster.generators list to your settings (see docs/generators.md), or add one from the Generators view.')
 
       return undefined
     }
