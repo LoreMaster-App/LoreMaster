@@ -67,6 +67,16 @@ async function waitFor (predicate: () => boolean): Promise<void> {
 }
 
 describe('createEngineClient', () => {
+  it('hands the engine its extra environment', async () => {
+    const spawn = jest.fn((_binary: string, _env?: Readonly<Record<string, string>>) => fakeEngine().child)
+    const client = createEngineClient({ binaryPath: '/engine', env: { LORE_MASTER_WORKSPACE_FILE: '/w/team.code-workspace' }, spawn })
+
+    await client.request<PingResult>(PING_METHOD)
+
+    expect(spawn).toHaveBeenCalledWith('/engine', { LORE_MASTER_WORKSPACE_FILE: '/w/team.code-workspace' })
+    client.dispose()
+  })
+
   it('starts the engine on the first request and returns its reply', async () => {
     const spawn = jest.fn(() => fakeEngine().child)
     const client = createEngineClient({ binaryPath: '/engine', spawn })

@@ -16,6 +16,12 @@ import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, syncCurrentFi
 import { createTargetStore } from './sync-target'
 import { TOGGLE_WATCH_COMMAND, WatchMode } from './watch-mode'
 
+/** A multi-root workspace's `.code-workspace` file is a settings layer; the engine reads it
+ *  from this variable (a single folder, or a remote file, has none). */
+function workspaceFileEnvironment (workspaceFile: vscode.Uri | undefined): Record<string, string> | undefined {
+  return workspaceFile?.scheme === 'file' ? { LORE_MASTER_WORKSPACE_FILE: workspaceFile.fsPath } : undefined
+}
+
 export function activate (context: vscode.ExtensionContext): void {
   const engine = createEngineClient({
     binaryPath: resolveEngineBinary({
@@ -23,6 +29,7 @@ export function activate (context: vscode.ExtensionContext): void {
       extensionPath:  context.extensionPath,
       configuredPath: vscode.workspace.getConfiguration('loreMaster').get<string>('engine.path'),
     }),
+    env: workspaceFileEnvironment(vscode.workspace.workspaceFile),
   })
   context.subscriptions.push(engine)
 
