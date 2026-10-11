@@ -90,3 +90,11 @@ func TestNoChangesAndNoGeneratorsCallForNothing(t *testing.T) {
 		t.Fatalf("an unknown type was routed: %+v", plan)
 	}
 }
+
+func TestAChangedEditorSettingsFileCallsForEverything(t *testing.T) {
+	plan := Route([]string{".vscode/settings.json"}, specs)
+
+	if !plan.Everything || len(plan.Generators) != len(specs) {
+		t.Fatalf("plan %+v", plan)
+	}
+}
