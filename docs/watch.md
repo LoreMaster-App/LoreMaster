@@ -1,7 +1,7 @@
 # Watch mode
 
 Watch mode keeps the storage up to date while you work. It watches the Markdown, the generators'
-inputs (source files, test reports, API descriptions) and `.lore-master.yaml`. When files change
+inputs (source files, test reports, API descriptions) and your LoreMaster settings. When files change
 and then stay quiet for a moment, it **regenerates only the generators that read what changed**
 and **syncs only the pages that changed or were rewritten**, a scoped sync rather than a full one.
 
@@ -42,7 +42,7 @@ Watch mode needs a storage already set up, so run **Sync** once first.
 - **Only what changed.** The engine's `watch/route` method maps each changed file to the
   generators that read it (by type and by the generator's `input` patterns) and to the Markdown
   pages. A generator's own output never re-triggers it.
-- **Settings.** Changing `.lore-master.yaml` runs every generator and syncs everything.
+- **Settings.** Changing `.vscode/settings.json` (or the deprecated `.lore-master.yaml`) runs every generator and syncs everything.
 - **Bursts.** Changes are gathered until nothing has changed for the debounce time. Changes made
   while a sync runs wait for the next one; two syncs never overlap.
 - **Our own writes.** The pages a generator writes and the annotations a sync adds to your files

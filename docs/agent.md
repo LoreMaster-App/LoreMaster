@@ -44,6 +44,6 @@ Copy MCP Server Config** gives you the entry (the command offers it when it fini
 
 ## Keep it current
 
-Run the command again after you change `.lore-master.yaml` (new folders, a new generator, a
+Run the command again after you change your LoreMaster settings (new folders, a new generator, a
 new storage): the files it wrote are updated in place. A file it did not write — one you
 created or edited by hand without its marker — is only replaced if you say so.

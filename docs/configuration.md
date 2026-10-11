@@ -61,8 +61,27 @@ secret (`token`, `password`, ...) is refused.
 | | Reads |
 |---|---|
 | The VS Code extension, the engine, the MCP server | The settings above: the user's `settings.json`, then the folder's `.vscode/settings.json`, the folder winning. |
-| The command line (`lore-master sync`, `pages`, `generate`) | The same. Commit `.vscode/settings.json` for CI to find it. |
-| The GitHub Action | Its inputs (planned: #308). Until then it reads the folder's settings like the command line. |
+| The command line (`lore-master-engine sync`, `pages`, `generate`) | The same, plus the overrides below. Commit `.vscode/settings.json` for CI to find it. |
+| The GitHub Action | The same, with its inputs (`outputs`, `ignore`, `skip-gitignored`, `generators`, `settings`) as the most specific layer. See [the action](github-action.md). |
+
+### A multi-root workspace
+
+A `.code-workspace` file's `settings` are the **workspace** layer, between your user settings and
+the folder's. The extension hands the file's location to the engine itself. On the command line,
+pass `--workspace-file team.code-workspace` (or set `LORE_MASTER_WORKSPACE_FILE`).
+
+### Overrides for CI
+
+`--settings` (or the `LORE_MASTER_SETTINGS` environment variable) takes the JSON of `loreMaster.*`
+keys, or `@` and a file, and wins over every settings file:
+
+```bash
+lore-master-engine sync --yes --settings '{"loreMaster.outputs": [{"platform": "confluence", "space": "ENG", "parentPageId": "98306", "titlePrefix": "ENG"}]}'
+```
+
+The order, least to most specific: defaults, user settings, the `.code-workspace` file, the
+folder's `.vscode/settings.json`, the overrides. A key that looks like a secret is refused here
+too; credentials come from the environment variables in [the command line guide](cli.md#credentials).
 
 ## From `.lore-master.yaml`
 

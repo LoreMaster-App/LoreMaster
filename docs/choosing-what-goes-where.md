@@ -3,7 +3,7 @@
 A repository often feeds several places at once: some pages on a public GitHub Pages site,
 internal documents on Confluence, public details in the repository wiki. LoreMaster reads every
 Markdown file by default and lets you say what each **storage** (an output of
-`.lore-master.yaml`) leaves out, or takes back.
+LoreMaster's settings) leaves out, or takes back.
 
 ## The model
 
@@ -65,7 +65,7 @@ GitHub Pages
 - **Left-out files:** the eye button shows them faded, with the setting that left each out, or
   hides them (`loreMaster.pages.excluded`).
 - **Do not sync…** (right-click a page or folder) asks which storages to leave it out of, or
-  *All storages*, and writes the entry to `.lore-master.yaml`.
+  *All storages*, and writes the entry to `.vscode/settings.json`.
 - **Sync this file…** (right-click a left-out file) brings it into the storages you pick: it
   removes the storage's own exclusion of exactly that file, or adds an include, which beats a
   broader exclusion. A file that git ignores, or that sits outside the storage's `roots`, has no

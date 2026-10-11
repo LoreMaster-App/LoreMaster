@@ -8,21 +8,27 @@ out.
 
 ## Configure one
 
-In `.lore-master.yaml`:
+In the `loreMaster.generators` setting (and `loreMaster.outputs` for where the pages go):
 
-```yaml
-version: 1
-generators:
-  - type: test-results
-    input: ["reports/", "**/junit*.xml"]   # optional; see the defaults below
-    output: docs/tests                      # the folder the pages are written to
-    title: Test results                     # optional; heads the index page
-outputs:
-  - platform: confluence
-    # …
-    content:
-      - type: markdown
-        roots: [docs]                       # the output folder must be inside a root to sync
+```jsonc
+// .vscode/settings.json
+{
+  "loreMaster.generators": [
+    {
+      "type": "test-results",
+      "input": ["reports/", "**/junit*.xml"],   // optional; see the defaults below
+      "output": "docs/tests",                     // the folder the pages are written to
+      "title": "Test results"                     // optional; heads the index page
+    }
+  ],
+  "loreMaster.outputs": [
+    {
+      "platform": "confluence",
+      // …
+      "content": [{ "type": "markdown", "roots": ["docs"] }]   // the output folder must be inside a root to sync
+    }
+  ]
+}
 ```
 
 | Key | Meaning |

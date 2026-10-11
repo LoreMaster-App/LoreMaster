@@ -73,7 +73,7 @@ what it returns.
 
 ### `site_publishing_plan`
 
-No input. Reads the repository's `.github/workflows` and `.lore-master.yaml` and says how the
+No input. Reads the repository's `.github/workflows` and LoreMaster settings and says how the
 repository deploys to GitHub Pages and which setting puts the docs site **beside** that deploy:
 build into the app's artifact folder (an Actions-source deploy), publish into a `path` folder of
 the branch (a branch push), or own the branch (nothing else deploys). Returns the
