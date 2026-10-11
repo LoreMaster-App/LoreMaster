@@ -127,3 +127,84 @@ func TestUserSettingsPathPerSystem(t *testing.T) {
 		t.Fatalf("unknown location = %q", got)
 	}
 }
+
+const oneOutput = `[{"platform":"confluence","space":"ENG","parentPageId":"1","titlePrefix":"ENG"}]`
+
+func TestWorkspaceFileSitsBetweenUserAndFolder(t *testing.T) {
+	root := t.TempDir()
+	user := filepath.Join(t.TempDir(), "settings.json")
+	writeSettings(t, user, `{"loreMaster.ignore": ["user/"], "loreMaster.skipGitignored": false}`)
+	workspaceFile := filepath.Join(t.TempDir(), "team.code-workspace")
+	writeSettings(t, workspaceFile, `{
+  "folders": [{"path": "."}],
+  "settings": {"loreMaster.outputs": `+oneOutput+`, "loreMaster.ignore": ["workspace/"]}
+}`)
+	t.Setenv(WorkspaceFileVariable, workspaceFile)
+
+	result, err := LoadEditorSettings(root, user)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Configured || len(result.Settings.Outputs) != 1 {
+		t.Fatalf("the workspace file's outputs were not read: %+v", result)
+	}
+	if got := result.Settings.Ignore; len(got) != 1 || got[0] != "workspace/" {
+		t.Errorf("the workspace file must override the user's ignore, got %v", got)
+	}
+
+	writeSettings(t, FolderSettingsPath(root), `{"loreMaster.ignore": ["folder/"]}`)
+	result, err = LoadEditorSettings(root, user)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := result.Settings.Ignore; len(got) != 1 || got[0] != "folder/" {
+		t.Errorf("the folder must override the workspace file, got %v", got)
+	}
+}
+
+func TestOverridesAreTheMostSpecificLayer(t *testing.T) {
+	root := t.TempDir()
+	writeSettings(t, FolderSettingsPath(root), `{"loreMaster.outputs": `+oneOutput+`, "loreMaster.ignore": ["folder/"]}`)
+	t.Setenv(OverridesVariable, `{"loreMaster.ignore": ["ci/"]}`)
+
+	result, err := LoadEditorSettings(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := result.Settings.Ignore; len(got) != 1 || got[0] != "ci/" {
+		t.Errorf("overrides must win over the folder, got %v", got)
+	}
+	if len(result.Settings.Outputs) != 1 {
+		t.Errorf("a key the overrides leave alone must stay, got %d outputs", len(result.Settings.Outputs))
+	}
+}
+
+func TestOverridesCanCarryTheWholeConfigurationFromAFile(t *testing.T) {
+	root := t.TempDir()
+	file := filepath.Join(t.TempDir(), "ci.json")
+	writeSettings(t, file, `{"loreMaster.outputs": `+oneOutput+`}`)
+	t.Setenv(OverridesVariable, "@"+file)
+
+	result, err := LoadEditorSettings(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Configured || len(result.Settings.Outputs) != 1 {
+		t.Errorf("the overrides file was not read: %+v", result)
+	}
+}
+
+func TestOverridesRefuseASecretAndAnUnknownKey(t *testing.T) {
+	for name, text := range map[string]string{
+		"secret":  `{"loreMaster.confluence.token": "abc"}`,
+		"unknown": `{"loreMaster.outputz": []}`,
+		"broken":  `{`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Setenv(OverridesVariable, text)
+			if _, err := LoadEditorSettings(t.TempDir(), ""); err == nil || !strings.Contains(err.Error(), OverridesVariable) {
+				t.Errorf("want an error naming %s, got %v", OverridesVariable, err)
+			}
+		})
+	}
+}

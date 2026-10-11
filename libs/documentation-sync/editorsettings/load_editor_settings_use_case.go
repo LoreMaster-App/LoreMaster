@@ -1,6 +1,7 @@
 package editorsettings
 
 import (
+	"os"
 	"path/filepath"
 
 	"lore-master/libs/documentation-sync/workspacesettings"
@@ -11,22 +12,45 @@ func FolderSettingsPath(workspaceRoot string) string {
 	return filepath.Join(workspaceRoot, ".vscode", "settings.json")
 }
 
-// LoadEditorSettings resolves the configuration from the user's settings and the
-// workspace folder's, the folder overriding the user (#308). userSettingsPath may be
-// empty. When no layer sets loreMaster.outputs the result is not Configured and holds
+// WorkspaceFileVariable names the environment variable that points at the .code-workspace
+// file of a multi-root workspace, whose `settings` are the layer between user and folder.
+const WorkspaceFileVariable = "LORE_MASTER_WORKSPACE_FILE"
+
+// OverridesVariable names the environment variable that carries overrides: the JSON of
+// `loreMaster.*` keys (or "@" and a file path), the most specific layer, for CI and the
+// GitHub Action (#313).
+const OverridesVariable = "LORE_MASTER_SETTINGS"
+
+// LoadEditorSettings resolves the configuration from the user's settings, the
+// .code-workspace file's, the workspace folder's and finally the overrides, each more
+// specific one winning (#308, #313, #314). userSettingsPath may be empty. When no layer sets loreMaster.outputs the result is not Configured and holds
 // no settings, so the caller can fall back to .lore-master.yaml. Otherwise the settings
 // are completed and validated as a file's are, and an error names the file and key.
 func LoadEditorSettings(workspaceRoot, userSettingsPath string) (Result, error) {
 	var layers []Layer
-	for _, path := range []string{userSettingsPath, FolderSettingsPath(workspaceRoot)} {
-		if path == "" {
-			continue
-		}
-		layer, err := ReadLayer(path)
+	add := func(layer Layer, err error) error {
 		if err != nil {
-			return Result{}, err
+			return err
 		}
 		layers = append(layers, layer)
+
+		return nil
+	}
+	if userSettingsPath != "" {
+		if err := add(ReadLayer(userSettingsPath)); err != nil {
+			return Result{}, err
+		}
+	}
+	if workspaceFile := os.Getenv(WorkspaceFileVariable); workspaceFile != "" {
+		if err := add(ReadWorkspaceFileLayer(workspaceFile)); err != nil {
+			return Result{}, err
+		}
+	}
+	if err := add(ReadLayer(FolderSettingsPath(workspaceRoot))); err != nil {
+		return Result{}, err
+	}
+	if err := add(ParseOverridesLayer(os.Getenv(OverridesVariable))); err != nil {
+		return Result{}, err
 	}
 
 	var sources []string
