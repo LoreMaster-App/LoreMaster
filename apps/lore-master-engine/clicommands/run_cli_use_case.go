@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/libs/documentation-sync/editorsettings"
 )
 
 // Exit codes, so a pipeline can tell a broken run from a run that was stopped on purpose.
@@ -92,7 +94,7 @@ Usage:
   lore-master-engine pages publish [--workspace DIR] [--output N] [--json]
   lore-master-engine version
 
-generate   run the generators of .lore-master.yaml (test results, Go, OpenAPI, TypeScript docs)
+generate   run the generators of the loreMaster.generators setting (test results, Go, OpenAPI, TypeScript docs)
 tree       show the page tree each output would sync, with each page's local status
 sync       plan the sync of each output and, with --yes, apply it. Without --yes it only shows the plan.
            --generate runs the generators first. --force overwrites pages edited on the platform;
@@ -103,6 +105,9 @@ pages      build writes a github-pages output's static site into --out (replaced
 
 watch       keep the storage up to date: when files change and stay quiet for --debounce, regenerate only the
            generators that read them and sync only the pages that changed. Applies nothing without --yes.
+
+Settings are the editor's loreMaster.* settings: user, then --workspace-file, then the folder's .vscode/settings.json,
+then --settings (or LORE_MASTER_SETTINGS), each more specific one winning.
 
 Credentials come from the environment, never from a file:
   LORE_MASTER_EMAIL and LORE_MASTER_TOKEN   Confluence Cloud (email and API token)
@@ -145,6 +150,14 @@ type common struct {
 	json      bool
 }
 
+// passToLoader hands a flag's value to the configuration loader, which reads it from the
+// environment so the editor, the engine and every command resolve the settings alike.
+func passToLoader(variable string, value string) {
+	if value != "" {
+		_ = os.Setenv(variable, value)
+	}
+}
+
 // parseFlags parses args for a command: the common flags, then whatever define adds. It
 // returns the workspace folder as an absolute path, or an exit code when the line is not valid.
 func parseFlags(name string, env Environment, args []string, define func(*flag.FlagSet)) (common, int, bool) {
@@ -153,6 +166,9 @@ func parseFlags(name string, env Environment, args []string, define func(*flag.F
 	var parsed common
 	flags.StringVar(&parsed.workspace, "workspace", "", "the workspace folder (default: the current folder)")
 	flags.BoolVar(&parsed.json, "json", false, "print a machine-readable result instead of text")
+	var overrides, workspaceFile string
+	flags.StringVar(&overrides, "settings", "", "LoreMaster settings that win over every settings file: JSON of loreMaster.* keys, or @file")
+	flags.StringVar(&workspaceFile, "workspace-file", "", "a .code-workspace file whose settings sit between the user's and the folder's")
 	define(flags)
 	if err := flags.Parse(args); err != nil {
 		return common{}, ExitUsage, false
@@ -162,6 +178,9 @@ func parseFlags(name string, env Environment, args []string, define func(*flag.F
 
 		return common{}, ExitUsage, false
 	}
+
+	passToLoader(editorsettings.OverridesVariable, overrides)
+	passToLoader(editorsettings.WorkspaceFileVariable, workspaceFile)
 
 	root := parsed.workspace
 	if root == "" {

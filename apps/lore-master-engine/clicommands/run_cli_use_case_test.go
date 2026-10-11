@@ -1,10 +1,13 @@
 package clicommands
 
 import (
+	"os"
 	"strings"
 	"testing"
 
+	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/libs/documentation-sync/editorsettings"
 )
 
 func TestTheCommandsAreRecognised(t *testing.T) {
@@ -65,5 +68,27 @@ func TestTheMoreSeriousExitCodeWins(t *testing.T) {
 		if got := worst(tc.a, tc.b); got != tc.want {
 			t.Errorf("worst(%d, %d) = %d, want %d", tc.a, tc.b, got, tc.want)
 		}
+	}
+}
+
+func TestSettingsAndWorkspaceFileFlagsReachTheLoader(t *testing.T) {
+	// t.Setenv registers the restore, so the flags below cannot leak into other tests.
+	t.Setenv(editorsettings.OverridesVariable, "")
+	t.Setenv(editorsettings.WorkspaceFileVariable, "")
+	double := newEngineDouble(map[string]func(rpcserver.Call) (any, error){
+		rpcprotocol.MethodSettingsRead:  settingsAnswer(confluenceOutput),
+		rpcprotocol.MethodWorkspaceTree: treeAnswer(map[int]rpcprotocol.WorkspaceTreeResult{0: {}}),
+	})
+
+	_, _, code := double.run(t, nil, "tree", "--settings", `{"loreMaster.ignore":["ci/"]}`, "--workspace-file", "team.code-workspace")
+
+	if code != ExitOK {
+		t.Fatalf("exit %d", code)
+	}
+	if got := os.Getenv(editorsettings.OverridesVariable); got != `{"loreMaster.ignore":["ci/"]}` {
+		t.Errorf("--settings must reach the loader, got %q", got)
+	}
+	if got := os.Getenv(editorsettings.WorkspaceFileVariable); got != "team.code-workspace" {
+		t.Errorf("--workspace-file must reach the loader, got %q", got)
 	}
 }
