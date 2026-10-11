@@ -37,7 +37,7 @@ func previewSiteTool() toolDescriptor {
 			"properties": map[string]any{
 				"output": map[string]any{
 					"type":        "integer",
-					"description": "Position of the github-pages output in .lore-master.yaml's outputs list. Optional when there is exactly one.",
+					"description": "Position of the github-pages output in the loreMaster.outputs setting. Optional when there is exactly one.",
 				},
 			},
 		},

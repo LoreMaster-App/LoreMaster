@@ -49,7 +49,7 @@ type Plan struct {
 	OutDir string `json:"outDir,omitempty"`
 	// Path is the folder inside the branch, for the publish approach.
 	Path string `json:"path,omitempty"`
-	// OutputSnippet is the .lore-master.yaml output to have; WorkflowSnippet is the workflow
+	// OutputSnippet is the loreMaster.outputs entry to have; WorkflowSnippet is the workflow
 	// step to add. Either may be empty when it does not apply.
 	OutputSnippet   string   `json:"outputSnippet,omitempty"`
 	WorkflowSnippet string   `json:"workflowSnippet,omitempty"`

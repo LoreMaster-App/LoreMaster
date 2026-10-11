@@ -38,7 +38,7 @@ func Compose(settings workspacesettings.Settings, exists bool, conventions []doc
 func writeWorkspace(out *strings.Builder, settings workspacesettings.Settings, exists bool) {
 	out.WriteString("## This workspace\n\n")
 	if !exists {
-		out.WriteString("There is no `.lore-master.yaml` yet; the first sync creates it and asks where the pages go. Until then, " +
+		out.WriteString("There is no LoreMaster configuration yet; the first sync writes `loreMaster.outputs` to `.vscode/settings.json` and asks where the pages go. Until then, " +
 			"write pages anywhere under the workspace following the rules above.\n\n")
 
 		return
@@ -88,7 +88,7 @@ func writeSite(out *strings.Builder, settings workspacesettings.Settings) {
 
 	out.WriteString("**The site.** The GitHub Pages output is built by LoreMaster, never by copying files into a deploy folder. " +
 		"To change how it is deployed (beside a web app, or into a folder of a branch), call `site_publishing_plan`: it reads the " +
-		"repository's workflows and returns the `.lore-master.yaml` output and the workflow step to use. Call `preview_site` to check " +
+		"repository's workflows and returns the `loreMaster.outputs` entry and the workflow step to use. Call `preview_site` to check " +
 		"that the site builds. The build is `lore-master-engine pages build --out DIR` or the `LoreMaster-App/LoreMaster/actions/pages` " +
 		"action; the output's `path` keeps a branch publish inside one folder. Ask the user before editing a deploy workflow.\n\n")
 }

@@ -119,7 +119,7 @@ func validateDocumentResult(ctx context.Context, workspaceRoot string, arguments
 		view.Warnings = append(view.Warnings, clash)
 	}
 	if !synced {
-		view.Warnings = append(view.Warnings, "this file is not matched by any output's roots/excludes in .lore-master.yaml, so the sync will not include it")
+		view.Warnings = append(view.Warnings, "this file is not matched by any output's roots/excludes in the LoreMaster settings, so the sync will not include it")
 	}
 
 	return toolCallResult{

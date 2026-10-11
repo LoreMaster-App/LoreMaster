@@ -24,7 +24,7 @@ type SettingsMigrateResult struct {
 
 // SettingsReadParams names the workspace.
 type SettingsReadParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 }
 

@@ -8,7 +8,7 @@ const MethodAgentInstructions = "agent/instructions"
 
 // AgentInstructionsParams names the workspace.
 type AgentInstructionsParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 }
 
@@ -16,6 +16,6 @@ type AgentInstructionsParams struct {
 type AgentInstructionsResult struct {
 	// Instructions is Markdown without a top-level heading, so each tool's file can frame it.
 	Instructions string `json:"instructions"`
-	// HasConfig is false when the workspace has no .lore-master.yaml yet.
+	// HasConfig is false when the workspace has no LoreMaster configuration yet.
 	HasConfig bool `json:"hasConfig"`
 }

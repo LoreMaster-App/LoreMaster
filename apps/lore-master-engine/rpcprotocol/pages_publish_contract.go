@@ -1,6 +1,6 @@
 package rpcprotocol
 
-// MethodPagesPublish reads the workspace and its .lore-master.yaml, generates the static
+// MethodPagesPublish reads the workspace and its settings, generates the static
 // site for one github-pages output and publishes it to that output's branch by shelling
 // out to the user's git. Unlike the Confluence sync it needs no session: git carries the
 // credentials.
@@ -8,7 +8,7 @@ const MethodPagesPublish = "pages/publish"
 
 // PagesPublishParams asks to publish one github-pages output.
 type PagesPublishParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Output is the index of the github-pages output in the settings' outputs list.
 	Output int `json:"output"`

@@ -17,7 +17,7 @@ const (
 	CodeUnknownSession = -32002
 	// CodeUnknownPlan: no plan has that id (already executed, or the engine restarted).
 	CodeUnknownPlan = -32003
-	// CodeInvalidSettings: .lore-master.yaml is missing a value or holds a wrong one.
+	// CodeInvalidSettings: the settings are missing a value or hold a wrong one.
 	CodeInvalidSettings = -32004
 	// CodePlanHasErrors: the plan has errors and cannot be executed.
 	CodePlanHasErrors = -32005

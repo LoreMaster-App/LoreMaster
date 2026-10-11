@@ -1,6 +1,6 @@
 package rpcprotocol
 
-// MethodGeneratorsRun runs the generators of .lore-master.yaml: each reads project artifacts
+// MethodGeneratorsRun runs the generators of the loreMaster.generators setting: each reads project artifacts
 // (JUnit test reports today) and writes ordinary Markdown pages into its output folder, which
 // then sync like any other page. A generator that fails does not stop the others; its
 // error comes back in its own entry.
@@ -8,7 +8,7 @@ const MethodGeneratorsRun = "generators/run"
 
 // GeneratorsRunParams names the workspace and, optionally, which generators to run.
 type GeneratorsRunParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Generators are indexes into the settings' generators list; empty runs them all.
 	Generators []int `json:"generators,omitempty"`

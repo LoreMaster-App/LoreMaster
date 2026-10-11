@@ -102,7 +102,7 @@ func runSync(ctx context.Context, env Environment, engine *connection, parsed co
 		return ExitFailed
 	}
 	if len(outputs) == 0 {
-		_, _ = fmt.Fprintln(env.Stderr, "error: there is no configured output to sync; run a sync from an editor first, or edit .lore-master.yaml")
+		_, _ = fmt.Fprintln(env.Stderr, "error: there is no configured output to sync; run a sync from an editor first, or set loreMaster.outputs in .vscode/settings.json (or pass --settings)")
 
 		return ExitFailed
 	}

@@ -1,6 +1,6 @@
 package rpcprotocol
 
-// MethodWorkspaceTree reads the workspace and its .lore-master.yaml and returns the page
+// MethodWorkspaceTree reads the workspace and its settings and returns the page
 // tree one output would sync, each page with what the files alone say about it. It needs
 // no connection and writes nothing: the editor's Pages view is built on it, and refines
 // the remote half with a read-only sync/plan.
@@ -8,7 +8,7 @@ const MethodWorkspaceTree = "workspace/tree"
 
 // WorkspaceTreeParams names the workspace and the output.
 type WorkspaceTreeParams struct {
-	// WorkspaceRoot is the folder holding .lore-master.yaml, as an absolute path.
+	// WorkspaceRoot is the workspace folder, as an absolute path.
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Output is the index of the output in the settings' outputs list. It is ignored when
 	// Scope is "local".

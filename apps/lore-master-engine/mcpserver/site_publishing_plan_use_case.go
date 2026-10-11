@@ -120,7 +120,7 @@ func describePlan(plan sitedeployment.Plan, workflowDir string) string {
 	}
 
 	if plan.OutputSnippet != "" {
-		fmt.Fprintf(&text, "\n.lore-master.yaml output (under `outputs:`):\n```yaml\n%s```\n", plan.OutputSnippet)
+		fmt.Fprintf(&text, "\nloreMaster.outputs entry (in .vscode/settings.json):\n```json\n%s```\n", plan.OutputSnippet)
 	}
 	if plan.WorkflowSnippet != "" {
 		fmt.Fprintf(&text, "\nWorkflow step:\n```yaml\n%s```\n", plan.WorkflowSnippet)

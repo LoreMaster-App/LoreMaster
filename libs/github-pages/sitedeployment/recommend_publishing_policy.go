@@ -12,7 +12,7 @@ const (
 	actionRef       = "LoreMaster-App/LoreMaster/actions/pages@main"
 )
 
-// Recommend turns what the repository deploys today and what .lore-master.yaml says (outputs
+// Recommend turns what the repository deploys today and what the LoreMaster settings say (outputs
 // is every github-pages output, possibly none) into the one approach that puts the docs site
 // beside the existing deploy, with the snippets to apply it and the warnings that matter.
 func Recommend(deployment Deployment, outputs []Output) Plan {
@@ -31,7 +31,7 @@ func Recommend(deployment Deployment, outputs []Output) Plan {
 		plan.WorkflowSnippet = buildStep(plan.OutDir)
 		plan.Warnings = append(plan.Warnings,
 			"Put the step after the app is built and before upload-pages-artifact, so the docs are inside the uploaded folder; the app stays at the site root and the docs appear under /"+docsFolder+"/.",
-			"Add the docs folders and .lore-master.yaml to the workflow's `paths:` filter, or a docs-only change will not redeploy.",
+			"Add the docs folders and .vscode/settings.json to the workflow's `paths:` filter, or a docs-only change will not redeploy.",
 			"Do not publish this repository's docs to a branch: with the Actions source Pages ignores branches, and a branch publish would be invisible.")
 		if deployment.ArtifactPath == "" {
 			plan.Warnings = append(plan.Warnings, "The uploaded folder was not found in the workflow, so "+plan.OutDir+" is a guess; use the folder passed to upload-pages-artifact.")
@@ -67,7 +67,7 @@ func Recommend(deployment Deployment, outputs []Output) Plan {
 	}
 
 	if len(outputs) == 0 {
-		plan.Warnings = append(plan.Warnings, "There is no github-pages output in .lore-master.yaml yet; add the one shown.")
+		plan.Warnings = append(plan.Warnings, "There is no github-pages output in the loreMaster.outputs setting yet; add the one shown.")
 	}
 	if len(outputs) > 1 {
 		plan.Warnings = append(plan.Warnings, fmt.Sprintf("There are %d github-pages outputs; pass `output:` (a position) to the action so it builds the right one.", len(outputs)))
@@ -84,19 +84,20 @@ func firstOutput(outputs []Output) *Output {
 	return &outputs[0]
 }
 
+// pagesOutputSnippet is one entry for the loreMaster.outputs setting.
 func pagesOutputSnippet(branch, path, repo string) string {
 	var out strings.Builder
-	out.WriteString("- platform: github-pages\n  direction: to-platform\n")
+	out.WriteString("{\n  \"platform\": \"github-pages\",\n  \"direction\": \"to-platform\",\n")
 	if repo != "" {
-		fmt.Fprintf(&out, "  repo: %s\n", repo)
+		fmt.Fprintf(&out, "  \"repo\": %q,\n", repo)
 	}
 	if branch != "" {
-		fmt.Fprintf(&out, "  branch: %s\n", branch)
+		fmt.Fprintf(&out, "  \"branch\": %q,\n", branch)
 	}
 	if path != "" {
-		fmt.Fprintf(&out, "  path: %s\n", path)
+		fmt.Fprintf(&out, "  \"path\": %q,\n", path)
 	}
-	out.WriteString("  content:\n    - type: markdown\n      roots: [\"docs\"]\n      template: default\n")
+	out.WriteString("  \"content\": [{ \"type\": \"markdown\", \"roots\": [\"docs\"], \"template\": \"default\" }]\n}\n")
 
 	return out.String()
 }
