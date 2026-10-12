@@ -110,7 +110,8 @@ value that is not allowed is refused with the reason and nothing is written. For
 ## What you get
 
 - A page tree mirroring your files: nesting from `parent:` annotations, dotted filenames
-  (`readme.architecture.md` under `readme.md`), directory `README.md` indexes, then the
+  (`readme.architecture.md` under `readme.md`, at any depth; the parent may sit in a folder above the
+  children), directory `README.md` indexes, then the
   parent you chose.
 - Each synced file gains a small `<!-- lore-master … -->` annotation recording its page, so
   a re-run changes only what actually changed — it never makes duplicates.

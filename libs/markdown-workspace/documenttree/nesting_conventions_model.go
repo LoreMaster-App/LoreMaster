@@ -21,7 +21,7 @@ func NestingConventions() []Convention {
 		},
 		{
 			Key:     string(RuleDottedName),
-			Summary: "A dotted file name nests under the file one segment shorter in the same directory: `readme.architecture.md` nests under `readme.md` (case-insensitive, so `readme.setup.md` finds `README.md`). If that direct parent is missing, the nearest existing shorter prefix is used.",
+			Summary: "A dotted file name nests under the file one segment shorter in the same directory: `readme.architecture.md` nests under `readme.md` (case-insensitive, so `readme.setup.md` finds `README.md`). If that direct parent is missing, the nearest existing shorter prefix is used. A name of two or more segments is also looked for in the ancestor directories, nearest first, so a topic page and its children may sit in different folders.",
 		},
 		{
 			Key:     string(RuleDirectoryIndex),

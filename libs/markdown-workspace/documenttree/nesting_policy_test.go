@@ -80,6 +80,38 @@ func TestDecideParentExplicitAndDotted(t *testing.T) {
 	}
 }
 
+func TestDecideParentDottedNameFindsAnAncestorDirectory(t *testing.T) {
+	policy := policyOver(
+		"README.md", "documentation/README.API-DOCUMENTATION.md",
+		"documentation/api-documentation/README.API-DOCUMENTATION.FIRST-ACCESS.md",
+		"documentation/api-documentation/README.API-DOCUMENTATION.FIRST-ACCESS.USER-MANUAL.md",
+		"documentation/api-documentation/README.API-DOCUMENTATION.CONFIGURATION.md",
+		"documentation/README.md", "documentation/sub/readme.setup.md",
+	)
+	cases := []struct{ name, document, parent string }{
+		{"child in a subfolder of its topic page", "documentation/api-documentation/README.API-DOCUMENTATION.CONFIGURATION.md", "documentation/README.API-DOCUMENTATION.md"},
+		{"first level of a deeper chain", "documentation/api-documentation/README.API-DOCUMENTATION.FIRST-ACCESS.md", "documentation/README.API-DOCUMENTATION.md"},
+		{"next level stays beside its parent", "documentation/api-documentation/README.API-DOCUMENTATION.FIRST-ACCESS.USER-MANUAL.md", "documentation/api-documentation/README.API-DOCUMENTATION.FIRST-ACCESS.md"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := rowOf(policy.DecideParent(documentdiscovery.DocumentPath(tc.document), ""))
+			want := decisionRow{Parent: tc.parent, Rule: RuleDottedName}
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("\n got: %+v\nwant: %+v", got, want)
+			}
+		})
+	}
+
+	t.Run("a single segment never reaches an ancestor", func(t *testing.T) {
+		got := rowOf(policy.DecideParent("documentation/sub/readme.setup.md", ""))
+		want := decisionRow{Parent: "documentation/README.md", Rule: RuleDirectoryIndex}
+		if !reflect.DeepEqual(got, want) {
+			t.Fatalf("\n got: %+v\nwant: %+v", got, want)
+		}
+	})
+}
+
 func TestDecideParentDirectoryIndexAndSelectedParent(t *testing.T) {
 	policy := policyOver(
 		"README.md", "top.md",

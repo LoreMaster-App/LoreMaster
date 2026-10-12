@@ -121,26 +121,53 @@ func (p NestingPolicy) explicitParent(document documentdiscovery.DocumentPath, e
 	return &found, ""
 }
 
-// dottedParent nests "a.b.c.md" under "a.b.md", in the same directory, matching case-
-// insensitively so "readme.setup.md" finds "README.md". When the direct parent is
-// missing, the nearest existing shorter prefix is used, with a warning; when no prefix
-// exists at all, the rule does not apply.
+// dottedParent nests "a.b.c.md" under "a.b.md", matching case-insensitively so
+// "readme.setup.md" finds "README.md". The longest shorter name wins; for each name the
+// document's own directory is tried first, then its ancestors (nearest first) when the
+// name has two or more segments, so a topic page and its children may sit in different
+// folders. A single segment such as "README" matches the same directory only: that is
+// the directory-index rule's job. When the direct parent (one segment shorter) is
+// missing, the nearest existing shorter name is used, with a warning; when none exists
+// at all, the rule does not apply.
 func (p NestingPolicy) dottedParent(document documentdiscovery.DocumentPath) (*documentdiscovery.DocumentPath, string) {
 	dir, file := path.Split(string(document))
 	segments := strings.Split(strings.TrimSuffix(file, path.Ext(file)), ".")
 	for keep := len(segments) - 1; keep >= 1; keep-- {
-		candidate := dir + strings.Join(segments[:keep], ".") + ".md"
-		found, exists := p.documents.Lookup(candidate)
-		if !exists || found == document {
-			continue
-		}
-		if keep == len(segments)-1 {
-			return &found, ""
-		}
-		missing := dir + strings.Join(segments[:len(segments)-1], ".") + ".md"
+		name := strings.Join(segments[:keep], ".") + ".md"
+		for _, where := range p.searchDirs(dir, keep) {
+			found, exists := p.documents.Lookup(where + name)
+			if !exists || found == document {
+				continue
+			}
+			if keep == len(segments)-1 {
+				return &found, ""
+			}
+			missing := dir + strings.Join(segments[:len(segments)-1], ".") + ".md"
 
-		return &found, fmt.Sprintf("%s: %s does not exist, so it is nested under %s instead", document, missing, found)
+			return &found, fmt.Sprintf("%s: %s does not exist, so it is nested under %s instead", document, missing, found)
+		}
 	}
 
 	return nil, ""
+}
+
+// searchDirs lists, as prefixes ending in "/" (or empty for the root), the directories a
+// dotted name of the given segment count is looked for in: the document's own, then its
+// ancestors when the name has two or more segments.
+func (p NestingPolicy) searchDirs(dir string, segments int) []string {
+	dirs := []string{dir}
+	if segments < 2 {
+		return dirs
+	}
+	for current := strings.TrimSuffix(dir, "/"); current != ""; {
+		current = path.Dir(current)
+		if current == "." {
+			dirs = append(dirs, "")
+
+			break
+		}
+		dirs = append(dirs, current+"/")
+	}
+
+	return dirs
 }
