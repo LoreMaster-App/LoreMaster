@@ -78,13 +78,13 @@ func TestEveryEditorMethodIsRouted(t *testing.T) {
 		rpcprotocol.MethodSyncPlan, rpcprotocol.MethodSyncExecute,
 		rpcprotocol.MethodSettingsRead, rpcprotocol.MethodSettingsSave, rpcprotocol.MethodSettingsMigrate,
 		rpcprotocol.MethodPagesPublish, rpcprotocol.MethodPagesBuild, rpcprotocol.MethodPagesCheck, rpcprotocol.MethodWorkspaceTree, rpcprotocol.MethodGeneratorsRun, rpcprotocol.MethodAgentInstructions,
-		rpcprotocol.MethodWatchRoute,
+		rpcprotocol.MethodWatchRoute, rpcprotocol.MethodFilesPlanMove,
 	} {
 		if methods[method] == nil {
 			t.Errorf("%s has no handler", method)
 		}
 	}
-	if len(methods) != 19 {
+	if len(methods) != 20 {
 		t.Errorf("%d methods routed; update this list when the protocol grows", len(methods))
 	}
 }

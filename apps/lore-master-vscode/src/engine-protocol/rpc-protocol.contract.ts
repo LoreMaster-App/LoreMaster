@@ -24,6 +24,7 @@ export const WORKSPACE_TREE_METHOD = 'workspace/tree'
 export const GENERATORS_RUN_METHOD = 'generators/run'
 export const AGENT_INSTRUCTIONS_METHOD = 'agent/instructions'
 export const WATCH_ROUTE_METHOD = 'watch/route'
+export const FILES_PLAN_MOVE_METHOD = 'files/planMove'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -428,6 +429,36 @@ export interface RenderDiagramResult {
 
 export interface CancelParams {
   id: number | string
+}
+
+// ---- files/planMove ------------------------------------------------------------------
+
+export interface FileMove {
+  from: string
+  to:   string
+}
+
+export interface FilesPlanMoveParams {
+  workspaceRoot: string
+  /** Workspace-relative, '/'-separated; a file or a folder. */
+  moves:         FileMove[]
+}
+
+export interface FileLineEdit {
+  /** Where the file is before any move. */
+  path: string
+  /** Zero-based. */
+  line: number
+  /** The new line, without its line ending. */
+  text: string
+}
+
+export interface FilesPlanMoveResult {
+  /** Files to move along with the user's own moves; each from is where the file is now. */
+  renames:  FileMove[]
+  edits:    FileLineEdit[]
+  /** Renames that were skipped, and why. */
+  warnings: string[]
 }
 
 // ---- watch/route ---------------------------------------------------------------------
