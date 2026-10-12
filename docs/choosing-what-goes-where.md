@@ -65,8 +65,9 @@ GitHub Pages
 - **Left-out files:** the eye button shows them faded, with the setting that left each out, or
   hides them (`loreMaster.pages.excluded`).
 - **Do not sync…** (right-click a page or folder) asks which storages to leave it out of, or
-  *All storages*, and writes the entry to `.vscode/settings.json`.
-- **Sync this file…** (right-click a left-out file) brings it into the storages you pick: it
+  *All storages*, and writes the entry to `.vscode/settings.json`. With one storage configured it
+  does not ask. Select several rows (Ctrl or Shift click) to leave them all out in one go.
+- **Sync this file…** (right-click one or several left-out files) brings them into the storages you pick: it
   removes the storage's own exclusion of exactly that file, or adds an include, which beats a
   broader exclusion. A file that git ignores, or that sits outside the storage's `roots`, has no
   such menu: the first is never synced, the second is not read at all.

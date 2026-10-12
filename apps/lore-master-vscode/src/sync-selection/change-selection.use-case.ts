@@ -14,15 +14,15 @@ async function change (deps: ChangeSelectionDeps, edit: (settings: Settings) => 
 }
 
 /**
- * Leaves a file or folder out of the sync, in every storage or in the chosen ones. The whole
+ * Leaves files or folders out of the sync, in every storage or in the chosen ones. The whole
  * settings are read and sent back, so nothing else changes; the engine validates them and keeps
  * the author's comments, and a value it refuses throws with its message.
  */
-export function excludeFromSync (deps: ChangeSelectionDeps, entry: string, scope: SelectionScope): Promise<void> {
-  return change(deps, settings => excludeEntry(settings, entry, scope))
+export function excludeFromSync (deps: ChangeSelectionDeps, entries: string[], scope: SelectionScope): Promise<void> {
+  return change(deps, settings => entries.reduce((next, entry) => excludeEntry(next, entry, scope), settings))
 }
 
-/** Brings a file or folder back into the chosen storages. */
-export function includeInSync (deps: ChangeSelectionDeps, entry: string, indexes: number[]): Promise<void> {
-  return change(deps, settings => includeEntry(settings, entry, indexes))
+/** Brings files or folders back into the chosen storages, in one settings write. */
+export function includeInSync (deps: ChangeSelectionDeps, entries: string[], indexes: number[]): Promise<void> {
+  return change(deps, settings => entries.reduce((next, entry) => includeEntry(next, entry, indexes), settings))
 }

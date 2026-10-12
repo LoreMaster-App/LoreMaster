@@ -1,5 +1,5 @@
 import type { Output, Settings } from '../engine-protocol'
-import { excludeEntry, includeEntry, selectionEntry } from './selection-lists.algorithm'
+import { excludeEntry, includeEntry, selectionEntries, selectionEntry } from './selection-lists.algorithm'
 
 function output (extra: Partial<Output> = {}): Output {
   return {
@@ -63,5 +63,24 @@ describe('includeEntry', () => {
     expect(next.outputs[0].exclude).toEqual(['internal/'])
     expect(next.outputs[1].include).toBeUndefined()
     expect(next.ignore).toEqual(['notes/'])
+  })
+})
+
+describe('selectionEntries', () => {
+  it('names every selected row once', () => {
+    expect(selectionEntries([
+      { path: 'a.md', isFolder: false },
+      { path: 'docs/b.md', isFolder: false },
+      { path: 'a.md', isFolder: false },
+    ])).toEqual(['a.md', 'docs/b.md'])
+  })
+
+  it('drops what a selected folder already covers', () => {
+    expect(selectionEntries([
+      { path: 'docs/b.md', isFolder: false },
+      { path: 'docs', isFolder: true },
+      { path: 'docs/adr', isFolder: true },
+      { path: 'docsx.md', isFolder: false },
+    ])).toEqual(['docs/', 'docsx.md'])
   })
 })
