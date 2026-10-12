@@ -19,17 +19,34 @@ interface Choice extends vscode.QuickPickItem {
   all?:     boolean
 }
 
-/** Asks which storages an exclusion is for; undefined when the user cancels. */
-export async function askExcludeScope (target: SelectionTarget, outputs: { index: number; output: Output }[]): Promise<SelectionScope | undefined> {
+function describe (targets: SelectionTarget[]): string {
+  const [first] = targets
+
+  return first && targets.length === 1 ? `${first.path}${first.isFolder ? '/' : ''}` : `${targets.length} items`
+}
+
+function isChosenIn (targets: SelectionTarget[], index: number): boolean {
+  return targets.some(target => target.index === index)
+}
+
+/**
+ * Asks which storages an exclusion is for; undefined when the user cancels. With one storage
+ * there is nothing to choose, so it is not asked.
+ */
+export async function askExcludeScope (targets: SelectionTarget[], outputs: { index: number; output: Output }[]): Promise<SelectionScope | undefined> {
+  const [only] = outputs
+  if (only && outputs.length === 1) {
+    return { kind: 'storages', indexes: [only.index] }
+  }
   const items: Choice[] = [
     { label: 'All storages', description: 'never synced anywhere', all: true },
     ...outputs.map(each => ({
-      label: storageLabel(each.output), indexes: [each.index], picked: each.index === target.index,
+      label: storageLabel(each.output), indexes: [each.index], picked: isChosenIn(targets, each.index),
     })),
   ]
   const picked = await vscode.window.showQuickPick<Choice>(items, {
-    title:       `LoreMaster: do not sync ${target.path}${target.isFolder ? '/' : ''}`,
-    placeHolder: 'Leave it out of which storages?',
+    title:       `LoreMaster: do not sync ${describe(targets)}`,
+    placeHolder: 'Leave out of which storages?',
     canPickMany: true,
   })
   if (!picked || picked.length === 0) {
@@ -42,14 +59,18 @@ export async function askExcludeScope (target: SelectionTarget, outputs: { index
   return { kind: 'storages', indexes: picked.flatMap(each => each.indexes ?? []) }
 }
 
-/** Asks which storages a file is brought into; undefined when the user cancels. */
-export async function askIncludeIndexes (target: SelectionTarget, outputs: { index: number; output: Output }[]): Promise<number[] | undefined> {
+/** Asks which storages files are brought into; undefined when the user cancels. Not asked with one storage. */
+export async function askIncludeIndexes (targets: SelectionTarget[], outputs: { index: number; output: Output }[]): Promise<number[] | undefined> {
+  const [only] = outputs
+  if (only && outputs.length === 1) {
+    return [only.index]
+  }
   const items: Choice[] = outputs.map(each => ({
-    label: storageLabel(each.output), indexes: [each.index], picked: each.index === target.index,
+    label: storageLabel(each.output), indexes: [each.index], picked: isChosenIn(targets, each.index),
   }))
   const picked = await vscode.window.showQuickPick<Choice>(items, {
-    title:       `LoreMaster: sync ${target.path}`,
-    placeHolder: 'Bring it into which storages?',
+    title:       `LoreMaster: sync ${describe(targets)}`,
+    placeHolder: 'Bring into which storages?',
     canPickMany: true,
   })
   if (!picked || picked.length === 0) {

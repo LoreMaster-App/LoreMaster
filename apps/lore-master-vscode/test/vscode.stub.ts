@@ -57,6 +57,9 @@ export const window = {
   registerTreeDataProvider (_viewId: string, _provider: unknown): { dispose: () => void } {
     return { dispose () {} }
   },
+  createTreeView (_viewId: string, _options: unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
   createStatusBarItem (_alignment?: number, _priority?: number): FakeStatusBarItem {
     const item = new FakeStatusBarItem()
     statusBarItems.push(item)

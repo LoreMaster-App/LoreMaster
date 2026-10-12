@@ -10,6 +10,16 @@ export function selectionEntry (path: string, isFolder: boolean): string {
   return isFolder ? `${clean}/` : clean
 }
 
+/**
+ * The entries of several rows, without duplicates and without a file or folder that a folder in
+ * the same selection already covers (selecting a folder and a page inside it names the folder).
+ */
+export function selectionEntries (targets: { path: string; isFolder: boolean }[]): string[] {
+  const entries = [...new Set(targets.map(target => selectionEntry(target.path, target.isFolder)))]
+
+  return entries.filter(entry => entries.every(other => other === entry || !other.endsWith('/') || !entry.startsWith(other)))
+}
+
 function withEntry (list: string[] | undefined, entry: string): string[] {
   const current = list ?? []
 
