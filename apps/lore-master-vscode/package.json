@@ -419,6 +419,21 @@
           ],
           "markdownDescription": "What the **Pages** view does with the files a storage leaves out. Switch with the eye button in the view title."
         },
+        "loreMaster.pages.updateOnMove": {
+          "type": "string",
+          "enum": [
+            "prompt",
+            "always",
+            "never"
+          ],
+          "default": "prompt",
+          "enumDescriptions": [
+            "Ask each time.",
+            "Update without asking.",
+            "Never update."
+          ],
+          "markdownDescription": "When you move or rename a Markdown file, keep the nesting intact: rename the dotted files that nest under it (`readme.api.md` and `readme.api.config.md`) and rewrite the `parent:` lines that name it. Links are updated by VS Code's own `markdown.updateLinksOnFileMove.enabled`."
+        },
         "loreMaster.generateBeforeSync": {
           "type": "boolean",
           "default": false,

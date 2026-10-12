@@ -238,6 +238,12 @@ export const workspace = {
 
     return watcher
   },
+  onWillRenameFiles (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidRenameFiles (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
   onDidChangeWorkspaceFolders (_listener: () => unknown): { dispose: () => void } {
     return { dispose () {} }
   },

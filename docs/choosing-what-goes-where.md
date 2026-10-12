@@ -71,6 +71,21 @@ GitHub Pages
   broader exclusion. A file that git ignores, or that sits outside the storage's `roots`, has no
   such menu: the first is never synced, the second is not read at all.
 
+## Moving and renaming files
+
+Nesting follows file names and `parent:` lines, so a move can quietly change it. When you move or
+rename a Markdown file (or a folder) in the editor, LoreMaster keeps it intact:
+
+- **Dotted children follow.** Renaming `readme.api.md` to `readme.rest.md` renames
+  `readme.api.config.md` to `readme.rest.config.md` (and deeper levels with it), in the same
+  folder. Moving the file to another folder moves its dotted children along.
+- **`parent:` lines are rewritten.** A `parent:` that names the moved file is updated, and so are
+  the `parent:` lines inside a moved file, whose relative paths change.
+
+It asks first (**Update** / **Always** / **Not now**); the setting is `loreMaster.pages.updateOnMove`
+(`prompt`, `always` or `never`). A rename that would collide with an existing file is skipped with a
+warning. Links to the moved file are VS Code's job: turn on `markdown.updateLinksOnFileMove.enabled`.
+
 ## Links between pages
 
 A page can only link to pages the same storage publishes. A link to a Markdown file the storage

@@ -29,11 +29,11 @@ describe('activate', () => {
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
     // The commands plus the engine client, output channel, diagram renderer, its
     // host/renderDiagram subscription, the Confluence authentication provider, the MCP
-    // server provider and the two sidebar views (Sync, Storages) — all disposed on
-    // deactivate. The Pages view and its four commands are one disposable, and so are the
+    // server provider, the file-move handler and the two sidebar views (Sync, Storages) — all
+    // disposed on deactivate. The Pages view and its four commands are one disposable, and so are the
     // Generators view and its six commands (the five it contributes and Run generators).
     const pagesViewCommands = 8
     const generatorsViewCommands = 6
-    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands + 11)
+    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands + 12)
   })
 })
