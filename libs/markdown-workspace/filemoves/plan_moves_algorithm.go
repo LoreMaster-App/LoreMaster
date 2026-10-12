@@ -52,7 +52,7 @@ func PlanMoves(documents []Document, moves []Move) Plan {
 	taken := map[string]bool{}
 	for _, document := range sorted {
 		newPath := moved(document.Path)
-		if newPath == document.Path || !isMarkdown(document.Path) || !isMarkdown(newPath) {
+		if newPath == document.Path || !isMarkdown(document.Path) || !isMarkdown(newPath) || isDirectoryIndex(document.Path) {
 			continue
 		}
 		oldStem, newStem := stemOf(document.Path), stemOf(newPath)
@@ -151,6 +151,17 @@ func parentEdit(document Document, existing map[string]string, final func(string
 
 func isMarkdown(p string) bool {
 	return strings.HasSuffix(strings.ToLower(p), ".md")
+}
+
+// isDirectoryIndex reports whether the file is a folder's README.md or index.md. Those already
+// parent everything in their folder, so their dotted children stay where they are.
+func isDirectoryIndex(p string) bool {
+	switch strings.ToLower(path.Base(p)) {
+	case "readme.md", "index.md":
+		return true
+	}
+
+	return false
 }
 
 func stemOf(p string) string {

@@ -78,7 +78,9 @@ rename a Markdown file (or a folder) in the editor, LoreMaster keeps it intact:
 
 - **Dotted children follow.** Renaming `readme.api.md` to `readme.rest.md` renames
   `readme.api.config.md` to `readme.rest.config.md` (and deeper levels with it), in the same
-  folder. Moving the file to another folder moves its dotted children along.
+  folder. Moving the file to another folder moves its dotted children along. A folder's
+  `README.md` and `index.md` are the exception: they already parent everything in their folder,
+  so their dotted files stay put when they move.
 - **`parent:` lines are rewritten.** A `parent:` that names the moved file is updated, and so are
   the `parent:` lines inside a moved file, whose relative paths change.
 

@@ -42,6 +42,16 @@ func TestDottedChildrenMoveWithAFileToAnotherFolder(t *testing.T) {
 	}
 }
 
+func TestADirectoryIndexLeavesItsDottedFilesAlone(t *testing.T) {
+	plan := PlanMoves(
+		docs("docs/README.md", "docs/README.api.md", "docs/index.md", "docs/index.faq.md"),
+		[]Move{{From: "docs/README.md", To: "guides/README.md"}, {From: "docs/index.md", To: "docs/home.md"}},
+	)
+	if len(plan.Renames) != 0 || len(plan.Warnings) != 0 {
+		t.Fatalf("plan = %+v, want nothing renamed", plan)
+	}
+}
+
 func TestAFolderMoveRenamesNothingExtra(t *testing.T) {
 	plan := PlanMoves(docs("docs/a.md", "docs/a.b.md"), []Move{{From: "docs", To: "guides"}})
 	if len(plan.Renames) != 0 {
