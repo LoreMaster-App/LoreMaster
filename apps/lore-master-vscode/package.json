@@ -643,6 +643,7 @@
                 "type": "string",
                 "enum": [
                   "test-results",
+                  "coverage",
                   "go-docs",
                   "openapi-docs",
                   "ts-docs",

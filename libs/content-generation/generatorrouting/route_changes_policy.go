@@ -32,6 +32,7 @@ var reads = map[string]struct {
 	defaults   []string
 }{
 	"test-results": {extensions: []string{".xml"}, defaults: []string{"**/junit*.xml", "**/TEST-*.xml", "**/*junit.xml"}},
+	"coverage":     {extensions: []string{".xml", ".info", ".lcov"}, defaults: []string{"**/*cobertura*.xml", "**/coverage.xml", "**/lcov.info", "**/*.lcov"}},
 	"openapi-docs": {extensions: []string{".yaml", ".yml", ".json"}, defaults: []string{"**/openapi.*", "**/swagger.*", "**/*.openapi.*"}},
 	"go-docs":      {extensions: []string{".go"}, names: []string{"go.mod"}},
 	"ts-docs":      {extensions: []string{".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"}, names: []string{"tsconfig.json", "jsconfig.json", "typedoc.json", "package.json"}},
