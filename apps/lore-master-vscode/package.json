@@ -439,6 +439,16 @@
           "default": false,
           "markdownDescription": "Run the generators (test results, API documentation) before every **Sync**, so the pages they write are as fresh as the code. **Generate and sync documentation** always does."
         },
+        "loreMaster.runPrepareSteps": {
+          "type": "string",
+          "enum": [
+            "ask",
+            "always",
+            "never"
+          ],
+          "default": "ask",
+          "markdownDescription": "Whether a generator's `prepare` command (the build or test run that produces what it reads) runs when you generate. `ask` shows the exact commands first; nothing runs in an untrusted workspace. CI uses `lore-master-engine generate --prepare` instead."
+        },
         "loreMaster.watchDebounceSeconds": {
           "type": "number",
           "default": 2,
@@ -668,6 +678,10 @@
               "title": {
                 "type": "string",
                 "markdownDescription": "Heads the generated index page. Empty means the type's own default."
+              },
+              "prepare": {
+                "type": "string",
+                "markdownDescription": "A shell command that produces what this generator reads (a build, a test run), run in the workspace folder. It runs only when you ask: the **Run generators** command (see `loreMaster.runPrepareSteps`), or `lore-master-engine generate --prepare` on CI. Leave empty when the files already exist."
               }
             }
           },

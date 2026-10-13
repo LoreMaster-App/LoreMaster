@@ -12,6 +12,9 @@ type GeneratorsRunParams struct {
 	WorkspaceRoot string `json:"workspaceRoot"`
 	// Generators are indexes into the settings' generators list; empty runs them all.
 	Generators []int `json:"generators,omitempty"`
+	// Prepare runs each selected generator's prepare command first. Without it no command is
+	// ever executed.
+	Prepare bool `json:"prepare,omitempty"`
 }
 
 // GeneratorsRunResult has one entry per generator that ran, in index order.
@@ -25,6 +28,8 @@ type GeneratorRun struct {
 	Index  int    `json:"index"`
 	Type   string `json:"type"`
 	Output string `json:"output"`
+	// Prepared is true when the generator's prepare command ran before it.
+	Prepared bool `json:"prepared,omitempty"`
 	// Written are pages created or rewritten; Unchanged were already up to date; Removed are
 	// generated pages the generator no longer produces.
 	Written   []string `json:"written,omitempty"`

@@ -19,7 +19,10 @@ export async function listGenerators (engine: GeneratorsEngine, workspaceRoot: s
 }
 
 /** Runs the generators at `indexes` (all of them when absent). The engine writes the pages;
- *  a generator that fails is reported in its own entry rather than failing the call. */
-export function runGenerators (engine: GeneratorsEngine, workspaceRoot: string, indexes?: number[]): Promise<GeneratorsRunResult> {
-  return engine.request<GeneratorsRunResult>(GENERATORS_RUN_METHOD, { workspaceRoot, generators: indexes })
+ *  a generator that fails is reported in its own entry rather than failing the call. With
+ *  `prepare` each generator's prepare command runs first; otherwise none ever does. */
+export function runGenerators (engine: GeneratorsEngine, workspaceRoot: string, indexes?: number[], prepare = false): Promise<GeneratorsRunResult> {
+  return engine.request<GeneratorsRunResult>(GENERATORS_RUN_METHOD, prepare
+    ? { workspaceRoot, generators: indexes, prepare }
+    : { workspaceRoot, generators: indexes })
 }

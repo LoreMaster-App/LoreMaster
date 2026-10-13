@@ -8,6 +8,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/content-generation/generatedfile"
+	"lore-master/libs/content-generation/generatorpreparing"
 	"lore-master/libs/content-generation/generatorregistry"
 	"lore-master/libs/content-generation/generatorrunning"
 	"lore-master/libs/documentation-sync/editorsettings"
@@ -41,7 +42,7 @@ func RunGenerators() rpcserver.Method {
 			if err := ctx.Err(); err != nil {
 				return nil, err
 			}
-			result.Runs = append(result.Runs, run(ctx, params.WorkspaceRoot, index, configured[index]))
+			result.Runs = append(result.Runs, run(ctx, params.WorkspaceRoot, index, configured[index], params.Prepare))
 		}
 
 		return result, nil
@@ -70,12 +71,20 @@ func selected(requested []int, count int) ([]int, error) {
 	return indexes, nil
 }
 
-func run(ctx context.Context, workspaceRoot string, index int, generator workspacesettings.Generator) rpcprotocol.GeneratorRun {
+func run(ctx context.Context, workspaceRoot string, index int, generator workspacesettings.Generator, prepare bool) rpcprotocol.GeneratorRun {
 	entry := rpcprotocol.GeneratorRun{Index: index, Type: generator.Type, Output: generator.Output}
 	generate, found := generatorregistry.For(generator.Type)
 	if !found {
 		entry.Error = "there is no generator for type " + generator.Type
 		return entry
+	}
+	if prepare && generator.Prepare != "" {
+		if err := generatorpreparing.Run(ctx, workspaceRoot, generator.Prepare, 0); err != nil {
+			entry.Error = "prepare failed: " + err.Error()
+
+			return entry
+		}
+		entry.Prepared = true
 	}
 	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Output: generator.Output, Title: generator.Title}
 	outcome, err := generatorrunning.Run(ctx, workspaceRoot, spec, generate)

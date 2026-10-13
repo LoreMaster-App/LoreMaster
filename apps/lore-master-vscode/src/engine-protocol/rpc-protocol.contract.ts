@@ -174,12 +174,15 @@ export interface Output {
 /** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */
 export interface Generator {
   /** test-results (JUnit XML); other types are reserved. */
-  type:   string
+  type:     string
   /** Gitignore-style patterns selecting what to read; absent means the type's default. */
-  input?: string[]
+  input?:   string[]
   /** Workspace-relative folder the pages are written to. */
-  output: string
-  title?: string
+  output:   string
+  title?:   string
+  /** A shell command that produces what the generator reads (a build, a test run); it runs only
+   *  when a run asks for it. */
+  prepare?: string
 }
 
 export interface Settings {
@@ -268,12 +271,16 @@ export interface GeneratorsRunParams {
   workspaceRoot: string
   /** Indexes into the settings' generators list; absent runs them all. */
   generators?:   number[]
+  /** Run each selected generator's prepare command first; without it no command is executed. */
+  prepare?:      boolean
 }
 
 export interface GeneratorRun {
   index:      number
   type:       string
   output:     string
+  /** True when the generator's prepare command ran before it. */
+  prepared?:  boolean
   written?:   string[]
   unchanged?: string[]
   removed?:   string[]

@@ -61,6 +61,9 @@ type Generator struct {
 	Input  []string `json:"input,omitempty"`
 	Output string   `json:"output"`
 	Title  string   `json:"title,omitempty"`
+	// Prepare is the shell command that produces what the generator reads; it runs only when a
+	// generators/run asks for it.
+	Prepare string `json:"prepare,omitempty"`
 }
 
 // Output is one place the lore goes.

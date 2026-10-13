@@ -14,6 +14,7 @@ type syncOptions struct {
 	outputs  intList
 	scope    stringList
 	generate bool
+	prepare  bool
 	yes      bool
 	dryRun   bool
 	force    bool
@@ -28,6 +29,7 @@ func syncCommand(ctx context.Context, env Environment, methods rpcserver.Methods
 		flags.Var(&options.outputs, "output", "sync only the output at this position in the outputs list (repeatable; default all)")
 		flags.Var(&options.scope, "scope", "limit a Confluence sync to this workspace-relative file and the ancestors it needs (repeatable)")
 		flags.BoolVar(&options.generate, "generate", false, "run the generators first, so generated pages are as fresh as the code")
+		flags.BoolVar(&options.prepare, "prepare", false, "with --generate, run each generator's prepare command first (the build or test run that produces what it reads)")
 		flags.BoolVar(&options.yes, "yes", false, "apply the plan; without it the plan is only shown")
 		flags.BoolVar(&options.dryRun, "dry-run", false, "show the plan and change nothing, even with --yes")
 		flags.BoolVar(&options.force, "force", false, "overwrite pages edited on the platform since the last sync")
@@ -35,6 +37,11 @@ func syncCommand(ctx context.Context, env Environment, methods rpcserver.Methods
 	})
 	if !ok {
 		return code
+	}
+	if options.prepare && !options.generate {
+		_, _ = fmt.Fprintln(env.Stderr, "--prepare needs --generate: the prepare commands belong to the generators")
+
+		return ExitUsage
 	}
 
 	return withEngine(ctx, env, methods, func(engine *connection) int {
@@ -74,7 +81,7 @@ func runSync(ctx context.Context, env Environment, engine *connection, parsed co
 	}
 
 	if options.generate {
-		runs, err := runGenerators(ctx, engine, parsed.workspace, nil)
+		runs, err := runGenerators(ctx, engine, parsed.workspace, nil, options.prepare)
 		if err != nil {
 			_, _ = fmt.Fprintln(env.Stderr, "error:", err)
 
