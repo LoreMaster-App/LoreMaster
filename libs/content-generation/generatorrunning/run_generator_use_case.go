@@ -1,7 +1,9 @@
 package generatorrunning
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
@@ -48,9 +50,15 @@ func Run(ctx context.Context, workspaceRoot string, spec generatedfile.Spec, gen
 
 	result := Result{Warnings: slices.Clone(produced.Warnings)}
 	wanted := map[string]bool{}
+	var assets []generatedfile.File
 	for _, file := range files {
 		if err := ctx.Err(); err != nil {
 			return result, err
+		}
+		if file.Asset {
+			assets = append(assets, file)
+
+			continue
 		}
 		relative := path.Join(outputDir, file.Path)
 		wanted[relative] = true
@@ -67,6 +75,7 @@ func Run(ctx context.Context, workspaceRoot string, spec generatedfile.Spec, gen
 	removed, notes := removeStale(workspaceRoot, outputDir, spec.Type, wanted)
 	result.Removed = removed
 	result.Warnings = append(result.Warnings, notes...)
+	writeAssets(workspaceRoot, outputDir, spec.Type, assets, &result)
 
 	return result, nil
 }
@@ -215,4 +224,87 @@ func isGeneratedBy(annotation *syncannotation.Annotation, generatorType string) 
 	}
 
 	return annotation.Generated == generatorType
+}
+
+// assetManifestName is the file, inside the output folder, that lists the assets a generator
+// copied there. Assets cannot carry an annotation, so this is how a later run knows which
+// files are its own to replace or remove.
+const assetManifestName = ".lore-master-assets.json"
+
+type assetManifest struct {
+	Generator string   `json:"generator"`
+	Files     []string `json:"files"`
+}
+
+// writeAssets copies the assets into the output folder, replaces the ones an earlier run of
+// this generator copied, removes the ones it no longer produces, and keeps the manifest.
+// A file that already exists and is not in the manifest is left alone and reported.
+func writeAssets(workspaceRoot, outputDir, generatorType string, assets []generatedfile.File, result *Result) {
+	manifestPath := filepath.Join(workspaceRoot, filepath.FromSlash(outputDir), assetManifestName)
+	previous := map[string]bool{}
+	if data, err := os.ReadFile(manifestPath); err == nil {
+		var manifest assetManifest
+		if json.Unmarshal(data, &manifest) == nil && manifest.Generator == generatorType {
+			for _, name := range manifest.Files {
+				previous[name] = true
+			}
+		}
+	}
+
+	kept := map[string]bool{}
+	for _, asset := range assets {
+		relative := path.Join(outputDir, asset.Path)
+		full := filepath.Join(workspaceRoot, filepath.FromSlash(relative))
+		existing, err := os.ReadFile(full)
+		switch {
+		case err == nil && !previous[asset.Path]:
+			result.Warnings = append(result.Warnings, fmt.Sprintf("%s exists and was not copied by %s; it was left alone", relative, generatorType))
+
+			continue
+		case err == nil && bytes.Equal(existing, asset.Body):
+			result.Unchanged = append(result.Unchanged, relative)
+		default:
+			if outcome, note := write(full, relative, asset.Body); outcome == skipped {
+				result.Warnings = append(result.Warnings, note)
+
+				continue
+			}
+			result.Written = append(result.Written, relative)
+		}
+		kept[asset.Path] = true
+	}
+
+	for name := range previous {
+		if kept[name] {
+			continue
+		}
+		relative := path.Join(outputDir, name)
+		if err := os.Remove(filepath.Join(workspaceRoot, filepath.FromSlash(relative))); err == nil {
+			result.Removed = append(result.Removed, relative)
+		}
+	}
+	slices.Sort(result.Removed)
+	pruneEmptyFolders(filepath.Join(workspaceRoot, filepath.FromSlash(outputDir)))
+
+	names := make([]string, 0, len(kept))
+	for name := range kept {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	if len(names) == 0 {
+		_ = os.Remove(manifestPath)
+
+		return
+	}
+	data, err := json.MarshalIndent(assetManifest{Generator: generatorType, Files: names}, "", "  ")
+	if err != nil {
+		return
+	}
+	data = append(data, '\n')
+	if existing, err := os.ReadFile(manifestPath); err == nil && bytes.Equal(existing, data) {
+		return
+	}
+	if err := os.WriteFile(manifestPath, data, 0o644); err != nil {
+		result.Warnings = append(result.Warnings, fmt.Sprintf("%s: %v", path.Join(outputDir, assetManifestName), err))
+	}
 }

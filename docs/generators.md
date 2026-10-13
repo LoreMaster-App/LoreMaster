@@ -33,7 +33,7 @@ In the `loreMaster.generators` setting (and `loreMaster.outputs` for where the p
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `coverage`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs`, `csharp-docs` or `dart-docs`. |
+| `type` | `test-results`, `coverage`, `markdown-docs`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs`, `csharp-docs` or `dart-docs`. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -84,6 +84,26 @@ A line that ran with every branch taken is *covered*, one that ran with a branch
 example one per test run) are merged line by line. The root page starts at the deepest folder all
 files share, and paths are made relative to the workspace when the report named them inside it;
 otherwise they appear as the report wrote them. A report in no known format is reported and skipped.
+
+## `markdown-docs`
+
+Imports **Markdown that another tool wrote** (TypeDoc's Markdown plugin, dokka, a `build/docs`
+folder) as ordinary pages. Markdown only: HTML is never parsed, so produce Markdown first.
+
+```jsonc
+{ "type": "markdown-docs", "input": ["build/docs/"], "output": "docs/api", "title": "API reference" }
+```
+
+`input` is required (importing every Markdown file of a project would be surprising). Files keep
+their layout below the deepest folder they share, so relative links between them keep working.
+For each page the generator removes front matter and the lines a tool stamps in, makes sure it
+opens with one top heading, gives it a title no other page has (a wiki space requires it), and adds
+a `README.md` index when the tool wrote none.
+
+Images the pages show through relative paths are copied next to them, byte for byte. They carry no
+annotation, so the output folder keeps a `.lore-master-assets.json` listing them: the generator only
+ever replaces or removes the files that list names. An image that is missing, or outside the
+workspace, is reported and left out. The generator's own output folder is never read as input.
 
 ## `go-docs`
 

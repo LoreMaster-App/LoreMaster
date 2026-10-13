@@ -644,6 +644,7 @@
                 "enum": [
                   "test-results",
                   "coverage",
+                  "markdown-docs",
                   "go-docs",
                   "openapi-docs",
                   "ts-docs",
