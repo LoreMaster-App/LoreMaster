@@ -122,7 +122,7 @@ func (w *workspaceWatcher) apply(ctx context.Context, changed []string) error {
 
 	written := map[string]bool{}
 	if len(route.Generators) > 0 {
-		runs, err := runGenerators(ctx, w.engine, w.parsed.workspace, route.Generators)
+		runs, err := runGenerators(ctx, w.engine, w.parsed.workspace, route.Generators, false)
 		if err != nil {
 			return err
 		}

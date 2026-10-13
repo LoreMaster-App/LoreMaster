@@ -197,6 +197,7 @@ export class RelativePattern {
 
 export const workspace = {
   workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
+  isTrusted:        true,
   fs:               {
     async readFile (uri: { fsPath: string }): Promise<Uint8Array> {
       const content = virtualFiles.get(uri.fsPath)

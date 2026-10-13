@@ -5,9 +5,9 @@ hooks. It runs the same method handlers the editors call, so `sync` plans and wr
 what the same sync from the editor would.
 
 ```
-lore-master-engine generate [--workspace DIR] [--generator N]... [--json]
+lore-master-engine generate [--workspace DIR] [--generator N]... [--prepare] [--json]
 lore-master-engine tree     [--workspace DIR] [--output N]... [--json]
-lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate]
+lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate] [--prepare]
                             [--yes] [--dry-run] [--force] [--prune] [--json]
 lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
                             [--debounce 2s] [--poll 1s]
@@ -17,7 +17,9 @@ lore-master-engine pages check   [--workspace DIR] [--output N] [--exit-code] [-
 lore-master-engine version
 ```
 
-- `generate` runs the generators of the `loreMaster.generators` setting.
+- `generate` runs the generators of the `loreMaster.generators` setting. `--prepare` runs each
+  generator's `prepare` command first (the build or test run that produces what it reads; see
+  [generators](generators.md#producing-what-a-generator-reads-prepare)). Without it no command runs.
 - `tree` shows the page tree each output would sync, with each page's local status.
 - `sync` plans each output. **Without `--yes` it only shows the plan.** `--generate` runs the
   generators first; `--force` overwrites pages edited on the platform; `--prune` trashes pages

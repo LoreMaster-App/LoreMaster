@@ -222,6 +222,9 @@ func validateGenerators(add func(string, ...any), generators []Generator) {
 		default:
 			outputs[i] = output
 		}
+		if generator.Prepare != "" && strings.TrimSpace(generator.Prepare) == "" {
+			add("%s.prepare is blank; give the command that produces what the generator reads, or remove it", at)
+		}
 		for j, pattern := range generator.Input {
 			clean := path.Clean(strings.TrimPrefix(pattern, "!"))
 			if strings.TrimSpace(pattern) == "" || path.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, "../") {

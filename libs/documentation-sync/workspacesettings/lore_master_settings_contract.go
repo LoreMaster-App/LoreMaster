@@ -35,6 +35,9 @@ type Generator struct {
 	Output string `yaml:"output"`
 	// Title heads the generated index page; empty means the type's own default.
 	Title string `yaml:"title,omitempty"`
+	// Prepare is an optional shell command that produces what the generator reads (a build, a
+	// test run). It runs only when a run asks for it, never on its own.
+	Prepare string `yaml:"prepare,omitempty"`
 }
 
 // Output is one place the lore goes.

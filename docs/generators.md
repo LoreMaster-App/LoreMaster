@@ -301,6 +301,36 @@ To make every ordinary **Sync** do this, turn on the setting `loreMaster.generat
 reports give the same bytes — so running it again with nothing new rewrites nothing and shows
 no diff.
 
+## Producing what a generator reads: `prepare`
+
+A generator reads artifacts a build or a test run produces (JUnit and coverage reports, a docs
+folder, a Storybook build). LoreMaster never guesses how to produce them. If you want it to run
+the step for you, say so with an optional `prepare` command on the generator:
+
+```jsonc
+{
+  "loreMaster.generators": [
+    { "type": "test-results", "input": ["reports/"], "output": "docs/tests",
+      "prepare": "npm test -- --reporters=jest-junit" },
+    { "type": "coverage", "input": ["coverage/"], "output": "docs/coverage",
+      "prepare": "npm test -- --coverage --coverageReporters=cobertura" }
+  ]
+}
+```
+
+It is a shell command run in the workspace folder (`cmd` on Windows, `sh` elsewhere), limited to
+30 minutes. **It only runs when a run asks for it; the same setting serves the plugin and CI:**
+
+| Where | How it is asked for |
+|---|---|
+| **VS Code** | **Run generators** and **Generate and sync documentation** consider each selected generator's `prepare`. The setting `loreMaster.runPrepareSteps` says what to do: `ask` (default) shows the exact commands and asks once per session (or **Always run**), `always` runs them, `never` skips them. Nothing runs in a workspace you have not trusted. |
+| **CI / command line** | `lore-master-engine generate --prepare`, or `lore-master-engine sync --generate --prepare --yes`. Without `--prepare` no command is ever executed, so a pipeline that already builds can keep its own steps and call `generate` alone. |
+| **Watch mode** | Never runs `prepare`: it regenerates when files change, and a build on every save would be surprising. |
+
+A command that fails is that generator's error (with the tail of its output) and the generator
+does not run, so pages built from stale artifacts are not written; the others still run. `generate`
+exits 1 in that case, which fails the pipeline step.
+
 ## Rules the generator keeps
 
 - Every generated page carries `generated: <type>` in its `<!-- lore-master -->` annotation.

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import { GENERATORS_RUN_METHOD, type Generator, type GeneratorRun, SETTINGS_READ_METHOD } from '../engine-protocol'
+import { approvedPrepareCommands } from './prepare-approvals.store'
 import { runGeneratorsCommand } from './run-generators.handler'
 
 interface Scenario {
@@ -136,5 +137,77 @@ describe('runGeneratorsCommand', () => {
     await runGeneratorsCommand({ engine: engine(scenario, [tests], []), output: output(scenario) })
 
     expect(scenario.messages).toEqual(['info: LoreMaster: open a folder to run its generators.'])
+  })
+})
+
+describe('prepare commands', () => {
+  const build: Generator = { type: 'coverage', output: 'docs/coverage', prepare: 'pnpm test --coverage' }
+  const workspace = vscode.workspace as unknown as Record<string, unknown>
+  const originalWorkspace = { ...workspace }
+  let scenario: Scenario
+  let answers: (string | undefined)[]
+
+  function configure (setting: string | undefined): void {
+    workspace.getConfiguration = () => ({ get: () => setting, update: () => Promise.resolve() })
+  }
+  const run = () => runGeneratorsCommand({ engine: engine(scenario, [build], [{ index: 0, type: 'coverage', output: 'docs/coverage' }]), output: output(scenario) })
+  const sentPrepare = () => (scenario.requests.find(request => request.method === GENERATORS_RUN_METHOD)?.params as { prepare?: boolean }).prepare
+
+  beforeEach(() => {
+    scenario = { messages: [], lines: [], shown: 0, requests: [], quickPicks: [] }
+    answers = []
+    approvedPrepareCommands.clear()
+    script(scenario)
+    window.showInformationMessage = (message: string) => {
+      scenario.messages.push(`info: ${message}`)
+
+      return Promise.resolve(answers.shift())
+    }
+    workspace.workspaceFolders = [{ uri: { fsPath: '/w' }, name: 'w' }]
+    workspace.isTrusted = true
+  })
+  afterEach(() => {
+    Object.assign(window, original)
+    Object.assign(workspace, originalWorkspace)
+  })
+
+  it('asks with the exact command and runs it when the user agrees', async () => {
+    configure('ask')
+    answers = ['Run']
+
+    await run()
+
+    expect(scenario.messages[0]).toContain('pnpm test --coverage')
+    expect(sentPrepare()).toBe(true)
+  })
+
+  it('does not run it when the user declines', async () => {
+    configure('ask')
+    answers = [undefined]
+
+    await run()
+
+    expect(sentPrepare()).toBeUndefined()
+  })
+
+  it('never asks or runs anything with never', async () => {
+    configure('never')
+
+    await run()
+
+    expect(scenario.messages.some(message => message.includes('pnpm test'))).toBe(false)
+    expect(sentPrepare()).toBeUndefined()
+  })
+
+  it('runs without asking with always, but never in an untrusted workspace', async () => {
+    configure('always')
+    await run()
+    expect(sentPrepare()).toBe(true)
+
+    scenario.requests = []
+    workspace.isTrusted = false
+    await run()
+    expect(sentPrepare()).toBeUndefined()
+    expect(scenario.lines.some(line => line.includes('trust this workspace'))).toBe(true)
   })
 })

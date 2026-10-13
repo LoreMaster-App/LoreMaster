@@ -240,3 +240,71 @@ func TestRunGeneratesGoPackageDocumentation(t *testing.T) {
 		t.Fatalf("page %s (%v)", page, err)
 	}
 }
+
+const prepareSettingsYAML = `version: 1
+generators:
+  - type: test-results
+    output: docs/tests
+    prepare: echo ran > prepared.txt
+  - type: test-results
+    input: [ci/]
+    output: docs/ci-tests
+    prepare: exit 3
+outputs:
+  - platform: github-pages
+    content:
+      - type: markdown
+        roots: ["docs"]
+`
+
+func callPrepare(t *testing.T, conn *jsonrpc2.Conn, root string, prepare bool, generators ...int) rpcprotocol.GeneratorsRunResult {
+	t.Helper()
+	var result rpcprotocol.GeneratorsRunResult
+	params := rpcprotocol.GeneratorsRunParams{WorkspaceRoot: root, Generators: generators, Prepare: prepare}
+	if err := conn.Call(context.Background(), rpcprotocol.MethodGeneratorsRun, params, &result); err != nil {
+		t.Fatal(err)
+	}
+
+	return result
+}
+
+func TestPrepareCommandsRunOnlyWhenAsked(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{workspacesettings.FileName: prepareSettingsYAML, "reports/junit.xml": junit})
+	conn := connect(t)
+
+	without := callPrepare(t, conn, root, false, 0)
+	if without.Runs[0].Prepared {
+		t.Fatal("a prepare command ran although the run did not ask for it")
+	}
+	if _, err := os.Stat(filepath.Join(root, "prepared.txt")); !os.IsNotExist(err) {
+		t.Fatal("the prepare command had an effect without being asked")
+	}
+
+	with := callPrepare(t, conn, root, true, 0)
+	if !with.Runs[0].Prepared || with.Runs[0].Error != "" {
+		t.Fatalf("run %+v, want the prepare command to have run", with.Runs[0])
+	}
+	if _, err := os.Stat(filepath.Join(root, "prepared.txt")); err != nil {
+		t.Fatalf("the prepare command did not run in the workspace: %v", err)
+	}
+}
+
+func TestAFailingPrepareCommandStopsOnlyItsGenerator(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{workspacesettings.FileName: prepareSettingsYAML, "reports/junit.xml": junit, "ci/junit.xml": junit})
+
+	result := callPrepare(t, connect(t), root, true)
+	if len(result.Runs) != 2 {
+		t.Fatalf("runs %+v", result.Runs)
+	}
+	if result.Runs[0].Error != "" || len(result.Runs[0].Written) == 0 {
+		t.Fatalf("the first generator should have run: %+v", result.Runs[0])
+	}
+	if !strings.HasPrefix(result.Runs[1].Error, "prepare failed:") || len(result.Runs[1].Written) != 0 {
+		t.Fatalf("the second generator should have stopped on its prepare command: %+v", result.Runs[1])
+	}
+	if _, err := os.Stat(filepath.Join(root, "docs", "ci-tests")); !os.IsNotExist(err) {
+		t.Fatal("a generator whose prepare command failed still wrote pages")
+	}
+}

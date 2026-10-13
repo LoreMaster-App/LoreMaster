@@ -18,6 +18,9 @@ func generatorLines(runs []rpcprotocol.GeneratorRun) []string {
 
 			continue
 		}
+		if run.Prepared {
+			lines = append(lines, label+": prepare command ran")
+		}
 		lines = append(lines, fmt.Sprintf("%s: %d written, %d unchanged, %d removed", label, len(run.Written), len(run.Unchanged), len(run.Removed)))
 		for _, warning := range run.Warnings {
 			lines = append(lines, "  warning: "+warning)

@@ -14,8 +14,9 @@ const plural = (count: number, noun: string): string => `${count} ${noun}${count
 /** The line for one generator: its type, where it writes, and what it did there. */
 function describeRun (run: GeneratorRun): string[] {
   const label = `${run.type} → ${run.output}`
+  const prepared = run.prepared ? [`${label}: prepare command ran`] : []
   if (run.error) {
-    return [`${label}: failed`, `  ✗ ${run.error}`]
+    return [...prepared, `${label}: failed`, `  ✗ ${run.error}`]
   }
   const counts = [
     `${plural(run.written?.length ?? 0, 'page')} written`,
@@ -23,7 +24,7 @@ function describeRun (run: GeneratorRun): string[] {
     `${run.removed?.length ?? 0} removed`,
   ].join(', ')
 
-  return [`${label}: ${counts}`, ...(run.warnings ?? []).map(warning => `  ! ${warning}`)]
+  return [...prepared, `${label}: ${counts}`, ...(run.warnings ?? []).map(warning => `  ! ${warning}`)]
 }
 
 /**
