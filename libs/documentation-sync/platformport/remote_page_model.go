@@ -2,9 +2,11 @@ package platformport
 
 // Space is a place pages live in.
 type Space struct {
-	ID         string
-	Key        string
-	Name       string
+	ID   string
+	Key  string
+	Name string
+	// Alias is the name the space's address uses when it differs from the key; empty when none.
+	Alias      string
 	HomepageID string
 }
 

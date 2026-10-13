@@ -103,13 +103,14 @@ func findSpace(ctx context.Context, platform platformport.DocumentationPlatform,
 	if err != nil {
 		return platformport.SpaceRef{}, sessionlifecycle.PlatformError(err)
 	}
-	for _, space := range spaces {
-		if space.Key == key {
-			return platformport.SpaceRef{ID: space.ID, Key: space.Key}, nil
-		}
+	if space, ok := matchSpace(spaces, key); ok {
+		return platformport.SpaceRef{ID: space.ID, Key: space.Key}, nil
+	}
+	if len(spaces) == 0 {
+		return platformport.SpaceRef{}, rpcprotocol.Errorf(rpcprotocol.CodeNotFound, "the space %q does not exist or the session's user cannot see it; the user can see no spaces", key)
 	}
 
-	return platformport.SpaceRef{}, rpcprotocol.Errorf(rpcprotocol.CodeNotFound, "the space %q does not exist or the session's user cannot see it", key)
+	return platformport.SpaceRef{}, rpcprotocol.Errorf(rpcprotocol.CodeNotFound, "the space %q does not exist or the session's user cannot see it; the user can see: %s", key, describeSpaces(spaces, 10))
 }
 
 func planResult(id string, plan syncplanning.SyncPlan) rpcprotocol.SyncPlanResult {

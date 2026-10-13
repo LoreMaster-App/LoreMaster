@@ -38,6 +38,10 @@ differs:
 A list (`outputs`, `ignore`, `generators`) set at a more specific level **replaces** the
 less specific one; it is not appended to it.
 
+`space` is the space's key. On Confluence Cloud the address can use an alias that differs from
+the key (`/wiki/spaces/LORE/...` for a space whose key is `TLM`), so LoreMaster accepts either, and
+when it finds neither it lists the spaces the signed-in user can see.
+
 ## The settings
 
 | Setting | What it is |

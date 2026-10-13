@@ -71,7 +71,7 @@ func (p *Platform) ListSpaces(ctx context.Context) ([]platformport.Space, error)
 	}
 	out := make([]platformport.Space, len(spaces))
 	for i, space := range spaces {
-		out[i] = platformport.Space{ID: space.ID, Key: space.Key, Name: space.Name, HomepageID: space.HomepageID}
+		out[i] = platformport.Space{ID: space.ID, Key: space.Key, Name: space.Name, Alias: space.Alias, HomepageID: space.HomepageID}
 	}
 
 	return out, nil

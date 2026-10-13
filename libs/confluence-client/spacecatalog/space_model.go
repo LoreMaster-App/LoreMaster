@@ -6,6 +6,9 @@ type Space struct {
 	ID   string
 	Key  string
 	Name string
+	// Alias is the name the space's address uses when it differs from the key (a Cloud space
+	// keeps its key for life, but its URL alias can change); empty when there is none.
+	Alias string
 	// HomepageID is the space's home page, the default parent page for a sync; empty
 	// when the space has none.
 	HomepageID string

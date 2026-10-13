@@ -58,6 +58,23 @@ func TestListSpacesCloud(t *testing.T) {
 	}
 }
 
+func TestListSpacesCloudKeepsTheAddressAliasWhenItDiffersFromTheKey(t *testing.T) {
+	client := serve(t, "/wiki", func(r *http.Request) string {
+		return `{"results": [
+			{"id": "98336", "key": "TLM", "name": "Lore Master", "type": "knowledge_base", "currentActiveAlias": "LORE"},
+			{"id": "131077", "key": "SD", "name": "Software Development", "type": "onboarding", "currentActiveAlias": "SD"}
+		]}`
+	})
+	spaces, err := ListSpaces(context.Background(), client, connection.Cloud, Options{})
+	want := []Space{
+		{ID: "98336", Key: "TLM", Name: "Lore Master", Alias: "LORE"},
+		{ID: "131077", Key: "SD", Name: "Software Development"},
+	}
+	if err != nil || !reflect.DeepEqual(spaces, want) {
+		t.Fatalf("spaces %+v, err %v", spaces, err)
+	}
+}
+
 func TestListSpacesDataCenterWithPersonal(t *testing.T) {
 	client := serve(t, "/confluence", func(r *http.Request) string {
 		if r.URL.Path != "/confluence/rest/api/space" || r.URL.Query().Get("expand") != "homepage" {
