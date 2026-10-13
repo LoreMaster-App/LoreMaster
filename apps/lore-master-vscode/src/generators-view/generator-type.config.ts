@@ -30,6 +30,14 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     inputHint:     'Patterns for the report files, separated by commas, e.g. coverage/, **/cobertura*.xml. Leave empty for coverage.xml, lcov.info and the like.',
   },
   {
+    type:          'markdown-docs',
+    label:         'Markdown docs',
+    description:   'Markdown another tool wrote (TypeDoc, dokka, a build folder), imported as pages with its images',
+    icon:          'markdown',
+    defaultOutput: 'docs/imported',
+    inputHint:     'The folder or files of Markdown to import, separated by commas, e.g. build/docs/. Required.',
+  },
+  {
     type:          'go-docs',
     label:         'Go package docs',
     description:   'The doc comments of your Go packages, as `go doc` shows them',

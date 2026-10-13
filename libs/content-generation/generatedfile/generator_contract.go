@@ -19,8 +19,12 @@ type Spec struct {
 type File struct {
 	// Path is relative to the Spec's Output folder, '/'-separated.
 	Path string
-	// Body is the page's Markdown, without an annotation.
+	// Body is the page's Markdown, without an annotation, or the file's bytes for an Asset.
 	Body []byte
+	// Asset marks a file that is copied as it is (an image a page shows): it carries no
+	// annotation, so the run records it in a manifest next to the pages and only ever replaces
+	// or removes assets that manifest lists.
+	Asset bool
 }
 
 // Output is what a generator produced.
