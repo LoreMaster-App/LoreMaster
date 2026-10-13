@@ -22,6 +22,14 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     inputHint:     'Patterns for the report files, separated by commas, e.g. reports/, **/junit*.xml. Leave empty for the usual names.',
   },
   {
+    type:          'coverage',
+    label:         'Code coverage',
+    description:   'Per-file coverage by folder, from Cobertura XML or LCOV reports',
+    icon:          'graph',
+    defaultOutput: 'docs/coverage',
+    inputHint:     'Patterns for the report files, separated by commas, e.g. coverage/, **/cobertura*.xml. Leave empty for coverage.xml, lcov.info and the like.',
+  },
+  {
     type:          'go-docs',
     label:         'Go package docs',
     description:   'The doc comments of your Go packages, as `go doc` shows them',

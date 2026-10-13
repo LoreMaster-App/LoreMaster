@@ -33,7 +33,7 @@ In the `loreMaster.generators` setting (and `loreMaster.outputs` for where the p
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs`, `csharp-docs` or `dart-docs`. |
+| `type` | `test-results`, `coverage`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs`, `csharp-docs` or `dart-docs`. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -54,6 +54,36 @@ It writes:
 
 A report that is not valid JUnit is reported and skipped; the others are still written. When
 there are no reports at all, the index says so, so old results never linger.
+
+## `coverage`
+
+Reads **code coverage reports** and writes the results of each file, organised by your source
+folders. It never shows source code, only numbers. Formats, detected from the content:
+
+- **Cobertura XML** — what coverlet (.NET), coverage.py (`coverage xml`) and Istanbul/nyc
+  (`cobertura` reporter) write.
+- **LCOV** — `lcov.info`, from Jest/Vitest/c8, Dart, gcov and others.
+
+Without `input` it looks for `**/*cobertura*.xml`, `**/coverage.xml`, `**/lcov.info` and
+`**/*.lcov`, skipping `node_modules` and `.git`.
+
+```jsonc
+{ "type": "coverage", "input": ["coverage/"], "output": "docs/coverage", "title": "Code coverage" }
+```
+
+It writes one page per folder, like the Code Coverage tab of Azure DevOps:
+
+- an **overview**: code coverage %, total, covered, partially covered and not covered lines;
+- a table of the folder's **files, then subfolders**, each with a coverage bar and percentage and
+  the same four counts;
+- each subfolder is a link to its own page, which nests under its parent in the page tree, and each
+  page links back **Up**.
+
+A line that ran with every branch taken is *covered*, one that ran with a branch missed is
+*partially covered*, one that never ran is *not covered*. Several reports for the same file (for
+example one per test run) are merged line by line. The root page starts at the deepest folder all
+files share, and paths are made relative to the workspace when the report named them inside it;
+otherwise they appear as the report wrote them. A report in no known format is reported and skipped.
 
 ## `go-docs`
 
