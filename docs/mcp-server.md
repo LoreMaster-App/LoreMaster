@@ -11,7 +11,7 @@ agent (for example Copilot Chat in agent mode) can see it:
 1. Install the extension and open the folder you document.
 2. Open the chat's tools list (or run **MCP: List Servers**). A server named **LoreMaster**
    is listed. Start it if the editor asks.
-3. Ask the agent to write documentation. It can now call the six tools below.
+3. Ask the agent to write documentation. It can now call the eight tools below.
 
 The server reads the **first workspace folder**. It uses the engine bundled with the
 extension, or the one named by the `loreMaster.engine.path` setting.
@@ -88,6 +88,31 @@ several). Renders the site in memory and returns how many pages and files it wou
 file list, and the Markdown problems that would stop a build. It **writes nothing**; the build
 itself is `lore-master-engine pages build --out DIR` or the
 [GitHub Action](github-action.md).
+
+### `list_generators`
+
+No input. Lists every [generator](generators.md) LoreMaster has (test results, coverage, OpenAPI,
+Markdown imports, Storybook, and the code documenters for Go, TypeScript, Python, C# and Dart)
+with what each reads and writes and what it needs installed, and the generators this
+workspace configures with the **folder each one writes to**. Pages in those folders are
+generated and overwritten on every run, so an agent changes their source and never edits them.
+It works without a workspace (the catalogue only) and **writes nothing**.
+
+### `plan_moves`
+
+Input: `moves`, a list of `{from, to}` workspace-relative paths (a folder moves with everything
+in it). Plans a reorganisation **before** anything is moved, so each page lands where it belongs
+on the storage. It returns:
+
+- every file that must move **with** the ones asked for (a page's dotted children, so they keep
+  nesting under it);
+- every `parent:` line to rewrite so it still names the same page;
+- for each moved page, **where it nests now and where it will nest afterwards**, with the rule
+  that decides it.
+
+It **writes nothing**: the agent moves the files, applies the edits, then calls
+`validate_document` on each moved file. If the moves would make the tree impossible to build (a
+cycle of `parent:` lines, a path listed twice) it says so instead of planning them.
 
 ## Troubleshooting
 
