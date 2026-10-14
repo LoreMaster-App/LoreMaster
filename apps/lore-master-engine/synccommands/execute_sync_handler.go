@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"lore-master/apps/lore-master-engine/diagramrouting"
 	"lore-master/apps/lore-master-engine/hostbridge"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
@@ -34,10 +35,13 @@ func ExecuteSync(sessions *sessionlifecycle.Store, plans *PlanStore, renderTimeo
 			return nil, err
 		}
 
-		var renderer platformport.DiagramRenderer
+		// D2 is drawn here whatever the mode; Mermaid is asked of the editor, and only when the
+		// output shows it as an image (the sync does not ask otherwise).
+		var editor platformport.DiagramRenderer
 		if stored.output.MermaidMode == "image" {
-			renderer = hostbridge.NewDiagramRenderer(call.Editor, renderTimeout)
+			editor = hostbridge.NewDiagramRenderer(call.Editor, renderTimeout)
 		}
+		renderer := diagramrouting.Route(editor)
 		report := syncexecution.ExecutePlan(ctx, session.Platform.ForOutput(stored.output), syncexecution.ExecuteInput{
 			Plan: stored.plan, Prepared: stored.prepared, Output: stored.output, Space: stored.space,
 			Read: fileReader(stored.root), Renderer: renderer,

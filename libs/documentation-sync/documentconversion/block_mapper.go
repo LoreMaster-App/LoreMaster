@@ -41,8 +41,10 @@ func (c *converter) block(node ast.Node) []platformport.Block {
 		return []platformport.Block{platformport.ThematicBreak{}}
 	case *ast.FencedCodeBlock:
 		language := string(n.Language(c.source))
-		if strings.EqualFold(language, "mermaid") {
-			return []platformport.Block{platformport.Diagram{Language: "mermaid", Source: c.code(n)}}
+		for _, diagram := range []string{"mermaid", "d2"} {
+			if strings.EqualFold(language, diagram) {
+				return []platformport.Block{platformport.Diagram{Language: diagram, Source: c.code(n)}}
+			}
 		}
 
 		return []platformport.Block{platformport.CodeBlock{Language: language, Code: c.code(n)}}

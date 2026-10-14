@@ -2,6 +2,7 @@ package confluenceplatform
 
 import (
 	"fmt"
+	"strings"
 
 	"lore-master/libs/confluence-client/storageformat"
 	"lore-master/libs/documentation-sync/platformport"
@@ -76,10 +77,13 @@ func mapBlock(block platformport.Block) (storageformat.Block, error) {
 	case platformport.CodeBlock:
 		return storageformat.CodeBlock{Language: b.Language, Code: b.Code}, nil
 	case platformport.Diagram:
-		if b.Language != "mermaid" {
+		if !strings.EqualFold(b.Language, "mermaid") && !strings.EqualFold(b.Language, "d2") {
 			return storageformat.CodeBlock{Language: b.Language, Code: b.Source}, nil
 		}
 		diagram := storageformat.Mermaid{Source: b.Source}
+		if strings.EqualFold(b.Language, "d2") {
+			diagram.Language = "d2"
+		}
 		if b.Image != nil {
 			diagram.Image = &storageformat.AttachmentRef{Filename: b.Image.Filename}
 		}
@@ -230,7 +234,7 @@ func unmapBlock(block storageformat.Block) platformport.Block {
 	case storageformat.CodeBlock:
 		return platformport.CodeBlock{Language: b.Language, Code: b.Code}
 	case storageformat.Mermaid:
-		diagram := platformport.Diagram{Language: "mermaid", Source: b.Source}
+		diagram := platformport.Diagram{Language: b.Name(), Source: b.Source}
 		if b.Image != nil {
 			diagram.Image = &platformport.AttachmentRef{Filename: b.Image.Filename}
 		}

@@ -3,6 +3,7 @@ package storageformat
 import (
 	"encoding/xml"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -270,7 +271,7 @@ func (p *parser) macro(e *element) (Block, bool) {
 		return nil, false
 	}
 	var language, body string
-	collapse, mermaidMarked := false, false
+	collapse, diagramMarked := false, ""
 	for _, k := range e.kids {
 		if k.el == nil || k.el.name.Space != "ac" {
 			continue
@@ -283,7 +284,9 @@ func (p *parser) macro(e *element) (Block, bool) {
 			case "collapse":
 				collapse = strings.TrimSpace(textOf(k.el)) == "true"
 			case "lore-master":
-				mermaidMarked = strings.TrimSpace(textOf(k.el)) == "mermaid"
+				if marker := strings.TrimSpace(textOf(k.el)); slices.Contains(diagramLanguages, marker) {
+					diagramMarked = marker
+				}
 			}
 		case "plain-text-body":
 			body = textOf(k.el)
@@ -292,7 +295,10 @@ func (p *parser) macro(e *element) (Block, bool) {
 	// A code macro is a Mermaid diagram's source when it carries the lore-master marker. The
 	// collapse flag is a fallback for pages synced before the marker existed, where only an
 	// image-mode diagram's macro was collapsed; any other code macro is a plain code block.
-	if mermaidMarked || collapse {
+	switch {
+	case diagramMarked != "" && diagramMarked != "mermaid":
+		return Mermaid{Source: body, Language: diagramMarked}, true
+	case diagramMarked != "" || collapse:
 		return Mermaid{Source: body}, true
 	}
 
