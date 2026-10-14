@@ -660,7 +660,8 @@
                   "ts-docs",
                   "python-docs",
                   "csharp-docs",
-                  "dart-docs"
+                  "dart-docs",
+                  "storybook-docs"
                 ],
                 "markdownDescription": "What is turned into Markdown."
               },
@@ -670,6 +671,10 @@
                   "type": "string"
                 },
                 "markdownDescription": "Gitignore-style patterns selecting what to read. Empty means the type's own default."
+              },
+              "source": {
+                "type": "string",
+                "markdownDescription": "Where a generator reads from when that is not a set of files: for `storybook-docs`, the URL of a Storybook or the workspace-relative folder of its build (e.g. `storybook-static`). `input` then filters the stories by title (`Components/`, `!Internal/`)."
               },
               "output": {
                 "type": "string",

@@ -59,6 +59,9 @@ type Settings struct {
 type Generator struct {
 	Type   string   `json:"type"`
 	Input  []string `json:"input,omitempty"`
+	// Source is where a generator reads from when that is not a set of files: a base URL or a
+	// workspace-relative folder.
+	Source string `json:"source,omitempty"`
 	Output string   `json:"output"`
 	Title  string   `json:"title,omitempty"`
 	// Prepare is the shell command that produces what the generator reads; it runs only when a

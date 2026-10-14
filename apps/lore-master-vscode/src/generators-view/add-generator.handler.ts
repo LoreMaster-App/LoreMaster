@@ -50,13 +50,19 @@ export async function addGeneratorCommand (deps: GeneratorsViewDeps): Promise<vo
     if (output === undefined) {
       return
     }
-    const input = await vscode.window.showInputBox({ title: `LoreMaster: what should ${type.label} read?`, prompt: type.inputHint, value: '' })
+    const input = await vscode.window.showInputBox({
+      title:         `LoreMaster: what should ${type.label} read?`,
+      prompt:        type.inputHint,
+      value:         type.usesSource === true ? 'storybook-static' : '',
+      validateInput: value => type.usesSource === true && value.trim() === '' ? 'Name the Storybook: a URL or a build folder.' : undefined,
+    })
     if (input === undefined) {
       return
     }
 
     const patterns = parseList(input)
-    const generator: Generator = { type: type.type, output: output.trim().replaceAll('\\', '/'), ...((patterns.length > 0) && { input: patterns }) }
+    const reads = type.usesSource === true ? { source: input.trim() } : (patterns.length > 0 ? { input: patterns } : {})
+    const generator: Generator = { type: type.type, output: output.trim().replaceAll('\\', '/'), ...reads }
     const index = await addGenerator(deps.engine, folder, generator)
     deps.provider.refresh()
 

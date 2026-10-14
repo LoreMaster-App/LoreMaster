@@ -86,7 +86,7 @@ func run(ctx context.Context, workspaceRoot string, index int, generator workspa
 		}
 		entry.Prepared = true
 	}
-	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Output: generator.Output, Title: generator.Title}
+	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title}
 	outcome, err := generatorrunning.Run(ctx, workspaceRoot, spec, generate)
 	if err != nil {
 		entry.Error = err.Error()

@@ -30,6 +30,9 @@ type Generator struct {
 	// Input is gitignore-style patterns selecting what to read; empty means the type's own
 	// default.
 	Input []string `yaml:"input,omitempty"`
+	// Source is where a generator reads from when that is not a set of files: a base URL or a
+	// workspace-relative folder (storybook-docs: a Storybook's build).
+	Source string `yaml:"source,omitempty"`
 	// Output is the workspace-relative folder the pages are written to. Include it in an
 	// output's content roots for the pages to sync.
 	Output string `yaml:"output"`

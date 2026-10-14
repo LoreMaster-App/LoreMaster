@@ -164,7 +164,7 @@ func isDefaultContent(content []workspacesettings.Content) bool {
 func generatorsToWire(generators []workspacesettings.Generator) []generatorWire {
 	wires := make([]generatorWire, len(generators))
 	for i, generator := range generators {
-		wires[i] = generatorWire{Type: generator.Type, Input: generator.Input, Output: generator.Output, Title: generator.Title}
+		wires[i] = generatorWire{Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title, Prepare: generator.Prepare}
 	}
 
 	return wires
