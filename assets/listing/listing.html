@@ -1,0 +1,157 @@
+<!doctype html>
+<!--
+  The pictures of the README and the Marketplace listing. Each <section> is one picture; open
+  this file with #how, #editor, #generators or #ci to see one alone, and render it with
+  tools/listing-pictures.cjs (headless Chrome), which writes the PNGs next to this file.
+  The Marketplace refuses SVG in a README, hence PNG.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LoreMaster listing pictures</title>
+<style>
+  :root {
+    --ink: #1c1740; --ink2: #2b2563; --line: #4b4390; --gold: #f5b942; --sky: #5ec8f2;
+    --mint: #6ee7b7; --rose: #fb7185; --text: #f4f2ff; --dim: #b9b3e6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #ffffff; font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  section { display: none; width: 1600px; background: linear-gradient(135deg, var(--ink) 0%, #120f2e 100%); color: var(--text); padding: 56px 64px; }
+  section:target { display: block; }
+  h2 { margin: 0 0 6px; font-size: 44px; letter-spacing: -0.5px; }
+  .sub { color: var(--dim); font-size: 22px; margin: 0 0 40px; }
+  .gold { color: var(--gold); }
+  .row { display: flex; gap: 28px; align-items: stretch; }
+  .col { display: flex; flex-direction: column; gap: 14px; justify-content: center; }
+  .card { background: var(--ink2); border: 2px solid var(--line); border-radius: 18px; padding: 16px 20px; }
+  .card b { display: block; font-size: 22px; }
+  .card span { color: var(--dim); font-size: 17px; }
+  .tag { display: inline-block; font-size: 14px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--gold); color: #2a1d00; margin-right: 6px; }
+  .arrow { align-self: center; font-size: 64px; color: var(--gold); }
+  .engine { flex: 1.15; background: radial-gradient(circle at 30% 20%, #3a3290, var(--ink2)); border: 3px solid var(--gold); border-radius: 26px; padding: 26px 30px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+  .engine h3 { margin: 0; font-size: 34px; color: var(--gold); }
+  .step { display: flex; gap: 14px; align-items: baseline; font-size: 21px; }
+  .step i { font-style: normal; font-weight: 800; color: var(--ink); background: var(--sky); width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .step small { color: var(--dim); font-size: 17px; display: block; }
+  .wide { flex: 1; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+  .tile { background: var(--ink2); border: 2px solid var(--line); border-radius: 18px; padding: 18px 20px; min-height: 190px; }
+  .tile h4 { margin: 0 0 4px; font-size: 24px; color: var(--gold); font-family: "Cascadia Mono", Consolas, monospace; }
+  .tile p { margin: 6px 0; font-size: 17px; color: var(--dim); }
+  .tile p strong { color: var(--text); font-weight: 600; }
+  pre { min-width: 0; margin: 0; background: #0d0a22; border: 2px solid var(--line); border-radius: 16px; padding: 20px 24px; font-family: "Cascadia Mono", Consolas, monospace; font-size: 19px; line-height: 1.55; color: #e9e6ff; }
+  pre .c { color: #8f89c9; } pre .k { color: var(--sky); } pre .g { color: var(--mint); } pre .y { color: var(--gold); }
+  .stage { flex: 1; text-align: center; }
+  .stage .card { height: 100%; }
+  .pill { display: inline-block; margin: 4px 4px 0 0; padding: 3px 12px; border: 2px solid var(--line); border-radius: 999px; font-size: 16px; color: var(--text); }
+  .foot { margin-top: 28px; font-size: 20px; color: var(--dim); }
+  .ok { color: var(--mint); } .warn { color: var(--rose); }
+</style>
+</head>
+<body>
+
+<!-- 1. How it works ----------------------------------------------------------------------- -->
+<section id="how">
+  <h2>Everything your project knows, <span class="gold">published where your team reads</span></h2>
+  <p class="sub">One engine reads your repository and keeps every storage in step, from the editor or from CI.</p>
+  <div class="row">
+    <div class="col wide">
+      <div class="card"><b>Markdown you write</b><span>README, guides, ADRs, Mermaid and D2 diagrams</span></div>
+      <div class="card"><b>Code documentation</b><span>Go · TypeScript · Python · C# · Dart</span></div>
+      <div class="card"><b>Test and coverage reports</b><span>JUnit · Cobertura · LCOV</span></div>
+      <div class="card"><b>API and UI catalogues</b><span>OpenAPI · Storybook screenshots</span></div>
+    </div>
+    <div class="arrow">&#10140;</div>
+    <div class="engine">
+      <h3>LoreMaster engine</h3>
+      <div class="step"><i>1</i><div>Discover and build the page tree<small>folders, README indexes, dotted names, parent: lines</small></div></div>
+      <div class="step"><i>2</i><div>Plan before it writes<small>create · update · move · rename · adopt · conflict</small></div></div>
+      <div class="step"><i>3</i><div>Execute, parents first<small>diagrams drawn, images uploaded, links resolved</small></div></div>
+      <div class="step"><i>4</i><div>Report, and write back only what moved<small>run it again and nothing changes</small></div></div>
+    </div>
+    <div class="arrow">&#10140;</div>
+    <div class="col wide">
+      <div class="card"><b>Confluence</b><span>Cloud · Data Center · Server</span></div>
+      <div class="card"><b>GitHub Pages</b><span>a styled site, beside your app if you like</span></div>
+      <div class="card"><b>GitHub wiki</b><span>the repository's Wiki tab</span></div>
+      <div class="card"><b>Your AI agent</b><span>learns the rules through an MCP server</span></div>
+    </div>
+  </div>
+  <p class="foot">In VS Code with one click, or <span class="gold">unattended on CI</span> with the same engine.</p>
+</section>
+
+<!-- 2. In the editor ---------------------------------------------------------------------- -->
+<section id="editor">
+  <h2>In VS Code: <span class="gold">a sidebar, not a pile of commands</span></h2>
+  <p class="sub">Four views in the LoreMaster activity-bar icon, and the Command Palette for the rest.</p>
+  <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="tile"><h4>Sync</h4><p><strong>Preview, then publish.</strong> Every storage in one go, or just the current file.</p><p>Generate and sync in a single step.</p></div>
+    <div class="tile"><h4>Pages</h4><p><strong>Your Markdown as the tree it becomes.</strong> An icon per page: new, synced, local change, remote change, conflict.</p><p>Show titles or file names.</p></div>
+    <div class="tile"><h4>Generators</h4><p><strong>Add, run, edit, remove.</strong> See what each one wrote and what its last run did.</p><p>Watch mode keeps pages fresh as you type.</p></div>
+    <div class="tile"><h4>Storages</h4><p><strong>Confluence, Pages, wiki.</strong> Change a prefix, direction or diagram mode without editing JSON.</p><p>Tokens stay in the secret store.</p></div>
+  </div>
+  <div class="row" style="margin-top: 28px;">
+    <div class="card wide"><b>Sync Current File</b><span>Edit a page, push just that page.</span></div>
+    <div class="card wide"><b>Two-way</b><span>Pull edits made on Confluence back into Markdown. A page changed on both sides is a conflict, never a merge.</span></div>
+    <div class="card wide"><b>Documentation agent</b><span>One command writes an agent for Claude Code, VS Code or AGENTS.md that knows your nesting rules.</span></div>
+    <div class="card wide"><b>MCP server</b><span>Registered for the editor's agent. Place, validate, plan moves, list generators.</span></div>
+  </div>
+</section>
+
+<!-- 3. Generators ------------------------------------------------------------------------- -->
+<section id="generators">
+  <h2>Generators: <span class="gold">pages written from what you already produce</span></h2>
+  <p class="sub">Leave the type out and LoreMaster recognises the format. If it cannot, it says so, instead of staying silent.</p>
+  <div class="grid">
+    <div class="tile"><h4>test-results</h4><p><strong>JUnit XML</strong></p><p>A page per suite: cases, failures, stacks, totals.</p></div>
+    <div class="tile"><h4>coverage</h4><p><strong>Cobertura · LCOV</strong></p><p>A page per folder with coverage bars, nested like the code.</p></div>
+    <div class="tile"><h4>openapi-docs</h4><p><strong>OpenAPI 3 · YAML or JSON</strong></p><p>Operations by tag, parameters, responses, schemas.</p></div>
+    <div class="tile"><h4>storybook-docs</h4><p><strong>A Storybook build or URL</strong></p><p>A page per component with real screenshots and props.</p></div>
+    <div class="tile"><h4>markdown-docs</h4><p><strong>Markdown another tool wrote</strong></p><p>TypeDoc, dokka, a build/docs folder, images included.</p></div>
+    <div class="tile"><h4>go-docs</h4><p><strong>Go packages</strong></p><p>The doc comments, as gofmt prints them.</p></div>
+    <div class="tile"><h4>ts-docs</h4><p><strong>TypeScript · JavaScript</strong></p><p>Via TypeDoc: a page per class, interface and function.</p></div>
+    <div class="tile"><h4>python-docs</h4><p><strong>Python</strong></p><p>Read statically, so nothing is imported or run.</p></div>
+    <div class="tile"><h4>csharp-docs</h4><p><strong>C#</strong></p><p>A page per namespace and per type.</p></div>
+    <div class="tile"><h4>dart-docs</h4><p><strong>Dart</strong></p><p>Classes, mixins, enums, extensions and functions.</p></div>
+  </div>
+  <p class="foot">Output is deterministic: the same inputs give the same bytes, so an unchanged report rewrites nothing.</p>
+</section>
+
+<!-- 4. In CI ------------------------------------------------------------------------------ -->
+<section id="ci">
+  <h2>In CI: <span class="gold">the same engine, no editor</span></h2>
+  <p class="sub">A single static binary per platform, attached to every release with a checksum.</p>
+  <div class="row" style="margin-bottom: 28px;">
+    <div class="stage"><div class="card"><b>1 &middot; Build and test</b><span>your usual steps write reports and a Storybook</span></div></div>
+    <div class="arrow" style="font-size:44px">&#10140;</div>
+    <div class="stage"><div class="card"><b>2 &middot; generate</b><span>pages from the reports, coverage, API and code</span></div></div>
+    <div class="arrow" style="font-size:44px">&#10140;</div>
+    <div class="stage"><div class="card"><b>3 &middot; sync</b><span>Confluence, the wiki, or a Pages site</span></div></div>
+    <div class="arrow" style="font-size:44px">&#10140;</div>
+    <div class="stage"><div class="card"><b>4 &middot; gate</b><span><span class="ok">pages check --exit-code</span> fails on stale docs</span></div></div>
+  </div>
+  <div class="row">
+    <pre class="wide"><span class="c"># fetch the engine, verify it, run it</span>
+<span class="k">curl</span> -fsSLO "$BASE/go-app-lore-master-engine-linux-amd64.zip"
+<span class="k">sha256sum</span> --check --ignore-missing lore-master-engine-$VERSION-sha256.txt
+<span class="k">unzip</span> go-app-lore-master-engine-linux-amd64.zip
+
+<span class="c"># reports -> pages -> storage, in one command</span>
+<span class="y">lore-master-engine</span> sync --generate --prepare --yes
+<span class="c"># or only plan, to review a pull request</span>
+<span class="y">lore-master-engine</span> sync --generate --dry-run --json</pre>
+    <pre class="wide"><span class="c"># a workflow step: docs beside your app</span>
+- <span class="k">uses:</span> LoreMaster-App/LoreMaster/actions/pages@main
+  <span class="k">with:</span>
+    <span class="k">out:</span> dist/docs   <span class="c"># shown at &lt;site&gt;/docs/</span>
+- <span class="k">uses:</span> actions/upload-pages-artifact@v4
+  <span class="k">with:</span> { <span class="k">path:</span> dist }
+
+<span class="c"># and a watch mode while you work</span>
+<span class="y">lore-master-engine</span> watch --yes</pre>
+  </div>
+  <p class="foot">Linux, macOS and Windows, on amd64 and arm64. Credentials come from the environment, never from the repository.</p>
+</section>
+
+</body>
+</html>

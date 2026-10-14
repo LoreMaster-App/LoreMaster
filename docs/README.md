@@ -4,17 +4,39 @@ Start here, then dive into the architecture decisions.
 
 ## Using it
 
-- [Getting started](getting-started.md) — install, connect, and run your first sync.
-- [Choosing what goes where](choosing-what-goes-where.md) — send some pages to Pages, some to
+![From your repository to every storage](../assets/listing/how.png)
+
+**Start here**
+
+- [Getting started](getting-started.md): install, connect, and run your first sync.
+- [Configuration](configuration.md): every `loreMaster.*` setting and how the layers combine.
+- [Choosing what goes where](choosing-what-goes-where.md): send some pages to Pages, some to
   Confluence and some to the wiki, with exclude and include lists.
-- [GitHub wiki](github-wiki.md) — publish the Markdown as the repository's wiki pages, beside
-  or instead of a Pages site.
-- [Generators](generators.md) — pages written from your test reports (and later source docs),
-  synced like any other page.
-- [A documentation agent](agent.md) — create an agent for Claude Code, VS Code or `AGENTS.md` that writes
-  docs the way the sync expects.
-- [Using the MCP server](mcp-server.md) — let an AI agent learn LoreMaster's nesting rules and
-  check its files against them.
+
+**Publish**
+
+- [GitHub wiki](github-wiki.md): the Markdown as the repository's wiki pages, beside or instead
+  of a Pages site.
+- [GitHub Action](github-action.md): build the docs site in one step, beside a web app or onto
+  a branch.
+
+**Generate pages from what you already produce**
+
+- [Generators](generators.md): test results, coverage, OpenAPI, Markdown imports, Storybook with
+  real screenshots, and code documentation for Go, TypeScript, Python, C# and Dart.
+- [Watch mode](watch.md): regenerate and sync only what changed, as you type.
+
+**Automate**
+
+- [Command line](cli.md): `generate`, `sync`, `tree`, `watch` and `pages` for CI and git hooks,
+  with the engine binaries attached to every release.
+
+**Work with AI agents**
+
+- [A documentation agent](agent.md): create an agent for Claude Code, VS Code or `AGENTS.md`
+  that writes docs the way the sync expects.
+- [Using the MCP server](mcp-server.md): place pages, validate them, plan reorganisations and
+  list the generated folders.
 
 ## Architecture (the decisions the design rests on)
 

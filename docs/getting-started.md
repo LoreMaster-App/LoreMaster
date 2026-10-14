@@ -1,7 +1,8 @@
 # Getting started: syncing a workspace to Confluence
 
-A step-by-step first run of the **LoreMaster** VS Code extension. It is a preview; the
-first feature is syncing a workspace's Markdown into Confluence.
+A step-by-step first run of the **LoreMaster** VS Code extension. It is a preview. This page
+syncs a workspace's Markdown into Confluence; GitHub Pages and the wiki are set up the same way
+(**Add sync storage**), and the [next steps](#next-steps) add generated pages and CI.
 
 ## 1. Install
 
@@ -114,6 +115,17 @@ value that is not allowed is refused with the reason and nothing is written. For
   parent you chose.
 - Each synced file gains a small `<!-- lore-master … -->` annotation recording its page, so
   a re-run changes only what actually changed — it never makes duplicates.
+
+## Next steps
+
+- **Pages written from your reports and code.** Open the **Generators** view, **Add generator**, pick
+  test results, coverage, OpenAPI, Storybook or a code documenter, then run it. The pages appear in
+  your workspace and the next sync publishes them. See [generators](generators.md).
+- **Keep it fresh while you type.** Run **LoreMaster: Toggle watch mode**; see [watch mode](watch.md).
+- **Run it on CI.** The engine is a command line with a [GitHub Action](github-action.md); see
+  [the command line](cli.md).
+- **Let an AI agent write the docs your way.** See [the documentation agent](agent.md) and
+  [the MCP server](mcp-server.md).
 
 ## Configuration
 

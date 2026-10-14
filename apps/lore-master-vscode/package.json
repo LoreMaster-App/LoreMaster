@@ -14,7 +14,9 @@
     "vscode": "^1.101.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Testing",
+    "Visualization"
   ],
   "main": "./dist/main.js",
   "activationEvents": [],
@@ -852,7 +854,44 @@
       "type:vscode-extension"
     ]
   },
-  "description": "Gathers a project's lore: syncs your workspace's Markdown to Confluence, and publishes it as a static site on GitHub Pages.",
+  "description": "Docs as code: sync Markdown to Confluence, GitHub Pages or the wiki, and generate pages from test results, coverage, OpenAPI, Storybook and your source. In VS Code and on CI.",
+  "keywords": [
+    "documentation",
+    "docs as code",
+    "markdown",
+    "confluence",
+    "atlassian",
+    "github pages",
+    "github wiki",
+    "mermaid",
+    "d2",
+    "diagrams",
+    "junit",
+    "test report",
+    "code coverage",
+    "lcov",
+    "cobertura",
+    "openapi",
+    "swagger",
+    "storybook",
+    "godoc",
+    "typedoc",
+    "api documentation",
+    "mcp",
+    "ai agent",
+    "sync",
+    "publish",
+    "ci"
+  ],
+  "galleryBanner": {
+    "color": "#1c1740",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/LoreMaster-App/LoreMaster#readme",
+  "bugs": {
+    "url": "https://github.com/LoreMaster-App/LoreMaster/issues"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/LoreMaster-App/LoreMaster.git"

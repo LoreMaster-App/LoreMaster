@@ -2,43 +2,143 @@
 
 ![LoreMaster](./assets/lore-master-concept-md.jpg)
 
-**LoreMaster** gathers a project's lore and publishes it where your team already reads.
-Its first feature syncs every Markdown file in your workspace into a documentation
-platform — **Confluence** first (Cloud, Data Center, and the end-of-life Server) — as a
-clean page tree, and keeps it in sync on every run.
+**Your project already knows everything your team needs to read. LoreMaster publishes it.**
 
-It ships as an editor extension (**VS Code** today, Visual Studio next) around a single
-engine, so the same sync behaves identically in every editor. The project is deliberately
-not named after Confluence or Markdown: more platforms and more kinds of lore come later.
+Write Markdown in your repository. LoreMaster turns it into a clean page tree on **Confluence**
+(Cloud, Data Center, Server), a styled **GitHub Pages** site or your **GitHub wiki**, and keeps
+it in step on every run, from **VS Code** or unattended on **CI**. Add *generators* and the
+pages that nobody wants to write by hand write themselves: **test results, code coverage,
+API reference, Go, TypeScript, Python, C# and Dart documentation, and a Storybook with real
+screenshots**.
 
-> **Status: preview.** The engine and its libraries are built and tested; the VS Code
-> extension is published to the Marketplace as a preview (`LoreMaster.loremaster`) while the
-> end-to-end sync is hardened. See [`ROADMAP.md`](ROADMAP.md).
+[![Marketplace](https://img.shields.io/visual-studio-marketplace/v/LoreMaster.loremaster?label=Marketplace&color=5b4bd5)](https://marketplace.visualstudio.com/items?itemName=LoreMaster.loremaster)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/LoreMaster.loremaster?color=5b4bd5)](https://marketplace.visualstudio.com/items?itemName=LoreMaster.loremaster)
+[![Release](https://img.shields.io/github/v/release/LoreMaster-App/LoreMaster?filter=lore-master-vscode*&color=f5b942)](https://github.com/LoreMaster-App/LoreMaster/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+![From your repository to every storage](./assets/listing/how.png)
+
+> **Preview.** The engine and its libraries are built and tested; the extension is on the
+> Marketplace as a preview (`LoreMaster.loremaster`) while the end-to-end sync is hardened. See
+> [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
-## What it does
+## Why LoreMaster
 
-- **Discovers** the Markdown in your workspace and turns it into a page **tree** —
-  nesting, cross-links, images, and Mermaid diagrams included.
-- **Plans** before it writes: it shows you exactly what will be created, updated, moved,
-  renamed, adopted, left unchanged, or flagged as a conflict — and refuses to overwrite a
-  page someone edited on the platform since the last sync.
-- **Executes** parents-first, so links resolve on the first pass without a second write.
-- **Shows where everything stands** in a **Pages** view: your Markdown as the tree it is on the storage,
-  with an icon per page — new, synced, local changes, remote changes, conflict — and a title or file name label, as you prefer.
-- **Creates a documentation agent** for Claude Code, VS Code or `AGENTS.md`, taught the nesting rules and
-  your workspace's layout. See [`docs/agent.md`](docs/agent.md).
-- **Generates pages from your artifacts** — JUnit test reports, Go package docs and OpenAPI descriptions — as
-  plain Markdown that syncs like any other page, managed from a **Generators** view. See [`docs/generators.md`](docs/generators.md).
-- **Command line.** The engine also runs `generate`, `sync` and `tree` unattended for CI. See [`docs/cli.md`](docs/cli.md).
-- **Watch mode.** Edit a source comment and the page updates within seconds, without a full sync: `lore-master-engine watch` or the editor's *Toggle watch mode*. See [`docs/watch.md`](docs/watch.md).
-- **Teaches your AI agent the rules** through an [MCP server](docs/mcp-server.md): the agent
-  asks LoreMaster where a new page nests and how it is titled, and can preview and validate
-  against your actual workspace.
-- **Is idempotent**: run it again and nothing changes unless a file did. It tracks each
-  page with a small annotation written back into the file (page id, version, content and
-  attachment hashes), so it never creates duplicates and only writes what actually moved.
+| You have | You get |
+|---|---|
+| Docs in the repo, and a wiki nobody updates | **One source of truth.** The folder tree is the page tree; the first `# H1` is the title; links, images and diagrams come along. |
+| Fear of a tool that overwrites other people's work | **A plan before every write**, and a page edited on the platform since the last sync is a *conflict*, never overwritten. |
+| Reports that live and die in CI logs | **Pages written from them**: JUnit results, coverage by folder, OpenAPI operations, a component gallery. |
+| Docs that drift from the code | **Watch mode**: edit a doc comment and the page is updated seconds later, scoped to what changed. |
+| AI agents that put files anywhere | **An MCP server** that tells the agent where a page nests, plans reorganisations, and lists what is generated. |
+| A pipeline that must prove the docs are fresh | **`pages check --exit-code`** fails the build when the published site is out of date. |
+
+## Install and run it in a minute
+
+1. Install **LoreMaster** from the VS Code Marketplace (`LoreMaster.loremaster`). The engine is
+   bundled; there is nothing else to install.
+2. Open a folder with Markdown and run **LoreMaster: Sync**. It asks where to publish, shows the
+   plan, then writes.
+3. Add a generator from the **Generators** view when you want test results, coverage or API
+   pages. Then run it, or turn on `loreMaster.generateBeforeSync`.
+
+Step by step, with Confluence connection screens: [`docs/getting-started.md`](docs/getting-started.md).
+
+## In the editor
+
+![The VS Code sidebar and commands](./assets/listing/editor.png)
+
+- **Preview, then publish.** The plan lists every page as *create, update, move, rename, adopt,
+  unchanged or conflict* before anything is written.
+- **The Pages view** shows your Markdown as the tree it becomes, with an icon per page: new, synced,
+  local changes, remote changes, conflict. Name pages by title or file name.
+- **Many storages at once.** One Sync fans out across Confluence, GitHub Pages and the wiki. Send
+  some pages to one and some to another with exclude and include lists
+  ([`docs/choosing-what-goes-where.md`](docs/choosing-what-goes-where.md)).
+- **Two-way for Confluence.** Pull edits made on the platform back into Markdown; a page changed on
+  both sides is reported, never merged.
+- **A documentation agent in one command.** *Create documentation agent* writes a Claude Code
+  subagent, a VS Code custom agent or an `AGENTS.md` block that knows your nesting rules
+  ([`docs/agent.md`](docs/agent.md)).
+- **No YAML to hand-edit.** Storages and generators are added, edited and removed from their views;
+  your comments in the settings file survive.
+
+## Generators: pages from what you already produce
+
+![The generators](./assets/listing/generators.png)
+
+A generator reads something your project already makes and writes ordinary Markdown pages that sync
+like any other. **Leave `type` out and LoreMaster recognises the format** (XML, JSON, YAML, Markdown,
+LCOV, then the schema inside). If it cannot, it reports *could not identify the output, no parser
+available* rather than staying silent.
+
+```jsonc
+// .vscode/settings.json
+"loreMaster.generators": [
+  { "prepare": "npm run test:ci",       "input": ["reports/"],        "output": "docs/tests",      "title": "Test results" },
+  { "input": ["coverage/lcov.info"],    "output": "docs/coverage",    "title": "Code coverage" },
+  { "source": "storybook-static", "prepare": "npm run build-storybook",
+                                         "output": "docs/components", "title": "Component library" },
+  { "type": "go-docs", "output": "docs/api" }
+]
+```
+
+Everything that can be read, how it is recognised and what it writes: [`docs/generators.md`](docs/generators.md).
+
+## On CI: the same engine, no editor
+
+![The engine in CI](./assets/listing/ci.png)
+
+The engine is also a command line, shipped as a static binary for Linux, macOS and Windows
+(amd64 and arm64) on every [release](https://github.com/LoreMaster-App/LoreMaster/releases), with a
+checksum file.
+
+```bash
+lore-master-engine generate --prepare            # reports, coverage, API, code -> Markdown
+lore-master-engine sync --generate --yes         # ...and onto Confluence / the wiki
+lore-master-engine pages build --out dist/docs   # a Pages site, no git, no network
+lore-master-engine pages check --exit-code       # fail the build when the docs are stale
+lore-master-engine watch --yes                   # keep it fresh while you work
+```
+
+Or use the **GitHub Action** to publish a docs site beside your web app in one step
+([`docs/github-action.md`](docs/github-action.md)). Commands, flags and exit codes:
+[`docs/cli.md`](docs/cli.md); live updates: [`docs/watch.md`](docs/watch.md).
+
+## Diagrams that just work
+
+Fence a diagram as ` ```mermaid ` or ` ```d2 ` and it is drawn for the platform: **Mermaid** by the
+editor's webview, **D2** by the engine itself (so it also works on CI, with no browser, and always
+draws the same SVG). On Confluence the SVG is attached and the source kept in a code macro; on GitHub
+Pages it is shown inline.
+
+## A real site from your docs
+
+LoreMaster builds a Pages site from your Markdown with a sidebar that mirrors the page tree. This is
+this repository's own documentation, built by `lore-master-engine pages build`:
+
+![The documentation site LoreMaster builds](./assets/listing/docs-site.png)
+
+## Teach your AI agent the rules
+
+The engine is also an **MCP server** (registered for VS Code's agent automatically). Its tools let
+an agent behave like someone who has read your docs:
+
+| Tool | The agent can |
+|---|---|
+| `loremaster_nesting_rules` | learn how pages nest and are titled |
+| `preview_tree` | see the page tree that exists right now |
+| `place_document` | find the file path and parent for a new page |
+| `validate_document` | check a file: where it nests, title clashes, missing H1 |
+| `plan_moves` | reorganise: see what must move with a file and where each page will nest |
+| `list_generators` | know which folders are generated (and so must not be edited by hand) |
+| `site_publishing_plan`, `preview_site` | wire the Pages site beside an app deploy and check it builds |
+
+Setup and examples: [`docs/mcp-server.md`](docs/mcp-server.md).
+
+---
 
 ## How the sync works
 
@@ -167,7 +267,9 @@ LoreMaster/                         one root go.mod, module "lore-master"
 ├── libs/                           Go internal libraries
 │   ├── markdown-workspace/         understand a folder of .md files
 │   ├── confluence-client/          talk to any Confluence edition
-│   └── documentation-sync/         reconcile a workspace with a platform (owns the ports)
+│   ├── documentation-sync/         reconcile a workspace with a platform (owns the ports)
+│   ├── content-generation/         the generators: reports, coverage, API, Storybook, code docs
+│   └── github-pages/               build and publish the static site
 ├── tools/slicecheck/               Go test enforcing the file-role rules
 ├── docs/                           architecture and contributing docs
 ├── CLAUDE.md, ROADMAP.md
