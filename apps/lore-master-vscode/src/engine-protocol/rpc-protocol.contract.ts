@@ -177,6 +177,9 @@ export interface Generator {
   type:     string
   /** Gitignore-style patterns selecting what to read; absent means the type's default. */
   input?:   string[]
+  /** Where a generator reads from when that is not a set of files: a URL, or a workspace-relative
+   *  folder (storybook-docs: a Storybook's build). */
+  source?:  string
   /** Workspace-relative folder the pages are written to. */
   output:   string
   title?:   string

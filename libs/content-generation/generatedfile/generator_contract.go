@@ -13,6 +13,10 @@ type Spec struct {
 	Output string
 	// Title heads the generated index page; empty means the generator's own default.
 	Title string
+	// Source says where the generator reads from when that is not a set of files in the
+	// workspace: a base URL, or a workspace-relative folder (storybook-docs reads a Storybook's
+	// build that way). Empty for generators that read Input.
+	Source string
 }
 
 // File is one generated page.

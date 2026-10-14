@@ -67,7 +67,7 @@ export class GeneratorsViewProvider implements vscode.TreeDataProvider<Generator
     item.tooltip = [
       type.description,
       `Writes to: ${node.generator.output}`,
-      `Reads: ${node.generator.input && node.generator.input.length > 0 ? node.generator.input.join(', ') : 'the default'}`,
+      `Reads: ${node.generator.source ?? (node.generator.input && node.generator.input.length > 0 ? node.generator.input.join(', ') : 'the default')}`,
       ...(node.generator.title ? [`Index page title: ${node.generator.title}`] : []),
       ...(ran === undefined ? [] : [`Last run: ${ran}`]),
     ].join('\n')

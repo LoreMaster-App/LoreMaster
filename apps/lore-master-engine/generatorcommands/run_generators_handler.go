@@ -8,6 +8,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/content-generation/generatedfile"
+	"lore-master/libs/content-generation/formatdetection"
 	"lore-master/libs/content-generation/generatorpreparing"
 	"lore-master/libs/content-generation/generatorregistry"
 	"lore-master/libs/content-generation/generatorrunning"
@@ -73,11 +74,6 @@ func selected(requested []int, count int) ([]int, error) {
 
 func run(ctx context.Context, workspaceRoot string, index int, generator workspacesettings.Generator, prepare bool) rpcprotocol.GeneratorRun {
 	entry := rpcprotocol.GeneratorRun{Index: index, Type: generator.Type, Output: generator.Output}
-	generate, found := generatorregistry.For(generator.Type)
-	if !found {
-		entry.Error = "there is no generator for type " + generator.Type
-		return entry
-	}
 	if prepare && generator.Prepare != "" {
 		if err := generatorpreparing.Run(ctx, workspaceRoot, generator.Prepare, 0); err != nil {
 			entry.Error = "prepare failed: " + err.Error()
@@ -86,7 +82,23 @@ func run(ctx context.Context, workspaceRoot string, index int, generator workspa
 		}
 		entry.Prepared = true
 	}
-	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Output: generator.Output, Title: generator.Title}
+	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title}
+	// No type: recognise the format from what the input selects, after the command wrote it.
+	if spec.Type == "" {
+		detected, err := formatdetection.Detect(ctx, workspaceRoot, spec)
+		if err != nil {
+			entry.Error = err.Error()
+
+			return entry
+		}
+		spec.Type, spec.Source = detected.Type, detected.Source
+		entry.Type = detected.Type
+	}
+	generate, found := generatorregistry.For(spec.Type)
+	if !found {
+		entry.Error = "there is no generator for type " + spec.Type
+		return entry
+	}
 	outcome, err := generatorrunning.Run(ctx, workspaceRoot, spec, generate)
 	if err != nil {
 		entry.Error = err.Error()

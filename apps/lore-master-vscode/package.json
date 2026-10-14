@@ -645,7 +645,6 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "type",
               "output"
             ],
             "properties": {
@@ -660,9 +659,10 @@
                   "ts-docs",
                   "python-docs",
                   "csharp-docs",
-                  "dart-docs"
+                  "dart-docs",
+                  "storybook-docs"
                 ],
-                "markdownDescription": "What is turned into Markdown."
+                "markdownDescription": "What is turned into Markdown. Leave it out and the format is recognised from the files `input` selects (test reports, coverage, OpenAPI, Markdown, a Storybook); an output no parser reads is reported as a problem."
               },
               "input": {
                 "type": "array",
@@ -670,6 +670,10 @@
                   "type": "string"
                 },
                 "markdownDescription": "Gitignore-style patterns selecting what to read. Empty means the type's own default."
+              },
+              "source": {
+                "type": "string",
+                "markdownDescription": "Where a generator reads from when that is not a set of files: for `storybook-docs`, the URL of a Storybook or the workspace-relative folder of its build (e.g. `storybook-static`). `input` then filters the stories by title (`Components/`, `!Internal/`)."
               },
               "output": {
                 "type": "string",

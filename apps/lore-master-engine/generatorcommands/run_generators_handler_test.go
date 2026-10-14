@@ -308,3 +308,34 @@ func TestAFailingPrepareCommandStopsOnlyItsGenerator(t *testing.T) {
 		t.Fatal("a generator whose prepare command failed still wrote pages")
 	}
 }
+
+const untypedSettingsYAML = `version: 1
+generators:
+  - input: [reports/]
+    output: docs/tests
+  - input: [unknown/]
+    output: docs/unknown
+outputs:
+  - platform: github-pages
+    content:
+      - type: markdown
+        roots: ["docs"]
+`
+
+func TestRunRecognisesTheFormatOfAGeneratorWithoutAType(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{workspacesettings.FileName: untypedSettingsYAML, "reports/junit.xml": junit, "unknown/pom.xml": "<project/>"})
+
+	result, err := call(t, connect(t), root)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	known, unknown := result.Runs[0], result.Runs[1]
+	if known.Type != "test-results" || known.Error != "" || len(known.Written) != 3 {
+		t.Fatalf("the report was not recognised: %+v", known)
+	}
+	if unknown.Written != nil || !strings.Contains(unknown.Error, "could not identify the output") || !strings.Contains(unknown.Error, "unknown/pom.xml") {
+		t.Fatalf("an unrecognised output is not reported as a problem: %+v", unknown)
+	}
+}

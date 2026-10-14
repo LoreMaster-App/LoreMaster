@@ -29,6 +29,7 @@ export async function readGeneratorSettings (engine: GeneratorsViewEngine, works
 export interface GeneratorPatch {
   output?: string
   input?:  string[]
+  source?: string
   title?:  string
 }
 
@@ -63,10 +64,12 @@ export async function updateGenerator (engine: GeneratorsViewEngine, workspaceRo
       throw new Error('That generator is no longer in your LoreMaster settings.')
     }
     const current = generators[index]
+    // Spread first: whatever the patch does not name (prepare, source) must survive the save.
     generators[index] = {
-      type:   current.type,
+      ...current,
       output: patch.output ?? current.output,
       input:  patch.input === undefined ? current.input : (patch.input.length > 0 ? patch.input : undefined),
+      source: patch.source === undefined ? current.source : (patch.source === '' ? undefined : patch.source),
       title:  patch.title === undefined ? current.title : (patch.title === '' ? undefined : patch.title),
     }
 

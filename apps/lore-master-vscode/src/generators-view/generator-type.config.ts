@@ -10,6 +10,8 @@ export interface GeneratorType {
   defaultOutput: string
   /** What to tell the user when asking which files or folders to read. */
   inputHint:     string
+  /** The generator reads one `source` (a URL or a build folder), not a set of input patterns. */
+  usesSource?:   boolean
 }
 
 export const GENERATOR_TYPES: readonly GeneratorType[] = [
@@ -36,6 +38,15 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     icon:          'markdown',
     defaultOutput: 'docs/imported',
     inputHint:     'The folder or files of Markdown to import, separated by commas, e.g. build/docs/. Required.',
+  },
+  {
+    type:          'storybook-docs',
+    label:         'Storybook components',
+    description:   'Every story of a Storybook rendered in a real browser: screenshots, props and source, one page per component',
+    icon:          'symbol-color',
+    defaultOutput: 'docs/storybook',
+    inputHint:     'The Storybook to read: its URL, or the folder of its build relative to the workspace, e.g. storybook-static. Set a prepare command in settings to build it first. Needs Chrome, Chromium or Edge installed.',
+    usesSource:    true,
   },
   {
     type:          'go-docs',
@@ -87,8 +98,22 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
   },
 ]
 
+/** A generator with no type: the format is recognised from what the command wrote. */
+export const RECOGNISED_FROM_OUTPUT: GeneratorType = {
+  type:          '',
+  label:         'Recognise it from the output',
+  description:   'Run a command (a prepare step) and the format is identified from what it wrote: test reports, coverage, OpenAPI, Markdown or a Storybook',
+  icon:          'search',
+  defaultOutput: 'docs/generated',
+  inputHint:     'The files or folder the command writes, separated by commas, e.g. build/reports/. Required: the format is identified from them.',
+}
+
 /** The presentation of a configured type; a type this version does not know keeps its own name. */
 export function generatorTypeOf (type: string): GeneratorType {
+  if (type === '') {
+    return RECOGNISED_FROM_OUTPUT
+  }
+
   return GENERATOR_TYPES.find(known => known.type === type) ?? {
     type,
     label:         type,
