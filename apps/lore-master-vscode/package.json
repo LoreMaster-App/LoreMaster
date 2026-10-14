@@ -845,6 +845,9 @@
       }
     },
     "name": "lore-master-vscode",
+    "implicitDependencies": [
+      "lore-master-engine"
+    ],
     "tags": [
       "type:vscode-extension"
     ]
