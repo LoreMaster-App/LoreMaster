@@ -211,7 +211,12 @@ func validateGenerators(add func(string, ...any), generators []Generator) {
 	outputs := make([]string, len(generators))
 	for i, generator := range generators {
 		at := fmt.Sprintf("generators[%d]", i)
-		choose(add, at+".type", generator.Type, BuiltGeneratorTypes, reservedGenerators)
+		switch {
+		case generator.Type == "" && len(generator.Input) == 0 && strings.TrimSpace(generator.Source) == "":
+			add("%s has no type and nothing to recognise it from; set type, or give input (the files the command writes) or source", at)
+		case generator.Type != "":
+			choose(add, at+".type", generator.Type, BuiltGeneratorTypes, reservedGenerators)
+		}
 
 		output := path.Clean(generator.Output)
 		switch {

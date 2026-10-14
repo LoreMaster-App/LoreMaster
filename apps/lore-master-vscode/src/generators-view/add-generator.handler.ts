@@ -5,7 +5,7 @@ import { runAndReport } from '../generators-command'
 import { parseList } from '../storage-editing'
 import { pickWorkspaceFolder } from '../workspace-files'
 import { freeOutputFolder, isFolderSynced, outputProblem, syncedRoots } from './generator-placement.algorithm'
-import { GENERATOR_TYPES, type GeneratorType } from './generator-type.config'
+import { GENERATOR_TYPES, type GeneratorType, RECOGNISED_FROM_OUTPUT } from './generator-type.config'
 import type { GeneratorsViewProvider } from './generators-view.client'
 import { addGenerator, readGeneratorSettings } from './generators.use-case'
 
@@ -54,7 +54,9 @@ export async function addGeneratorCommand (deps: GeneratorsViewDeps): Promise<vo
       title:         `LoreMaster: what should ${type.label} read?`,
       prompt:        type.inputHint,
       value:         type.usesSource === true ? 'storybook-static' : '',
-      validateInput: value => type.usesSource === true && value.trim() === '' ? 'Name the Storybook: a URL or a build folder.' : undefined,
+      validateInput: value => value.trim() === '' && (type.usesSource === true || type.type === '')
+        ? 'This one needs something to read: a Storybook URL or build folder, or the files the command writes.'
+        : undefined,
     })
     if (input === undefined) {
       return
@@ -80,7 +82,7 @@ export async function addGeneratorCommand (deps: GeneratorsViewDeps): Promise<vo
 
 async function pickType (): Promise<GeneratorType | undefined> {
   const picked = await vscode.window.showQuickPick(
-    GENERATOR_TYPES.map(type => ({ label: type.label, description: type.defaultOutput, detail: type.description, type })),
+    [RECOGNISED_FROM_OUTPUT, ...GENERATOR_TYPES].map(type => ({ label: type.label, description: type.defaultOutput, detail: type.description, type })),
     { title: 'LoreMaster: add a generator', placeHolder: 'What should be written as pages?' },
   ) as { type: GeneratorType } | undefined
 

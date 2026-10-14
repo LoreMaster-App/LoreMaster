@@ -98,8 +98,22 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
   },
 ]
 
+/** A generator with no type: the format is recognised from what the command wrote. */
+export const RECOGNISED_FROM_OUTPUT: GeneratorType = {
+  type:          '',
+  label:         'Recognise it from the output',
+  description:   'Run a command (a prepare step) and the format is identified from what it wrote: test reports, coverage, OpenAPI, Markdown or a Storybook',
+  icon:          'search',
+  defaultOutput: 'docs/generated',
+  inputHint:     'The files or folder the command writes, separated by commas, e.g. build/reports/. Required: the format is identified from them.',
+}
+
 /** The presentation of a configured type; a type this version does not know keeps its own name. */
 export function generatorTypeOf (type: string): GeneratorType {
+  if (type === '') {
+    return RECOGNISED_FROM_OUTPUT
+  }
+
   return GENERATOR_TYPES.find(known => known.type === type) ?? {
     type,
     label:         type,

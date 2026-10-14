@@ -1,10 +1,42 @@
 # Generators: pages written from your project's artifacts
 
-A **generator** reads something your project already produces — today, **JUnit test
-reports** — and writes it as ordinary Markdown files into your workspace. Those files then
-sync like any page you wrote: they join the page tree, keep their annotation, and go to every
-storage. Because they are plain files you can review them in git, edit them, or leave them
-out.
+A **generator** reads something your project already produces (test reports, coverage,
+API descriptions, Markdown another tool wrote, a Storybook) and writes it as ordinary Markdown
+files into your workspace. Those files then sync like any page you wrote: they join the page
+tree, keep their annotation, and go to every storage. Because they are plain files you can
+review them in git, edit them, or leave them out.
+
+## Three parts: command, output, reader
+
+1. **The command** (`prepare`, optional) produces the files: a test run, a build, TypeDoc,
+   `build-storybook`. LoreMaster does not care what it is. It runs only when you ask for it.
+2. **The output** (`output`, with an optional `title` for the index page that heads it) is the
+   folder the pages are written to.
+3. **The reader** is chosen by LoreMaster, not by you. It opens what `input` selects, works out
+   what kind of file each is (XML, JSON, YAML, Markdown, LCOV) and then which schema is inside,
+   and uses the parser for it. Leave `type` out and that is all there is to configure.
+
+If nothing selected can be identified the run reports a **problem**, not silence: *could not
+identify the output, no parser available*, naming how many files it looked at and what kind of
+file each is, so you can fix the input or the command. If it finds several formats it names them
+and asks for one generator each, since one generator writes one kind of page.
+
+### What we can read
+
+| Format | How it is recognised | Gives |
+|---|---|---|
+| JUnit XML (`test-results`) | XML whose root is `testsuite` or `testsuites` | A page per suite with its cases, failures and a summary |
+| Cobertura XML, LCOV (`coverage`) | XML whose root is `coverage`; a tracefile with `SF:` records | Per-file results in the folder layout of the code |
+| OpenAPI 2 and 3 (`openapi-docs`) | YAML or JSON with a top-level `openapi` or `swagger` | Operations, parameters, schemas |
+| Markdown (`markdown-docs`) | `.md` or `.markdown` files | The pages, with the images they show |
+| Storybook (`storybook-docs`) | An `index.json` or `stories.json` of stories, or a `source` URL | A page per component with rendered screenshots |
+
+Code documentation (`go-docs`, `ts-docs`, `python-docs`, `csharp-docs`, `dart-docs`) reads source
+code, which no file can be recognised from, so those keep an explicit `type`. They are shortcuts:
+a command that writes Markdown plus `markdown-docs` does the same for any other tool.
+
+Recognition is not re-run by watch mode: a generator with no `type` runs when you ask, after its
+command.
 
 ## Configure one
 
@@ -33,7 +65,7 @@ In the `loreMaster.generators` setting (and `loreMaster.outputs` for where the p
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `coverage`, `markdown-docs`, `storybook-docs`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs`, `csharp-docs` or `dart-docs`. |
+| `type` | Optional for the formats in the table above: left out, the format is recognised from what `input` selects. Required for `go-docs`, `ts-docs`, `python-docs`, `csharp-docs` and `dart-docs`. Names: `test-results`, `coverage`, `markdown-docs`, `storybook-docs`, `openapi-docs`, or those five. |
 | `source` | Where a generator reads from when that is not a set of files: for `storybook-docs`, the URL of a Storybook or the folder of its build. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |

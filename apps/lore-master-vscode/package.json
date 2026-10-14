@@ -645,7 +645,6 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "type",
               "output"
             ],
             "properties": {
@@ -663,7 +662,7 @@
                   "dart-docs",
                   "storybook-docs"
                 ],
-                "markdownDescription": "What is turned into Markdown."
+                "markdownDescription": "What is turned into Markdown. Leave it out and the format is recognised from the files `input` selects (test reports, coverage, OpenAPI, Markdown, a Storybook); an output no parser reads is reported as a problem."
               },
               "input": {
                 "type": "array",
