@@ -27,6 +27,7 @@ import (
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
 	"lore-master/apps/lore-master-engine/settingscommands"
 	"lore-master/apps/lore-master-engine/synccommands"
+	"lore-master/apps/lore-master-engine/movecommands"
 	"lore-master/apps/lore-master-engine/treecommands"
 	"lore-master/apps/lore-master-engine/watchcommands"
 )
@@ -111,6 +112,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodGeneratorsRun:     generatorcommands.RunGenerators(),
 		rpcprotocol.MethodAgentInstructions: agentcommands.AgentInstructions(),
 		rpcprotocol.MethodWatchRoute:        watchcommands.RouteChanges(),
+		rpcprotocol.MethodFilesPlanMove:     movecommands.PlanMove(),
 	}
 }
 

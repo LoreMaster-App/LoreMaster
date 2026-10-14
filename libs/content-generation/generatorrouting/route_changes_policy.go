@@ -31,13 +31,15 @@ var reads = map[string]struct {
 	names      []string
 	defaults   []string
 }{
-	"test-results": {extensions: []string{".xml"}, defaults: []string{"**/junit*.xml", "**/TEST-*.xml", "**/*junit.xml"}},
-	"openapi-docs": {extensions: []string{".yaml", ".yml", ".json"}, defaults: []string{"**/openapi.*", "**/swagger.*", "**/*.openapi.*"}},
-	"go-docs":      {extensions: []string{".go"}, names: []string{"go.mod"}},
-	"ts-docs":      {extensions: []string{".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"}, names: []string{"tsconfig.json", "jsconfig.json", "typedoc.json", "package.json"}},
-	"python-docs":  {extensions: []string{".py"}, names: []string{"pyproject.toml", "setup.cfg"}},
-	"csharp-docs":  {extensions: []string{".cs"}, names: []string{"directory.build.props"}},
-	"dart-docs":    {extensions: []string{".dart"}, names: []string{"pubspec.yaml"}},
+	"test-results":  {extensions: []string{".xml"}, defaults: []string{"**/junit*.xml", "**/TEST-*.xml", "**/*junit.xml"}},
+	"coverage":      {extensions: []string{".xml", ".info", ".lcov"}, defaults: []string{"**/*cobertura*.xml", "**/coverage.xml", "**/lcov.info", "**/*.lcov"}},
+	"markdown-docs": {extensions: []string{".md", ".markdown", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".bmp"}},
+	"openapi-docs":  {extensions: []string{".yaml", ".yml", ".json"}, defaults: []string{"**/openapi.*", "**/swagger.*", "**/*.openapi.*"}},
+	"go-docs":       {extensions: []string{".go"}, names: []string{"go.mod"}},
+	"ts-docs":       {extensions: []string{".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"}, names: []string{"tsconfig.json", "jsconfig.json", "typedoc.json", "package.json"}},
+	"python-docs":   {extensions: []string{".py"}, names: []string{"pyproject.toml", "setup.cfg"}},
+	"csharp-docs":   {extensions: []string{".cs"}, names: []string{"directory.build.props"}},
+	"dart-docs":     {extensions: []string{".dart"}, names: []string{"pubspec.yaml"}},
 }
 
 // Route decides what a batch of changed files (workspace-relative, '/'-separated) calls for. A

@@ -225,3 +225,61 @@ func TestRunStopsWhenCancelled(t *testing.T) {
 		t.Fatal("expected the cancellation")
 	}
 }
+
+func assetGenerator(files []generatedfile.File) generatedfile.GenerateFunc {
+	return func(context.Context, string, generatedfile.Spec) (generatedfile.Output, error) {
+		return generatedfile.Output{Files: files}, nil
+	}
+}
+
+func TestRunCopiesAssetsVerbatimAndTracksThemInAManifest(t *testing.T) {
+	root := t.TempDir()
+	spec := generatedfile.Spec{Type: "markdown-docs", Output: "docs/api"}
+	files := []generatedfile.File{
+		{Path: "README.md", Body: []byte("# Docs\n\n![x](img/a.png)\n")},
+		{Path: "img/a.png", Body: []byte{0x89, 'P', 'N', 'G'}, Asset: true},
+	}
+
+	result, err := Run(context.Background(), root, spec, assetGenerator(files))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := read(t, root, "docs/api/img/a.png"); got != "\x89PNG" {
+		t.Fatalf("asset bytes = %q, want them untouched", got)
+	}
+	if !strings.Contains(read(t, root, "docs/api/.lore-master-assets.json"), `"img/a.png"`) {
+		t.Fatal("the manifest does not list the asset")
+	}
+	if !slices.Contains(result.Written, "docs/api/img/a.png") {
+		t.Fatalf("written = %v", result.Written)
+	}
+
+	again, err := Run(context.Background(), root, spec, assetGenerator(files))
+	if err != nil || !slices.Contains(again.Unchanged, "docs/api/img/a.png") || len(again.Written) != 0 {
+		t.Fatalf("second run = %+v, err %v, want the asset unchanged", again, err)
+	}
+}
+
+func TestRunRemovesAssetsItCopiedEarlierButLeavesStrangersAlone(t *testing.T) {
+	root := t.TempDir()
+	spec := generatedfile.Spec{Type: "markdown-docs", Output: "docs/api"}
+	index := generatedfile.File{Path: "README.md", Body: []byte("# Docs\n")}
+	if _, err := Run(context.Background(), root, spec, assetGenerator([]generatedfile.File{index, {Path: "a.png", Body: []byte("1"), Asset: true}})); err != nil {
+		t.Fatal(err)
+	}
+	put(t, root, "docs/api/mine.png", "someone else's")
+
+	result, err := Run(context.Background(), root, spec, assetGenerator([]generatedfile.File{index, {Path: "mine.png", Body: []byte("2"), Asset: true}}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, statErr := os.Stat(filepath.Join(root, "docs", "api", "a.png")); !os.IsNotExist(statErr) {
+		t.Error("the asset it copied earlier and no longer produces was not removed")
+	}
+	if got := read(t, root, "docs/api/mine.png"); got != "someone else's" {
+		t.Errorf("a file it did not copy was overwritten: %q", got)
+	}
+	if !slices.ContainsFunc(result.Warnings, func(w string) bool { return strings.Contains(w, "mine.png") }) {
+		t.Errorf("warnings = %v, want one naming mine.png", result.Warnings)
+	}
+}

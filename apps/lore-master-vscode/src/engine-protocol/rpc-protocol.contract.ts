@@ -24,6 +24,7 @@ export const WORKSPACE_TREE_METHOD = 'workspace/tree'
 export const GENERATORS_RUN_METHOD = 'generators/run'
 export const AGENT_INSTRUCTIONS_METHOD = 'agent/instructions'
 export const WATCH_ROUTE_METHOD = 'watch/route'
+export const FILES_PLAN_MOVE_METHOD = 'files/planMove'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -173,12 +174,18 @@ export interface Output {
 /** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */
 export interface Generator {
   /** test-results (JUnit XML); other types are reserved. */
-  type:   string
+  type:     string
   /** Gitignore-style patterns selecting what to read; absent means the type's default. */
-  input?: string[]
+  input?:   string[]
+  /** Where a generator reads from when that is not a set of files: a URL, or a workspace-relative
+   *  folder (storybook-docs: a Storybook's build). */
+  source?:  string
   /** Workspace-relative folder the pages are written to. */
-  output: string
-  title?: string
+  output:   string
+  title?:   string
+  /** A shell command that produces what the generator reads (a build, a test run); it runs only
+   *  when a run asks for it. */
+  prepare?: string
 }
 
 export interface Settings {
@@ -267,12 +274,16 @@ export interface GeneratorsRunParams {
   workspaceRoot: string
   /** Indexes into the settings' generators list; absent runs them all. */
   generators?:   number[]
+  /** Run each selected generator's prepare command first; without it no command is executed. */
+  prepare?:      boolean
 }
 
 export interface GeneratorRun {
   index:      number
   type:       string
   output:     string
+  /** True when the generator's prepare command ran before it. */
+  prepared?:  boolean
   written?:   string[]
   unchanged?: string[]
   removed?:   string[]
@@ -428,6 +439,36 @@ export interface RenderDiagramResult {
 
 export interface CancelParams {
   id: number | string
+}
+
+// ---- files/planMove ------------------------------------------------------------------
+
+export interface FileMove {
+  from: string
+  to:   string
+}
+
+export interface FilesPlanMoveParams {
+  workspaceRoot: string
+  /** Workspace-relative, '/'-separated; a file or a folder. */
+  moves:         FileMove[]
+}
+
+export interface FileLineEdit {
+  /** Where the file is before any move. */
+  path: string
+  /** Zero-based. */
+  line: number
+  /** The new line, without its line ending. */
+  text: string
+}
+
+export interface FilesPlanMoveResult {
+  /** Files to move along with the user's own moves; each from is where the file is now. */
+  renames:  FileMove[]
+  edits:    FileLineEdit[]
+  /** Renames that were skipped, and why. */
+  warnings: string[]
 }
 
 // ---- watch/route ---------------------------------------------------------------------

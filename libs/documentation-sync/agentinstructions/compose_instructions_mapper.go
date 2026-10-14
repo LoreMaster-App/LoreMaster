@@ -185,7 +185,11 @@ func writeWorkflow(out *strings.Builder) {
 		"Keep one topic per page and nest by meaning, not by habit.\n")
 	out.WriteString("4. **Check it.** Call `validate_document` on every file you wrote or moved and fix what it reports: a title that clashes " +
 		"with another page, a missing heading, a parent that does not exist, a file the sync would not include.\n")
-	out.WriteString("5. **Leave the sync alone.** In a file's `<!-- lore-master ... -->` block you may write only `parent:` and `title:`; the other " +
+	out.WriteString("5. **Reorganise with a plan.** To move or rename existing pages, call `plan_moves` with the moves first: it returns the files " +
+		"that must move with them (a page's dotted children), the `parent:` lines to rewrite and, for each page, where it nests now and where it " +
+		"will nest afterwards. Move the files, apply those edits, then check each moved page. Folders listed by `list_generators` hold pages a " +
+		"generator writes, so change their source instead and never move or edit them by hand.\n")
+	out.WriteString("6. **Leave the sync alone.** In a file's `<!-- lore-master ... -->` block you may write only `parent:` and `title:`; the other " +
 		"keys (page id, version, hashes, `generated`) belong to the sync, so never write or change them. YAML front matter does not " +
 		"set a parent or a title. Do not run the sync yourself unless you are asked to; tell the user to run **LoreMaster: Sync** " +
 		"when the pages are ready.\n\n")

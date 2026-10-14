@@ -27,7 +27,10 @@
         "args": [
           "run"
         ]
-      }
+      },
+      "dependsOn": [
+        "slice-check"
+      ]
     },
     "package": {
       "executor": "nx:run-commands",
@@ -77,6 +80,35 @@
       ],
       "options": {
         "command": "node -e \"const fs=require('node:fs');const A=require('adm-zip');fs.mkdirSync('dist/drop',{recursive:true});for(const d of fs.readdirSync('dist/platforms/lore-master-engine')){const z=new A();z.addLocalFolder('dist/platforms/lore-master-engine/'+d);z.writeZip('dist/drop/go-app-lore-master-engine-'+d+'.zip')}\""
+      }
+    },
+    "build-dev": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/dev/apps/lore-master-engine"
+      ],
+      "options": {
+        "command": "go build \"-gcflags=all=-N -l\" -o ../../dist/dev/apps/lore-master-engine/lore-master-engine .",
+        "cwd": "apps/lore-master-engine"
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "go run github.com/air-verse/air@v1.61.7 --build.cmd \"go build ./...\" --build.bin \"go run .\" --build.exclude_dir tmp",
+        "cwd": "apps/lore-master-engine"
+      }
+    },
+    "slice-check": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.go",
+        "{workspaceRoot}/tools/go-slice-check.cjs"
+      ],
+      "options": {
+        "command": "node tools/go-slice-check.cjs apps/lore-master-engine"
       }
     }
   }

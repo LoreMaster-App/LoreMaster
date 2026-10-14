@@ -14,7 +14,9 @@
     "vscode": "^1.101.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Testing",
+    "Visualization"
   ],
   "main": "./dist/main.js",
   "activationEvents": [],
@@ -419,10 +421,35 @@
           ],
           "markdownDescription": "What the **Pages** view does with the files a storage leaves out. Switch with the eye button in the view title."
         },
+        "loreMaster.pages.updateOnMove": {
+          "type": "string",
+          "enum": [
+            "prompt",
+            "always",
+            "never"
+          ],
+          "default": "prompt",
+          "enumDescriptions": [
+            "Ask each time.",
+            "Update without asking.",
+            "Never update."
+          ],
+          "markdownDescription": "When you move or rename a Markdown file, keep the nesting intact: rename the dotted files that nest under it (`readme.api.md` and `readme.api.config.md`) and rewrite the `parent:` lines that name it. Links are updated by VS Code's own `markdown.updateLinksOnFileMove.enabled`."
+        },
         "loreMaster.generateBeforeSync": {
           "type": "boolean",
           "default": false,
           "markdownDescription": "Run the generators (test results, API documentation) before every **Sync**, so the pages they write are as fresh as the code. **Generate and sync documentation** always does."
+        },
+        "loreMaster.runPrepareSteps": {
+          "type": "string",
+          "enum": [
+            "ask",
+            "always",
+            "never"
+          ],
+          "default": "ask",
+          "markdownDescription": "Whether a generator's `prepare` command (the build or test run that produces what it reads) runs when you generate. `ask` shows the exact commands first; nothing runs in an untrusted workspace. CI uses `lore-master-engine generate --prepare` instead."
         },
         "loreMaster.watchDebounceSeconds": {
           "type": "number",
@@ -620,7 +647,6 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "type",
               "output"
             ],
             "properties": {
@@ -628,14 +654,17 @@
                 "type": "string",
                 "enum": [
                   "test-results",
+                  "coverage",
+                  "markdown-docs",
                   "go-docs",
                   "openapi-docs",
                   "ts-docs",
                   "python-docs",
                   "csharp-docs",
-                  "dart-docs"
+                  "dart-docs",
+                  "storybook-docs"
                 ],
-                "markdownDescription": "What is turned into Markdown."
+                "markdownDescription": "What is turned into Markdown. Leave it out and the format is recognised from the files `input` selects (test reports, coverage, OpenAPI, Markdown, a Storybook); an output no parser reads is reported as a problem."
               },
               "input": {
                 "type": "array",
@@ -644,6 +673,10 @@
                 },
                 "markdownDescription": "Gitignore-style patterns selecting what to read. Empty means the type's own default."
               },
+              "source": {
+                "type": "string",
+                "markdownDescription": "Where a generator reads from when that is not a set of files: for `storybook-docs`, the URL of a Storybook or the workspace-relative folder of its build (e.g. `storybook-static`). `input` then filters the stories by title (`Components/`, `!Internal/`)."
+              },
               "output": {
                 "type": "string",
                 "markdownDescription": "The workspace-relative folder the pages are written to. Include it in an output's content roots for them to sync."
@@ -651,6 +684,10 @@
               "title": {
                 "type": "string",
                 "markdownDescription": "Heads the generated index page. Empty means the type's own default."
+              },
+              "prepare": {
+                "type": "string",
+                "markdownDescription": "A shell command that produces what this generator reads (a build, a test run), run in the workspace folder. It runs only when you ask: the **Run generators** command (see `loreMaster.runPrepareSteps`), or `lore-master-engine generate --prepare` on CI. Leave empty when the files already exist."
               }
             }
           },
@@ -810,11 +847,51 @@
       }
     },
     "name": "lore-master-vscode",
+    "implicitDependencies": [
+      "lore-master-engine"
+    ],
     "tags": [
       "type:vscode-extension"
     ]
   },
-  "description": "Gathers a project's lore: syncs your workspace's Markdown to Confluence, and publishes it as a static site on GitHub Pages.",
+  "description": "Docs as code: sync Markdown to Confluence, GitHub Pages or the wiki, and generate pages from test results, coverage, OpenAPI, Storybook and your source. In VS Code and on CI.",
+  "keywords": [
+    "documentation",
+    "docs as code",
+    "markdown",
+    "confluence",
+    "atlassian",
+    "github pages",
+    "github wiki",
+    "mermaid",
+    "d2",
+    "diagrams",
+    "junit",
+    "test report",
+    "code coverage",
+    "lcov",
+    "cobertura",
+    "openapi",
+    "swagger",
+    "storybook",
+    "godoc",
+    "typedoc",
+    "api documentation",
+    "mcp",
+    "ai agent",
+    "sync",
+    "publish",
+    "ci"
+  ],
+  "galleryBanner": {
+    "color": "#1c1740",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/LoreMaster-App/LoreMaster#readme",
+  "bugs": {
+    "url": "https://github.com/LoreMaster-App/LoreMaster/issues"
+  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/LoreMaster-App/LoreMaster.git"

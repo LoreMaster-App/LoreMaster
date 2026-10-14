@@ -1,10 +1,42 @@
 # Generators: pages written from your project's artifacts
 
-A **generator** reads something your project already produces — today, **JUnit test
-reports** — and writes it as ordinary Markdown files into your workspace. Those files then
-sync like any page you wrote: they join the page tree, keep their annotation, and go to every
-storage. Because they are plain files you can review them in git, edit them, or leave them
-out.
+A **generator** reads something your project already produces (test reports, coverage,
+API descriptions, Markdown another tool wrote, a Storybook) and writes it as ordinary Markdown
+files into your workspace. Those files then sync like any page you wrote: they join the page
+tree, keep their annotation, and go to every storage. Because they are plain files you can
+review them in git, edit them, or leave them out.
+
+## Three parts: command, output, reader
+
+1. **The command** (`prepare`, optional) produces the files: a test run, a build, TypeDoc,
+   `build-storybook`. LoreMaster does not care what it is. It runs only when you ask for it.
+2. **The output** (`output`, with an optional `title` for the index page that heads it) is the
+   folder the pages are written to.
+3. **The reader** is chosen by LoreMaster, not by you. It opens what `input` selects, works out
+   what kind of file each is (XML, JSON, YAML, Markdown, LCOV) and then which schema is inside,
+   and uses the parser for it. Leave `type` out and that is all there is to configure.
+
+If nothing selected can be identified the run reports a **problem**, not silence: *could not
+identify the output, no parser available*, naming how many files it looked at and what kind of
+file each is, so you can fix the input or the command. If it finds several formats it names them
+and asks for one generator each, since one generator writes one kind of page.
+
+### What we can read
+
+| Format | How it is recognised | Gives |
+|---|---|---|
+| JUnit XML (`test-results`) | XML whose root is `testsuite` or `testsuites` | A page per suite with its cases, failures and a summary |
+| Cobertura XML, LCOV (`coverage`) | XML whose root is `coverage`; a tracefile with `SF:` records | Per-file results in the folder layout of the code |
+| OpenAPI 2 and 3 (`openapi-docs`) | YAML or JSON with a top-level `openapi` or `swagger` | Operations, parameters, schemas |
+| Markdown (`markdown-docs`) | `.md` or `.markdown` files | The pages, with the images they show |
+| Storybook (`storybook-docs`) | An `index.json` or `stories.json` of stories, or a `source` URL | A page per component with rendered screenshots |
+
+Code documentation (`go-docs`, `ts-docs`, `python-docs`, `csharp-docs`, `dart-docs`) reads source
+code, which no file can be recognised from, so those keep an explicit `type`. They are shortcuts:
+a command that writes Markdown plus `markdown-docs` does the same for any other tool.
+
+Recognition is not re-run by watch mode: a generator with no `type` runs when you ask, after its
+command.
 
 ## Configure one
 
@@ -33,7 +65,8 @@ In the `loreMaster.generators` setting (and `loreMaster.outputs` for where the p
 
 | Key | Meaning |
 |---|---|
-| `type` | `test-results`, `go-docs`, `openapi-docs`, `ts-docs`, `python-docs`, `csharp-docs` or `dart-docs`. |
+| `type` | Optional for the formats in the table above: left out, the format is recognised from what `input` selects. Required for `go-docs`, `ts-docs`, `python-docs`, `csharp-docs` and `dart-docs`. Names: `test-results`, `coverage`, `markdown-docs`, `storybook-docs`, `openapi-docs`, or those five. |
+| `source` | Where a generator reads from when that is not a set of files: for `storybook-docs`, the URL of a Storybook or the folder of its build. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
 | `title` | The index page's title. |
@@ -54,6 +87,94 @@ It writes:
 
 A report that is not valid JUnit is reported and skipped; the others are still written. When
 there are no reports at all, the index says so, so old results never linger.
+
+## `coverage`
+
+Reads **code coverage reports** and writes the results of each file, organised by your source
+folders. It never shows source code, only numbers. Formats, detected from the content:
+
+- **Cobertura XML** — what coverlet (.NET), coverage.py (`coverage xml`) and Istanbul/nyc
+  (`cobertura` reporter) write.
+- **LCOV** — `lcov.info`, from Jest/Vitest/c8, Dart, gcov and others.
+
+Without `input` it looks for `**/*cobertura*.xml`, `**/coverage.xml`, `**/lcov.info` and
+`**/*.lcov`, skipping `node_modules` and `.git`.
+
+```jsonc
+{ "type": "coverage", "input": ["coverage/"], "output": "docs/coverage", "title": "Code coverage" }
+```
+
+It writes one page per folder, like the Code Coverage tab of Azure DevOps:
+
+- an **overview**: code coverage %, total, covered, partially covered and not covered lines;
+- a table of the folder's **files, then subfolders**, each with a coverage bar and percentage and
+  the same four counts;
+- each subfolder is a link to its own page, which nests under its parent in the page tree, and each
+  page links back **Up**.
+
+A line that ran with every branch taken is *covered*, one that ran with a branch missed is
+*partially covered*, one that never ran is *not covered*. Several reports for the same file (for
+example one per test run) are merged line by line. The root page starts at the deepest folder all
+files share, and paths are made relative to the workspace when the report named them inside it;
+otherwise they appear as the report wrote them. A report in no known format is reported and skipped.
+
+## `markdown-docs`
+
+Imports **Markdown that another tool wrote** (TypeDoc's Markdown plugin, dokka, a `build/docs`
+folder) as ordinary pages. Markdown only: HTML is never parsed, so produce Markdown first.
+
+```jsonc
+{ "type": "markdown-docs", "input": ["build/docs/"], "output": "docs/api", "title": "API reference" }
+```
+
+`input` is required (importing every Markdown file of a project would be surprising). Files keep
+their layout below the deepest folder they share, so relative links between them keep working.
+For each page the generator removes front matter and the lines a tool stamps in, makes sure it
+opens with one top heading, gives it a title no other page has (a wiki space requires it), and adds
+a `README.md` index when the tool wrote none.
+
+Images the pages show through relative paths are copied next to them, byte for byte. They carry no
+annotation, so the output folder keeps a `.lore-master-assets.json` listing them: the generator only
+ever replaces or removes the files that list names. An image that is missing, or outside the
+workspace, is reported and left out. The generator's own output folder is never read as input.
+
+## `storybook-docs`
+
+Renders **every story of a Storybook in a real browser** and writes one page per component: a
+screenshot of each story, the props table and the story's source. The screenshots are plain PNG
+files, so any output that takes Markdown takes them (Confluence gets them as attachments).
+
+```jsonc
+{
+  "type": "storybook-docs",
+  "source": "storybook-static",
+  "prepare": "npm run build-storybook",
+  "output": "docs/components",
+  "title": "Component library"
+}
+```
+
+`source` is required: the folder of a static Storybook build (served locally for the run) or the
+URL of a running or deployed one. It needs Storybook 7 or later, which writes `index.json`; the
+older `stories.json` is read too. `prepare` is the natural place for the build, see
+[below](#producing-what-a-generator-reads-prepare).
+
+`input` is optional and filters stories by **title**, with the same gitignore-style patterns:
+`["Components/"]` renders only that branch of the sidebar, `["!Internal/"]` leaves one out.
+
+The pages follow the sidebar: a page per folder listing what is in it, a page per component with
+an **Examples** section (one screenshot per story, in light mode, 900 px wide) and a **Props**
+table from the stories' `argTypes`. Pages change only when a component does: a story that fails to
+render, and console errors, are reported as warnings and never written into a page.
+
+The browser is the machine's Chrome, Chromium or Edge, found on `PATH` or in its usual install
+folder. Set `LORE_MASTER_BROWSER` to the executable to use another one. A Storybook of a thousand
+stories takes some minutes (four are rendered at a time), so run it from CI or on demand; watch
+mode never renders it.
+
+Whether the generated pages and images go into git is yours to decide: the generator writes them
+to `output`, and the sync uploads them from there. Commit them, or ignore the folder and generate
+on CI before each sync.
 
 ## `go-docs`
 
@@ -250,6 +371,36 @@ the Markdown and says so.
 To make every ordinary **Sync** do this, turn on the setting `loreMaster.generateBeforeSync`. Output is deterministic — the same
 reports give the same bytes — so running it again with nothing new rewrites nothing and shows
 no diff.
+
+## Producing what a generator reads: `prepare`
+
+A generator reads artifacts a build or a test run produces (JUnit and coverage reports, a docs
+folder, a Storybook build). LoreMaster never guesses how to produce them. If you want it to run
+the step for you, say so with an optional `prepare` command on the generator:
+
+```jsonc
+{
+  "loreMaster.generators": [
+    { "type": "test-results", "input": ["reports/"], "output": "docs/tests",
+      "prepare": "npm test -- --reporters=jest-junit" },
+    { "type": "coverage", "input": ["coverage/"], "output": "docs/coverage",
+      "prepare": "npm test -- --coverage --coverageReporters=cobertura" }
+  ]
+}
+```
+
+It is a shell command run in the workspace folder (`cmd` on Windows, `sh` elsewhere), limited to
+30 minutes. **It only runs when a run asks for it; the same setting serves the plugin and CI:**
+
+| Where | How it is asked for |
+|---|---|
+| **VS Code** | **Run generators** and **Generate and sync documentation** consider each selected generator's `prepare`. The setting `loreMaster.runPrepareSteps` says what to do: `ask` (default) shows the exact commands and asks once per session (or **Always run**), `always` runs them, `never` skips them. Nothing runs in a workspace you have not trusted. |
+| **CI / command line** | `lore-master-engine generate --prepare`, or `lore-master-engine sync --generate --prepare --yes`. Without `--prepare` no command is ever executed, so a pipeline that already builds can keep its own steps and call `generate` alone. |
+| **Watch mode** | Never runs `prepare`: it regenerates when files change, and a build on every save would be surprising. |
+
+A command that fails is that generator's error (with the tail of its output) and the generator
+does not run, so pages built from stale artifacts are not written; the others still run. `generate`
+exits 1 in that case, which fails the pipeline step.
 
 ## Rules the generator keeps
 

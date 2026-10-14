@@ -78,6 +78,8 @@ func dispatch(ctx context.Context, message request, version string, workspaceRoo
 			placeDocumentTool(),
 			sitePublishingPlanTool(),
 			previewSiteTool(),
+			listGeneratorsTool(),
+			planMovesTool(),
 		}}), true
 	case "tools/call":
 		result, err := callTool(ctx, message.Params, workspaceRoot)
@@ -121,6 +123,10 @@ func callTool(ctx context.Context, params json.RawMessage, workspaceRoot string)
 		return sitePublishingPlanResult(workspaceRoot), nil
 	case previewSiteToolName:
 		return previewSiteResult(ctx, workspaceRoot, call.Arguments), nil
+	case planMovesToolName:
+		return planMovesResult(ctx, workspaceRoot, call.Arguments), nil
+	case listGeneratorsToolName:
+		return listGeneratorsResult(workspaceRoot), nil
 	default:
 		return toolCallResult{}, fmt.Errorf("unknown tool %q", call.Name)
 	}

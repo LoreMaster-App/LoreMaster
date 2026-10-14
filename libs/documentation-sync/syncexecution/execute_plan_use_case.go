@@ -36,7 +36,7 @@ type ExecuteInput struct {
 	Output   workspacesettings.Output
 	Space    platformport.SpaceRef
 	Read     FileReader
-	// Renderer draws Mermaid diagrams; nil shows them as code.
+	// Renderer draws diagrams (Mermaid, D2); nil shows them as code.
 	Renderer platformport.DiagramRenderer
 	Options  Options
 	// Progress, when set, is told after each action.
@@ -243,8 +243,8 @@ func (run *execution) recoverDiagrams(ctx context.Context, action syncplanning.A
 		if err != nil {
 			continue
 		}
-		if source, ok := extractMermaidSource(svg); ok {
-			blocks[i] = platformport.Diagram{Language: "mermaid", Source: source}
+		if language, source, ok := extractDiagramSource(svg); ok {
+			blocks[i] = platformport.Diagram{Language: language, Source: source}
 		}
 	}
 
@@ -545,33 +545,55 @@ type renderedDiagram struct {
 	svg  []byte
 }
 
-// renderDiagrams draws the page's Mermaid diagrams when the output shows them as
-// images. A diagram that cannot be drawn stays as code, with a warning.
-func (run *execution) renderDiagrams(ctx context.Context, documentPath documentdiscovery.DocumentPath, page PreparedPage) map[string]renderedDiagram {
-	if run.input.Output.MermaidMode != "image" {
-		return nil
+// drawnAsImage says whether the output shows diagrams of language as pictures: Mermaid when the
+// output's mermaidMode is image, any other language unless the mode is code (it has no html or
+// marketplace macro to fall back on, so a picture is the only way it is drawn).
+func drawnAsImage(mode string, language string) bool {
+	if language == "mermaid" {
+		return mode == "image"
 	}
-	sources := mermaidSources(page.Converted.Document.Blocks)
-	if len(sources) == 0 {
-		return nil
-	}
-	if run.input.Renderer == nil {
-		if !run.warnedNoRenderer {
-			run.warnedNoRenderer = true
-			run.warn("no diagram renderer is available, so Mermaid diagrams are shown as code")
-		}
 
-		return nil
+	return mode != "code"
+}
+
+// languageName is how a language is written in a warning.
+func languageName(language string) string {
+	if language == "mermaid" {
+		return "Mermaid"
 	}
-	diagrams := map[string]renderedDiagram{}
-	for _, source := range sources {
-		svg, err := run.input.Renderer.Render(ctx, "mermaid", source)
-		if err != nil {
-			run.warn("%s: a Mermaid diagram could not be drawn (%v); it is shown as code", documentPath, err)
+
+	return strings.ToUpper(language)
+}
+
+// renderDiagrams draws the page's diagrams when the output shows them as images, keyed by
+// diagramSource.key. A diagram that cannot be drawn stays as code, with a warning.
+func (run *execution) renderDiagrams(ctx context.Context, documentPath documentdiscovery.DocumentPath, page PreparedPage) map[string]renderedDiagram {
+	var diagrams map[string]renderedDiagram
+	for _, found := range diagramSources(page.Converted.Document.Blocks) {
+		if !drawnAsImage(run.input.Output.MermaidMode, found.Language) {
+			continue
+		}
+		if run.input.Renderer == nil {
+			if !run.warnedNoRenderer {
+				run.warnedNoRenderer = true
+				run.warn("no diagram renderer is available, so diagrams are shown as code")
+			}
 
 			continue
 		}
-		diagrams[source] = renderedDiagram{name: "mermaid-" + attachmentHash([]byte(source))[len("sha256:"):][:12] + ".svg", svg: injectMermaidSource(svg, source)}
+		svg, err := run.input.Renderer.Render(ctx, found.Language, found.Source)
+		if err != nil {
+			run.warn("%s: a %s diagram could not be drawn (%v); it is shown as code", documentPath, languageName(found.Language), err)
+
+			continue
+		}
+		if diagrams == nil {
+			diagrams = map[string]renderedDiagram{}
+		}
+		diagrams[found.key()] = renderedDiagram{
+			name: found.Language + "-" + attachmentHash([]byte(found.Source))[len("sha256:"):][:12] + ".svg",
+			svg:  injectDiagramSource(svg, found.Language, found.Source),
+		}
 	}
 
 	return diagrams

@@ -49,7 +49,9 @@ async function pickField (node: GeneratorNode): Promise<Field | undefined> {
   const picked = await vscode.window.showQuickPick(
     [
       { label: 'Output folder', description: generator.output, field: 'output' },
-      { label: 'What it reads', description: generator.input && generator.input.length > 0 ? generator.input.join(', ') : '(the default)', field: 'input' },
+      generatorTypeOf(generator.type).usesSource === true
+        ? { label: 'Storybook to read', description: generator.source ?? '(not set)', field: 'input' }
+        : { label: 'What it reads', description: generator.input && generator.input.length > 0 ? generator.input.join(', ') : '(the default)', field: 'input' },
       { label: 'Index page title', description: generator.title ?? '(the default)', field: 'title' },
     ],
     { title: `LoreMaster: change a setting of the ${generatorTypeOf(generator.type).label} generator` },
@@ -65,6 +67,16 @@ async function askPatch (field: Field, node: GeneratorNode, inputHint: string): 
     const output = await vscode.window.showInputBox({ title: 'LoreMaster: output folder', prompt: 'A folder relative to the workspace. Pages already written to the old folder stay there.', value: generator.output, validateInput: value => outputProblem(value) })
 
     return output === undefined ? undefined : { output: output.trim().replaceAll('\\', '/') }
+  }
+  if (field === 'input' && generatorTypeOf(generator.type).usesSource === true) {
+    const source = await vscode.window.showInputBox({
+      title:         'LoreMaster: Storybook to read',
+      prompt:        inputHint,
+      value:         generator.source ?? '',
+      validateInput: value => value.trim() === '' ? 'Name the Storybook: a URL or a build folder.' : undefined,
+    })
+
+    return source === undefined ? undefined : { source: source.trim() }
   }
   if (field === 'input') {
     const input = await vscode.window.showInputBox({ title: 'LoreMaster: what to read', prompt: inputHint, value: (generator.input ?? []).join(', ') })

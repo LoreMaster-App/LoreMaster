@@ -86,6 +86,17 @@ describe('updateGenerator', () => {
     expect(JSON.stringify(saves[0].generators?.[0])).toBe('{"type":"test-results","output":"docs/tests"}')
   })
 
+  it('keeps the prepare command and the source a patch does not name', async () => {
+    const saves: Settings[] = []
+    const storybook: Generator = { type: 'storybook-docs', output: 'docs/ui', source: 'storybook-static', prepare: 'npm run build-storybook' }
+
+    await updateGenerator(engine({ ...settings, generators: [storybook] }, saves), '/w', 0, { output: 'docs/components' })
+    await updateGenerator(engine({ ...settings, generators: [storybook] }, saves), '/w', 0, { source: 'https://ui.example.test' })
+
+    expect(saves[0].generators?.[0]).toEqual({ ...storybook, output: 'docs/components' })
+    expect(saves[1].generators?.[0]).toEqual({ ...storybook, source: 'https://ui.example.test' })
+  })
+
   it('replaces the input and the title', async () => {
     const saves: Settings[] = []
 

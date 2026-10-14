@@ -81,10 +81,10 @@ afterEach(() => {
 
 const githubPages = [{ platform: 'github-pages' }]
 
-/** Lets real file reads finish: fake timers do not move them. */
-async function settleFileReads (): Promise<void> {
+/** Lets real file reads finish: fake timers do not move them. Waits for `done`, however busy the machine. */
+async function settleFileReads (done: () => boolean): Promise<void> {
   const { setImmediate: realSetImmediate } = jest.requireActual<{ setImmediate: (callback: () => void) => unknown }>('node:timers')
-  for (let turn = 0; turn < 50; turn++) {
+  for (let turn = 0; turn < 5000 && !done(); turn++) {
     await new Promise<void>(resolve => { realSetImmediate(resolve) })
     await jest.advanceTimersByTimeAsync(0)
   }
@@ -166,7 +166,7 @@ describe('WatchMode', () => {
     expect(lines.some(line => line.includes('failed: push rejected; trying again in 2s'))).toBe(true)
     engine.fail = false
     await jest.advanceTimersByTimeAsync(2000)
-    await settleFileReads()
+    await settleFileReads(() => item.text.includes('watching'))
     expect(item.text).toContain('watching')
   })
 

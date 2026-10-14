@@ -30,8 +30,11 @@ export const REFRESH_PAGES_COMMAND = 'loreMaster.refreshPages'
 const REFRESH_DEBOUNCE_MS = 300
 
 /** The file or folder a Pages view row stands for, or undefined for rows that are neither. */
-function targetOf (node: PagesNode | undefined): SelectionTarget | undefined {
-  switch (node?.kind) {
+function targetOf (node: PagesNode | undefined, kinds: PagesNode['kind'][]): SelectionTarget | undefined {
+  if (!node || !kinds.includes(node.kind)) {
+    return undefined
+  }
+  switch (node.kind) {
     case 'page': { return { path: node.entry.node.path, isFolder: false, index: node.index }
     }
     case 'left-out-file': { return { path: node.file.path, isFolder: false, index: node.index }
@@ -41,6 +44,16 @@ function targetOf (node: PagesNode | undefined): SelectionTarget | undefined {
     default: { return undefined
     }
   }
+}
+
+/**
+ * The rows a menu command acts on. VS Code passes the clicked row and, in a multi-select view,
+ * every selected row; a click outside the selection acts on that row alone.
+ */
+function targetsOf (clicked: PagesNode | undefined, selected: PagesNode[] | undefined, kinds: PagesNode['kind'][]): SelectionTarget[] {
+  const rows = clicked && selected && selected.length > 0 && selected.includes(clicked) ? selected : [clicked]
+
+  return rows.flatMap(row => targetOf(row, kinds) ?? [])
 }
 
 /**
@@ -77,23 +90,23 @@ export function registerPagesView (deps: SyncCommandDeps): vscode.Disposable {
   })
 
   return vscode.Disposable.from(
-    vscode.window.registerTreeDataProvider(PAGES_VIEW_ID, provider),
+    vscode.window.createTreeView(PAGES_VIEW_ID, { treeDataProvider: provider, canSelectMany: true }),
     vscode.commands.registerCommand(REFRESH_PAGES_COMMAND, () => provider.refresh()),
     vscode.commands.registerCommand(TOGGLE_PAGE_LABEL_COMMAND, () => togglePageLabel()),
     vscode.commands.registerCommand(CHOOSE_VIEW_MODE_COMMAND, () => chooseViewMode()),
     vscode.commands.registerCommand(TOGGLE_EXCLUDED_COMMAND, () => toggleExcluded()),
     vscode.commands.registerCommand(CHECK_REMOTE_COMMAND, () => checkRemoteCommand(deps, provider)),
     vscode.commands.registerCommand(SYNC_PAGE_COMMAND, (node: PagesNode | undefined) => syncPage(deps, provider, node)),
-    vscode.commands.registerCommand(EXCLUDE_FROM_SYNC_COMMAND, async (node: PagesNode | undefined) => {
+    vscode.commands.registerCommand(EXCLUDE_FROM_SYNC_COMMAND, async (node: PagesNode | undefined, selected: PagesNode[] | undefined) => {
       const selection = await selectionDeps()
       if (selection) {
-        await excludeFromSyncCommand(selection, targetOf(node))
+        await excludeFromSyncCommand(selection, targetsOf(node, selected, ['page', 'folder']))
       }
     }),
-    vscode.commands.registerCommand(INCLUDE_IN_SYNC_COMMAND, async (node: PagesNode | undefined) => {
+    vscode.commands.registerCommand(INCLUDE_IN_SYNC_COMMAND, async (node: PagesNode | undefined, selected: PagesNode[] | undefined) => {
       const selection = await selectionDeps()
       if (selection) {
-        await includeInSyncCommand(selection, targetOf(node))
+        await includeInSyncCommand(selection, targetsOf(node, selected, ['left-out-file']))
       }
     }),
     vscode.workspace.onDidChangeConfiguration(event => {

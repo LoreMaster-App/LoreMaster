@@ -201,7 +201,7 @@ func validateIgnore(add func(string, ...any), patterns []string) {
 
 // BuiltGeneratorTypes are the generator types that exist; the rest the format names are
 // reserved until they are built.
-var BuiltGeneratorTypes = []string{"test-results", "go-docs", "openapi-docs", "python-docs", "csharp-docs", "dart-docs", "ts-docs"}
+var BuiltGeneratorTypes = []string{"test-results", "coverage", "markdown-docs", "go-docs", "openapi-docs", "python-docs", "csharp-docs", "dart-docs", "ts-docs", "storybook-docs"}
 
 var reservedGenerators = map[string]string{}
 
@@ -211,7 +211,12 @@ func validateGenerators(add func(string, ...any), generators []Generator) {
 	outputs := make([]string, len(generators))
 	for i, generator := range generators {
 		at := fmt.Sprintf("generators[%d]", i)
-		choose(add, at+".type", generator.Type, BuiltGeneratorTypes, reservedGenerators)
+		switch {
+		case generator.Type == "" && len(generator.Input) == 0 && strings.TrimSpace(generator.Source) == "":
+			add("%s has no type and nothing to recognise it from; set type, or give input (the files the command writes) or source", at)
+		case generator.Type != "":
+			choose(add, at+".type", generator.Type, BuiltGeneratorTypes, reservedGenerators)
+		}
 
 		output := path.Clean(generator.Output)
 		switch {
@@ -222,6 +227,10 @@ func validateGenerators(add func(string, ...any), generators []Generator) {
 		default:
 			outputs[i] = output
 		}
+		if generator.Prepare != "" && strings.TrimSpace(generator.Prepare) == "" {
+			add("%s.prepare is blank; give the command that produces what the generator reads, or remove it", at)
+		}
+		validateSource(add, at, generator)
 		for j, pattern := range generator.Input {
 			clean := path.Clean(strings.TrimPrefix(pattern, "!"))
 			if strings.TrimSpace(pattern) == "" || path.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, "../") {
@@ -234,6 +243,27 @@ func validateGenerators(add func(string, ...any), generators []Generator) {
 			if outputs[i] != "" && outputs[j] != "" && (outputs[i] == outputs[j] || strings.HasPrefix(outputs[j], outputs[i]+"/") || strings.HasPrefix(outputs[i], outputs[j]+"/")) {
 				add("generators[%d] and generators[%d] write into overlapping folders (%s, %s); give each its own", i, j, outputs[i], outputs[j])
 			}
+		}
+	}
+}
+
+// validateSource checks a generator's source: required by storybook-docs, an http(s) URL or a
+// folder inside the workspace.
+func validateSource(add func(string, ...any), at string, generator Generator) {
+	source := strings.TrimSpace(generator.Source)
+	switch {
+	case generator.Source == "" && generator.Type == "storybook-docs":
+		add("%s.source is empty; storybook-docs needs the Storybook to read: its URL, or the folder of its build (e.g. storybook-static)", at)
+	case generator.Source == "":
+		return
+	case source == "":
+		add("%s.source is blank; give a URL or a folder, or remove it", at)
+	case strings.HasPrefix(source, "http://") || strings.HasPrefix(source, "https://"):
+		return
+	default:
+		clean := path.Clean(source)
+		if path.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, "../") || strings.Contains(source, "://") {
+			add("%s.source %q must be an http(s) URL or a folder inside the workspace", at, generator.Source)
 		}
 	}
 }

@@ -57,6 +57,9 @@ export const window = {
   registerTreeDataProvider (_viewId: string, _provider: unknown): { dispose: () => void } {
     return { dispose () {} }
   },
+  createTreeView (_viewId: string, _options: unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
   createStatusBarItem (_alignment?: number, _priority?: number): FakeStatusBarItem {
     const item = new FakeStatusBarItem()
     statusBarItems.push(item)
@@ -194,6 +197,7 @@ export class RelativePattern {
 
 export const workspace = {
   workspaceFolders: undefined as { uri: { fsPath: string }; name: string }[] | undefined,
+  isTrusted:        true,
   fs:               {
     async readFile (uri: { fsPath: string }): Promise<Uint8Array> {
       const content = virtualFiles.get(uri.fsPath)
@@ -237,6 +241,12 @@ export const workspace = {
     fileSystemWatchers.push(watcher)
 
     return watcher
+  },
+  onWillRenameFiles (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidRenameFiles (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
   },
   onDidChangeWorkspaceFolders (_listener: () => unknown): { dispose: () => void } {
     return { dispose () {} }

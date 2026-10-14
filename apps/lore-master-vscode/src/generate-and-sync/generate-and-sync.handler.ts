@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import type { Generator } from '../engine-protocol'
 import { listGenerators, runAndReport } from '../generators-command'
 import { sync, type SyncCommandDeps } from '../sync-command'
 import { pickWorkspaceFolder } from '../workspace-files'
@@ -35,7 +36,7 @@ export async function generateAndSyncCommand (deps: GenerateAndSyncDeps): Promis
     const configured = await listGenerators(deps.engine, folder)
     if (configured.length === 0) {
       await vscode.window.showInformationMessage('LoreMaster: no generators are configured, so only the Markdown is synced. Add one from the Generators view.')
-    } else if (!await generate(deps, folder)) {
+    } else if (!await generate(deps, folder, configured)) {
       return
     }
   } catch (error) {
@@ -59,8 +60,8 @@ export async function syncCommand (deps: GenerateAndSyncDeps): Promise<void> {
 }
 
 /** Runs the generators and reports; false when some failed and the user chose not to sync. */
-async function generate (deps: GenerateAndSyncDeps, folder: string): Promise<boolean> {
-  const failed = failedRuns(await runAndReport(deps, folder))
+async function generate (deps: GenerateAndSyncDeps, folder: string, configured: Generator[]): Promise<boolean> {
+  const failed = failedRuns(await runAndReport(deps, folder, undefined, configured))
   if (failed.length === 0) {
     return true
   }

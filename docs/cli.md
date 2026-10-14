@@ -4,10 +4,31 @@ The engine binary that ships inside the extension is also a command line, for CI
 hooks. It runs the same method handlers the editors call, so `sync` plans and writes exactly
 what the same sync from the editor would.
 
+## Getting the binary in CI
+
+Every release of the extension carries the engine for six platforms, stamped with the same
+version, plus a checksum file. They are on the
+[GitHub Releases](https://github.com/LoreMaster-App/LoreMaster/releases) page, under the tag
+`lore-master-vscode@<version>`:
+
 ```
-lore-master-engine generate [--workspace DIR] [--generator N]... [--json]
+VERSION=0.14.10
+BASE="https://github.com/LoreMaster-App/LoreMaster/releases/download/lore-master-vscode%40$VERSION"
+curl -fsSLO "$BASE/go-app-lore-master-engine-linux-amd64.zip"
+curl -fsSLO "$BASE/lore-master-engine-$VERSION-sha256.txt"
+sha256sum --check --ignore-missing "lore-master-engine-$VERSION-sha256.txt"
+unzip go-app-lore-master-engine-linux-amd64.zip
+```
+
+The zips are `go-app-lore-master-engine-<os>-<arch>.zip` for `windows`, `linux` and `darwin`
+on `amd64` and `arm64`. Pin `VERSION`: the CLI's flags follow the extension's versions.
+
+## Commands
+
+```
+lore-master-engine generate [--workspace DIR] [--generator N]... [--prepare] [--json]
 lore-master-engine tree     [--workspace DIR] [--output N]... [--json]
-lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate]
+lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate] [--prepare]
                             [--yes] [--dry-run] [--force] [--prune] [--json]
 lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
                             [--debounce 2s] [--poll 1s]
@@ -17,7 +38,9 @@ lore-master-engine pages check   [--workspace DIR] [--output N] [--exit-code] [-
 lore-master-engine version
 ```
 
-- `generate` runs the generators of the `loreMaster.generators` setting.
+- `generate` runs the generators of the `loreMaster.generators` setting. `--prepare` runs each
+  generator's `prepare` command first (the build or test run that produces what it reads; see
+  [generators](generators.md#producing-what-a-generator-reads-prepare)). Without it no command runs.
 - `tree` shows the page tree each output would sync, with each page's local status.
 - `sync` plans each output. **Without `--yes` it only shows the plan.** `--generate` runs the
   generators first; `--force` overwrites pages edited on the platform; `--prune` trashes pages
@@ -70,7 +93,8 @@ GitHub Pages outputs need none: git carries the credentials.
 ## Limits
 
 Mermaid diagrams stay code blocks (the editor draws them; the command line has no browser), with
-the usual warning.
+the usual warning. D2 diagrams are drawn by the engine itself, so they are images from the
+command line too.
 
 ```yaml
 # GitHub Actions

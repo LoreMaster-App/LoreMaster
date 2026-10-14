@@ -17,7 +17,7 @@ that choice can be revisited if the tool surface grows (#212).
 ```
 VS Code ───registers───▶  lore-master-engine --mcp --workspace <folder>
 external client ─config─▶        │
-                                 ├─ mcpserver            protocol + the six tools
+                                 ├─ mcpserver            protocol + the eight tools
                                  ├─ markdown-workspace   discovery, parsing, the nesting rules
                                  └─ workspacesettings    loreMaster.* settings: roots, excludes, ignore
 ```

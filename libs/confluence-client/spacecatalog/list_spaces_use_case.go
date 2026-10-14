@@ -61,10 +61,17 @@ type spaceV2 struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
 	HomepageID string `json:"homepageId"`
+	// CurrentActiveAlias is the segment the space's URL uses (/wiki/spaces/<alias>).
+	CurrentActiveAlias string `json:"currentActiveAlias"`
 }
 
 func (s spaceV2) space() Space {
-	return Space{ID: s.ID, Key: s.Key, Name: s.Name, HomepageID: s.HomepageID, Personal: s.Type == "personal"}
+	alias := s.CurrentActiveAlias
+	if alias == s.Key {
+		alias = ""
+	}
+
+	return Space{ID: s.ID, Key: s.Key, Name: s.Name, Alias: alias, HomepageID: s.HomepageID, Personal: s.Type == "personal"}
 }
 
 type spaceV1 struct {

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
+	"lore-master/libs/documentation-sync/d2rendering"
 	"lore-master/libs/documentation-sync/documentloading"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/github-pages/siterender"
@@ -52,7 +53,18 @@ func RenderSite(ctx context.Context, workspaceRoot string, outputIndex int) (Ren
 	if output.Platform == "github-wiki" {
 		files = wikirender.GenerateWiki(tree)
 	} else {
-		files, err = siterender.GenerateSite(deriveSiteTitle(output, workspaceRoot), tree)
+		// Mermaid is drawn by the visitor's browser; D2 has no browser library, so it is drawn
+		// here, by the engine, and the page shows the picture.
+		files, err = siterender.GenerateSiteWith(deriveSiteTitle(output, workspaceRoot), tree, func(path string, body []byte) []byte {
+			drawn, notes := siterender.InlineDiagrams(body, d2rendering.Language, func(source string) ([]byte, error) {
+				return d2rendering.RenderSVG(ctx, source, 0)
+			})
+			for _, note := range notes {
+				warnings = append(warnings, path+": "+note)
+			}
+
+			return drawn
+		})
 		if err != nil {
 			return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
 		}

@@ -3,25 +3,31 @@ package generatorregistry
 import (
 	"slices"
 
-	"lore-master/libs/content-generation/generatedfile"
+	"lore-master/libs/content-generation/coveragereporting"
 	"lore-master/libs/content-generation/csharpdocs"
 	"lore-master/libs/content-generation/dartdocs"
+	"lore-master/libs/content-generation/generatedfile"
 	"lore-master/libs/content-generation/godocs"
+	"lore-master/libs/content-generation/markdowndocs"
 	"lore-master/libs/content-generation/openapidocs"
-	"lore-master/libs/content-generation/testreporting"
 	"lore-master/libs/content-generation/pythondocs"
+	"lore-master/libs/content-generation/storybookdocs"
+	"lore-master/libs/content-generation/testreporting"
 	"lore-master/libs/content-generation/tsdocs"
 )
 
 // generators maps a configured type to the function that generates it.
 var generators = map[string]generatedfile.GenerateFunc{
-	"csharp-docs":  csharpdocs.Generate,
-	"dart-docs":    dartdocs.Generate,
-	"go-docs":      godocs.Generate,
-	"openapi-docs": openapidocs.Generate,
-	"python-docs":  pythondocs.Generate,
-	"test-results": testreporting.Generate,
-	"ts-docs":      tsdocs.Generate,
+	"coverage":       coveragereporting.Generate,
+	"csharp-docs":    csharpdocs.Generate,
+	"dart-docs":      dartdocs.Generate,
+	"go-docs":        godocs.Generate,
+	"markdown-docs":  markdowndocs.Generate,
+	"openapi-docs":   openapidocs.Generate,
+	"python-docs":    pythondocs.Generate,
+	"storybook-docs": storybookdocs.Generate,
+	"test-results":   testreporting.Generate,
+	"ts-docs":        tsdocs.Generate,
 }
 
 // For returns the generator for a configured type.

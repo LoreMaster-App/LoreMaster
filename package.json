@@ -4,10 +4,10 @@
   "license": "MIT",
   "scripts": {
     "build": "nx run-many -t build",
-    "lint": "nx run-many -t lint",
+    "lint": "mnci lint",
     "test": "nx run-many -t test",
     "typecheck": "nx run-many -t typecheck",
-    "affected": "nx affected -t lint,typecheck,test,build",
+    "affected": "mnci lint --affected && nx affected -t typecheck,test,build",
     "graph": "nx graph",
     "release:preview": "nx release --dry-run",
     "prepare": "husky",
@@ -36,7 +36,7 @@
     "@nx/node": "^23.3.0",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.8",
-    "@swc/helpers": "0.5.18",
+    "@swc/helpers": "0.5.23",
     "@swc/jest": "~0.2.38",
     "@types/jest": "~30.0.0",
     "@types/node": "^24.0.0",
@@ -45,16 +45,16 @@
     "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^4.0.0",
     "adm-zip": "^0.6.1",
-    "esbuild": "^0.27.0",
+    "esbuild": "^0.28.2",
     "eslint": "^10.8.0",
     "husky": "^9.1.7",
     "jest": "~30.3.0",
     "jest-environment-node": "~30.3.0",
-    "jest-util": "~30.3.0",
+    "jest-util": "~30.5.1",
     "mocha": "^12.0.3",
     "nx": "23.3.0",
     "ts-jest": "^29.4.7",
-    "ts-node": "10.9.1",
+    "ts-node": "10.9.2",
     "tslib": "^2.3.0",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "@mnci/cli": ">=4.0.0 <5.0.0"
@@ -90,6 +90,9 @@
     "brace-expansion@4.0.0 - 5.0.8": "^5.0.9",
     "@nx/react": {
       "express": ">=4.0.0 <6.0.0"
+    },
+    "@nx/vue": {
+      "vue-tsc": ">=2.0.0 <4.0.0"
     }
   },
   "nx": {

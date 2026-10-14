@@ -34,10 +34,12 @@ type contentWire struct {
 }
 
 type generatorWire struct {
-	Type   string   `json:"type,omitempty"`
-	Input  []string `json:"input,omitempty"`
-	Output string   `json:"output,omitempty"`
-	Title  string   `json:"title,omitempty"`
+	Type    string   `json:"type,omitempty"`
+	Input   []string `json:"input,omitempty"`
+	Source  string   `json:"source,omitempty"`
+	Output  string   `json:"output,omitempty"`
+	Title   string   `json:"title,omitempty"`
+	Prepare string   `json:"prepare,omitempty"`
 }
 
 // toSettings turns the merged keys into settings. The user-level defaults
@@ -97,7 +99,7 @@ func toSettings(values map[string]merged) (workspacesettings.Settings, error) {
 	}
 	for _, generator := range generators {
 		settings.Generators = append(settings.Generators, workspacesettings.Generator{
-			Type: generator.Type, Input: generator.Input, Output: generator.Output, Title: generator.Title,
+			Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title, Prepare: generator.Prepare,
 		})
 	}
 

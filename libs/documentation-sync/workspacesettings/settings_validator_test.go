@@ -167,19 +167,38 @@ func TestValidateAcceptsABuiltGenerator(t *testing.T) {
 	}
 }
 
+func TestValidateAcceptsAGeneratorWithoutATypeWhenItHasInput(t *testing.T) {
+	if err := Validate(settingsWith(Generator{Input: []string{"build/reports/"}, Output: "docs/x"})); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateAcceptsAStorybookFromAFolderOrAURL(t *testing.T) {
+	for _, source := range []string{"storybook-static", "https://ui.example.test/storybook/"} {
+		if err := Validate(settingsWith(Generator{Type: "storybook-docs", Source: source, Output: "docs/ui", Input: []string{"Components/"}})); err != nil {
+			t.Fatalf("source %q: %v", source, err)
+		}
+	}
+}
+
 func TestValidateRefusesAGeneratorThatCannotBeUsed(t *testing.T) {
 	cases := []struct {
 		name      string
 		generator Generator
 		want      string
 	}{
-		{"unknown type", Generator{Type: "crayon", Output: "docs/x"}, `generators[0].type "crayon" is not one of test-results, go-docs, openapi-docs, python-docs, csharp-docs, dart-docs, ts-docs`},
+		{"unknown type", Generator{Type: "crayon", Output: "docs/x"}, `generators[0].type "crayon" is not one of test-results, coverage, markdown-docs, go-docs, openapi-docs, python-docs, csharp-docs, dart-docs, ts-docs`},
 		{"no output", Generator{Type: "test-results"}, "generators[0].output is empty"},
 		{"output is the workspace", Generator{Type: "test-results", Output: "."}, "must be a folder inside the workspace"},
 		{"output escapes", Generator{Type: "test-results", Output: "../out"}, "must be a folder inside the workspace"},
 		{"absolute output", Generator{Type: "test-results", Output: "/out"}, "must be a folder inside the workspace"},
 		{"empty input pattern", Generator{Type: "test-results", Output: "docs/x", Input: []string{" "}}, "generators[0].input[0]"},
 		{"input escapes", Generator{Type: "test-results", Output: "docs/x", Input: []string{"../reports"}}, "generators[0].input[0]"},
+		{"no type and nothing to recognise it from", Generator{Output: "docs/x"}, "has no type and nothing to recognise it from"},
+		{"storybook without a source", Generator{Type: "storybook-docs", Output: "docs/ui"}, "storybook-docs needs the Storybook to read"},
+		{"blank source", Generator{Type: "storybook-docs", Output: "docs/ui", Source: "  "}, "generators[0].source is blank"},
+		{"source escapes", Generator{Type: "storybook-docs", Output: "docs/ui", Source: "../storybook"}, "must be an http(s) URL or a folder inside the workspace"},
+		{"source with another scheme", Generator{Type: "storybook-docs", Output: "docs/ui", Source: "file:///c:/sb"}, "must be an http(s) URL or a folder inside the workspace"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

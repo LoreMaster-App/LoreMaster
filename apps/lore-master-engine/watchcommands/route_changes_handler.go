@@ -28,7 +28,7 @@ func RouteChanges() rpcserver.Method {
 		}
 		specs := make([]generatedfile.Spec, len(loaded.Settings.Generators))
 		for i, generator := range loaded.Settings.Generators {
-			specs[i] = generatedfile.Spec{Type: generator.Type, Input: generator.Input, Output: generator.Output, Title: generator.Title}
+			specs[i] = generatedfile.Spec{Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title}
 		}
 
 		plan := generatorrouting.Route(params.Changed, specs)
