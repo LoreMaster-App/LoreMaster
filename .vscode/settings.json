@@ -1,0 +1,28 @@
+{
+  "loreMaster.outputs": [
+    {
+      "platform": "github-pages",
+      "content": [
+        {
+          "type": "markdown",
+          "roots": [
+            "docs"
+          ],
+          "template": "default"
+        }
+      ]
+    },
+    {
+      "platform": "github-wiki",
+      "content": [
+        {
+          "type": "markdown",
+          "roots": [
+            "docs"
+          ],
+          "template": "default"
+        }
+      ]
+    }
+  ]
+}
