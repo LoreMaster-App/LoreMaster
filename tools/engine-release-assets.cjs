@@ -39,7 +39,7 @@ console.log('Building the six ' + ENGINE + ' platforms as ' + version)
 run('npx', ['nx', 'run', ENGINE + ':package-all'], { env: { ...process.env, VERSION: version }, stdio: 'inherit' })
 
 const prefix = 'go-app-' + ENGINE + '-'
-const zips = existsSync(DROP) ? readdirSync(DROP).filter(each => each.startsWith(prefix) && each.endsWith('.zip')).sort() : []
+const zips = existsSync(DROP) ? readdirSync(DROP).filter(each => each.startsWith(prefix) && each.endsWith('.zip')).sort((a, b) => a.localeCompare(b)) : []
 if (zips.length !== 6) fail('Expected six ' + prefix + '*.zip in ' + DROP + ', found ' + zips.length + '.')
 
 const sums = zips.map(name => createHash('sha256').update(readFileSync(join(DROP, name))).digest('hex') + '  ' + name).join('\n') + '\n'
