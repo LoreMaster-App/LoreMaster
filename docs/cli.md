@@ -4,6 +4,27 @@ The engine binary that ships inside the extension is also a command line, for CI
 hooks. It runs the same method handlers the editors call, so `sync` plans and writes exactly
 what the same sync from the editor would.
 
+## Getting the binary in CI
+
+Every release of the extension carries the engine for six platforms, stamped with the same
+version, plus a checksum file. They are on the
+[GitHub Releases](https://github.com/LoreMaster-App/LoreMaster/releases) page, under the tag
+`lore-master-vscode@<version>`:
+
+```
+VERSION=0.14.10
+BASE="https://github.com/LoreMaster-App/LoreMaster/releases/download/lore-master-vscode%40$VERSION"
+curl -fsSLO "$BASE/go-app-lore-master-engine-linux-amd64.zip"
+curl -fsSLO "$BASE/lore-master-engine-$VERSION-sha256.txt"
+sha256sum --check --ignore-missing "lore-master-engine-$VERSION-sha256.txt"
+unzip go-app-lore-master-engine-linux-amd64.zip
+```
+
+The zips are `go-app-lore-master-engine-<os>-<arch>.zip` for `windows`, `linux` and `darwin`
+on `amd64` and `arm64`. Pin `VERSION`: the CLI's flags follow the extension's versions.
+
+## Commands
+
 ```
 lore-master-engine generate [--workspace DIR] [--generator N]... [--prepare] [--json]
 lore-master-engine tree     [--workspace DIR] [--output N]... [--json]

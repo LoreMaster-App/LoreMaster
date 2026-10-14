@@ -180,6 +180,14 @@ jobs:
       # mnci:phase-end release
 
       # mnci:slot after-release  (your own steps go between these two lines; mnci upgrade keeps them)
+      # The engine's six platform zips and their checksums go on the extension's GitHub Release,
+      # so a CI pipeline can download a versioned engine (#201). Needs the release tag mnci just
+      # created on HEAD; does nothing when this run released nothing.
+      - name: Attach the engine binaries to the GitHub Release
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tools/engine-release-assets.cjs
       # Open VSX (VSCodium, Cursor, Windsurf, Gitpod, Theia): the same platform-specific
       # .vsix files the release just packaged. Skips itself when the OVSX_PAT secret is missing, so
       # nothing changes until the token is added. The namespace is created once with
