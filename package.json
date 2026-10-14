@@ -70,8 +70,10 @@
     "nx": {
       "brace-expansion": "^5.0.9",
       "smol-toml": "^1.7.1",
-      "axios": "^1.20.0"
+      "axios": "^1.20.0",
+      "undici": "^7.29.1"
     },
+    "handlebars": "^4.7.10",
     "@nx/js": {
       "brace-expansion": "^5.0.9"
     },
