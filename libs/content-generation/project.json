@@ -18,6 +18,20 @@
         "args": [
           "run"
         ]
+      },
+      "dependsOn": [
+        "slice-check"
+      ]
+    },
+    "slice-check": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.go",
+        "{workspaceRoot}/tools/go-slice-check.cjs"
+      ],
+      "options": {
+        "command": "node tools/go-slice-check.cjs libs/content-generation"
       }
     }
   }

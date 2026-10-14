@@ -5,6 +5,7 @@
 // Packages and publishes a VS Code extension project. Its Nx targets call it:
 //   node tools/vscode-extension.cjs package apps/<name> [--sidecar <go-app>]
 //   node tools/vscode-extension.cjs publish apps/<name> [--sidecar <go-app>]
+//   node tools/vscode-extension.cjs integration apps/<name>   the tests in a real VS Code
 // Without --sidecar: one universal dist/drop/<project>.vsix.
 // With --sidecar: one dist/drop/<project>-<target>.vsix per Marketplace target, each
 // carrying that platform's binary from the Go app's build-all in bin/.
@@ -23,9 +24,18 @@ function fail (message) {
 }
 
 function bin (packageName, command) {
-  const manifestPath = require.resolve(packageName + '/package.json', { paths: [process.cwd()] })
+  // Walks up from the working directory to the installed package. require.resolve cannot: a package whose exports omit
+  // ./package.json (@vscode/test-cli) refuses it.
+  let directory = process.cwd()
+  let manifestPath = join(directory, 'node_modules', packageName, 'package.json')
+  while (!existsSync(manifestPath) && dirname(directory) !== directory) {
+    directory = dirname(directory)
+    manifestPath = join(directory, 'node_modules', packageName, 'package.json')
+  }
+  if (!existsSync(manifestPath)) fail(packageName + ' is not installed. Run npm install.')
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
-  const entry = typeof manifest.bin === 'string' ? manifest.bin : manifest.bin[command]
+  // In a mnci workspace the typescript package is the TS 6 compiler, whose bin is tsc6 (tsc there is TS 7's, from another package).
+  const entry = typeof manifest.bin === 'string' ? manifest.bin : (manifest.bin[command] ?? manifest.bin[command + '6'])
 
   return join(dirname(manifestPath), entry)
 }
@@ -63,6 +73,15 @@ function packageExtension (projectRoot, manifest, sidecar) {
   }
 }
 
+function integrationTests (projectRoot) {
+  // Electron aborts with a crash dump when there is no display; say what to do instead.
+  if (process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
+    fail('VS Code needs a display to run its integration tests and this machine has none. On headless Linux run it under a virtual one: xvfb-run -a npx nx run ' + project + ':test:integration')
+  }
+  run('typescript', 'tsc', ['-p', join(projectRoot, 'integration', 'tsconfig.json')])
+  run('@vscode/test-cli', 'vscode-test', [], { cwd: projectRoot })
+}
+
 function publishExtension (manifest, sidecar, dryRun) {
   if (dryRun) {
     console.log('Dry run - would publish ' + vsixFiles(project, sidecar).join(', ') + ' to the Marketplace.')
@@ -85,7 +104,7 @@ function publishExtension (manifest, sidecar, dryRun) {
 const [command, projectRoot, ...rest] = process.argv.slice(2)
 const sidecarIndex = rest.indexOf('--sidecar')
 const sidecar = sidecarIndex === -1 ? undefined : rest[sidecarIndex + 1]
-if (!projectRoot || !existsSync(join(projectRoot, 'package.json'))) fail('Usage: node tools/vscode-extension.cjs package|publish <project root> [--sidecar <go-app>]')
+if (!projectRoot || !existsSync(join(projectRoot, 'package.json'))) fail('Usage: node tools/vscode-extension.cjs package|publish|integration <project root> [--sidecar <go-app>]')
 const manifest = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8'))
 // Packages are named after the project folder, never the manifest name, which is
 // free to change (the Marketplace id need not match the folder).
@@ -93,6 +112,20 @@ const project = basename(resolve(projectRoot))
 // nx release --dry-run hands the publish target --dryRun=true and sets NX_DRY_RUN
 // (measured on Nx 23), so a dry run never reaches the Marketplace, token or not.
 const dryRun = rest.some(argument => /^--dry-?run(?:=true)?$/i.test(argument)) || process.env.NX_DRY_RUN === 'true'
-if (command === 'package') packageExtension(projectRoot, manifest, sidecar)
-else if (command === 'publish') publishExtension(manifest, sidecar, dryRun)
-else fail('Unknown command ' + command + ' - expected package or publish.')
+switch (command) {
+  case 'package': {
+    packageExtension(projectRoot, manifest, sidecar)
+    break
+  }
+  case 'publish': {
+    publishExtension(manifest, sidecar, dryRun)
+    break
+  }
+  case 'integration': {
+    integrationTests(projectRoot)
+    break
+  }
+  default: {
+    fail('Unknown command ' + command + ' - expected package, publish or integration.')
+  }
+}

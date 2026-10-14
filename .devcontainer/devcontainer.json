@@ -6,13 +6,32 @@
       "version": "3.12"
     },
     "ghcr.io/devcontainers/features/go:1": {
-      "version": "latest"
+      "version": "1.27",
+      "golangciLintVersion": "2.14.0"
     },
     "ghcr.io/devcontainers/features/dotnet:2": {
       "version": "10.0"
+    },
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "1.99",
+      "profile": "default"
+    },
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21",
+      "jdkDistro": "tem",
+      "installGradle": true,
+      "gradleVersion": "9.8.1",
+      "installMaven": true,
+      "mavenVersion": "3.10.0"
+    },
+    "ghcr.io/devcontainers/features/php:1": {
+      "version": "8.4"
+    },
+    "ghcr.io/devcontainers/features/ruby:1": {
+      "version": "3.4"
     }
   },
-  "postCreateCommand": "npm install -g npm@11 && npm ci && npx mnci ci setup",
+  "postCreateCommand": "npm install -g npm@12 && npm ci && npx mnci ci setup",
   "customizations": {
     "vscode": {
       "extensions": [
