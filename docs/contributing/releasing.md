@@ -24,6 +24,8 @@ Put a **version directive** commit in the PR:
 version(lore-master-vscode)[0.16.0]: the first minor with the Storybook generator
 ```
 
-The release uses exactly `0.16.0`. No repository variable is needed. The `RELEASE_SPECIFIER`
+The release uses exactly `0.16.0`. No repository variable is needed. This needs `@mnci/cli`
+4.63.0 or later and its commitlint config (`npx @mnci/cli@latest upgrade`); until the workspace
+is upgraded from 4.44.0, the commit hook rejects the subject and `RELEASE_SPECIFIER` is the way. The `RELEASE_SPECIFIER`
 variable still exists as an override for one run, but it wins over a directive, so delete it
 after use.
