@@ -4,10 +4,10 @@
   "license": "MIT",
   "scripts": {
     "build": "nx run-many -t build",
-    "lint": "nx run-many -t lint",
+    "lint": "mnci lint",
     "test": "nx run-many -t test",
     "typecheck": "nx run-many -t typecheck",
-    "affected": "nx affected -t lint,typecheck,test,build",
+    "affected": "mnci lint --affected && nx affected -t typecheck,test,build",
     "graph": "nx graph",
     "release:preview": "nx release --dry-run",
     "prepare": "husky",
@@ -90,6 +90,9 @@
     "brace-expansion@4.0.0 - 5.0.8": "^5.0.9",
     "@nx/react": {
       "express": ">=4.0.0 <6.0.0"
+    },
+    "@nx/vue": {
+      "vue-tsc": ">=2.0.0 <4.0.0"
     }
   },
   "nx": {

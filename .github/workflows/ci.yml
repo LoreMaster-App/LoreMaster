@@ -63,13 +63,18 @@ jobs:
       # is part of the contract: npm 11 reuses an already-installed tree instead
       # of re-resolving, so it applies `overrides` differently from npm 10. See
       # NPM_VERSION's remarks for the measurement.
-      - run: npm install -g npm@11
+      - run: npm install -g npm@12
         name: Pin npm to the major mnci verifies against
 
       - run: npm ci
+        id: install
         name: Install dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - if: failure() && steps.install.outcome == 'failure'
+        run: echo "::error title=npm ci::If npm ci reported Missing ... from lock file, the lockfile was written by an older npm than the pinned one. Run npx npm@12 install --package-lock-only and commit package-lock.json"
+        name: Explain a failed install
 
       # mnci:slot after-install  (your own steps go between these two lines; mnci upgrade keeps them)
       # mnci:slot-end after-install
@@ -88,12 +93,6 @@ jobs:
       - run: npx mnci ci setup
         name: Set up the language toolchains (Python, Go, Flutter)
 
-      # Fails ONLY on an advisory that has a published fix, at moderate or above;
-      # anything upstream has not fixed is printed and passes. pip-audit only
-      # reports: its output has no "a fix exists" field to draw that line with.
-      - run: npx mnci ci audit
-        name: Audit dependencies (fails on an actionable npm advisory)
-
       # .NET, if the workspace has any. actions/setup-dotnet is the
       # maintained, cached installer GitHub itself ships, so this uses it
       # directly rather than a hand-rolled 'node -e' guard — see
@@ -109,7 +108,9 @@ jobs:
       # EVERY project on anything else (a push to main included, so a release is
       # always verified in full). Every fallback takes the full path, because a run
       # that verifies too little still reports green. Apps that need a C toolchain
-      # are left to the native job.
+      # are left to the native job. The audit gate runs first inside it, so it is
+      # not a step of its own: it fails ONLY on an advisory that has a published
+      # fix, at moderate or above, and pip-audit only reports.
       - run: npx mnci ci verify
         name: Verify (sync check, then affected on a PR, every project on main)
 
@@ -169,6 +170,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           RELEASE_SPECIFIER: ${{ vars.RELEASE_SPECIFIER }}
           # A VS Code extension publishes with Entra ID when the sign-in step
           # above ran (VSCE_AUTH=entra), else with the VSCE_PAT token;

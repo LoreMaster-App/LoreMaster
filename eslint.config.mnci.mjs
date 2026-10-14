@@ -13,6 +13,9 @@ import mnci from '@mnci/eslint-config'
 //   mnci/typescript*              TS rules on top of them, no type information needed
 //   mnci/type-aware*              the rules that DO read types (no-floating-promises and
 //                                 friends), scoped to {apps,libs,packages}/*/src
+//   mnci/vertical-slices*         vertical feature slices: role-suffixed files, a slice reached only
+//                                 through its index, no cycles — ON by default; verticalSlices: false
+//                                 in eslint.config.mjs opts out
 //   mnci/import-graph             import cycles — eslint-plugin-import-x
 //   mnci/react                    JSX/TSX — @eslint-react/eslint-plugin,
 //                                 eslint-plugin-react-hooks, -react-refresh, -jsx-a11y
@@ -25,6 +28,7 @@ import mnci from '@mnci/eslint-config'
 //                                 pyproject.toml is a syntax error, nothing is styled
 //   mnci/markdown                 @eslint/markdown
 //   mnci/css                      @eslint/css
+//   mnci/css-framework-assets     Tailwind 4 at-rules in a framework's resources/css
 //   mnci/html                     @html-eslint/eslint-plugin
 //   mnci/tests                    *.spec/*.test relaxations — eslint-plugin-jest
 //                                 (Vitest's globals too; the two stacks share them)
