@@ -67,15 +67,20 @@ so a clash is handled by `titleCollision`: `adopt` takes over an untracked page 
 same title (fine in a space you own), `fail` refuses to touch pages the sync did not make
 (use this in a shared space).
 
-### Mermaid diagrams
+### Diagrams: Mermaid and D2
 
-Confluence has no native Mermaid, so `mermaidMode` chooses how diagrams appear:
+Two diagram languages are understood, each as a fenced code block (` ```mermaid ` or
+` ```d2 `). Confluence has native support for neither, so `mermaidMode` chooses how they appear:
 
-- `image` (default) — the editor's webview renders the diagram to SVG, which is uploaded as
-  an attachment and shown with the Mermaid source kept in a code macro. Portable across
-  platforms.
+- `image` (default) — the diagram is drawn to SVG, uploaded as an attachment and shown with
+  its source kept in a code macro. Portable across platforms.
 - `code` — leave it as a fenced code block.
-- `html-macro` / `marketplace-macro` — where your site enables them.
+- `html-macro` / `marketplace-macro` — Mermaid only, where your site enables them.
+
+**Mermaid** is drawn by the editor's webview. **D2** is drawn by the engine itself, so it also
+works from the command line and on CI, with no browser, and the same diagram always draws the
+same SVG. On GitHub Pages a D2 diagram is drawn at build time and shown as an image; Mermaid is
+drawn by the visitor's browser. D2 has no `html-macro` mode: outside `code` it is always an image.
 
 ## Authentication
 

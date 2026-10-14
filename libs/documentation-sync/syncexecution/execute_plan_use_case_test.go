@@ -186,8 +186,52 @@ func TestPushEmbedsTheMermaidSourceInTheSVG(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if source, ok := extractMermaidSource(svg); !ok || !strings.Contains(source, "graph TD; A-->B") {
-		t.Fatalf("the uploaded SVG does not carry the Mermaid source: %q ok=%v", source, ok)
+	if language, source, ok := extractDiagramSource(svg); !ok || language != "mermaid" || !strings.Contains(source, "graph TD; A-->B") {
+		t.Fatalf("the uploaded SVG does not carry the Mermaid source: %q %q ok=%v", language, source, ok)
+	}
+}
+
+func TestPushDrawsAD2DiagramAsAnSVGWithItsSource(t *testing.T) {
+	for _, mode := range []string{"image", "html-macro"} {
+		t.Run(mode, func(t *testing.T) {
+			w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```d2\nweb -> api\n```\n"})
+			w.output.MermaidMode = mode
+			_, report := w.sync()
+			guide := w.result(report, "guide.md")
+			names, err := w.fake.ListAttachments(context.Background(), guide.PageID)
+			if err != nil || len(names) != 1 || !strings.HasPrefix(names[0].Filename, "d2-") || !strings.HasSuffix(names[0].Filename, ".svg") {
+				t.Fatalf("attachments %+v (%v)", names, err)
+			}
+			svg, err := w.fake.DownloadAttachment(context.Background(), guide.PageID, names[0].Filename)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if language, source, ok := extractDiagramSource(svg); !ok || language != "d2" || source != "web -> api" {
+				t.Fatalf("the SVG does not carry the D2 source: %q %q ok=%v", language, source, ok)
+			}
+			if !strings.Contains(string(svg), "-->d2:web -> api</svg>") {
+				t.Fatalf("the renderer was not asked for D2: %q", svg)
+			}
+		})
+	}
+}
+
+func TestADiagramInCodeModeIsNeverDrawnWhateverItsLanguage(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```d2\na -> b\n```\n\n```mermaid\ngraph TD; A-->B\n```\n"})
+	w.output.MermaidMode = "code"
+	w.renderer = renderer{fail: true}
+	_, report := w.sync()
+	if len(report.Warnings) != 0 {
+		t.Fatalf("warnings %q", report.Warnings)
+	}
+}
+
+func TestADiagramThatCannotBeDrawnIsNamedByItsLanguage(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```d2\na -> b\n```\n"})
+	w.renderer = renderer{fail: true}
+	_, report := w.sync()
+	if !slices.Contains(report.Warnings, "guide.md: a D2 diagram could not be drawn (syntax error); it is shown as code") {
+		t.Fatalf("warnings %q", report.Warnings)
 	}
 }
 
@@ -199,7 +243,7 @@ func TestTwoWayPullRecoversADiagramFromItsSVG(t *testing.T) {
 
 	// The platform shows the diagram as just its SVG image — its code macro was removed — but
 	// the SVG carries the source.
-	svg := injectMermaidSource([]byte("<svg></svg>"), "graph LR; X-->Y")
+	svg := injectDiagramSource([]byte("<svg></svg>"), "mermaid", "graph LR; X-->Y")
 	if _, err := w.fake.UploadFile(context.Background(), id, platformport.File{Name: "mermaid-1.svg", Content: svg}); err != nil {
 		t.Fatal(err)
 	}
@@ -497,7 +541,7 @@ func TestADiagramThatCannotBeDrawnStaysCode(t *testing.T) {
 			if guide.Outcome != Written || w.fake.Page(guide.PageID).Body.Blocks[1].(platformport.Diagram).Image != nil {
 				t.Fatalf("%+v", guide)
 			}
-			want := "no diagram renderer is available, so Mermaid diagrams are shown as code"
+			want := "no diagram renderer is available, so diagrams are shown as code"
 			if r != nil {
 				want = "readme.guide.md: a Mermaid diagram could not be drawn (syntax error); it is shown as code"
 			}

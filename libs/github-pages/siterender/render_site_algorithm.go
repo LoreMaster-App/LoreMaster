@@ -26,6 +26,8 @@ type page struct {
 	title    string
 	depth    int
 	body     []byte
+	// documentPath is the Markdown file the page came from, workspace-relative.
+	documentPath string
 }
 
 // navItem is one entry in a page's navigation sidebar, with an href relative to the page
@@ -53,7 +55,19 @@ type pageData struct {
 // page, and a .nojekyll marker so GitHub Pages serves the files untouched. It is pure: no
 // file is written and no network is touched. siteTitle labels the sidebar.
 func GenerateSite(siteTitle string, tree documenttree.DocumentTree) ([]SiteFile, error) {
+	return GenerateSiteWith(siteTitle, tree, nil)
+}
+
+// GenerateSiteWith is GenerateSite with a transform applied to each document's Markdown before
+// it is embedded (a document's path and its body in, the body to embed out): how a diagram
+// language the browser cannot draw is turned into an image at build time. nil changes nothing.
+func GenerateSiteWith(siteTitle string, tree documenttree.DocumentTree, transform func(path string, body []byte) []byte) ([]SiteFile, error) {
 	pages := collectPages(tree)
+	if transform != nil {
+		for i := range pages {
+			pages[i].body = transform(pages[i].documentPath, pages[i].body)
+		}
+	}
 
 	files := make([]SiteFile, 0, len(pages)+3)
 	for _, current := range pages {
@@ -91,6 +105,8 @@ func collectPages(tree documenttree.DocumentTree) []page {
 			title:    node.Title(),
 			depth:    depth,
 			body:     node.Document.Body,
+
+			documentPath: string(node.Document.Path),
 		})
 	})
 

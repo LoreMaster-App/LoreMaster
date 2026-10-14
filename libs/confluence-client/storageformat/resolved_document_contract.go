@@ -94,11 +94,32 @@ type CodeBlock struct {
 	Code     string
 }
 
-// Mermaid is a Mermaid diagram. Image is its rendered picture, uploaded as an
-// attachment; nil when none was rendered.
+// Mermaid is a diagram: Mermaid, or another language named by Language. Image is its
+// rendered picture, uploaded as an attachment; nil when none was rendered.
 type Mermaid struct {
 	Source string
-	Image  *AttachmentRef
+	// Language is the diagram language; empty means Mermaid.
+	Language string
+	Image    *AttachmentRef
+}
+
+// diagramLanguages are the languages a diagram can be in: the values of the lore-master marker
+// a code macro carries when it is a diagram's source.
+var diagramLanguages = []string{"mermaid", "d2"}
+
+// IsMermaid reports whether the diagram is Mermaid, the language that is drawn by the editor
+// and has the html and marketplace macro modes.
+func (m Mermaid) IsMermaid() bool {
+	return m.Language == "" || m.Language == "mermaid"
+}
+
+// Name is the diagram's language for markers and alt text, "mermaid" when none is set.
+func (m Mermaid) Name() string {
+	if m.Language == "" {
+		return "mermaid"
+	}
+
+	return m.Language
 }
 
 // Image is a picture; Source is an *AttachmentRef or a *URLRef. Width is in pixels, 0

@@ -93,7 +93,8 @@ GitHub Pages outputs need none: git carries the credentials.
 ## Limits
 
 Mermaid diagrams stay code blocks (the editor draws them; the command line has no browser), with
-the usual warning.
+the usual warning. D2 diagrams are drawn by the engine itself, so they are images from the
+command line too.
 
 ```yaml
 # GitHub Actions
