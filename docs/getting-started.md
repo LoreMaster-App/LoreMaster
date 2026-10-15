@@ -123,11 +123,11 @@ comments kept; a value that is not allowed is refused with the reason and nothin
 
 ### What changing the parent page or the space does
 
-The parent page is read at every sync, not stored in the files: a page's annotation only remembers
-which site and space it was synced to. So when you change the **parent page** of a storage, the next
-sync plans a **move** for every page that sits directly under the old parent, and the pages below
-them follow. Nothing needs deleting first. Changing the **space** (or the site) is different: files
-annotated for another space are treated as new, so the pages are created in the new space and the
+The parent page is read at every sync, not stored per file: `lore-master.json` only remembers
+which site and space each storage was synced to. So when you change the **parent page** of a storage,
+the next sync plans a **move** for every page that sits directly under the old parent, and the pages
+below them follow. Nothing needs deleting first. Changing the **space** (or the site) is different:
+files recorded for another space are treated as new, so the pages are created in the new space and the
 old ones stay where they were. To undo a sync that went to the wrong place, see
 [Undo a sync](#undo-a-sync).
 
@@ -140,7 +140,7 @@ would do and asks before doing it:
 
 - pages the sync **created** are deleted, children first;
 - pages it **updated or moved** are put back as they were (title, parent and body);
-- local files get their earlier content back, so the annotations are reverted too.
+- local files get their earlier content back, and so does `lore-master.json`.
 
 Anything edited after the sync, on the platform or in the file, is left alone and reported; a second
 prompt offers to discard those edits as well. Pages a sync moved to the trash are reported, since the
@@ -152,8 +152,10 @@ platform's own trash restores them. The command line has the same: `lore-master-
 - A page tree mirroring your files: nesting from `parent:` annotations, dotted filenames
   (`readme.architecture.md` under `readme.md`), directory `README.md` indexes, then the
   parent you chose.
-- Each synced file gains a small `<!-- lore-master … -->` annotation recording its page, so
-  a re-run changes only what actually changed — it never makes duplicates.
+- One `lore-master.json` at the workspace root recording which page each file became (per storage
+  name), so a re-run changes only what actually changed — it never makes duplicates — and a sync
+  shows in git as one changed file, not one per Markdown file. See
+  [Sync state](sync-state.md).
 
 ## Next steps
 

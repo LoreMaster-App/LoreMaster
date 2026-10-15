@@ -14,6 +14,7 @@ Start here, then dive into the architecture decisions.
   Confluence and some to the wiki, with exclude and include lists.
 - [The `[children]` tag](children-tag.md): list a page's child pages with Confluence's children
   macro, or as links on a site or wiki.
+- [Sync state](sync-state.md): the one `lore-master.json` that records which page each file became
 - [Page templates](templates.md): lay out each output's pages with a built-in or your own
   template: a site shell, a wiki Markdown file or a Confluence page.
 

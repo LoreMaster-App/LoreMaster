@@ -28,6 +28,9 @@ type storedPlan struct {
 	prepared  syncexecution.Prepared
 	// template is the layout every page is put in; empty for the platform's own.
 	template confluenceplatform.Template
+	// state says where the pages' sync state is recorded (lore-master.json) and what the
+	// files carried before the sync, so the write-back migrates it.
+	state syncexecution.StateTarget
 }
 
 // PlanStore keeps plans between sync/plan and sync/execute.

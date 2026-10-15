@@ -23,6 +23,7 @@ import (
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
+	"lore-master/libs/documentation-sync/syncstate"
 	"lore-master/libs/markdown-workspace/syncannotation"
 )
 
@@ -154,18 +155,21 @@ func (w *world) execute(planID string) rpcprotocol.SyncExecuteResult {
 	return result
 }
 
+// annotation is what the sync state (lore-master.json) records for a file, or nil.
 func (w *world) annotation(path string) *syncannotation.Annotation {
 	w.t.Helper()
-	content, err := os.ReadFile(filepath.Join(w.root, path))
+	state, err := syncstate.Read(w.root)
 	if err != nil {
 		w.t.Fatal(err)
 	}
-	read, err := syncannotation.Read(content)
-	if err != nil {
-		w.t.Fatal(err)
+	for _, key := range state.Keys() {
+		storage := state.StorageNamed(key)
+		if page, ok := storage.Pages[path]; ok {
+			return syncstate.AnnotationFor(nil, storage, page)
+		}
 	}
 
-	return read.Annotation
+	return nil
 }
 
 func code(err error) int64 {
@@ -191,7 +195,7 @@ func TestPlanExecuteThenNothingToDo(t *testing.T) {
 	}
 
 	report := w.execute(plan.PlanID)
-	if len(report.Pages) != 3 || len(report.Rewritten) != 3 {
+	if len(report.Pages) != 3 || len(report.Rewritten) != 1 || report.Rewritten[0] != "lore-master.json" {
 		t.Fatalf("%+v", report)
 	}
 	for _, page := range report.Pages {
@@ -399,7 +403,7 @@ func TestARolledBackSyncDeletesItsPagesAndRestoresItsFiles(t *testing.T) {
 	}
 
 	journals := w.journalsList().Journals
-	if len(journals) != 1 || journals[0].ID != report.JournalID || journals[0].Created != 3 || journals[0].Files != 3 {
+	if len(journals) != 1 || journals[0].ID != report.JournalID || journals[0].Created != 3 || journals[0].Files != 1 {
 		t.Fatalf("journals = %+v", journals)
 	}
 

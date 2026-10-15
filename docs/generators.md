@@ -413,7 +413,7 @@ exits 1 in that case, which fails the pipeline step.
 - Every generated page carries `generated: <type>` in its `<!-- lore-master -->` annotation.
   A generator **only ever overwrites or removes files that carry its own marker**: a page you
   wrote by hand, or one made by another generator, is left alone and reported.
-- When the content of a page changes, its sync annotation (the platform page id and version)
+- When the content of a page changes, its sync state (the platform page id and version, in `lore-master.json`)
   is kept, so the page is updated on the platform, not recreated.
 - A page the generator no longer produces (a suite that was removed from the report) is
   deleted, and folders it empties are removed.

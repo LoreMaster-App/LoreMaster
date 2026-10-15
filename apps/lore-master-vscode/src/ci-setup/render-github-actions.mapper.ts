@@ -64,12 +64,13 @@ export function renderGitHubActions (needs: CiNeeds): string {
   if (needs.commitsAnnotations) {
     lines.push(
       '',
-      '      - name: Commit the page annotations',
+      '      - name: Commit the sync state',
       '        run: |',
       '          git config user.name "lore-master[bot]"',
       '          git config user.email "noreply@users.noreply.github.com"',
       '          git add -u -- "*.md"',
-      '          git diff --cached --quiet || git commit -m "docs: update LoreMaster page annotations [skip ci]"',
+      '          git add -- lore-master.json || true',
+      '          git diff --cached --quiet || git commit -m "docs: update LoreMaster sync state [skip ci]"',
       '          git push',
     )
   }

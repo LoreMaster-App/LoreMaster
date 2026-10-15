@@ -45,7 +45,7 @@ Watch mode needs a storage already set up, so run **Sync** once first.
 - **Settings.** Changing `.vscode/settings.json` (or the deprecated `.lore-master.yaml`) runs every generator and syncs everything.
 - **Bursts.** Changes are gathered until nothing has changed for the debounce time. Changes made
   while a sync runs wait for the next one; two syncs never overlap.
-- **Our own writes.** The pages a generator writes and the annotations a sync adds to your files
+- **Our own writes.** The pages a generator writes and the `lore-master.json` a sync updates
   are not taken for your edits, so a sync does not trigger the next one.
 - **Failures.** A sync that fails is tried again with the same files (and any that changed since),
   after a wait that doubles from the debounce time up to a minute. A generator that fails is

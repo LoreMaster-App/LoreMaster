@@ -44,6 +44,18 @@ func Render(content []byte, annotation Annotation) ([]byte, error) {
 	if document.Annotation != nil && reflect.DeepEqual(normalised(*document.Annotation), normalised(annotation)) {
 		return content, nil
 	}
+	if IsEmpty(annotation) {
+		// Nothing to record: the file carries no block at all, so git shows no comment.
+		if document.Annotation == nil {
+			return content, nil
+		}
+		var leading []byte
+		if document.Layout.ByteOrderMark {
+			leading = byteOrderMark
+		}
+
+		return slices.Concat(leading, document.Body), nil
+	}
 	lines, err := blockLines(annotation)
 	if err != nil {
 		return nil, err
@@ -97,18 +109,21 @@ func RenderWithBody(content []byte, annotation Annotation, body []byte) ([]byte,
 	if err != nil {
 		return nil, err
 	}
-	lines, err := blockLines(annotation)
-	if err != nil {
-		return nil, err
-	}
 	eol := document.Layout.LineEnding
-	block := strings.Join(lines, eol)
 	frontMatter := document.Body[:frontMatterEnd(document.Body)]
 
 	var prefix []byte
 	if document.Layout.ByteOrderMark {
 		prefix = byteOrderMark
 	}
+	if IsEmpty(annotation) {
+		return slices.Concat(prefix, frontMatter, normaliseEOL(body, eol)), nil
+	}
+	lines, err := blockLines(annotation)
+	if err != nil {
+		return nil, err
+	}
+	block := strings.Join(lines, eol)
 
 	return slices.Concat(prefix, frontMatter, []byte(block+eol), normaliseEOL(body, eol)), nil
 }

@@ -32,7 +32,7 @@ describe('previewLines', () => {
     expect(lines).toEqual([
       'Delete 2 pages the sync created.',
       'Put 1 updated page back as it were.',
-      'Restore 1 local file, annotations included.',
+      'Restore 1 local file, the sync state included.',
     ])
   })
 

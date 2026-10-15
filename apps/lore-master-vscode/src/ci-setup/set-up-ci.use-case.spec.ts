@@ -72,7 +72,7 @@ async function needs () {
 }
 
 describe('buildCiSetupGuide', () => {
-  it('writes a GitHub Actions workflow with the pinned engine, the secrets and the annotation commit', async () => {
+  it('writes a GitHub Actions workflow with the pinned engine, the secrets and the sync-state commit', async () => {
     const { pipeline, guide } = buildCiSetupGuide(github, await needs())
 
     expect(pipeline.path).toBe('.github/workflows/lore-master.yml')
