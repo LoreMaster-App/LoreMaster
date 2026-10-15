@@ -129,6 +129,11 @@
         "category": "LoreMaster"
       },
       {
+        "command": "loreMaster.setUpCi",
+        "title": "Add to your CI pipeline",
+        "category": "LoreMaster"
+      },
+      {
         "command": "loreMaster.addGenerator",
         "title": "Add generator",
         "category": "LoreMaster",

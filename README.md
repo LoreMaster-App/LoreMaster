@@ -62,6 +62,9 @@ Step by step, with Confluence connection screens: [`docs/getting-started.md`](do
 - **A documentation agent in one command.** *Create documentation agent* writes a Claude Code
   subagent, a VS Code custom agent or an `AGENTS.md` block that knows your nesting rules
   ([`docs/agent.md`](docs/agent.md)).
+- **CI in one command.** *Add to your CI pipeline* reads your settings, detects GitHub Actions or
+  Azure Pipelines, and opens a guide with the pipeline file and the secrets to create
+  ([`docs/cli.md`](docs/cli.md#the-ci-session)).
 - **No YAML to hand-edit.** Storages and generators are added, edited and removed from their views;
   your comments in the settings file survive.
 
