@@ -27,7 +27,7 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
     async pickStorageTypes () {
       const picked = await vscode.window.showQuickPick(
         [
-          { label: 'Confluence', description: 'Sync Markdown to a Confluence space', value: 'confluence' as StorageType, picked: true },
+          { label: 'Confluence', description: 'Sync Markdown to a Confluence space', value: 'confluence' as StorageType },
           { label: 'GitHub Pages', description: 'Publish Markdown as a static site on a gh-pages branch', value: 'github-pages' as StorageType },
           { label: 'GitHub Wiki', description: "Publish Markdown as the repository's wiki pages", value: 'github-wiki' as StorageType },
         ],

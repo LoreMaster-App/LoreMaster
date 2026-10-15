@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { GENERATE_AND_SYNC_COMMAND } from '../generate-and-sync'
 import { SYNC_COMMAND } from '../sync-command'
-import { ADD_STORAGE_COMMAND } from './add-storage.handler'
+import { ADD_STORAGE_COMMAND } from './add-storage-command.config'
 import { OPEN_CONFIG_COMMAND } from './open-config.handler'
 
 /** The view id contributed in package.json (inside the LoreMaster view container). */
