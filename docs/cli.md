@@ -69,6 +69,26 @@ file whose settings sit between the user's and the folder's). See
 [configuration](configuration.md#overrides-for-ci). `--json` prints one
 document on stdout; progress lines always go to stderr.
 
+## The CI session
+
+**LoreMaster: Add to your CI pipeline** (Command Palette) builds the pipeline from the settings you
+use locally, so you do not have to write it from this page:
+
+1. It reads the effective settings: outputs, generators and their `prepare` commands.
+2. It looks for the CI the repository already uses (`.github/workflows`, `azure-pipelines.yml`,
+   `.azure-pipelines/`) and asks which one when it finds none or several. GitHub Actions and Azure
+   Pipelines are covered; for another CI, use the [shell recipe above](#getting-the-binary-in-ci).
+3. It opens a guide with the secrets to create (named from your Confluence edition: Cloud sites on
+   `atlassian.net` get an email and a token, others a personal access token), the settings to commit
+   when they live only in your user settings, and the pipeline itself.
+4. It offers **Copy pipeline** or **Add** the file (`.github/workflows/lore-master.yml` or
+   `.azure-pipelines/lore-master.yml`). It writes its own file and never edits a pipeline of yours; a
+   file already there with other content is replaced only when you say so.
+
+The pipeline downloads the engine of your extension's version and checks its checksum, runs
+`sync --generate --yes` (with `--prepare` when a generator has a `prepare` command) and, for
+Confluence outputs, commits the page annotations back with `[skip ci]`.
+
 ## Credentials
 
 From the environment, never from a file:

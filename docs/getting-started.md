@@ -122,7 +122,10 @@ value that is not allowed is refused with the reason and nothing is written. For
   test results, coverage, OpenAPI, Storybook or a code documenter, then run it. The pages appear in
   your workspace and the next sync publishes them. See [generators](generators.md).
 - **Keep it fresh while you type.** Run **LoreMaster: Toggle watch mode**; see [watch mode](watch.md).
-- **Run it on CI.** The engine is a command line with a [GitHub Action](github-action.md); see
+- **Run it on CI.** Run **LoreMaster: Add to your CI pipeline**: it reads your settings, finds
+  whether the repository uses GitHub Actions or Azure Pipelines (and asks when it cannot tell) and
+  opens a guide with the pipeline and the secrets to create; see [CI session](cli.md#the-ci-session).
+  The engine is also a command line with a [GitHub Action](github-action.md); see
   [the command line](cli.md).
 - **Let an AI agent write the docs your way.** See [the documentation agent](agent.md) and
   [the MCP server](mcp-server.md).
