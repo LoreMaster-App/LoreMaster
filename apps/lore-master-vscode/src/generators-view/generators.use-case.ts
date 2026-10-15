@@ -27,10 +27,12 @@ export async function readGeneratorSettings (engine: GeneratorsViewEngine, works
 /** What can change about a generator once it exists. A cleared value is sent as absent, and
  *  the engine then removes it from the file. */
 export interface GeneratorPatch {
-  output?: string
-  input?:  string[]
-  source?: string
-  title?:  string
+  output?:  string
+  input?:   string[]
+  source?:  string
+  title?:   string
+  /** The command that produces what the generator reads (`prepare`); '' removes it. */
+  prepare?: string
 }
 
 /** Reads the settings, lets `change` rewrite the generators, and saves everything else as it was.
@@ -64,13 +66,14 @@ export async function updateGenerator (engine: GeneratorsViewEngine, workspaceRo
       throw new Error('That generator is no longer in your LoreMaster settings.')
     }
     const current = generators[index]
-    // Spread first: whatever the patch does not name (prepare, source) must survive the save.
+    // Spread first: whatever the patch does not name must survive the save.
     generators[index] = {
       ...current,
-      output: patch.output ?? current.output,
-      input:  patch.input === undefined ? current.input : (patch.input.length > 0 ? patch.input : undefined),
-      source: patch.source === undefined ? current.source : (patch.source === '' ? undefined : patch.source),
-      title:  patch.title === undefined ? current.title : (patch.title === '' ? undefined : patch.title),
+      output:  patch.output ?? current.output,
+      input:   patch.input === undefined ? current.input : (patch.input.length > 0 ? patch.input : undefined),
+      source:  patch.source === undefined ? current.source : (patch.source === '' ? undefined : patch.source),
+      title:   patch.title === undefined ? current.title : (patch.title === '' ? undefined : patch.title),
+      prepare: patch.prepare === undefined ? current.prepare : (patch.prepare === '' ? undefined : patch.prepare),
     }
 
     return generators

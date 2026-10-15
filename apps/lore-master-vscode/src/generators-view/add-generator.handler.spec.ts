@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import { GENERATORS_RUN_METHOD, type Generator, type Output, SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD, type Settings } from '../engine-protocol'
+import { GENERATE_AND_SYNC_COMMAND } from '../generate-and-sync'
 import { addGeneratorCommand } from './add-generator.handler'
 import { GeneratorsViewProvider } from './generators-view.client'
 
@@ -28,6 +29,7 @@ interface Scenario {
   runs:       unknown[]
 }
 
+const { commands } = vscode
 const window = vscode.window as unknown as Record<string, unknown>
 const original = { ...window }
 
@@ -104,7 +106,7 @@ describe('addGeneratorCommand', () => {
 
     expect(saved()).toEqual([{ type: 'go-docs', output: 'docs/api', input: ['libs/', 'apps/', '!**/internal/'] }])
     expect(scenario.messages).toEqual(['info: LoreMaster: added the Go package docs generator → docs/api.'])
-    expect(scenario.buttons).toEqual([['Run now']])
+    expect(scenario.buttons).toEqual([['Run now', 'Generate and sync']])
   })
 
   it('suggests the kind\'s folder, a free one when it is taken, and validates what is typed', async () => {
@@ -158,6 +160,61 @@ describe('addGeneratorCommand', () => {
 
     expect(scenario.runs).toEqual([{ workspaceRoot: '/w', generators: [1] }])
     expect(scenario.messages.at(-1)).toBe('info: LoreMaster: 1 page written, 0 unchanged, 0 removed by 1 generator.')
+  })
+
+  it('asks the generic generator for the command that produces its files, and saves it as prepare', async () => {
+    scenario.quickPicks.push(pick('Recognise it from the output'))
+    scenario.inputs.push('docs/generated', 'build/reports/', '  npm test -- --reporters=jest-junit  ')
+
+    await addGeneratorCommand(deps({ version: 1, outputs: [storage(['docs'])] }))
+
+    expect(saved()).toEqual([{ type: '', output: 'docs/generated', input: ['build/reports/'], prepare: 'npm test -- --reporters=jest-junit' }])
+    const command = scenario.prompts[2]
+    expect(command.title).toContain('which command produces')
+    expect(command.validateInput?.('  ')).toContain('Name the command')
+    expect(command.validateInput?.('make docs')).toBeUndefined()
+  })
+
+  it('asks for the command of a Storybook, but lets it stay empty', async () => {
+    scenario.quickPicks.push(pick('Storybook components'))
+    scenario.inputs.push('docs/storybook', 'storybook-static', '')
+
+    await addGeneratorCommand(deps({ version: 1, outputs: [storage(['docs'])] }))
+
+    expect(saved()).toEqual([{ type: 'storybook-docs', output: 'docs/storybook', source: 'storybook-static' }])
+    expect(scenario.prompts[2].validateInput?.('')).toBeUndefined()
+  })
+
+  it('does not ask a kind that reads existing files for a command', async () => {
+    scenario.quickPicks.push(pick('Test results'))
+    scenario.inputs.push('docs/tests', '')
+
+    await addGeneratorCommand(deps({ version: 1, outputs: [storage(['docs'])] }))
+
+    expect(scenario.prompts).toHaveLength(2)
+  })
+
+  it('saves nothing when the command prompt is cancelled', async () => {
+    scenario.quickPicks.push(pick('Recognise it from the output'))
+    scenario.inputs.push('docs/generated', 'build/reports/', undefined)
+
+    await addGeneratorCommand(deps({ version: 1, outputs: [storage(['docs'])] }))
+
+    expect(scenario.saves).toEqual([])
+  })
+
+  it('generates and syncs when asked to', async () => {
+    const calls: string[] = []
+    const subscription = commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => { calls.push('generate-and-sync') })
+    scenario.quickPicks.push(pick('Recognise it from the output'))
+    scenario.inputs.push('docs/generated', 'build/reports/', 'make reports')
+    scenario.answers.push('Generate and sync')
+
+    await addGeneratorCommand(deps({ version: 1, outputs: [storage(['docs'])] }))
+    subscription.dispose()
+
+    expect(calls).toEqual(['generate-and-sync'])
+    expect(scenario.runs).toEqual([])
   })
 
   it('does nothing when any prompt is cancelled', async () => {

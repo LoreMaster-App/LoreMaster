@@ -82,7 +82,7 @@ describe('editGeneratorCommand', () => {
 
     await editGeneratorCommand(deps(), { index: 0, generator: tests })
 
-    expect(scenario.picked?.map(item => [item.label, item.description])).toEqual([['Output folder', 'docs/tests'], ['What it reads', 'reports/'], ['Index page title', 'CI results']])
+    expect(scenario.picked?.map(item => [item.label, item.description])).toEqual([['Output folder', 'docs/tests'], ['What it reads', 'reports/'], ['Index page title', 'CI results'], ['Command that produces it', '(none)']])
     expect(scenario.prompts[0].value).toBe('docs/tests')
     expect(scenario.prompts[0].validateInput?.('..')).toContain('inside the workspace')
     expect(scenario.saves[0].generators?.[0]).toEqual({ ...tests, output: 'docs/ci' })
@@ -113,12 +113,30 @@ describe('editGeneratorCommand', () => {
     expect(scenario.saves[1].generators?.[0].title).toBeUndefined()
   })
 
+  it('changes the command, clears it, and keeps it required for the generic generator', async () => {
+    scenario.quickPicks.push(pick('Command that produces it'))
+    scenario.inputs.push('  make reports  ')
+    await editGeneratorCommand(deps(), { index: 0, generator: tests })
+    expect(scenario.saves[0].generators?.[0].prepare).toBe('make reports')
+    expect(scenario.prompts[0].validateInput?.('')).toBeUndefined()
+
+    scenario.quickPicks.push(pick('Command that produces it'))
+    scenario.inputs.push('')
+    await editGeneratorCommand(deps(), { index: 0, generator: { ...tests, prepare: 'make reports' } })
+    expect(scenario.saves[1].generators?.[0].prepare).toBeUndefined()
+
+    scenario.quickPicks.push(pick('Command that produces it'))
+    scenario.inputs.push(undefined)
+    await editGeneratorCommand(deps(), { index: 0, generator: { type: '', output: 'docs/generated', input: ['build/'], prepare: 'make' } })
+    expect(scenario.prompts[2].validateInput?.('  ')).toContain('Name the command')
+  })
+
   it('shows the default for a setting that is not set', async () => {
     scenario.quickPicks.push(() => undefined)
 
     await editGeneratorCommand(deps(), { index: 1, generator: api })
 
-    expect(scenario.picked?.map(item => item.description)).toEqual(['docs/api', '(the default)', '(the default)'])
+    expect(scenario.picked?.map(item => item.description)).toEqual(['docs/api', '(the default)', '(the default)', '(none)'])
   })
 
   it('does nothing when cancelled at either prompt, or without a row', async () => {

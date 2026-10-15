@@ -10,7 +10,7 @@ import type { GeneratorsViewDeps } from './add-generator.handler'
 /** The command id contributed in package.json. */
 export const EDIT_GENERATOR_COMMAND = 'loreMaster.editGenerator'
 
-type Field = 'output' | 'input' | 'title'
+type Field = 'output' | 'input' | 'title' | 'prepare'
 
 /**
  * Changes one setting of a generator: its output folder, what it reads, or the title of its
@@ -53,6 +53,7 @@ async function pickField (node: GeneratorNode): Promise<Field | undefined> {
         ? { label: 'Storybook to read', description: generator.source ?? '(not set)', field: 'input' }
         : { label: 'What it reads', description: generator.input && generator.input.length > 0 ? generator.input.join(', ') : '(the default)', field: 'input' },
       { label: 'Index page title', description: generator.title ?? '(the default)', field: 'title' },
+      { label: 'Command that produces it', description: generator.prepare ?? '(none)', field: 'prepare' },
     ],
     { title: `LoreMaster: change a setting of the ${generatorTypeOf(generator.type).label} generator` },
   ) as { field: Field } | undefined
@@ -82,6 +83,17 @@ async function askPatch (field: Field, node: GeneratorNode, inputHint: string): 
     const input = await vscode.window.showInputBox({ title: 'LoreMaster: what to read', prompt: inputHint, value: (generator.input ?? []).join(', ') })
 
     return input === undefined ? undefined : { input: parseList(input) }
+  }
+  if (field === 'prepare') {
+    const required = generator.type === ''
+    const command = await vscode.window.showInputBox({
+      title:         'LoreMaster: command that produces what it reads',
+      prompt:        required ? 'A shell command run from the workspace. Required: this generator has nothing else to read.' : 'A shell command run before generating; leave empty for none.',
+      value:         generator.prepare ?? '',
+      validateInput: value => required && value.trim() === '' ? 'Name the command that writes the files to read.' : undefined,
+    })
+
+    return command === undefined ? undefined : { prepare: command.trim() }
   }
   const title = await vscode.window.showInputBox({ title: 'LoreMaster: index page title', prompt: 'Leave empty for the default.', value: generator.title ?? '' })
 
