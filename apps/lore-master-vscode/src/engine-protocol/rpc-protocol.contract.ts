@@ -398,12 +398,12 @@ export interface SyncRollbackParams {
 }
 
 export interface RollbackPage {
-  pageId: string
-  title:  string
+  pageId:  string
+  title:   string
   /** What the sync did: created, updated or trashed. */
-  kind:   string
+  kind:    string
   /** trashed, restored, would-trash, would-restore, gone, skipped, failed or irreversible. */
-  result: string
+  result:  string
   reason?: string
 }
 
