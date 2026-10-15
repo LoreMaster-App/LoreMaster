@@ -1,6 +1,8 @@
 package sessionlifecycle
 
 import (
+	"context"
+
 	"lore-master/libs/documentation-sync/confluenceplatform"
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/workspacesettings"
@@ -20,10 +22,18 @@ type Session struct {
 type Platform interface {
 	platformport.DocumentationPlatform
 	ForOutput(output workspacesettings.Output) platformport.DocumentationPlatform
+	// ResolveTemplate reads the page layout an output names; the zero Template is none.
+	ResolveTemplate(ctx context.Context, workspaceRoot string, value string) (confluenceplatform.Template, error)
+	// ForOutputWithTemplate is ForOutput with every page put in the template.
+	ForOutputWithTemplate(output workspacesettings.Output, template confluenceplatform.Template) platformport.DocumentationPlatform
 }
 
 // confluence adapts the Confluence platform to Platform.
 type confluence struct{ *confluenceplatform.Platform }
+
+func (c confluence) ForOutputWithTemplate(output workspacesettings.Output, template confluenceplatform.Template) platformport.DocumentationPlatform {
+	return c.Platform.ForOutput(output).WithTemplate(template)
+}
 
 func (c confluence) ForOutput(output workspacesettings.Output) platformport.DocumentationPlatform {
 	return c.Platform.ForOutput(output)

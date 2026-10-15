@@ -19,6 +19,8 @@ export interface StorageFormValues {
   repo:           string
   branch:         string
   path:           string
+  /** The page template: a built-in's name, a path or a Confluence page; '' is the default. */
+  template:       string
   /** Folders to sync, separated by commas. */
   roots:          string
   /** Paths this storage leaves out, separated by commas. */

@@ -18,6 +18,23 @@ type Prepared struct {
 	// Workspace resolves links and images across the documents; a two-way pull reuses it
 	// to prepare the body it pulled exactly as the next sync would.
 	Workspace documentconversion.Workspace
+	// TemplateHash identifies the layout the pages are put in; "" when there is none. It is
+	// part of every page's render hash, so changing the template re-publishes the pages.
+	TemplateHash string
+}
+
+// WithTemplate is the pages laid out by the template with this hash: every render hash now
+// includes it.
+func (p Prepared) WithTemplate(templateHash string) Prepared {
+	p.TemplateHash = templateHash
+	pages := make(map[documentdiscovery.DocumentPath]PreparedPage, len(p.Pages))
+	for path, page := range p.Pages {
+		page.Converted.RenderHash = documentconversion.HashWithTemplate(page.Converted.RenderHash, templateHash)
+		pages[path] = page
+	}
+	p.Pages = pages
+
+	return p
 }
 
 // PreparedPage is one document ready to write.

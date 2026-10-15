@@ -76,6 +76,9 @@ type Output struct {
 	// Exclude is gitignore-syntax patterns (files, or folders ending in "/") this output
 	// leaves out, on top of the top-level ignore list and the content entries' excludes.
 	Exclude []string `yaml:"exclude,omitempty"`
+	// Template is how this output's pages are laid out: a built-in's name, a path in the
+	// workspace or (confluence) a page id or address. Empty is the default layout.
+	Template string `yaml:"template,omitempty"`
 }
 
 // Content is one source feeding an output.

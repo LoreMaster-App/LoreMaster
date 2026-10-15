@@ -170,6 +170,15 @@ func SameSite(a string, b string) bool {
 	return errA == nil && errB == nil && strings.EqualFold(normalA, normalB)
 }
 
+// WithTemplate is the same connection laying every page out in template. Pages written
+// through it are wrapped in it; the original is unchanged.
+func (p *Platform) WithTemplate(template Template) *Platform {
+	copied := *p
+	copied.template = template
+
+	return &copied
+}
+
 // ForOutput is the same connection rendering pages the way the output asks: its
 // mermaidMode and linkMode. Pages written through it use those; the original is
 // unchanged.

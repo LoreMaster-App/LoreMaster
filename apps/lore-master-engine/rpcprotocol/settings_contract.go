@@ -96,6 +96,9 @@ type Output struct {
 	Include []string `json:"include,omitempty"`
 	// Exclude is gitignore-syntax patterns this output leaves out, on top of the ignore list.
 	Exclude []string `json:"exclude,omitempty"`
+	// Template is the layout of the output's pages: a built-in's name, a workspace path or, for
+	// Confluence, a page id or address; empty is the default.
+	Template string `json:"template,omitempty"`
 }
 
 // Content is one kind of lore an output syncs.

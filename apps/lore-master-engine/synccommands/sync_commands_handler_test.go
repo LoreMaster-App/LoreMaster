@@ -19,6 +19,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
+	"lore-master/libs/documentation-sync/confluenceplatform"
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
@@ -36,6 +37,14 @@ func (s session) ForOutput(output workspacesettings.Output) platformport.Documen
 	*s.outputs = append(*s.outputs, output)
 
 	return s.DocumentationPlatform
+}
+
+func (s session) ResolveTemplate(context.Context, string, string) (confluenceplatform.Template, error) {
+	return confluenceplatform.Template{}, nil
+}
+
+func (s session) ForOutputWithTemplate(output workspacesettings.Output, _ confluenceplatform.Template) platformport.DocumentationPlatform {
+	return s.ForOutput(output)
 }
 
 // editor plays VS Code: it draws diagrams and collects progress. It is served

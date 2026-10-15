@@ -24,6 +24,7 @@ type outputWire struct {
 	Path           string        `json:"path,omitempty"`
 	Include        []string      `json:"include,omitempty"`
 	Exclude        []string      `json:"exclude,omitempty"`
+	Template       string        `json:"template,omitempty"`
 }
 
 type contentWire struct {
@@ -81,7 +82,7 @@ func toSettings(values map[string]merged) (workspacesettings.Settings, error) {
 			Platform: wire.Platform, BaseURL: wire.BaseURL, Space: wire.Space, ParentPageID: wire.ParentPageID,
 			TitlePrefix: wire.TitlePrefix, Direction: wire.Direction, MermaidMode: wire.MermaidMode,
 			TitleCollision: wire.TitleCollision, LinkMode: wire.LinkMode, Repo: wire.Repo, Branch: wire.Branch,
-			Path: wire.Path, Include: wire.Include, Exclude: wire.Exclude,
+			Path: wire.Path, Include: wire.Include, Exclude: wire.Exclude, Template: wire.Template,
 		}
 		for _, content := range wire.Content {
 			output.Content = append(output.Content, workspacesettings.Content{

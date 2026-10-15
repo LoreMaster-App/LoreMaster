@@ -38,7 +38,9 @@ func TestValidate(t *testing.T) {
 		{"bad direction", func(s *Settings) { s.Outputs[0].Direction = "sideways" }, `outputs[0].direction "sideways" is not one of to-platform, two-way`},
 		{"html macro reserved", func(s *Settings) { s.Outputs[0].MermaidMode = "html-macro" }, `outputs[0].mermaidMode "html-macro" is planned but not available yet (#40); use image or code`},
 		{"test results reserved", func(s *Settings) { s.Outputs[0].Content[0].Type = "test-results" }, `outputs[0].content[0].type "test-results" is planned but not available yet (#96); use markdown`},
-		{"custom template reserved", func(s *Settings) { s.Outputs[0].Content[0].Template = "fancy" }, `outputs[0].content[0].template "fancy": custom templates are planned but not available yet (#97); use default`},
+		{"custom template reserved", func(s *Settings) { s.Outputs[0].Content[0].Template = "fancy" }, `outputs[0].content[0].template "fancy": a content entry only takes default; set the template on the output (outputs[].template)`},
+		{"template of another platform", func(s *Settings) { s.Outputs[0].Template = "minimal" }, `outputs[0].template "minimal" is not a built-in template of confluence; use default, or a path`},
+		{"template outside the workspace", func(s *Settings) { s.Outputs[0].Template = "../layout.xhtml" }, `outputs[0].template "../layout.xhtml" is not a built-in name, a page id or address, or a path inside the workspace`},
 		{"bad collision mode", func(s *Settings) { s.Outputs[0].TitleCollision = "overwrite" }, `outputs[0].titleCollision "overwrite" is not one of fail, adopt`},
 		{"bad link mode", func(s *Settings) { s.Outputs[0].LinkMode = "url" }, `outputs[0].linkMode "url" is not one of title, id`},
 		{"http address", func(s *Settings) { s.Outputs[0].BaseURL = "http://acme.com" }, `outputs[0].baseUrl "http://acme.com" must be an https address`},
@@ -102,7 +104,7 @@ func TestValidateGitHubPages(t *testing.T) {
 			second.Path = "docs/"
 			s.Outputs = append(s.Outputs, second)
 		}, "outputs[1] publishes to the same repo and branch as outputs[0]; two outputs would overwrite each other"},
-		{"content still checked", func(s *Settings) { s.Outputs[0].Content[0].Template = "fancy" }, `outputs[0].content[0].template "fancy": custom templates are planned but not available yet (#97); use default`},
+		{"content still checked", func(s *Settings) { s.Outputs[0].Content[0].Template = "fancy" }, `outputs[0].content[0].template "fancy": a content entry only takes default; set the template on the output (outputs[].template)`},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

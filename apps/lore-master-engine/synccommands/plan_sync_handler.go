@@ -53,6 +53,11 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 		}
 		titles, _ := documenttree.PageTitles(tree, output.TitlePrefix)
 		prepared := syncexecution.PreparePages(documents, titles, fileReader(params.WorkspaceRoot))
+		template, err := session.Platform.ResolveTemplate(ctx, params.WorkspaceRoot, output.Template)
+		if err != nil {
+			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		}
+		prepared = prepared.WithTemplate(template.Hash)
 		scope := make([]documentdiscovery.DocumentPath, len(params.Scope))
 		for i, path := range params.Scope {
 			scope[i] = documentdiscovery.DocumentPath(path)
@@ -67,7 +72,7 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 		plan.Warnings = append(append(warnings, plan.Warnings...), prepared.Warnings...)
 
 		id := plans.put(&storedPlan{
-			sessionID: session.ID, root: params.WorkspaceRoot, output: output, space: space, plan: plan, prepared: prepared,
+			sessionID: session.ID, root: params.WorkspaceRoot, output: output, space: space, plan: plan, prepared: prepared, template: template,
 		})
 
 		return planResult(id, plan), nil

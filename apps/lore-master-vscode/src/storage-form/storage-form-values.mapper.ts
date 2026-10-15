@@ -17,6 +17,7 @@ export function emptyValues (): StorageFormValues {
     repo:           '',
     branch:         '',
     path:           '',
+    template:       '',
     roots:          '.',
     excludes:       '',
     ignore:         '',
@@ -45,6 +46,7 @@ export function outputToValues (output: Output, settings: Settings): StorageForm
     repo:           output.repo ?? '',
     branch:         output.branch ?? '',
     path:           output.path ?? '',
+    template:       output.template ?? '',
     roots:          (content?.roots ?? ['.']).join(', '),
     excludes:       (content?.excludes ?? []).join(', '),
     ignore:         (settings.ignore ?? []).join(', '),
@@ -104,6 +106,9 @@ export function valuesToOutput (values: StorageFormValues, base?: Output): Outpu
     output.branch = values.branch.trim()
     output.path = platform === 'github-pages' && values.path.trim() !== '' ? values.path.trim() : undefined
   }
+
+  const template = values.template.trim()
+  output.template = template === '' || template === 'default' ? undefined : template
 
   return output
 }

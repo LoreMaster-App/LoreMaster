@@ -51,11 +51,19 @@ func RenderSite(ctx context.Context, workspaceRoot string, outputIndex int) (Ren
 
 	var files []siterender.SiteFile
 	if output.Platform == "github-wiki" {
-		files = wikirender.GenerateWiki(tree)
+		shell, err := loadWikiTemplate(workspaceRoot, output)
+		if err != nil {
+			return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		}
+		files = wikirender.GenerateWikiTemplated(tree, shell)
 	} else {
+		chosen, err := loadSiteTemplate(workspaceRoot, output)
+		if err != nil {
+			return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
+		}
 		// Mermaid is drawn by the visitor's browser; D2 has no browser library, so it is drawn
 		// here, by the engine, and the page shows the picture.
-		files, err = siterender.GenerateSiteWith(deriveSiteTitle(output, workspaceRoot), tree, func(path string, body []byte) []byte {
+		files, err = siterender.GenerateSiteTemplated(deriveSiteTitle(output, workspaceRoot), tree, func(path string, body []byte) []byte {
 			drawn, notes := siterender.InlineDiagrams(body, d2rendering.Language, func(source string) ([]byte, error) {
 				return d2rendering.RenderSVG(ctx, source, 0)
 			})
@@ -64,7 +72,7 @@ func RenderSite(ctx context.Context, workspaceRoot string, outputIndex int) (Ren
 			}
 
 			return drawn
-		})
+		}, chosen)
 		if err != nil {
 			return RenderedSite{}, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "%s", err.Error())
 		}

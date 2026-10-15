@@ -32,3 +32,15 @@ func TestRenderHashTellsNodesApart(t *testing.T) {
 		}
 	}
 }
+
+func TestAnEditedTemplateChangesTheRenderHashAndNoTemplateDoesNot(t *testing.T) {
+	page := "sha256:aaaa"
+
+	if HashWithTemplate(page, "") != page {
+		t.Fatal("no template changed the hash")
+	}
+	first, second := HashWithTemplate(page, "sha256:t1"), HashWithTemplate(page, "sha256:t2")
+	if first == page || first == second || first != HashWithTemplate(page, "sha256:t1") {
+		t.Fatalf("hashes: %s %s", first, second)
+	}
+}
