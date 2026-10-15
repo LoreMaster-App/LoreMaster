@@ -94,6 +94,15 @@ Change the `ignore` list from **Edit storage → Ignored paths (all storages)**,
 and right-click a page or folder in the **Pages** view for **Do not sync…**. The **Local** node
 lists every file with where it goes. See [Choosing what goes where](choosing-what-goes-where.md).
 
+## Remember your connections on this machine
+
+By default a connection (the site and its token) lives in the secret storage of the VS Code profile
+you added it in. Turn on **`loreMaster.credentials.useKeychain`** and it is also kept in your
+operating system's keychain: another profile, and the command line (`lore-master-engine auth`, see
+[the command line](cli.md#remember-a-connection-instead)), sign in with it without a token being
+entered again. Turning it on remembers the connections you already have; removing a connection
+forgets it there too.
+
 ## 6. Change a storage's settings
 
 In the **Storages** view, click the pencil on a storage (or run **LoreMaster: Edit storage**). A form

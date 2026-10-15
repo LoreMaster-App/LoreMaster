@@ -34,10 +34,11 @@ func MigrateSettings() rpcserver.Method {
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
-		if err := editorsettings.SaveFolderSettings(params.WorkspaceRoot, loaded.Settings); err != nil {
+		target, err := editorsettings.SaveConfiguration(params.WorkspaceRoot, loaded.Settings)
+		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
 
-		return rpcprotocol.SettingsMigrateResult{Migrated: true, Path: editorsettings.FolderSettingsPath(params.WorkspaceRoot)}, nil
+		return rpcprotocol.SettingsMigrateResult{Migrated: true, Path: target.Path}, nil
 	}
 }

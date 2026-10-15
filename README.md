@@ -62,6 +62,8 @@ Step by step, with Confluence connection screens: [`docs/getting-started.md`](do
 - **A documentation agent in one command.** *Create documentation agent* writes a Claude Code
   subagent, a VS Code custom agent or an `AGENTS.md` block that knows your nesting rules
   ([`docs/agent.md`](docs/agent.md)).
+- **A `[children]` tag.** One line lists a page's child pages: Confluence's Children Display macro
+  there, a list of links on a site or wiki ([`docs/children-tag.md`](docs/children-tag.md)).
 - **Undo a sync.** *Roll back a sync* deletes the pages a sync created, puts the pages it updated back as
   they were and restores the files, so a sync to the wrong place is one click to undo
   ([`docs/getting-started.md`](docs/getting-started.md#undo-a-sync)).
@@ -116,8 +118,9 @@ Or use the **GitHub Action** to publish a docs site beside your web app in one s
 ## Diagrams that just work
 
 Fence a diagram as ` ```mermaid ` or ` ```d2 ` and it is drawn for the platform: **Mermaid** by the
-editor's webview, **D2** by the engine itself (so it also works on CI, with no browser, and always
-draws the same SVG). On Confluence the SVG is attached and the source kept in a code macro; on GitHub
+engine in a headless Chrome, Chromium or Edge (so it works from the command line and on CI too; the
+editor's webview is the fallback when none is installed), **D2** by the engine itself (with no
+browser, and always the same SVG). On Confluence the SVG is attached and the source kept in a code macro; on GitHub
 Pages it is shown inline.
 
 ## A real site from your docs

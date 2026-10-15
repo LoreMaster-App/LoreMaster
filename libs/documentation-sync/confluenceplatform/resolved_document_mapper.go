@@ -74,6 +74,8 @@ func mapBlock(block platformport.Block) (storageformat.Block, error) {
 		return mapTable(b)
 	case platformport.ThematicBreak:
 		return storageformat.ThematicBreak{}, nil
+	case platformport.Children:
+		return storageformat.Children{All: b.All, Depth: b.Depth}, nil
 	case platformport.CodeBlock:
 		return storageformat.CodeBlock{Language: b.Language, Code: b.Code}, nil
 	case platformport.Diagram:
@@ -231,6 +233,8 @@ func unmapBlock(block storageformat.Block) platformport.Block {
 		return unmapTable(b)
 	case storageformat.ThematicBreak:
 		return platformport.ThematicBreak{}
+	case storageformat.Children:
+		return platformport.Children{All: b.All, Depth: b.Depth}
 	case storageformat.CodeBlock:
 		return platformport.CodeBlock{Language: b.Language, Code: b.Code}
 	case storageformat.Mermaid:

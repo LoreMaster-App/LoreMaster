@@ -33,7 +33,7 @@ func SaveSettings() rpcserver.Method {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "the existing settings cannot be updated: %s", err.Error())
 		}
 		if result.Configured || !yamlExists(params.WorkspaceRoot) {
-			if err := editorsettings.SaveFolderSettings(params.WorkspaceRoot, settings); err != nil {
+			if _, err := editorsettings.SaveConfiguration(params.WorkspaceRoot, settings); err != nil {
 				return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 			}
 

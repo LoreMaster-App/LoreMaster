@@ -17,6 +17,8 @@ import (
 	"lore-master/apps/lore-master-engine/agentcommands"
 	"lore-master/apps/lore-master-engine/catalogqueries"
 	"lore-master/apps/lore-master-engine/clicommands"
+	"lore-master/apps/lore-master-engine/credentialcommands"
+	"lore-master/apps/lore-master-engine/credentialvault"
 	"lore-master/apps/lore-master-engine/editiondetect"
 	"lore-master/apps/lore-master-engine/generatorcommands"
 	"lore-master/apps/lore-master-engine/hostbridge"
@@ -93,6 +95,8 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 	plans := synccommands.NewPlanStore()
 	// Journals live in the user cache, outside any repository; without one nothing is journalled.
 	journalCache, _ := os.UserCacheDir()
+	// The credential vault is the OS keychain; it is only written to when the user opts in.
+	vault := credentialvault.NewOSKeychain()
 
 	return rpcserver.Methods{
 		rpcprotocol.MethodPing:              rpcserver.Ping(version),
@@ -106,6 +110,10 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodSyncExecute:       synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout, journalCache),
 		rpcprotocol.MethodSyncJournals:      synccommands.ListJournals(journalCache),
 		rpcprotocol.MethodSyncRollback:      synccommands.RollbackSync(sessions, journalCache),
+		rpcprotocol.MethodCredentialStore:   credentialcommands.StoreCredential(vault),
+		rpcprotocol.MethodCredentialGet:     credentialcommands.GetCredential(vault),
+		rpcprotocol.MethodCredentialDelete:  credentialcommands.DeleteCredential(vault),
+		rpcprotocol.MethodCredentialList:    credentialcommands.ListCredentials(vault),
 		rpcprotocol.MethodSettingsRead:      settingscommands.ReadSettings(),
 		rpcprotocol.MethodSettingsSave:      settingscommands.SaveSettings(),
 		rpcprotocol.MethodSettingsMigrate:   settingscommands.MigrateSettings(),

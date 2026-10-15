@@ -10,7 +10,7 @@ import { registerGeneratorsView } from './generators-view'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { registerPagesView } from './pages-view'
-import { createConnectionStore } from './secret-storage'
+import { createConnectionStore, createEngineVault, syncWithVault, withKeychain } from './secret-storage'
 import { runSettingsMigration } from './settings-migration'
 import { EDIT_STORAGE_COMMAND } from './storage-editing'
 import { addStorageForm, editStorageForm } from './storage-form'
@@ -37,10 +37,30 @@ export function activate (context: vscode.ExtensionContext): void {
   })
   context.subscriptions.push(engine)
 
-  const connections = createConnectionStore(context.secrets, context.globalState)
+  const profileConnections = createConnectionStore(context.secrets, context.globalState)
   const targets = createTargetStore()
   const output = vscode.window.createOutputChannel('LoreMaster')
   context.subscriptions.push(output)
+
+  // Opt in: remember connections in the operating system's keychain, shared by every editor
+  // profile and by the command line (`lore-master-engine auth`).
+  const keychainOn = (): boolean => vscode.workspace.getConfiguration('loreMaster').get<boolean>('credentials.useKeychain', false)
+  const vault = createEngineVault(engine)
+  const keychainError = (error: unknown): void => { output.appendLine(`The keychain could not be used: ${error instanceof Error ? error.message : String(error)}`) }
+  const connections = withKeychain(profileConnections, vault, { enabled: keychainOn, onError: keychainError })
+  const shareWithKeychain = (): void => {
+    if (keychainOn()) {
+      void syncWithVault(profileConnections, vault)
+        .then(result => { if (result.imported + result.exported > 0) { output.appendLine(`Keychain: ${result.imported} connection(s) brought in, ${result.exported} remembered.`) } })
+        .catch(keychainError)
+    }
+  }
+  shareWithKeychain()
+  context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
+    if (event.affectsConfiguration('loreMaster.credentials.useKeychain')) {
+      shareWithKeychain()
+    }
+  }))
 
   // Answer the engine's host/renderDiagram with a Mermaid webview (image mode); and surface
   // Confluence connections in VS Code's Accounts menu (sign in, see the account, sign out),

@@ -43,6 +43,7 @@ type Environment struct {
 
 // commands maps a subcommand to the function that runs it.
 var commands = map[string]func(context.Context, Environment, rpcserver.Methods, []string) int{
+	"auth":     authCommand,
 	"generate": generateCommand,
 	"pages":    pagesCommand,
 	"rollback": rollbackCommand,
@@ -89,6 +90,7 @@ Usage:
   lore-master-engine tree     [--workspace DIR] [--output N]... [--json]
   lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate]
                               [--yes] [--dry-run] [--force] [--prune] [--json]
+  lore-master-engine auth     login|logout|status [--base-url URL]
   lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
   lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
                               [--debounce 2s] [--poll 1s]
@@ -96,6 +98,8 @@ Usage:
   lore-master-engine pages publish [--workspace DIR] [--output N] [--json]
   lore-master-engine version
 
+auth       remember a Confluence connection in the OS keychain (login), forget it (logout) or list them
+           (status); sync and rollback use it when the LORE_MASTER_* variables are not set.
 rollback   undo a sync: delete the pages it created, put the pages it updated back as they were, restore
            the files it rewrote. Without --yes it only shows what would happen; --list shows the syncs.
 generate   run the generators of the loreMaster.generators setting (test results, Go, OpenAPI, TypeScript docs)

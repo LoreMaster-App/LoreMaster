@@ -16,6 +16,10 @@ export const SYNC_PLAN_METHOD = 'sync/plan'
 export const SYNC_EXECUTE_METHOD = 'sync/execute'
 export const SYNC_JOURNALS_METHOD = 'sync/journals'
 export const SYNC_ROLLBACK_METHOD = 'sync/rollback'
+export const CREDENTIAL_STORE_METHOD = 'credential/store'
+export const CREDENTIAL_GET_METHOD = 'credential/get'
+export const CREDENTIAL_DELETE_METHOD = 'credential/delete'
+export const CREDENTIAL_LIST_METHOD = 'credential/list'
 export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const SETTINGS_MIGRATE_METHOD = 'settings/migrate'
@@ -362,6 +366,21 @@ export interface SyncExecuteResult {
   warnings?:  string[]
   /** The record of what this sync changed, for sync/rollback; absent when it changed nothing. */
   journalId?: string
+}
+
+// ---- credential/* --------------------------------------------------------------------
+
+/** A connection remembered in the operating system's keychain. */
+export interface VaultEntry {
+  baseUrl:      string
+  edition?:     string
+  displayName?: string
+  user?:        string
+  credential:   Credential
+}
+
+export interface CredentialListResult {
+  entries: VaultEntry[]
 }
 
 // ---- sync/journals, sync/rollback ----------------------------------------------------

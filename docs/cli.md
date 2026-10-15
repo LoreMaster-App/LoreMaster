@@ -121,6 +121,24 @@ From the environment, never from a file:
 
 GitHub Pages outputs need none: git carries the credentials.
 
+### Remember a connection instead
+
+On your own machine you can keep the connection in the operating system's keychain (Windows
+Credential Manager, macOS Keychain, the Linux Secret Service) instead of exporting the variables
+in every shell:
+
+```
+LORE_MASTER_EMAIL=me@acme.com LORE_MASTER_TOKEN=... 
+  lore-master-engine auth login --base-url https://acme.atlassian.net/wiki
+lore-master-engine auth status        # what is remembered (never the tokens)
+lore-master-engine auth logout --base-url https://acme.atlassian.net/wiki
+```
+
+`login` signs in first, so a wrong token is refused and not remembered. `sync` and `rollback` use
+the remembered connection when the variables are not set; **the variables always win**, so a
+pipeline's secret is never replaced by what a developer's machine remembered. The VS Code setting
+`loreMaster.credentials.useKeychain` shares the same keychain with the extension.
+
 ## Exit codes
 
 | Code | Meaning |
@@ -132,8 +150,11 @@ GitHub Pages outputs need none: git carries the credentials.
 
 ## Limits
 
-Mermaid diagrams stay code blocks (the editor draws them; the command line has no browser), with
-the usual warning. D2 diagrams are drawn by the engine itself, so they are images from the
+Mermaid diagrams are drawn by the engine in a headless Chrome, Chromium or Edge, which it finds on
+PATH or in the usual install folders (set `LORE_MASTER_BROWSER` to point at one). With none
+installed they stay code blocks, with the usual warning, unless an editor is attached to draw
+them. `LORE_MASTER_MERMAID=editor` makes the engine leave Mermaid to the editor even when it has a
+browser. D2 diagrams are drawn by the engine itself, with no browser, so they are images from the
 command line too.
 
 ```yaml

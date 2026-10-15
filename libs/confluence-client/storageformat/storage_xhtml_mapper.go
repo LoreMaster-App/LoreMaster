@@ -105,6 +105,15 @@ func (r *renderer) block(block Block) error {
 		return r.table(b)
 	case ThematicBreak:
 		r.out.WriteString("<hr />")
+	case Children:
+		r.out.WriteString(`<ac:structured-macro ac:name="children" ac:schema-version="2">`)
+		if b.All {
+			r.out.WriteString(`<ac:parameter ac:name="all">true</ac:parameter>`)
+		}
+		if b.Depth > 0 {
+			r.out.WriteString(`<ac:parameter ac:name="depth">` + strconv.Itoa(b.Depth) + `</ac:parameter>`)
+		}
+		r.out.WriteString("</ac:structured-macro>")
 	case CodeBlock:
 		r.codeMacro(b.Language, b.Code, false, "")
 	case Mermaid:

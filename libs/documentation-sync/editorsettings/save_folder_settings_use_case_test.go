@@ -85,9 +85,9 @@ func TestSaveFolderSettingsKeepsAnOutputsOwnBaseURLAndDropsClearedLists(t *testi
 func TestSaveFolderSettingsRefusesInvalidSettings(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv(UserSettingsOverrideVariable, t.TempDir()+"/none.json")
-	err := SaveFolderSettings(root, workspacesettings.Settings{Version: workspacesettings.CurrentVersion})
+	err := SaveFolderSettings(root, workspacesettings.Settings{Version: workspacesettings.CurrentVersion + 1})
 	if err == nil {
-		t.Fatal("expected a validation error for no outputs")
+		t.Fatal("expected a validation error for an unsupported version")
 	}
 	if _, statErr := os.Stat(FolderSettingsPath(root)); statErr == nil {
 		t.Fatal("a refused save wrote the file")

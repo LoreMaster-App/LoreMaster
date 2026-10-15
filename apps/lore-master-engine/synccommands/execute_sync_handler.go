@@ -3,11 +3,13 @@ package synccommands
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
 	"lore-master/apps/lore-master-engine/diagramrouting"
 	"lore-master/apps/lore-master-engine/hostbridge"
+	"lore-master/apps/lore-master-engine/mermaidrendering"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
@@ -15,6 +17,10 @@ import (
 	"lore-master/libs/documentation-sync/syncexecution"
 	"lore-master/libs/documentation-sync/syncjournal"
 )
+
+// mermaidRendererVariable set to "editor" makes the editor draw Mermaid even when the engine could
+// do it in a browser of its own.
+const mermaidRendererVariable = "LORE_MASTER_MERMAID"
 
 // ExecuteSync handles sync/execute: carry the plan out, then write the annotations
 // back. A cancelled sync stops between pages and still reports, and still writes back
@@ -46,7 +52,15 @@ func ExecuteSync(sessions *sessionlifecycle.Store, plans *PlanStore, renderTimeo
 		if stored.output.MermaidMode == "image" {
 			editor = hostbridge.NewDiagramRenderer(call.Editor, renderTimeout)
 		}
-		renderer := diagramrouting.Route(editor)
+		// Mermaid is drawn in the engine's own browser when there is one, so it also works from the
+		// command line; the editor is the fallback. The browser only starts on the first diagram.
+		var browser platformport.DiagramRenderer
+		if stored.output.MermaidMode == "image" && os.Getenv(mermaidRendererVariable) != "editor" {
+			drawing := mermaidrendering.New()
+			defer drawing.Close()
+			browser = drawing
+		}
+		renderer := diagramrouting.RouteWith(editor, browser)
 		platform := session.Platform.ForOutput(stored.output)
 		var recorder *syncjournal.Recorder
 		if journalCache != "" {

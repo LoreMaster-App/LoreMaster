@@ -108,3 +108,20 @@ func TestLeftOutLinksNamesEachLinkToADocumentTheOutputDoesNotPublish(t *testing.
 		t.Fatalf("warnings %q, want %q", warnings, want)
 	}
 }
+
+func TestGenerateWikiListsTheChildrenWhereTheTagIs(t *testing.T) {
+	got := contents(GenerateWiki(tree(t, map[string]string{
+		"README.md":            "# Project\n\n[children]\n",
+		"readme.install.md":    "# Install\n",
+		"readme.usage.md":      "# Usage\n\n[children]\n",
+		"readme.usage.cli.md":  "# The CLI\n",
+	})))
+
+	home := got["Home.md"]
+	if !strings.Contains(home, "- [Install](Install)") || !strings.Contains(home, "- [Usage](Usage)") || strings.Contains(home, "[children]") {
+		t.Errorf("home:\n%s", home)
+	}
+	if !strings.Contains(got["Usage.md"], "- [The CLI](The-CLI)") {
+		t.Errorf("usage:\n%s", got["Usage.md"])
+	}
+}

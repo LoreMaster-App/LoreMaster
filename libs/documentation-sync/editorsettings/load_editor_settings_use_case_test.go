@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"lore-master/libs/documentation-sync/workspacesettings"
 )
 
 func writeSettings(t *testing.T, path, content string) {
@@ -227,5 +229,40 @@ func TestTheTitlePrefixDefaultFillsAnOutputThatSetsNone(t *testing.T) {
 	}
 	if got := result.Settings.Outputs[1].TitlePrefix; got != "Own" {
 		t.Fatalf("titlePrefix = %q, want the output's own", got)
+	}
+}
+
+func TestAnEmptyOutputsListInTheFolderEmptiesWhatAnotherLayerSet(t *testing.T) {
+	root := t.TempDir()
+	workspaceFile := filepath.Join(t.TempDir(), "app.code-workspace")
+	writeSettings(t, workspaceFile, `{"settings": {"loreMaster.outputs": [{"space": "AUT", "parentPageId": "1", "titlePrefix": "QM", "baseUrl": "https://x.atlassian.net/wiki"}]}}`)
+	t.Setenv(WorkspaceFileVariable, workspaceFile)
+	writeSettings(t, FolderSettingsPath(root), `{"loreMaster.outputs": []}`)
+
+	result, err := LoadEditorSettings(root, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Configured || len(result.Settings.Outputs) != 0 {
+		t.Fatalf("configured=%v outputs=%+v", result.Configured, result.Settings.Outputs)
+	}
+}
+
+func TestSavingNoOutputsKeepsTheKeyAndTheRestOfTheFile(t *testing.T) {
+	root := t.TempDir()
+	t.Setenv(UserSettingsOverrideVariable, filepath.Join(t.TempDir(), "none.json"))
+	writeSettings(t, FolderSettingsPath(root), "{\n  // keep\n  \"editor.tabSize\": 2,\n  \"loreMaster.outputs\": [{\"space\": \"AUT\", \"parentPageId\": \"1\", \"titlePrefix\": \"QM\", \"baseUrl\": \"https://x.atlassian.net/wiki\"}]\n}\n")
+
+	if err := SaveFolderSettings(root, workspacesettings.Settings{Version: workspacesettings.CurrentVersion, Outputs: nil}); err != nil {
+		t.Fatal(err)
+	}
+
+	saved, err := os.ReadFile(FolderSettingsPath(root))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(saved)
+	if !strings.Contains(text, "// keep") || !strings.Contains(text, `"loreMaster.outputs": []`) || strings.Contains(text, "AUT") {
+		t.Fatalf("saved:\n%s", text)
 	}
 }

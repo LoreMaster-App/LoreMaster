@@ -24,10 +24,7 @@ export async function removeStorageCommand (deps: { engine: EngineClient }, node
   }
 
   try {
-    const result = await removeStorage({ engine: deps.engine, workspaceRoot: folder, index: node.index })
-    if (result === 'last') {
-      await vscode.window.showInformationMessage('That is the only storage — add another first, or edit loreMaster.outputs in your settings to remove it by hand.')
-    }
+    await removeStorage({ engine: deps.engine, workspaceRoot: folder, index: node.index })
   } catch (error) {
     await vscode.window.showErrorMessage(`LoreMaster: ${error instanceof Error ? error.message : String(error)}`)
   }

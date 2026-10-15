@@ -54,11 +54,11 @@ describe('removeStorage', () => {
     expect((saved as { settings: { outputs: Output[] } }).settings.outputs).toEqual([pages])
   })
 
-  it('refuses to remove the only output (config must keep at least one)', async () => {
-    let saved = false
-    const result = await removeStorage({ engine: engine([confluence], () => { saved = true }), workspaceRoot: '/w', index: 0 })
+  it('removes the only output too, leaving the workspace with no storage', async () => {
+    let saved: unknown
+    const result = await removeStorage({ engine: engine([confluence], params => { saved = params }), workspaceRoot: '/w', index: 0 })
 
-    expect(result).toBe('last')
-    expect(saved).toBe(false)
+    expect(result).toBe('removed')
+    expect((saved as { settings: { outputs: Output[] } }).settings.outputs).toEqual([])
   })
 })

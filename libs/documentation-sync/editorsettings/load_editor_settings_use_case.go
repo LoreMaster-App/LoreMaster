@@ -68,7 +68,7 @@ func LoadEditorSettings(workspaceRoot, userSettingsPath string) (Result, error) 
 	if err != nil {
 		return Result{}, err
 	}
-	settings, firstSync, err := workspacesettings.ResolveSettings(settings)
+	settings, firstSync, err := workspacesettings.ResolveEditorSettings(settings)
 	if err != nil {
 		return Result{}, err
 	}

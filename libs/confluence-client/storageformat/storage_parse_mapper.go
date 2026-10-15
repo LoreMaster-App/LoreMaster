@@ -265,6 +265,9 @@ func (p *parser) inlineLead(e *element) ([]Inline, []Block) {
 
 func (p *parser) macro(e *element) (Block, bool) {
 	name := attr(e, "ac", "name")
+	if name == "children" {
+		return p.children(e), true
+	}
 	if name != "code" {
 		p.flag("an unknown macro %q was dropped", name)
 
@@ -303,6 +306,24 @@ func (p *parser) macro(e *element) (Block, bool) {
 	}
 
 	return CodeBlock{Language: language, Code: body}, true
+}
+
+// children reads a Children Display macro: whether it lists every descendant and how deep.
+func (p *parser) children(e *element) Block {
+	var children Children
+	for _, k := range e.kids {
+		if k.el == nil || k.el.name.Space != "ac" || k.el.name.Local != "parameter" {
+			continue
+		}
+		switch attr(k.el, "ac", "name") {
+		case "all":
+			children.All = strings.TrimSpace(textOf(k.el)) == "true"
+		case "depth":
+			children.Depth = atoi(strings.TrimSpace(textOf(k.el)))
+		}
+	}
+
+	return children
 }
 
 func (p *parser) table(e *element) Block {

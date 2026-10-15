@@ -97,7 +97,7 @@ func TestTheEnginesProgressReachesTheUserOnStderrAndDiagramsAreRefused(t *testin
 	if !strings.Contains(stderr, "[1/2] writing a.md") {
 		t.Fatalf("progress did not reach stderr: %q", stderr)
 	}
-	if !strings.Contains(refusal, "the command line draws no diagrams") {
+	if !strings.Contains(refusal, "has no editor to draw diagrams in") {
 		t.Fatalf("the diagram request was not refused: %q", refusal)
 	}
 }

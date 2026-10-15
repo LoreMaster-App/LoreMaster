@@ -21,13 +21,23 @@ var reservedPlatforms = map[string]string{
 // with the issue that tracks them, so a file written for a later version fails loudly
 // instead of being half-understood.
 func Validate(settings Settings) error {
+	return validate(settings, true)
+}
+
+// ValidateAllowingNoOutputs is Validate for settings that may hold no outputs yet: what the
+// editor writes after the last storage is removed. Everything else is still checked.
+func ValidateAllowingNoOutputs(settings Settings) error {
+	return validate(settings, false)
+}
+
+func validate(settings Settings, requireOutputs bool) error {
 	var problems []error
 	add := func(format string, args ...any) { problems = append(problems, fmt.Errorf(format, args...)) }
 
 	if settings.Version != CurrentVersion {
 		add("version %d is not supported; this version of LoreMaster reads version %d", settings.Version, CurrentVersion)
 	}
-	if len(settings.Outputs) == 0 {
+	if requireOutputs && len(settings.Outputs) == 0 {
 		add("outputs is empty; add at least one output")
 	}
 	validateIgnore(add, settings.Ignore)

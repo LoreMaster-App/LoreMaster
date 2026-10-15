@@ -34,18 +34,20 @@ func connect(ctx context.Context, methods rpcserver.Methods, logger *slog.Logger
 		_ = rpcserver.Serve(serving, serverEnd, methods, logger)
 	}()
 
-	handler := jsonrpc2.AsyncHandler(jsonrpc2.HandlerWithError(func(_ context.Context, _ *jsonrpc2.Conn, request *jsonrpc2.Request) (any, error) {
+	// Served in order, not on a goroutine each: a progress line is printed before the response
+	// that follows it is read, so none is lost when the command ends.
+	handler := jsonrpc2.HandlerWithError(func(_ context.Context, _ *jsonrpc2.Conn, request *jsonrpc2.Request) (any, error) {
 		switch request.Method {
 		case rpcprotocol.MethodHostProgress:
 			printProgress(progress, request.Params)
 
 			return nil, nil
 		case rpcprotocol.MethodHostRenderDiagram:
-			return nil, &jsonrpc2.Error{Code: rpcprotocol.CodeInternalError, Message: "the command line draws no diagrams; Mermaid blocks stay code"}
+			return nil, &jsonrpc2.Error{Code: rpcprotocol.CodeInternalError, Message: "the command line has no editor to draw diagrams in, and no Chrome, Chromium or Edge was found for the engine to draw Mermaid in itself (install one, or set LORE_MASTER_BROWSER); the block stays code"}
 		default:
 			return nil, nil
 		}
-	}))
+	})
 	conn := jsonrpc2.NewConn(ctx, jsonrpc2.NewBufferedStream(clientEnd, jsonrpc2.VSCodeObjectCodec{}), handler)
 
 	return &connection{conn: conn, stop: func() {

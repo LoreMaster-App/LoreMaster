@@ -150,3 +150,19 @@ func paths(files []SiteFile) []string {
 
 	return out
 }
+
+func TestGenerateSiteListsTheChildrenWhereTheTagIs(t *testing.T) {
+	tree := sampleTree()
+	tree.Root.Children[0].Document.Body = []byte("# Home\n\n[children]\n")
+
+	files, err := GenerateSite("My Project", tree)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	page, _ := fileByPath(files, "readme.html")
+	want := base64.StdEncoding.EncodeToString([]byte("# Home\n\n- [Guide](readme.guide.md)\n"))
+	if !strings.Contains(string(page.Content), `data-markdown="`+want+`"`) {
+		t.Fatalf("the embedded Markdown is not the expanded one")
+	}
+}
