@@ -52,7 +52,7 @@ func TestAnUnknownCommandIsAUsageError(t *testing.T) {
 
 func TestABadFlagOrAStrayArgumentIsAUsageError(t *testing.T) {
 	double := newEngineDouble(nil)
-	for _, args := range [][]string{{"generate", "--nope"}, {"generate", "extra"}, {"tree", "--output", "x"}, {"tree", "--output", "-1"}, {"sync", "--yes=maybe"}} {
+	for _, args := range [][]string{{"generate", "--nope"}, {"generate", "extra"}, {"tree", "--output", ""}, {"sync", "--yes=maybe"}} {
 		if _, _, code := double.run(t, nil, args...); code != ExitUsage {
 			t.Errorf("%v: exit %d", args, code)
 		}

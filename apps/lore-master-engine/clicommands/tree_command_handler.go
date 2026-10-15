@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
@@ -12,9 +14,9 @@ import (
 // treeCommand shows the page tree each output would sync, parents first, with what the files
 // alone say about each page: new, synced, or changed since the last sync.
 func treeCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
-	var only intList
+	var only outputList
 	parsed, code, ok := parseFlags("tree", env, args, func(flags *flag.FlagSet) {
-		flags.Var(&only, "output", "show only the output at this position in the outputs list (repeatable; default all)")
+		flags.Var(&only, "output", "show only this output, by position in the outputs list or by name (repeatable; default all)")
 	})
 	if !ok {
 		return code
@@ -33,7 +35,7 @@ func treeCommand(ctx context.Context, env Environment, methods rpcserver.Methods
 		for _, output := range outputs {
 			var tree rpcprotocol.WorkspaceTreeResult
 			if err := engine.call(ctx, rpcprotocol.MethodWorkspaceTree, rpcprotocol.WorkspaceTreeParams{WorkspaceRoot: parsed.workspace, Output: output.index}, &tree); err != nil {
-				_, _ = fmt.Fprintf(env.Stderr, "output %d: %v\n", output.index, err)
+				_, _ = fmt.Fprintf(env.Stderr, "%s: %v\n", output.label(), err)
 				code = ExitFailed
 
 				continue
@@ -74,15 +76,24 @@ type output struct {
 	settings rpcprotocol.Output
 }
 
+// label is how a message names the output: its position, and its name when it has one.
+func (o output) label() string {
+	if o.settings.Name == "" {
+		return fmt.Sprintf("output %d", o.index)
+	}
+
+	return fmt.Sprintf("output %d %q", o.index, o.settings.Name)
+}
+
 // describe names the storage for a heading.
 func (o output) describe() string {
 	switch o.settings.Platform {
 	case "github-pages":
-		return fmt.Sprintf("output %d: GitHub Pages", o.index)
+		return o.label() + ": GitHub Pages"
 	case "github-wiki":
-		return fmt.Sprintf("output %d: GitHub Wiki", o.index)
+		return o.label() + ": GitHub Wiki"
 	default:
-		return fmt.Sprintf("output %d: Confluence %s (%s)", o.index, o.settings.Space, o.settings.BaseURL)
+		return fmt.Sprintf("%s: Confluence %s (%s)", o.label(), o.settings.Space, o.settings.BaseURL)
 	}
 }
 
@@ -96,9 +107,9 @@ func (o output) configured() bool {
 	return o.settings.Platform == "confluence" && o.settings.BaseURL != "" && o.settings.Space != ""
 }
 
-// selectedOutputs reads the settings and returns the outputs asked for (by position), or every
-// configured output when none is named. An unknown position is an error.
-func selectedOutputs(ctx context.Context, engine *connection, workspace string, only []int) ([]output, error) {
+// selectedOutputs reads the settings and returns the outputs asked for (by name or position),
+// or every configured output when none is named. An unknown name or position is an error.
+func selectedOutputs(ctx context.Context, engine *connection, workspace string, only []string) ([]output, error) {
 	var read rpcprotocol.SettingsReadResult
 	if err := engine.call(ctx, rpcprotocol.MethodSettingsRead, rpcprotocol.SettingsReadParams{WorkspaceRoot: workspace}, &read); err != nil {
 		return nil, err
@@ -114,14 +125,43 @@ func selectedOutputs(ctx context.Context, engine *connection, workspace string, 
 
 		return outputs, nil
 	}
-	for _, index := range only {
-		if index >= len(read.Settings.Outputs) {
-			return nil, fmt.Errorf("output %d does not exist; the settings have %d", index, len(read.Settings.Outputs))
+	for _, wanted := range only {
+		index, err := outputPosition(read.Settings.Outputs, wanted)
+		if err != nil {
+			return nil, err
 		}
 		outputs = append(outputs, output{index: index, settings: read.Settings.Outputs[index]})
 	}
 
 	return outputs, nil
+}
+
+// outputPosition finds the output a --output value names: an output's name (any case) first,
+// then a position in the outputs list.
+func outputPosition(outputs []rpcprotocol.Output, wanted string) (int, error) {
+	for index, candidate := range outputs {
+		if candidate.Name != "" && strings.EqualFold(candidate.Name, wanted) {
+			return index, nil
+		}
+	}
+	if number, err := strconv.Atoi(wanted); err == nil && number >= 0 {
+		if number >= len(outputs) {
+			return 0, fmt.Errorf("output %d does not exist; the settings have %d", number, len(outputs))
+		}
+
+		return number, nil
+	}
+	var names []string
+	for _, candidate := range outputs {
+		if candidate.Name != "" {
+			names = append(names, strconv.Quote(candidate.Name))
+		}
+	}
+	if len(names) == 0 {
+		return 0, fmt.Errorf("no output is named %q; none of the outputs has a name, so use its position", wanted)
+	}
+
+	return 0, fmt.Errorf("no output is named %q; the names are %s", wanted, strings.Join(names, ", "))
 }
 
 // leftOutLines lists the files the scan skipped, each with the rule that skipped it, under a

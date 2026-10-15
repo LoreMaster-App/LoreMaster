@@ -55,7 +55,7 @@ when it finds neither it lists the spaces the signed-in user can see.
 
 | Setting | What it is |
 |---|---|
-| `loreMaster.outputs` | The places the lore goes: platform, space, parent page, title prefix, direction, content, Mermaid mode, links, repository and branch, `include` and `exclude` lists, `template` ([page templates](templates.md)). |
+| `loreMaster.outputs` | The places the lore goes: `name`, platform, space, parent page, title prefix, direction, content, Mermaid mode, links, repository and branch, `include` and `exclude` lists, `template` ([page templates](templates.md)). |
 | `loreMaster.confluence.baseUrl` | The Confluence address an output uses unless it sets its own `baseUrl`. |
 | `loreMaster.defaults.*` | The `direction`, `mermaidMode`, `linkMode`, `titleCollision` and `titlePrefix` of an output that does not set them. All of them are in the Settings UI; a prefix set here means the first sync does not ask for one. |
 | `loreMaster.ignore` | Gitignore-style patterns every output leaves out. |
@@ -105,3 +105,20 @@ when you like. A workspace with neither is configured in settings from the start
 
 The decision and its trade-offs are in
 [architecture/configuration-in-editor-settings.md](architecture/configuration-in-editor-settings.md).
+
+## Naming your storages
+
+Give each output a `name` when you have more than one of a kind, such as one Confluence for
+technical documentation and another for user manuals:
+
+```jsonc
+"loreMaster.outputs": [
+  { "name": "Technical documentation", "platform": "confluence", "space": "ENG", "parentPageId": "98306" },
+  { "name": "User manuals",            "platform": "confluence", "space": "MAN", "parentPageId": "55012" }
+]
+```
+
+The name is what the sidebar tree, the "sync to…" picker, the rollback list and the CLI show
+(`--output "User manuals"`), and it is the **Name** field of the storage form. Names are unique
+(case-insensitive), at most 60 characters. A storage without one is shown with a name made from
+the platform and where it goes (`Confluence · ENG`); the form fills that in when you save.

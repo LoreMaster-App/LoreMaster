@@ -5,6 +5,8 @@ export type FormPlatform = 'confluence' | 'github-pages' | 'github-wiki'
 
 /** Every field of a storage as the form holds it: all text, so an empty field is simply ''. */
 export interface StorageFormValues {
+  /** What this storage is called; '' is filled with a suggestion when it is saved. */
+  name:           string
   /** '' while the user has not chosen one (a new storage has none preselected). */
   platform:       FormPlatform | ''
   /** The Confluence site's base URL (a stored connection). */

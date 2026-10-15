@@ -41,6 +41,10 @@ export function renderStorageFormPage (nonce: string, title: string): string {
 <form id="form" novalidate>
   <section id="sec-platform">
     <h2>Where to sync</h2>
+    <label for="name">Name</label>
+    <input id="name" autocomplete="off" placeholder="e.g. Technical documentation" />
+    <p class="hint">What this storage is called in the tree and when you sync. Leave empty for a name made from where it goes.</p>
+    <div class="error" data-error="name"></div>
     <label for="platform">Storage</label>
     <select id="platform">
       <option value="">Choose a storage…</option>
@@ -125,7 +129,7 @@ export function renderStorageFormPage (nonce: string, title: string): string {
 (function () {
   const api = acquireVsCodeApi();
   const $ = id => document.getElementById(id);
-  const FIELDS = ['platform','connection','space','parentPageId','titlePrefix','direction','mermaidMode','linkMode','titleCollision','repo','branch','path','template','roots','excludes','ignore'];
+  const FIELDS = ['name','platform','connection','space','parentPageId','titlePrefix','direction','mermaidMode','linkMode','titleCollision','repo','branch','path','template','roots','excludes','ignore'];
   let mode = 'create';
 
   function read () {

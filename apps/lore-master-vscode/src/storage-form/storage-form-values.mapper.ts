@@ -5,6 +5,7 @@ import type { FormPlatform, StorageFormValues } from './storage-form.contract'
 /** An empty form: no platform chosen, the defaults a new Confluence storage starts from. */
 export function emptyValues (): StorageFormValues {
   return {
+    name:           '',
     platform:       '',
     connection:     '',
     space:          '',
@@ -34,6 +35,7 @@ export function outputToValues (output: Output, settings: Settings): StorageForm
   const platform: FormPlatform = output.platform === 'github-pages' || output.platform === 'github-wiki' ? output.platform : 'confluence'
 
   return {
+    name:           output.name ?? '',
     platform,
     connection:     output.baseUrl,
     space:          output.space,
@@ -107,10 +109,34 @@ export function valuesToOutput (values: StorageFormValues, base?: Output): Outpu
     output.path = platform === 'github-pages' && values.path.trim() !== '' ? values.path.trim() : undefined
   }
 
+  const name = values.name.trim()
+  output.name = name === '' ? undefined : name
   const template = values.template.trim()
   output.template = template === '' || template === 'default' ? undefined : template
 
   return output
+}
+
+/**
+ * A name for a storage that was given none: where it goes, numbered when another storage already
+ * has that name, so two storages on one platform are still told apart.
+ */
+export function suggestStorageName (values: StorageFormValues, taken: string[]): string {
+  const lower = new Set(taken.map(name => name.toLowerCase()))
+  let base = 'Confluence'
+  if (values.platform === 'github-pages') {
+    base = `GitHub Pages · ${values.repo.trim() || values.branch.trim() || 'this repository'}`
+  } else if (values.platform === 'github-wiki') {
+    base = `GitHub Wiki · ${values.repo.trim() || 'this repository'}`
+  } else if (values.space.trim() !== '') {
+    base = `Confluence · ${values.space.trim()}`
+  }
+  let candidate = base
+  for (let number = 2; lower.has(candidate.toLowerCase()); number++) {
+    candidate = `${base} (${number})`
+  }
+
+  return candidate
 }
 
 /** The workspace-wide ignore list the values carry, or undefined for none. */

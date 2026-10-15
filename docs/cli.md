@@ -27,14 +27,14 @@ on `amd64` and `arm64`. Pin `VERSION`: the CLI's flags follow the extension's ve
 
 ```
 lore-master-engine generate [--workspace DIR] [--generator N]... [--prepare] [--json]
-lore-master-engine tree     [--workspace DIR] [--output N]... [--json]
-lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate] [--prepare]
+lore-master-engine tree     [--workspace DIR] [--output N|NAME]... [--json]
+lore-master-engine sync     [--workspace DIR] [--output N|NAME]... [--scope PATH]... [--generate] [--prepare]
                             [--yes] [--dry-run] [--force] [--prune] [--json]
-lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
+lore-master-engine watch    [--workspace DIR] [--output N|NAME]... [--yes] [--force]
                             [--debounce 2s] [--poll 1s]
-lore-master-engine pages build   --out DIR [--workspace DIR] [--output N] [--json]
-lore-master-engine pages publish [--workspace DIR] [--output N] [--json]
-lore-master-engine pages check   [--workspace DIR] [--output N] [--exit-code] [--json]
+lore-master-engine pages build   --out DIR [--workspace DIR] [--output N|NAME] [--json]
+lore-master-engine pages publish [--workspace DIR] [--output N|NAME] [--json]
+lore-master-engine pages check   [--workspace DIR] [--output N|NAME] [--exit-code] [--json]
 lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
 lore-master-engine version
 ```
@@ -56,6 +56,11 @@ lore-master-engine version
   wipe a web app that shares the folder. Use it when your pipeline deploys the folder itself
   (a Pages artifact, an object store); see [Docs beside another site](#docs-beside-another-site).
   `--output` is needed only when the settings have several GitHub Pages outputs.
+
+`--output` takes an output's **name** (any case) or its position in the outputs list, and can be
+repeated. Names are what the tree, the sync and the settings form show, so with two Confluences
+(`"Technical documentation"` and `"User manuals"`) you can run
+`lore-master-engine sync --output "User manuals"`.
 - `pages publish` pushes the same site to the output's branch (default `gh-pages`).
 - `pages check` says whether a publish would change anything, and lists the files it would add,
   modify or remove, without publishing. `--exit-code` exits 2 when the published site is out of

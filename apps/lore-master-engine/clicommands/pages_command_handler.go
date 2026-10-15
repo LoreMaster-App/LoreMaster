@@ -34,10 +34,10 @@ func pagesCommand(ctx context.Context, env Environment, methods rpcserver.Method
 }
 
 func pagesBuildCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
-	var only intList
+	var only outputList
 	var out string
 	parsed, code, ok := parseFlags("pages build", env, args, func(flags *flag.FlagSet) {
-		flags.Var(&only, "output", "the github-pages output at this position in the outputs list (default: the only one)")
+		flags.Var(&only, "output", "the github-pages output, by position in the outputs list or by name (default: the only one)")
 		flags.StringVar(&out, "out", "", "the folder to write the site into (required; created, and replaced when an earlier build wrote it)")
 	})
 	if !ok {
@@ -84,9 +84,9 @@ func pagesBuildCommand(ctx context.Context, env Environment, methods rpcserver.M
 }
 
 func pagesPublishCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
-	var only intList
+	var only outputList
 	parsed, code, ok := parseFlags("pages publish", env, args, func(flags *flag.FlagSet) {
-		flags.Var(&only, "output", "the github-pages output at this position in the outputs list (default: the only one)")
+		flags.Var(&only, "output", "the github-pages output, by position in the outputs list or by name (default: the only one)")
 	})
 	if !ok {
 		return code
@@ -131,10 +131,10 @@ func pagesPublishCommand(ctx context.Context, env Environment, methods rpcserver
 }
 
 func pagesCheckCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
-	var only intList
+	var only outputList
 	var exitCode bool
 	parsed, code, ok := parseFlags("pages check", env, args, func(flags *flag.FlagSet) {
-		flags.Var(&only, "output", "the github-pages output at this position in the outputs list (default: the only one)")
+		flags.Var(&only, "output", "the github-pages output, by position in the outputs list or by name (default: the only one)")
 		flags.BoolVar(&exitCode, "exit-code", false, "exit 2 when the published site is out of date, so a pipeline can fail on it")
 	})
 	if !ok {
@@ -193,7 +193,7 @@ func printCheck(env Environment, result rpcprotocol.PagesCheckResult) {
 
 // pagesOutputIndex is the position of the github-pages output to use: the one named, or the
 // only one the settings have. Several without a choice is an error, so a build never guesses.
-func pagesOutputIndex(ctx context.Context, engine *connection, workspace string, only []int) (int, error) {
+func pagesOutputIndex(ctx context.Context, engine *connection, workspace string, only []string) (int, error) {
 	outputs, err := selectedOutputs(ctx, engine, workspace, only)
 	if err != nil {
 		return 0, err

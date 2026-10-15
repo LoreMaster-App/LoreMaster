@@ -18,6 +18,8 @@ type SyncJournalsParams struct {
 type JournalSummary struct {
 	ID        string    `json:"id"`
 	StartedAt time.Time `json:"startedAt"`
+	// Name is the storage's name, when it had one.
+	Name string `json:"name,omitempty"`
 	// BaseURL, Space and ParentPageID say where the sync wrote.
 	BaseURL      string `json:"baseUrl"`
 	Space        string `json:"space"`

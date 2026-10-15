@@ -1,6 +1,6 @@
 import { type Output, SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD, type SettingsReadResult } from '../engine-protocol'
 import type { StorageFormValues } from './storage-form.contract'
-import { ignoreFromValues, valuesToOutput } from './storage-form-values.mapper'
+import { ignoreFromValues, suggestStorageName, valuesToOutput } from './storage-form-values.mapper'
 import { type StorageFormErrors, validateStorageForm } from './storage-form.validator'
 
 /** The minimal engine surface saving needs. */
@@ -26,14 +26,18 @@ export type SaveStorageResult =
  * workspace-wide ignore list is updated. Nothing else in the settings changes; the engine
  * validates the whole and its refusal is returned for the form to show.
  */
-export async function saveStorage (deps: SaveStorageDeps, values: StorageFormValues): Promise<SaveStorageResult> {
-  const errors = validateStorageForm(values, deps.connectionCount)
-  if (Object.keys(errors).length > 0) {
-    return { saved: false, errors }
-  }
-
+export async function saveStorage (deps: SaveStorageDeps, submitted: StorageFormValues): Promise<SaveStorageResult> {
   try {
     const read = await deps.engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: deps.workspaceRoot })
+    const otherNames = read.settings.outputs
+      .filter((_, position) => position !== deps.index)
+      .map(output => output.name ?? '')
+      .filter(name => name !== '')
+    const errors = validateStorageForm(submitted, deps.connectionCount, otherNames)
+    if (Object.keys(errors).length > 0) {
+      return { saved: false, errors }
+    }
+    const values = submitted.name.trim() === '' ? { ...submitted, name: suggestStorageName(submitted, otherNames) } : submitted
     const outputs = placeOutput(read, deps.index, values)
     if (typeof outputs === 'string') {
       return { saved: false, errors: {}, message: outputs }

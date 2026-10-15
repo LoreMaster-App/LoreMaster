@@ -132,7 +132,7 @@ func minimalOutputs(outputs []workspacesettings.Output, inherited map[string]str
 	wires := make([]outputWire, 0, len(outputs))
 	for _, output := range outputs {
 		wire := outputWire{
-			Platform: output.Platform, Space: output.Space, ParentPageID: output.ParentPageID,
+			Name: output.Name, Platform: output.Platform, Space: output.Space, ParentPageID: output.ParentPageID,
 			TitlePrefix: unlessEffective(output.TitlePrefix, inherited[keyDefaultsPrefixT], ""),
 			Repo: output.Repo, Branch: output.Branch, Path: output.Path, Include: output.Include, Exclude: output.Exclude,
 			Template: unlessEffective(output.Template, "", "default"),

@@ -11,7 +11,7 @@ import (
 
 // syncOptions are the flags of the sync command.
 type syncOptions struct {
-	outputs  intList
+	outputs  outputList
 	scope    stringList
 	generate bool
 	prepare  bool
@@ -26,7 +26,7 @@ type syncOptions struct {
 func syncCommand(ctx context.Context, env Environment, methods rpcserver.Methods, args []string) int {
 	var options syncOptions
 	parsed, code, ok := parseFlags("sync", env, args, func(flags *flag.FlagSet) {
-		flags.Var(&options.outputs, "output", "sync only the output at this position in the outputs list (repeatable; default all)")
+		flags.Var(&options.outputs, "output", "sync only this output, by position in the outputs list or by name (repeatable; default all)")
 		flags.Var(&options.scope, "scope", "limit a Confluence sync to this workspace-relative file and the ancestors it needs (repeatable)")
 		flags.BoolVar(&options.generate, "generate", false, "run the generators first, so generated pages are as fresh as the code")
 		flags.BoolVar(&options.prepare, "prepare", false, "with --generate, run each generator's prepare command first (the build or test run that produces what it reads)")
@@ -64,6 +64,7 @@ type syncReport struct {
 // outputReport is one output's part of the report.
 type outputReport struct {
 	Index    int                             `json:"index"`
+	Name     string                          `json:"name,omitempty"`
 	Platform string                          `json:"platform"`
 	Plan     *rpcprotocol.SyncPlanResult     `json:"plan,omitempty"`
 	Result   *rpcprotocol.SyncExecuteResult  `json:"result,omitempty"`
@@ -117,7 +118,7 @@ func runSync(ctx context.Context, env Environment, engine *connection, parsed co
 	code := ExitOK
 	for _, output := range outputs {
 		say("%s", output.describe())
-		entry := outputReport{Index: output.index, Platform: output.settings.Platform}
+		entry := outputReport{Index: output.index, Name: output.settings.Name, Platform: output.settings.Platform}
 		var outputCode int
 		if output.settings.Platform == "github-pages" || output.settings.Platform == "github-wiki" {
 			outputCode = publishSite(ctx, env, engine, parsed, options, output, &entry, say)
@@ -142,7 +143,7 @@ func publishSite(ctx context.Context, env Environment, engine *connection, parse
 	var published rpcprotocol.PagesPublishResult
 	if err := engine.call(ctx, rpcprotocol.MethodPagesPublish, rpcprotocol.PagesPublishParams{WorkspaceRoot: parsed.workspace, Output: output.index}, &published); err != nil {
 		entry.Error = err.Error()
-		_, _ = fmt.Fprintf(env.Stderr, "output %d: %v\n", output.index, err)
+		_, _ = fmt.Fprintf(env.Stderr, "%s: %v\n", output.label(), err)
 
 		return ExitFailed
 	}
@@ -170,7 +171,7 @@ func publishSite(ctx context.Context, env Environment, engine *connection, parse
 func syncConfluence(ctx context.Context, env Environment, engine *connection, parsed common, options syncOptions, output output, entry *outputReport, say func(string, ...any)) int {
 	fail := func(err error) int {
 		entry.Error = err.Error()
-		_, _ = fmt.Fprintf(env.Stderr, "output %d: %v\n", output.index, err)
+		_, _ = fmt.Fprintf(env.Stderr, "%s: %v\n", output.label(), err)
 
 		return ExitFailed
 	}

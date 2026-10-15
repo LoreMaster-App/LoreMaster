@@ -46,6 +46,7 @@ func validate(settings Settings, requireOutputs bool) error {
 	validateGenerators(add, settings.Generators)
 	confluenceSeen := map[string]int{}
 	pagesSeen := map[string]int{}
+	namesSeen := map[string]int{}
 	for i, output := range settings.Outputs {
 		where := fmt.Sprintf("outputs[%d]", i)
 		choose(add, where+".platform", output.Platform, []string{"confluence", "github-pages", "github-wiki"}, reservedPlatforms)
@@ -56,6 +57,7 @@ func validate(settings Settings, requireOutputs bool) error {
 			validateGitHubPagesOutput(add, where, output, pagesSeen, i)
 		}
 		validateContent(add, where, output)
+		validateName(add, where, output, namesSeen, i)
 		if _, problem := templatereference.Check(output.Platform, output.Template); problem != "" && output.Template != "" {
 			add("%s.template %s", where, problem)
 		}

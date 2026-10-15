@@ -12,7 +12,9 @@ export function describeJournal (journal: JournalSummary, locale?: string): stri
     ...journal.files > 0 ? [plural(journal.files, 'file')] : [],
   ]
 
-  return `${when}: ${parts.join(', ') || 'no changes'}`
+  const where = journal.name !== undefined && journal.name !== '' ? `${journal.name}, ` : ''
+
+  return `${where}${when}: ${parts.join(', ') || 'no changes'}`
 }
 
 /** What a rollback is about to do, from its dry run: the lines the user confirms. */

@@ -22,7 +22,7 @@ lore-master-engine watch --debounce 5s --poll 2s --output 0
 | `--force` | Overwrite pages edited on the platform since the last sync. |
 | `--debounce` | How long nothing may change before the changes are applied (default `2s`). Two quick edits are one sync. |
 | `--poll` | How often the workspace is looked at (default `1s`). |
-| `--output N` | Watch only the output at that position in the outputs list. |
+| `--output N` | Watch only that output, by position in the outputs list or by name. |
 
 Credentials come from the environment, as for `sync` (see [the command line](cli.md)). It runs
 until interrupted with Ctrl+C.

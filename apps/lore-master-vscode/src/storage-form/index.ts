@@ -1,5 +1,5 @@
 export { addStorageForm, editStorageForm, type StorageFormDeps } from './open-storage-form.handler'
 export { saveStorage, type SaveStorageDeps, type SaveStorageResult } from './save-storage.use-case'
-export { emptyValues, ignoreFromValues, outputToValues, valuesToOutput } from './storage-form-values.mapper'
+export { emptyValues, ignoreFromValues, outputToValues, suggestStorageName, valuesToOutput } from './storage-form-values.mapper'
 export { validateStorageForm, type StorageFormErrors } from './storage-form.validator'
 export type { ConnectionChoice, FormPlatform, FormReply, FormRequest, StorageFormInit, StorageFormValues } from './storage-form.contract'

@@ -77,6 +77,9 @@ export function storageIcon (output: Output): string {
 }
 
 export function storageLabel (output: Output): string {
+  if (output.name !== undefined && output.name.trim() !== '') {
+    return output.name
+  }
   if (output.platform === 'github-wiki') {
     return 'GitHub Wiki'
   }
