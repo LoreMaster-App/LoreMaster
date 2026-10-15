@@ -749,6 +749,12 @@
           "scope": "resource",
           "markdownDescription": "What an output that does not set `titleCollision` does when a title already exists. Empty means `fail`."
         },
+        "loreMaster.credentials.useKeychain": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "markdownDescription": "Remember connections in the operating system's keychain (Windows Credential Manager, macOS Keychain, the Linux Secret Service), so every VS Code profile and `lore-master-engine` on the command line share them and a token is entered once. Off by default: connections stay in this editor profile's secret storage. Turning it on also remembers the connections you already have; removing a connection forgets it there too."
+        },
         "loreMaster.defaults.titlePrefix": {
           "type": "string",
           "default": "",

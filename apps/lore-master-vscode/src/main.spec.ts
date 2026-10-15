@@ -34,6 +34,6 @@ describe('activate', () => {
     // Generators view and its six commands (the five it contributes and Run generators).
     const pagesViewCommands = 8
     const generatorsViewCommands = 6
-    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands + 12)
+    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands + 13)
   })
 })

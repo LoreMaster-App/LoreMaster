@@ -2,22 +2,24 @@ package rpcprotocol
 
 // The credential vault is the operating system's keychain, which the user opts in to: a
 // connection remembered there is available to every editor profile and to the command line.
-const (
-	// MethodCredentialStore remembers a connection.
-	MethodCredentialStore = "credential/store"
-	// MethodCredentialGet returns the remembered connection for a site, if any.
-	MethodCredentialGet = "credential/get"
-	// MethodCredentialDelete forgets a site's connection.
-	MethodCredentialDelete = "credential/delete"
-	// MethodCredentialList returns every remembered connection.
-	MethodCredentialList = "credential/list"
-)
+
+// MethodCredentialStore remembers a connection.
+const MethodCredentialStore = "credential/store"
+
+// MethodCredentialGet returns the remembered connection for a site, if any.
+const MethodCredentialGet = "credential/get"
+
+// MethodCredentialDelete forgets a site's connection.
+const MethodCredentialDelete = "credential/delete"
+
+// MethodCredentialList returns every remembered connection.
+const MethodCredentialList = "credential/list"
 
 // VaultEntry is one remembered connection: the site, who signs in, and the credential.
 type VaultEntry struct {
-	BaseURL     string     `json:"baseUrl"`
-	Edition     string     `json:"edition,omitempty"`
-	DisplayName string     `json:"displayName,omitempty"`
+	BaseURL     string `json:"baseUrl"`
+	Edition     string `json:"edition,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
 	// User is the account id (Cloud) or username (Data Center, Server) the credential signs in as.
 	User       string     `json:"user,omitempty"`
 	Credential Credential `json:"credential"`

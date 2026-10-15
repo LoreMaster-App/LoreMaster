@@ -121,6 +121,24 @@ From the environment, never from a file:
 
 GitHub Pages outputs need none: git carries the credentials.
 
+### Remember a connection instead
+
+On your own machine you can keep the connection in the operating system's keychain (Windows
+Credential Manager, macOS Keychain, the Linux Secret Service) instead of exporting the variables
+in every shell:
+
+```
+LORE_MASTER_EMAIL=me@acme.com LORE_MASTER_TOKEN=... 
+  lore-master-engine auth login --base-url https://acme.atlassian.net/wiki
+lore-master-engine auth status        # what is remembered (never the tokens)
+lore-master-engine auth logout --base-url https://acme.atlassian.net/wiki
+```
+
+`login` signs in first, so a wrong token is refused and not remembered. `sync` and `rollback` use
+the remembered connection when the variables are not set; **the variables always win**, so a
+pipeline's secret is never replaced by what a developer's machine remembered. The VS Code setting
+`loreMaster.credentials.useKeychain` shares the same keychain with the extension.
+
 ## Exit codes
 
 | Code | Meaning |
