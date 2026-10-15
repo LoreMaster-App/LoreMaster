@@ -77,7 +77,7 @@ func runRollback(ctx context.Context, env Environment, engine *connection, parse
 		return ExitFailed
 	}
 
-	credential, err := credentialFromEnvironment(env.Getenv)
+	credential, err := credentialFor(ctx, env, engine, target.BaseURL)
 	if err != nil {
 		_, _ = fmt.Fprintln(env.Stderr, "error:", err)
 

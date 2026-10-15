@@ -175,7 +175,7 @@ func syncConfluence(ctx context.Context, env Environment, engine *connection, pa
 		return ExitFailed
 	}
 
-	credential, err := credentialFromEnvironment(env.Getenv)
+	credential, err := credentialFor(ctx, env, engine, output.settings.BaseURL)
 	if err != nil {
 		return fail(err)
 	}
