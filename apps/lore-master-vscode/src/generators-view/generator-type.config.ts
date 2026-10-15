@@ -12,6 +12,8 @@ export interface GeneratorType {
   inputHint:     string
   /** The generator reads one `source` (a URL or a build folder), not a set of input patterns. */
   usesSource?:   boolean
+  /** Whether adding it asks for the command that produces what it reads (its `prepare`). */
+  command?:      'required' | 'optional'
 }
 
 export const GENERATOR_TYPES: readonly GeneratorType[] = [
@@ -47,6 +49,7 @@ export const GENERATOR_TYPES: readonly GeneratorType[] = [
     defaultOutput: 'docs/storybook',
     inputHint:     'The Storybook to read: its URL, or the folder of its build relative to the workspace, e.g. storybook-static. Set a prepare command in settings to build it first. Needs Chrome, Chromium or Edge installed.',
     usesSource:    true,
+    command:       'optional',
   },
   {
     type:          'go-docs',
@@ -106,6 +109,7 @@ export const RECOGNISED_FROM_OUTPUT: GeneratorType = {
   icon:          'search',
   defaultOutput: 'docs/generated',
   inputHint:     'The files or folder the command writes, separated by commas, e.g. build/reports/. Required: the format is identified from them.',
+  command:       'required',
 }
 
 /** The presentation of a configured type; a type this version does not know keeps its own name. */

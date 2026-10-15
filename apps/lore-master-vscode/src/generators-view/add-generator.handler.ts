@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import type { Generator } from '../engine-protocol'
+import { GENERATE_AND_SYNC_COMMAND } from '../generate-and-sync'
 import { runAndReport } from '../generators-command'
 import { parseList } from '../storage-editing'
 import { pickWorkspaceFolder } from '../workspace-files'
@@ -20,6 +21,7 @@ export interface GeneratorsViewDeps {
 }
 
 const RUN_NOW = 'Run now'
+const GENERATE_AND_SYNC = 'Generate and sync'
 
 /**
  * Adds a generator to .lore-master.yaml: which kind, where its pages go, and what it reads.
@@ -64,20 +66,52 @@ export async function addGeneratorCommand (deps: GeneratorsViewDeps): Promise<vo
 
     const patterns = parseList(input)
     const reads = type.usesSource === true ? { source: input.trim() } : (patterns.length > 0 ? { input: patterns } : {})
-    const generator: Generator = { type: type.type, output: output.trim().replaceAll('\\', '/'), ...reads }
+    const command = type.command === undefined ? undefined : await askCommand(type)
+    if (command === null) {
+      return
+    }
+    const generator: Generator = {
+      type:   type.type,
+      output: output.trim().replaceAll('\\', '/'),
+      ...reads,
+      ...command && { prepare: command },
+    }
     const index = await addGenerator(deps.engine, folder, generator)
     deps.provider.refresh()
 
     const warning = isFolderSynced(generator.output, settings.outputs)
       ? ''
       : ` ${generator.output} is not inside a folder any storage syncs (${syncedRoots(settings.outputs).join(', ') || 'none'}), so these pages would not reach the platform; add it with Edit storage → Folders to sync.`
-    const answer = await vscode.window.showInformationMessage(`LoreMaster: added the ${type.label} generator → ${generator.output}.${warning}`, RUN_NOW)
+    const answer = await vscode.window.showInformationMessage(`LoreMaster: added the ${type.label} generator → ${generator.output}.${warning}`, RUN_NOW, GENERATE_AND_SYNC)
     if (answer === RUN_NOW) {
       deps.provider.recordRun(await runAndReport(deps, folder, [index]))
+    } else if (answer === GENERATE_AND_SYNC) {
+      await vscode.commands.executeCommand(GENERATE_AND_SYNC_COMMAND)
+      deps.provider.refresh()
     }
   } catch (error) {
     await vscode.window.showErrorMessage(`LoreMaster: ${error instanceof Error ? error.message : String(error)}`)
   }
+}
+
+/**
+ * Asks for the command that produces what the generator reads. Undefined means none was given
+ * (allowed when optional); null means the user cancelled.
+ */
+async function askCommand (type: GeneratorType): Promise<string | undefined | null> {
+  const required = type.command === 'required'
+  const command = await vscode.window.showInputBox({
+    title:  `LoreMaster: which command produces what ${type.label} reads?`,
+    prompt: required
+      ? 'A shell command run from the workspace (a test run, a build, a script), e.g. npm test -- --reporters=jest-junit. It runs when you generate, after you approve it.'
+      : 'Optional. A shell command that builds what it reads, e.g. npm run build-storybook. Leave empty to build it yourself.',
+    validateInput: value => required && value.trim() === '' ? 'Name the command that writes the files to read.' : undefined,
+  })
+  if (command === undefined) {
+    return null
+  }
+
+  return command.trim() === '' ? undefined : command.trim()
 }
 
 async function pickType (): Promise<GeneratorType | undefined> {

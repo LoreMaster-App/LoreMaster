@@ -389,6 +389,12 @@ the step for you, say so with an optional `prepare` command on the generator:
 }
 ```
 
+In VS Code you do not have to write it by hand: **Add generator** asks for the command when you pick
+*Recognise it from the output* (required, since it is the only thing that writes the files to read) or
+*Storybook components* (optional), and **Edit generator** has a *Command that produces it* field. After
+adding, **Generate and sync** runs the generators, asking to approve the command as described below, and
+then shows the sync plan.
+
 It is a shell command run in the workspace folder (`cmd` on Windows, `sh` elsewhere), limited to
 30 minutes. **It only runs when a run asks for it; the same setting serves the plugin and CI:**
 
