@@ -26,6 +26,8 @@ type InMemoryPlatform struct {
 	attachments map[string]map[string]UploadedFile
 	// attachmentContent holds the bytes uploaded, so a two-way pull can download them back.
 	attachmentContent map[string]map[string][]byte
+	// snapshots are the bodies SnapshotPage handed out, by the token it returned as markup.
+	snapshots map[string]Document
 }
 
 // StoredPage is a page as the fake keeps it.
@@ -41,7 +43,7 @@ var _ DocumentationPlatform = (*InMemoryPlatform)(nil)
 
 // NewInMemoryPlatform returns an empty platform with the given spaces.
 func NewInMemoryPlatform(spaces ...Space) *InMemoryPlatform {
-	return &InMemoryPlatform{spaces: spaces, pages: map[string]*StoredPage{}, attachments: map[string]map[string]UploadedFile{}, attachmentContent: map[string]map[string][]byte{}}
+	return &InMemoryPlatform{spaces: spaces, pages: map[string]*StoredPage{}, attachments: map[string]map[string]UploadedFile{}, attachmentContent: map[string]map[string][]byte{}, snapshots: map[string]Document{}}
 }
 
 // SeedPage puts a page on the platform as if someone had made it, and returns its id.
@@ -241,6 +243,46 @@ func (p *InMemoryPlatform) UpdatePage(_ context.Context, update PageUpdate) (Rem
 	if update.ParentID != "" {
 		page.ParentID = update.ParentID
 	}
+	page.Version++
+
+	return page.RemotePage, nil
+}
+
+// SnapshotPage implements DocumentationPlatform. The fake's markup is a token for the body it kept.
+func (p *InMemoryPlatform) SnapshotPage(_ context.Context, id string) (PageSnapshot, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.log("SnapshotPage %s", id)
+	page, ok := p.pages[id]
+	if !ok {
+		return PageSnapshot{}, &PageNotFoundError{ID: id}
+	}
+	token := fmt.Sprintf("memory-snapshot-%d", len(p.snapshots)+1)
+	p.snapshots[token] = page.Body
+
+	return PageSnapshot{ID: id, Title: page.Title, ParentID: page.ParentID, Version: page.Version, Markup: token}, nil
+}
+
+// RestorePage implements DocumentationPlatform.
+func (p *InMemoryPlatform) RestorePage(_ context.Context, snapshot PageSnapshot, expectedVersion int, _ string) (RemotePage, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.log("RestorePage %s v%d", snapshot.ID, expectedVersion)
+	page, ok := p.pages[snapshot.ID]
+	if !ok {
+		return RemotePage{}, &PageNotFoundError{ID: snapshot.ID}
+	}
+	if page.Version != expectedVersion {
+		return RemotePage{}, &VersionConflictError{ID: snapshot.ID, ExpectedVersion: expectedVersion}
+	}
+	if p.titleTaken(page.SpaceKey, snapshot.Title, snapshot.ID) {
+		return RemotePage{}, &TitleTakenError{Title: snapshot.Title}
+	}
+	body, known := p.snapshots[snapshot.Markup]
+	if !known {
+		return RemotePage{}, fmt.Errorf("unknown snapshot %q", snapshot.Markup)
+	}
+	page.Title, page.Body, page.ParentID = snapshot.Title, body, snapshot.ParentID
 	page.Version++
 
 	return page.RemotePage, nil

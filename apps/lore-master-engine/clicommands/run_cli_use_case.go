@@ -45,6 +45,7 @@ type Environment struct {
 var commands = map[string]func(context.Context, Environment, rpcserver.Methods, []string) int{
 	"generate": generateCommand,
 	"pages":    pagesCommand,
+	"rollback": rollbackCommand,
 	"sync":     syncCommand,
 	"tree":     treeCommand,
 	"watch":    watchCommand,
@@ -88,12 +89,15 @@ Usage:
   lore-master-engine tree     [--workspace DIR] [--output N]... [--json]
   lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate]
                               [--yes] [--dry-run] [--force] [--prune] [--json]
+  lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
   lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
                               [--debounce 2s] [--poll 1s]
   lore-master-engine pages build   --out DIR [--workspace DIR] [--output N] [--json]
   lore-master-engine pages publish [--workspace DIR] [--output N] [--json]
   lore-master-engine version
 
+rollback   undo a sync: delete the pages it created, put the pages it updated back as they were, restore
+           the files it rewrote. Without --yes it only shows what would happen; --list shows the syncs.
 generate   run the generators of the loreMaster.generators setting (test results, Go, OpenAPI, TypeScript docs)
 tree       show the page tree each output would sync, with each page's local status
 sync       plan the sync of each output and, with --yes, apply it. Without --yes it only shows the plan.

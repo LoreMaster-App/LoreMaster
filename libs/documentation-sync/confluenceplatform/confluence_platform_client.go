@@ -149,6 +149,28 @@ func (p *Platform) UpdatePage(ctx context.Context, update platformport.PageUpdat
 	return remote(updated), portError(err)
 }
 
+// SnapshotPage implements platformport.DocumentationPlatform: the page with its body in
+// storage format, as it is now.
+func (p *Platform) SnapshotPage(ctx context.Context, id string) (platformport.PageSnapshot, error) {
+	page, err := p.pages.GetPage(ctx, id, true)
+	if err != nil {
+		return platformport.PageSnapshot{}, portError(err)
+	}
+
+	return platformport.PageSnapshot{ID: page.ID, Title: page.Title, ParentID: page.ParentID, Version: page.Version, Markup: page.BodyStorage}, nil
+}
+
+// RestorePage implements platformport.DocumentationPlatform: a snapshot's storage body, title
+// and parent are written back as a new version.
+func (p *Platform) RestorePage(ctx context.Context, snapshot platformport.PageSnapshot, expectedVersion int, message string) (platformport.RemotePage, error) {
+	restored, err := p.pages.UpdatePage(ctx, pagecontent.UpdatePageInput{
+		ID: snapshot.ID, ExpectedVersion: expectedVersion, Title: snapshot.Title, ParentID: snapshot.ParentID,
+		BodyStorage: snapshot.Markup, Message: message,
+	})
+
+	return remote(restored), portError(err)
+}
+
 // MarkPage implements platformport.DocumentationPlatform.
 func (p *Platform) MarkPage(ctx context.Context, id string, sourcePath string) error {
 	return portError(p.pages.MarkPage(ctx, id, sourcePath))

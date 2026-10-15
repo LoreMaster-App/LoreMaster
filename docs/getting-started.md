@@ -96,17 +96,47 @@ lists every file with where it goes. See [Choosing what goes where](choosing-wha
 
 ## 6. Change a storage's settings
 
-In the **Storages** view, click the pencil on a storage (or run **LoreMaster: Edit storage**).
-Pick a setting, then its new value:
+In the **Storages** view, click the pencil on a storage (or run **LoreMaster: Edit storage**). A form
+opens with every setting of the storage at once:
 
-- **Confluence:** title prefix, direction (`to-platform` or `two-way`), Mermaid diagrams
-  (`image` or `code`), how pages link to each other, what to do when a title already exists,
-  the folders to sync, and paths to leave out.
-- **GitHub Pages:** the repository, the branch, the folder inside the branch (so another site can share it), the folders to sync, and paths to leave out.
+- **Confluence:** the connection, the **space** (browse the space list or type its key), the **parent
+  page** (search for it by title; the form fills in its id), the title prefix, direction (`to-platform`
+  or `two-way`), Mermaid diagrams (`image` or `code`), how pages link to each other, what to do
+  when a title already exists, the folders to sync, and paths to leave out.
+- **GitHub Pages / Wiki:** the repository, the branch, the folder inside the branch (so another site
+  can share it), the folders to sync, and paths to leave out.
 
-The value is checked and saved to the workspace's `.vscode/settings.json` with your comments kept; a
-value that is not allowed is refused with the reason and nothing is written. For anything else,
-**Open settings** opens the Settings editor on LoreMaster's options.
+**Add sync storage** opens the same form, empty: nothing is preselected, so you choose where to sync,
+fill the fields and save once.
+
+Saving checks the values and writes them to the workspace's `.vscode/settings.json` with your
+comments kept; a value that is not allowed is refused with the reason and nothing is written.
+
+### What changing the parent page or the space does
+
+The parent page is read at every sync, not stored in the files: a page's annotation only remembers
+which site and space it was synced to. So when you change the **parent page** of a storage, the next
+sync plans a **move** for every page that sits directly under the old parent, and the pages below
+them follow. Nothing needs deleting first. Changing the **space** (or the site) is different: files
+annotated for another space are treated as new, so the pages are created in the new space and the
+old ones stay where they were. To undo a sync that went to the wrong place, see
+[Undo a sync](#undo-a-sync).
+
+## Undo a sync
+
+Every Confluence sync is journalled on your machine: the pages it created, the pages it updated
+(with how they were before) and the local files it rewrote (with their earlier content).
+**LoreMaster: Roll back a sync** (or **Roll back** on the notification after a sync) shows what it
+would do and asks before doing it:
+
+- pages the sync **created** are deleted, children first;
+- pages it **updated or moved** are put back as they were (title, parent and body);
+- local files get their earlier content back, so the annotations are reverted too.
+
+Anything edited after the sync, on the platform or in the file, is left alone and reported; a second
+prompt offers to discard those edits as well. Pages a sync moved to the trash are reported, since the
+platform's own trash restores them. The command line has the same: `lore-master-engine rollback`
+(see [the command line](cli.md#undo-a-sync)).
 
 ## What you get
 

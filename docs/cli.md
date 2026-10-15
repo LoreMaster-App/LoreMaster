@@ -35,6 +35,7 @@ lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]
 lore-master-engine pages build   --out DIR [--workspace DIR] [--output N] [--json]
 lore-master-engine pages publish [--workspace DIR] [--output N] [--json]
 lore-master-engine pages check   [--workspace DIR] [--output N] [--exit-code] [--json]
+lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
 lore-master-engine version
 ```
 
@@ -42,6 +43,7 @@ lore-master-engine version
   generator's `prepare` command first (the build or test run that produces what it reads; see
   [generators](generators.md#producing-what-a-generator-reads-prepare)). Without it no command runs.
 - `tree` shows the page tree each output would sync, with each page's local status.
+- `rollback` undoes a sync, see [Undo a sync](#undo-a-sync).
 - `sync` plans each output. **Without `--yes` it only shows the plan.** `--generate` runs the
   generators first; `--force` overwrites pages edited on the platform; `--prune` trashes pages
   whose file is gone.
@@ -88,6 +90,24 @@ use locally, so you do not have to write it from this page:
 The pipeline downloads the engine of your extension's version and checks its checksum, runs
 `sync --generate --yes` (with `--prepare` when a generator has a `prepare` command) and, for
 Confluence outputs, commits the page annotations back with `[skip ci]`.
+
+## Undo a sync
+
+Each Confluence sync that changes something is journalled in the user's cache folder (never in the
+repository): the pages it created, the pages it updated with their earlier version, and the files
+it rewrote with their earlier content.
+
+```
+lore-master-engine rollback --list                 # the syncs that can be undone, newest first
+lore-master-engine rollback                        # shows what undoing the latest would do
+lore-master-engine rollback --yes                  # does it
+lore-master-engine rollback --journal ID --yes     # a specific one
+```
+
+Created pages are deleted (children first), updated pages are put back as they were and files get
+their earlier content back. Without `--yes` nothing changes. A page or file edited after the sync is
+skipped and reported, and the command exits with code 2; `--force` discards those edits too. It signs
+in with the same environment variables as `sync`.
 
 ## Credentials
 

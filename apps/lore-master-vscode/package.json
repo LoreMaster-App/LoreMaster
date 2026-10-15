@@ -134,6 +134,11 @@
         "category": "LoreMaster"
       },
       {
+        "command": "loreMaster.rollbackSync",
+        "title": "Roll back a sync",
+        "category": "LoreMaster"
+      },
+      {
         "command": "loreMaster.addGenerator",
         "title": "Add generator",
         "category": "LoreMaster",

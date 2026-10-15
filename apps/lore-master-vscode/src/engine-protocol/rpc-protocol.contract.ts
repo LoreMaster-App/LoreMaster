@@ -14,6 +14,8 @@ export const PAGE_CHILDREN_METHOD = 'page/children'
 export const PAGE_SEARCH_METHOD = 'page/search'
 export const SYNC_PLAN_METHOD = 'sync/plan'
 export const SYNC_EXECUTE_METHOD = 'sync/execute'
+export const SYNC_JOURNALS_METHOD = 'sync/journals'
+export const SYNC_ROLLBACK_METHOD = 'sync/rollback'
 export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
 export const SETTINGS_MIGRATE_METHOD = 'settings/migrate'
@@ -358,6 +360,67 @@ export interface SyncExecuteResult {
   pages:      PageOutcome[]
   rewritten?: string[]
   warnings?:  string[]
+  /** The record of what this sync changed, for sync/rollback; absent when it changed nothing. */
+  journalId?: string
+}
+
+// ---- sync/journals, sync/rollback ----------------------------------------------------
+
+export interface SyncJournalsParams {
+  workspaceRoot: string
+}
+
+/** One sync that can still be rolled back. */
+export interface JournalSummary {
+  id:            string
+  startedAt:     string
+  baseUrl:       string
+  space:         string
+  parentPageId?: string
+  created:       number
+  updated:       number
+  trashed:       number
+  files:         number
+}
+
+export interface SyncJournalsResult {
+  journals: JournalSummary[]
+}
+
+export interface SyncRollbackParams {
+  sessionId:     string
+  workspaceRoot: string
+  /** Empty means the latest. */
+  journalId?:    string
+  dryRun?:       boolean
+  /** Also roll back pages and files edited since the sync. */
+  force?:        boolean
+}
+
+export interface RollbackPage {
+  pageId:  string
+  title:   string
+  /** What the sync did: created, updated or trashed. */
+  kind:    string
+  /** trashed, restored, would-trash, would-restore, gone, skipped, failed or irreversible. */
+  result:  string
+  reason?: string
+}
+
+export interface RollbackFile {
+  path:    string
+  result:  string
+  reason?: string
+}
+
+export interface SyncRollbackResult {
+  journalId: string
+  startedAt: string
+  dryRun?:   boolean
+  pages:     RollbackPage[]
+  files:     RollbackFile[]
+  /** True when nothing was skipped or failed; the journal is then dropped. */
+  complete:  boolean
 }
 
 // ---- pages/build ---------------------------------------------------------------------

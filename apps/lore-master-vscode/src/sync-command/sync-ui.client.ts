@@ -2,6 +2,7 @@ import * as vscode from 'vscode'
 import { isGitHubOutput, type Output } from '../engine-protocol'
 import type { ConnectionMeta } from '../secret-storage'
 import type { StorageType } from '../storage-setup'
+import { ROLLBACK_SYNC_COMMAND } from '../sync-rollback'
 import { createSyncTargetUI } from '../sync-target'
 import type { OutputChoice, SyncUI } from './sync-run.use-case'
 
@@ -25,11 +26,11 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
     },
 
     async pickStorageTypes () {
-      const picked = await vscode.window.showQuickPick(
+      const picked = await vscode.window.showQuickPick<{ label: string, description: string, value: StorageType }>(
         [
-          { label: 'Confluence', description: 'Sync Markdown to a Confluence space', value: 'confluence' as StorageType, picked: true },
-          { label: 'GitHub Pages', description: 'Publish Markdown as a static site on a gh-pages branch', value: 'github-pages' as StorageType },
-          { label: 'GitHub Wiki', description: "Publish Markdown as the repository's wiki pages", value: 'github-wiki' as StorageType },
+          { label: 'Confluence', description: 'Sync Markdown to a Confluence space', value: 'confluence' },
+          { label: 'GitHub Pages', description: 'Publish Markdown as a static site on a gh-pages branch', value: 'github-pages' },
+          { label: 'GitHub Wiki', description: "Publish Markdown as the repository's wiki pages", value: 'github-wiki' },
         ],
         { title: 'LoreMaster: where to sync', placeHolder: 'Choose one or more storages', canPickMany: true },
       )
@@ -106,6 +107,16 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
 
     async error (message: string) {
       await vscode.window.showErrorMessage(`LoreMaster: ${message}`)
+    },
+
+    offerRollback (journalId: string) {
+      void Promise.resolve(vscode.window.showInformationMessage('LoreMaster: synced. Something in the wrong place? This sync can be undone.', 'Roll back')).then(answer => {
+        if (answer === 'Roll back') {
+          return vscode.commands.executeCommand(ROLLBACK_SYNC_COMMAND, journalId)
+        }
+
+        return
+      })
     },
   }
 }

@@ -38,6 +38,8 @@ export interface SyncUI extends StorageSetupUI, PlanPreviewUI {
   report (lines: string[]): void
   status (message: string): void
   confirmForce (message: string): Promise<boolean>
+  /** Tells the user the sync can be undone; not every surface offers it (watch mode stays quiet). */
+  offerRollback? (journalId: string): void
 }
 
 /** What a sync needs: the engine, the stored connections and targets, the folder, an
@@ -115,12 +117,15 @@ async function planAndExecute (deps: SyncDeps & { sessionId: string; output: num
 
   const result = await execute(engine, plan.planId, false, ui)
   reportResult(result, ui)
+  offerRollback(result, ui)
 
   if ((plan.counts.conflict ?? 0) > 0) {
     const forced = await ui.confirmForce('Some pages changed on the platform since the last sync. Overwrite them?')
     if (forced) {
       const replan = await planOnce(engine, { sessionId, workspaceRoot, output, scope })
-      reportResult(await execute(engine, replan.planId, true, ui), ui)
+      const forcedResult = await execute(engine, replan.planId, true, ui)
+      reportResult(forcedResult, ui)
+      offerRollback(forcedResult, ui)
     }
   }
 }
@@ -143,6 +148,12 @@ function execute (engine: EngineClient, planId: string, force: boolean, ui: Sync
       subscription.dispose()
     }
   })
+}
+
+function offerRollback (result: SyncExecuteResult, ui: SyncUI): void {
+  if (result.journalId) {
+    ui.offerRollback?.(result.journalId)
+  }
 }
 
 function reportResult (result: SyncExecuteResult, ui: SyncUI): void {
