@@ -27,7 +27,7 @@ var builtinDefaults = map[string]string{
 // a base URL set once in User settings is not copied into the folder. The settings are
 // validated first, and the file is written through a temporary file and a rename.
 func SaveFolderSettings(workspaceRoot string, settings workspacesettings.Settings) error {
-	if err := workspacesettings.Validate(settings); err != nil {
+	if err := workspacesettings.ValidateAllowingNoOutputs(settings); err != nil {
 		return err
 	}
 	inherited, err := inheritedDefaults(workspaceRoot)

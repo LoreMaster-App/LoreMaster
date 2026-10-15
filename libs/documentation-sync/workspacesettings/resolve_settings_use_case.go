@@ -12,3 +12,18 @@ func ResolveSettings(settings Settings) (Settings, bool, error) {
 
 	return settings, needsFirstSync(settings), nil
 }
+
+// ResolveEditorSettings is ResolveSettings for settings read from the editor's layers, where an
+// empty loreMaster.outputs is meaningful: the user removed every storage. It is configured as
+// having none, and never falls back to a leftover .lore-master.yaml.
+func ResolveEditorSettings(settings Settings) (Settings, bool, error) {
+	applyDefaults(&settings)
+	if err := ValidateAllowingNoOutputs(settings); err != nil {
+		return Settings{}, false, err
+	}
+	if len(settings.Outputs) == 0 {
+		return settings, true, nil
+	}
+
+	return settings, needsFirstSync(settings), nil
+}

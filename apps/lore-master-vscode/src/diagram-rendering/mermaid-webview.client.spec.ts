@@ -107,9 +107,8 @@ describe('createMermaidRenderer', () => {
     const renderer = rendererWith(panels, 5000)
 
     const stuck = renderer.render('huge')
-    const outcome = expect(stuck).rejects.toThrow('did not finish drawing within 5s')
     jest.advanceTimersByTime(5000)
-    await outcome
+    await expect(stuck).rejects.toThrow('did not finish drawing within 5s')
     expect(panels[0].disposed).toBe(true)
 
     const next = renderer.render('small')
