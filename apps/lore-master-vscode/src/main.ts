@@ -14,6 +14,7 @@ import { createConnectionStore } from './secret-storage'
 import { runSettingsMigration } from './settings-migration'
 import { EDIT_STORAGE_COMMAND } from './storage-editing'
 import { addStorageForm, editStorageForm } from './storage-form'
+import { ROLLBACK_SYNC_COMMAND, rollbackSyncCommand } from './sync-rollback'
 import { ADD_STORAGE_COMMAND, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
 import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
@@ -71,6 +72,7 @@ export function activate (context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(SYNC_CURRENT_FILE_COMMAND, () => syncCurrentFile(syncDeps)),
     vscode.commands.registerCommand(PUBLISH_PAGES_COMMAND, () => publishPagesCommand({ engine, output })),
     vscode.commands.registerCommand(CREATE_AGENT_COMMAND, () => createAgentCommand({ engine })),
+    vscode.commands.registerCommand(ROLLBACK_SYNC_COMMAND, (journalId?: unknown) => rollbackSyncCommand({ engine, connections, output }, typeof journalId === 'string' ? journalId : undefined)),
     vscode.commands.registerCommand(SET_UP_CI_COMMAND, () => setUpCiCommand({ engine, version: String(context.extension.packageJSON.version) })),
     vscode.commands.registerCommand(ADD_STORAGE_COMMAND, () => addStorageForm({ engine, connections })),
     vscode.commands.registerCommand(OPEN_CONFIG_COMMAND, () => openConfig()),

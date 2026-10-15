@@ -91,6 +91,8 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout io.Writer, 
 func engineMethods(logger *slog.Logger) rpcserver.Methods {
 	sessions := sessionlifecycle.NewStore()
 	plans := synccommands.NewPlanStore()
+	// Journals live in the user cache, outside any repository; without one nothing is journalled.
+	journalCache, _ := os.UserCacheDir()
 
 	return rpcserver.Methods{
 		rpcprotocol.MethodPing:              rpcserver.Ping(version),
@@ -101,7 +103,9 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodPageChildren:      catalogqueries.ListChildren(sessions),
 		rpcprotocol.MethodPageSearch:        catalogqueries.SearchPages(sessions),
 		rpcprotocol.MethodSyncPlan:          synccommands.PlanSync(sessions, plans),
-		rpcprotocol.MethodSyncExecute:       synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout),
+		rpcprotocol.MethodSyncExecute:       synccommands.ExecuteSync(sessions, plans, hostbridge.DefaultRenderTimeout, journalCache),
+		rpcprotocol.MethodSyncJournals:      synccommands.ListJournals(journalCache),
+		rpcprotocol.MethodSyncRollback:      synccommands.RollbackSync(sessions, journalCache),
 		rpcprotocol.MethodSettingsRead:      settingscommands.ReadSettings(),
 		rpcprotocol.MethodSettingsSave:      settingscommands.SaveSettings(),
 		rpcprotocol.MethodSettingsMigrate:   settingscommands.MigrateSettings(),

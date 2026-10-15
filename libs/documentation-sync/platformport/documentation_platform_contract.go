@@ -22,6 +22,11 @@ type DocumentationPlatform interface {
 	CreatePage(ctx context.Context, page NewPage) (RemotePage, error)
 	// UpdatePage writes a new version; a different ParentID moves the page.
 	UpdatePage(ctx context.Context, update PageUpdate) (RemotePage, error)
+	// SnapshotPage reads a page as it is now, body included, so a change to it can be undone.
+	SnapshotPage(ctx context.Context, id string) (PageSnapshot, error)
+	// RestorePage writes a snapshot's title, parent and body back as a new version.
+	// ExpectedVersion is the current version; a newer remote version is a *VersionConflictError.
+	RestorePage(ctx context.Context, snapshot PageSnapshot, expectedVersion int, message string) (RemotePage, error)
 	// MarkPage records that the page is the sync's, and which file it comes from.
 	MarkPage(ctx context.Context, id string, sourcePath string) error
 	// ListMarkedDescendants lists only pages MarkPage marked, at any depth below rootID.

@@ -68,6 +68,7 @@ type world struct {
 	conn      *jsonrpc2.Conn
 	editor    *editor
 	outputs   []workspacesettings.Output
+	journals  string
 }
 
 const settings = `version: 1
@@ -87,7 +88,7 @@ outputs:
 func newWorld(t *testing.T, platform func(*platformport.InMemoryPlatform) platformport.DocumentationPlatform) *world {
 	t.Helper()
 	fake := platformport.NewInMemoryPlatform(platformport.Space{ID: "1", Key: "ENG", Name: "Engineering"})
-	w := &world{t: t, root: t.TempDir(), fake: fake, parent: fake.SeedPage("ENG", "", "Engineering Home"), editor: &editor{}}
+	w := &world{t: t, root: t.TempDir(), fake: fake, parent: fake.SeedPage("ENG", "", "Engineering Home"), editor: &editor{}, journals: t.TempDir()}
 	w.write(".lore-master.yaml", strings.ReplaceAll(settings, "%PARENT%", w.parent))
 	w.write("README.md", "# Home\n\nSee [the guide](readme.guide.md).\n")
 	w.write("readme.guide.md", "# Guide\n\n![flow](img/flow.png)\n\n```mermaid\ngraph TD; A-->B\n```\n")
@@ -105,7 +106,9 @@ func newWorld(t *testing.T, platform func(*platformport.InMemoryPlatform) platfo
 	go func() {
 		_ = rpcserver.Serve(context.Background(), engineEnd, rpcserver.Methods{
 			rpcprotocol.MethodSyncPlan:    PlanSync(sessions, plans),
-			rpcprotocol.MethodSyncExecute: ExecuteSync(sessions, plans, time.Second),
+			rpcprotocol.MethodSyncExecute: ExecuteSync(sessions, plans, time.Second, w.journals),
+			rpcprotocol.MethodSyncJournals: ListJournals(w.journals),
+			rpcprotocol.MethodSyncRollback: RollbackSync(sessions, w.journals),
 		}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}()
 	w.conn = jsonrpc2.NewConn(context.Background(), jsonrpc2.NewBufferedStream(editorEnd, jsonrpc2.VSCodeObjectCodec{}), w.editor)
@@ -338,5 +341,172 @@ func TestThePlanStoreForgetsTheOldest(t *testing.T) {
 	}
 	if len(store.plans) != keptPlans || len(store.order) != keptPlans {
 		t.Fatalf("%d %d", len(store.plans), len(store.order))
+	}
+}
+
+func (w *world) journalsList() rpcprotocol.SyncJournalsResult {
+	w.t.Helper()
+	var result rpcprotocol.SyncJournalsResult
+	if err := w.conn.Call(context.Background(), rpcprotocol.MethodSyncJournals, rpcprotocol.SyncJournalsParams{WorkspaceRoot: w.root}, &result); err != nil {
+		w.t.Fatal(err)
+	}
+
+	return result
+}
+
+func (w *world) rollback(params rpcprotocol.SyncRollbackParams) (rpcprotocol.SyncRollbackResult, error) {
+	w.t.Helper()
+	params.SessionID, params.WorkspaceRoot = w.sessionID, w.root
+	var result rpcprotocol.SyncRollbackResult
+	err := w.conn.Call(context.Background(), rpcprotocol.MethodSyncRollback, params, &result)
+
+	return result, err
+}
+
+func (w *world) pageCount() int {
+	count := 0
+	for _, id := range []string{"p1", "p2", "p3", "p4", "p5", "p6"} {
+		if w.fake.Page(id) != nil {
+			count++
+		}
+	}
+
+	return count
+}
+
+func TestARolledBackSyncDeletesItsPagesAndRestoresItsFiles(t *testing.T) {
+	w := newWorld(t, nil)
+	original, err := os.ReadFile(filepath.Join(w.root, "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	plan, err := w.plan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := w.execute(plan.PlanID)
+	if report.JournalID == "" || w.annotation("README.md") == nil || w.pageCount() != 4 {
+		t.Fatalf("journal %q, pages %d", report.JournalID, w.pageCount())
+	}
+
+	journals := w.journalsList().Journals
+	if len(journals) != 1 || journals[0].ID != report.JournalID || journals[0].Created != 3 || journals[0].Files != 3 {
+		t.Fatalf("journals = %+v", journals)
+	}
+
+	dry, err := w.rollback(rpcprotocol.SyncRollbackParams{DryRun: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !dry.DryRun || len(dry.Pages) != 3 || dry.Pages[0].Result != "would-trash" || w.pageCount() != 4 || w.annotation("README.md") == nil {
+		t.Fatalf("a dry run changed something: %+v", dry)
+	}
+
+	done, err := w.rollback(rpcprotocol.SyncRollbackParams{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !done.Complete || w.pageCount() != 1 {
+		t.Fatalf("result %+v, pages %d", done, w.pageCount())
+	}
+	for _, page := range done.Pages {
+		if page.Result != "trashed" {
+			t.Fatalf("%+v", page)
+		}
+	}
+	restored, err := os.ReadFile(filepath.Join(w.root, "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(restored) != string(original) || w.annotation("README.md") != nil {
+		t.Fatalf("README.md = %q", restored)
+	}
+	if left := w.journalsList().Journals; len(left) != 0 {
+		t.Fatalf("a complete rollback keeps no journal: %+v", left)
+	}
+}
+
+func TestARolledBackUpdatePutsThePageAndFileBack(t *testing.T) {
+	w := newWorld(t, nil)
+	plan, err := w.plan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.execute(plan.PlanID)
+	synced, err := os.ReadFile(filepath.Join(w.root, "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	home := w.annotation("README.md").PageID
+	titleBefore := w.fake.Page(home).Title
+
+	edited := string(synced) + "\nA new paragraph.\n"
+	w.write("README.md", edited)
+	plan, err = w.plan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := w.execute(plan.PlanID)
+	if report.JournalID == "" || w.fake.Page(home).Version != 2 {
+		t.Fatalf("the update was not journalled: %+v", report)
+	}
+
+	done, err := w.rollback(rpcprotocol.SyncRollbackParams{JournalID: report.JournalID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !done.Complete || w.fake.Page(home).Title != titleBefore || w.fake.Page(home).Version != 3 {
+		t.Fatalf("result %+v, page %+v", done, w.fake.Page(home).RemotePage)
+	}
+	back, err := os.ReadFile(filepath.Join(w.root, "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The file is as it was just before that sync: the hand edit stays, the annotation is the old one.
+	if string(back) != edited || w.annotation("README.md").Version != 1 {
+		t.Fatalf("README.md = %q", back)
+	}
+	if w.pageCount() != 4 {
+		t.Fatal("rolling back an update must not delete the pages of the first sync")
+	}
+}
+
+func TestAPageEditedAfterTheSyncSurvivesARollbackUnlessForced(t *testing.T) {
+	w := newWorld(t, nil)
+	plan, err := w.plan()
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.execute(plan.PlanID)
+	w.fake.EditRemotely(w.annotation("readme.guide.md").PageID)
+
+	partial, err := w.rollback(rpcprotocol.SyncRollbackParams{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The edited guide stays, and so do the pages above it: a page is not deleted from under a child it keeps.
+	if partial.Complete || w.pageCount() != 3 {
+		t.Fatalf("result %+v, pages %d", partial, w.pageCount())
+	}
+	if kept := w.journalsList().Journals; len(kept) != 1 {
+		t.Fatalf("a partial rollback keeps the journal: %+v", kept)
+	}
+
+	forced, err := w.rollback(rpcprotocol.SyncRollbackParams{Force: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !forced.Complete || w.pageCount() != 1 {
+		t.Fatalf("result %+v, pages %d", forced, w.pageCount())
+	}
+}
+
+func TestRollingBackWithoutAJournalSaysSo(t *testing.T) {
+	w := newWorld(t, nil)
+
+	_, err := w.rollback(rpcprotocol.SyncRollbackParams{})
+
+	if code(err) != rpcprotocol.CodeInvalidParams {
+		t.Fatalf("err = %v", err)
 	}
 }

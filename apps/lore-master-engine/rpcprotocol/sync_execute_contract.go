@@ -18,6 +18,9 @@ type SyncExecuteResult struct {
 	Pages []PageOutcome `json:"pages"`
 	// Rewritten are the files whose annotation changed.
 	Rewritten []string `json:"rewritten,omitempty"`
+	// JournalID names the record of what this sync changed, for sync/rollback; empty when it
+	// changed nothing or journalling is off.
+	JournalID string `json:"journalId,omitempty"`
 	Warnings  []string `json:"warnings,omitempty"`
 }
 
