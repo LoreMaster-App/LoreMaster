@@ -70,6 +70,13 @@ type TableCell struct{ Inlines []Inline }
 // ThematicBreak is a horizontal rule.
 type ThematicBreak struct{}
 
+// Children is Confluence's Children Display macro: the page's child pages, listed live by the
+// platform. All lists every descendant; Depth limits the levels below the page.
+type Children struct {
+	All   bool
+	Depth int
+}
+
 // Text is literal text; the renderer escapes it.
 type Text struct{ Value string }
 
@@ -177,6 +184,7 @@ func (List) isBlock()          {}
 func (TaskList) isBlock()      {}
 func (Table) isBlock()         {}
 func (ThematicBreak) isBlock() {}
+func (Children) isBlock()      {}
 
 func (Text) isInline()          {}
 func (Emphasis) isInline()      {}

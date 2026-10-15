@@ -12,6 +12,8 @@ Start here, then dive into the architecture decisions.
 - [Configuration](configuration.md): every `loreMaster.*` setting and how the layers combine.
 - [Choosing what goes where](choosing-what-goes-where.md): send some pages to Pages, some to
   Confluence and some to the wiki, with exclude and include lists.
+- [The `[children]` tag](children-tag.md): list a page's child pages with Confluence's children
+  macro, or as links on a site or wiki.
 
 **Publish**
 

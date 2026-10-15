@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"lore-master/libs/markdown-workspace/childrenmarker"
 	"lore-master/libs/markdown-workspace/documenttree"
 )
 
@@ -96,15 +97,20 @@ func GenerateSiteWith(siteTitle string, tree documenttree.DocumentTree, transfor
 // document's path to its '.html' site path and carrying its nesting depth.
 func collectPages(tree documenttree.DocumentTree) []page {
 	var pages []page
+	expanded := childrenmarker.ExpandTree(tree)
 	tree.Walk(func(node *documenttree.TreeNode, depth int) {
 		if node.Document == nil {
 			return
+		}
+		body := node.Document.Body
+		if withChildren, ok := expanded[node.Document.Path]; ok {
+			body = withChildren
 		}
 		pages = append(pages, page{
 			sitePath: htmlPath(string(node.Document.Path)),
 			title:    node.Title(),
 			depth:    depth,
-			body:     node.Document.Body,
+			body:     body,
 
 			documentPath: string(node.Document.Path),
 		})

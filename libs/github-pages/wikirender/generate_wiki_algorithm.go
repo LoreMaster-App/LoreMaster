@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"lore-master/libs/github-pages/siterender"
+	"lore-master/libs/markdown-workspace/childrenmarker"
 	"lore-master/libs/markdown-workspace/documenttree"
 )
 
@@ -68,12 +69,17 @@ func GenerateWiki(tree documenttree.DocumentTree) []siterender.SiteFile {
 // collectPages lists the documents parents-first and gives each its unique page name.
 func collectPages(tree documenttree.DocumentTree) []wikiPage {
 	var pages []wikiPage
+	expanded := childrenmarker.ExpandTree(tree)
 	tree.Walk(func(node *documenttree.TreeNode, depth int) {
 		if node.Document == nil {
 			return
 		}
+		body := node.Document.Body
+		if withChildren, ok := expanded[node.Document.Path]; ok {
+			body = withChildren
+		}
 		pages = append(pages, wikiPage{
-			source: string(node.Document.Path), title: node.Title(), depth: depth, body: node.Document.Body,
+			source: string(node.Document.Path), title: node.Title(), depth: depth, body: body,
 		})
 	})
 	if len(pages) == 0 {

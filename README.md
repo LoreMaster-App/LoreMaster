@@ -62,6 +62,8 @@ Step by step, with Confluence connection screens: [`docs/getting-started.md`](do
 - **A documentation agent in one command.** *Create documentation agent* writes a Claude Code
   subagent, a VS Code custom agent or an `AGENTS.md` block that knows your nesting rules
   ([`docs/agent.md`](docs/agent.md)).
+- **A `[children]` tag.** One line lists a page's child pages: Confluence's Children Display macro
+  there, a list of links on a site or wiki ([`docs/children-tag.md`](docs/children-tag.md)).
 - **Undo a sync.** *Roll back a sync* deletes the pages a sync created, puts the pages it updated back as
   they were and restores the files, so a sync to the wrong place is one click to undo
   ([`docs/getting-started.md`](docs/getting-started.md#undo-a-sync)).

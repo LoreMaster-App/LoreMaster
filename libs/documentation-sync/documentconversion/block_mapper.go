@@ -8,6 +8,7 @@ import (
 	extast "github.com/yuin/goldmark/extension/ast"
 
 	"lore-master/libs/documentation-sync/platformport"
+	"lore-master/libs/markdown-workspace/childrenmarker"
 )
 
 func (c *converter) blocks(parent ast.Node) []platformport.Block {
@@ -28,6 +29,9 @@ func (c *converter) block(node ast.Node) []platformport.Block {
 
 		return []platformport.Block{platformport.Heading{Level: n.Level, Inlines: c.inlines(n)}}
 	case *ast.Paragraph, *ast.TextBlock:
+		if options, isMarker := childrenMarker(n, c.source); isMarker {
+			return []platformport.Block{platformport.Children{All: options.All, Depth: options.Depth}}
+		}
 		if inlines := c.inlines(n); len(inlines) > 0 {
 			return []platformport.Block{platformport.Paragraph{Inlines: inlines}}
 		}
@@ -176,4 +180,16 @@ func (c *converter) line(node ast.Node) int {
 	}
 
 	return 0
+}
+
+// childrenMarker recognises a paragraph that is only the [children] tag.
+func childrenMarker(node ast.Node, source []byte) (childrenmarker.Options, bool) {
+	var text strings.Builder
+	lines := node.Lines()
+	for i := range lines.Len() {
+		segment := lines.At(i)
+		text.Write(segment.Value(source))
+	}
+
+	return childrenmarker.Parse(text.String())
 }

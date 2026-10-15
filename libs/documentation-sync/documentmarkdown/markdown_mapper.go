@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"lore-master/libs/documentation-sync/platformport"
+	"lore-master/libs/markdown-workspace/childrenmarker"
 )
 
 // Links maps a synced page's final (prefixed) title to the Markdown target that links to its
@@ -74,6 +75,8 @@ func (r *renderer) block(b platformport.Block) string {
 		return r.inlines(n.Inlines)
 	case platformport.ThematicBreak:
 		return "---"
+	case platformport.Children:
+		return childrenmarker.Options{All: n.All, Depth: n.Depth}.String()
 	case platformport.CodeBlock:
 		return fence(n.Language, n.Code)
 	case platformport.Diagram:

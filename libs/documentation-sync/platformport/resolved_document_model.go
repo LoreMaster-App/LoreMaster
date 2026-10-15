@@ -45,6 +45,12 @@ type (
 		Language string
 		Code     string
 	}
+	// Children is the page's list of child pages: the platform draws it live where it can
+	// (Confluence's Children Display macro). All lists every descendant; Depth limits the levels.
+	Children struct {
+		All   bool
+		Depth int
+	}
 	// Diagram is diagram source (Mermaid) with, once rendered, its picture as an
 	// attachment on the page.
 	Diagram struct {
@@ -113,6 +119,7 @@ func (Table) isBlock()         {}
 func (ThematicBreak) isBlock() {}
 func (CodeBlock) isBlock()     {}
 func (Diagram) isBlock()       {}
+func (Children) isBlock()      {}
 
 func (Text) isInline()          {}
 func (Emphasis) isInline()      {}
