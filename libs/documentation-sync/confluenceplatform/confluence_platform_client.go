@@ -35,6 +35,8 @@ type Platform struct {
 	pages   *pagecontent.Pages
 	edition connection.Edition
 	render  storageformat.Options
+	// template lays every page out; the zero value leaves pages as they are.
+	template Template
 }
 
 var _ platformport.DocumentationPlatform = (*Platform)(nil)
@@ -93,7 +95,7 @@ func (p *Platform) GetPageContent(ctx context.Context, id string) (platformport.
 	if err != nil {
 		return platformport.PageContent{}, portError(err)
 	}
-	document, flags, err := storageformat.Parse(page.BodyStorage)
+	document, flags, err := storageformat.Parse(ExtractContent(page.BodyStorage))
 	if err != nil {
 		return platformport.PageContent{}, err
 	}
@@ -128,6 +130,10 @@ func (p *Platform) CreatePage(ctx context.Context, page platformport.NewPage) (p
 	if err != nil {
 		return platformport.RemotePage{}, err
 	}
+	body, err = p.laidOut(body, page.Title)
+	if err != nil {
+		return platformport.RemotePage{}, err
+	}
 	created, err := p.pages.CreatePage(ctx, pagecontent.CreatePageInput{
 		SpaceID: page.Space.ID, SpaceKey: page.Space.Key, ParentID: page.ParentID, Title: page.Title, BodyStorage: body,
 	})
@@ -138,6 +144,10 @@ func (p *Platform) CreatePage(ctx context.Context, page platformport.NewPage) (p
 // UpdatePage implements platformport.DocumentationPlatform.
 func (p *Platform) UpdatePage(ctx context.Context, update platformport.PageUpdate) (platformport.RemotePage, error) {
 	body, err := p.renderBody(update.Body)
+	if err != nil {
+		return platformport.RemotePage{}, err
+	}
+	body, err = p.laidOut(body, update.Title)
 	if err != nil {
 		return platformport.RemotePage{}, err
 	}
@@ -229,6 +239,11 @@ func (p *Platform) DownloadAttachment(ctx context.Context, pageID string, filena
 	}
 
 	return nil, fmt.Errorf("the page %s has no attachment named %q", pageID, filename)
+}
+
+// laidOut puts a rendered body into the output's template, when it has one.
+func (p *Platform) laidOut(body string, title string) (string, error) {
+	return ApplyTemplate(p.template.Shell, body, title)
 }
 
 func (p *Platform) renderBody(doc platformport.Document) (string, error) {

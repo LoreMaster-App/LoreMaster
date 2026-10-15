@@ -329,7 +329,7 @@ func (run *execution) pulledAnnotation(action syncplanning.Action, version int, 
 	annotation.Attachments = nil
 	if document, err := documentparsing.ParseDocument(action.Path, markdown); err == nil {
 		converted := documentconversion.ConvertDocument(document, run.input.Prepared.Workspace)
-		annotation.RenderHash = converted.RenderHash
+		annotation.RenderHash = documentconversion.HashWithTemplate(converted.RenderHash, run.input.Prepared.TemplateHash)
 		attachments := map[string]string{}
 		for _, attachment := range converted.Attachments {
 			if hash, ok := hashes[attachment.Path]; ok {

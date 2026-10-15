@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
+	"lore-master/libs/documentation-sync/confluenceplatform"
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/syncexecution"
 	"lore-master/libs/documentation-sync/syncplanning"
@@ -25,6 +26,8 @@ type storedPlan struct {
 	space     platformport.SpaceRef
 	plan      syncplanning.SyncPlan
 	prepared  syncexecution.Prepared
+	// template is the layout every page is put in; empty for the platform's own.
+	template confluenceplatform.Template
 }
 
 // PlanStore keeps plans between sync/plan and sync/execute.

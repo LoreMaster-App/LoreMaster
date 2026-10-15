@@ -175,6 +175,9 @@ export interface Output {
   include?:       string[]
   /** Entries this storage leaves out, on top of the top-level ignore list. */
   exclude?:       string[]
+  /** How the storage's pages are laid out: a built-in's name, a workspace path or (confluence)
+   *  a page id or address; absent is the default layout. */
+  template?:      string
 }
 
 /** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */

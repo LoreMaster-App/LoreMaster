@@ -629,6 +629,10 @@
                   "type": "string"
                 },
                 "markdownDescription": "Gitignore-style patterns this output leaves out, on top of `loreMaster.ignore`."
+              },
+              "template": {
+                "type": "string",
+                "markdownDescription": "How this output's pages are laid out. Empty is the default layout. GitHub Pages: `default`, `minimal`, `handbook` or `headless` (Markdown and a `site.json` for your own front end), or a folder holding `template.html`. Wiki: a Markdown file with `{{content}}`. Confluence: a page id or address, or a file, with `{{content}}` where the page goes. Write `./name` for a folder named like a built-in. See *Templates*."
               }
             }
           },

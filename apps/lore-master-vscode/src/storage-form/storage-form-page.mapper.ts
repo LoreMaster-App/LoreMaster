@@ -106,6 +106,10 @@ export function renderStorageFormPage (nonce: string, title: string): string {
     <label for="excludes">Excluded paths</label>
     <input id="excludes" autocomplete="off" placeholder="drafts/, CHANGELOG.md" />
     <p class="hint">Gitignore-style patterns this storage leaves out.</p>
+    <label for="template">Page template</label>
+    <input id="template" autocomplete="off" placeholder="default" />
+    <p class="hint">Empty is the default layout. GitHub Pages: default, minimal, handbook or headless, or a folder holding template.html. Wiki: a Markdown file with {{content}}. Confluence: a page id or address, or a file, with {{content}} where the page goes. Write ./name for a folder named like a built-in.</p>
+    <div class="error" data-error="template"></div>
     <label for="ignore">Ignored paths (all storages)</label>
     <input id="ignore" autocomplete="off" placeholder="internal/, CLAUDE.md" />
     <p class="hint">Patterns every storage of this workspace leaves out.</p>
@@ -121,7 +125,7 @@ export function renderStorageFormPage (nonce: string, title: string): string {
 (function () {
   const api = acquireVsCodeApi();
   const $ = id => document.getElementById(id);
-  const FIELDS = ['platform','connection','space','parentPageId','titlePrefix','direction','mermaidMode','linkMode','titleCollision','repo','branch','path','roots','excludes','ignore'];
+  const FIELDS = ['platform','connection','space','parentPageId','titlePrefix','direction','mermaidMode','linkMode','titleCollision','repo','branch','path','template','roots','excludes','ignore'];
   let mode = 'create';
 
   function read () {

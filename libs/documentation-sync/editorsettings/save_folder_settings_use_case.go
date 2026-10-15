@@ -135,6 +135,7 @@ func minimalOutputs(outputs []workspacesettings.Output, inherited map[string]str
 			Platform: output.Platform, Space: output.Space, ParentPageID: output.ParentPageID,
 			TitlePrefix: unlessEffective(output.TitlePrefix, inherited[keyDefaultsPrefixT], ""),
 			Repo: output.Repo, Branch: output.Branch, Path: output.Path, Include: output.Include, Exclude: output.Exclude,
+			Template: unlessEffective(output.Template, "", "default"),
 			Direction:      unlessEffective(output.Direction, inherited[keyDefaultsDirect], builtinDefaults[keyDefaultsDirect]),
 			MermaidMode:    unlessEffective(output.MermaidMode, inherited[keyDefaultsMermaid], builtinDefaults[keyDefaultsMermaid]),
 			LinkMode:       unlessEffective(output.LinkMode, inherited[keyDefaultsLink], builtinDefaults[keyDefaultsLink]),

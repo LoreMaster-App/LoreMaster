@@ -64,6 +64,9 @@ Step by step, with Confluence connection screens: [`docs/getting-started.md`](do
   ([`docs/agent.md`](docs/agent.md)).
 - **A `[children]` tag.** One line lists a page's child pages: Confluence's Children Display macro
   there, a list of links on a site or wiki ([`docs/children-tag.md`](docs/children-tag.md)).
+- **Page templates.** Built-in site layouts (`minimal`, `handbook`, `headless`), your own HTML
+  folder, a wiki Markdown shell or a Confluence page as the template of every page
+  ([`docs/templates.md`](docs/templates.md)).
 - **Undo a sync.** *Roll back a sync* deletes the pages a sync created, puts the pages it updated back as
   they were and restores the files, so a sync to the wrong place is one click to undo
   ([`docs/getting-started.md`](docs/getting-started.md#undo-a-sync)).

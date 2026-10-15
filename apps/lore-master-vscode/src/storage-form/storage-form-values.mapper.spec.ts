@@ -31,6 +31,7 @@ describe('outputToValues', () => {
       repo:           '',
       branch:         '',
       path:           '',
+      template:       '',
       roots:          'docs, guides',
       excludes:       'drafts/',
       ignore:         'internal/',
@@ -82,5 +83,17 @@ describe('ignoreFromValues', () => {
   it('returns the patterns, or nothing when the field is empty', () => {
     expect(ignoreFromValues({ ...emptyValues(), ignore: 'a/, b.md' })).toEqual(['a/', 'b.md'])
     expect(ignoreFromValues(emptyValues())).toBeUndefined()
+  })
+})
+
+describe('the page template', () => {
+  it('is shown as written and saved on the storage, and the default is not saved', () => {
+    const base: Output = { ...confluence, template: '12345' }
+    const values = outputToValues(base, settings)
+
+    expect(values.template).toBe('12345')
+    expect(valuesToOutput({ ...values, template: ' templates/layout.xhtml ' }, base).template).toBe('templates/layout.xhtml')
+    expect(valuesToOutput({ ...values, template: 'default' }, base).template).toBeUndefined()
+    expect(valuesToOutput({ ...values, template: '' }, base).template).toBeUndefined()
   })
 })

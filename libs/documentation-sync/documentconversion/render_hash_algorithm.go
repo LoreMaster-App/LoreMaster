@@ -52,3 +52,15 @@ func encode(out *bytes.Buffer, value reflect.Value) {
 		fmt.Fprint(out, value)
 	}
 }
+
+// HashWithTemplate is the render hash of a page laid out by a template: it changes when the
+// page does and when the template does, so editing a template re-publishes the pages. An empty
+// templateHash (no template) leaves the hash as it was.
+func HashWithTemplate(renderHash string, templateHash string) string {
+	if templateHash == "" {
+		return renderHash
+	}
+	sum := sha256.Sum256([]byte(renderHash + "|" + templateHash))
+
+	return "sha256:" + hex.EncodeToString(sum[:])
+}

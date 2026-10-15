@@ -61,7 +61,7 @@ func ExecuteSync(sessions *sessionlifecycle.Store, plans *PlanStore, renderTimeo
 			browser = drawing
 		}
 		renderer := diagramrouting.RouteWith(editor, browser)
-		platform := session.Platform.ForOutput(stored.output)
+		platform := session.Platform.ForOutputWithTemplate(stored.output, stored.template)
 		var recorder *syncjournal.Recorder
 		if journalCache != "" {
 			recorder = syncjournal.NewRecorder(platform)

@@ -6,6 +6,8 @@ import (
 	"path"
 	"slices"
 	"strings"
+
+	"lore-master/libs/documentation-sync/templatereference"
 )
 
 // reservedPlatforms are the platforms the format names but has no adapter for yet; each
@@ -54,6 +56,9 @@ func validate(settings Settings, requireOutputs bool) error {
 			validateGitHubPagesOutput(add, where, output, pagesSeen, i)
 		}
 		validateContent(add, where, output)
+		if _, problem := templatereference.Check(output.Platform, output.Template); problem != "" && output.Template != "" {
+			add("%s.template %s", where, problem)
+		}
 	}
 
 	return errors.Join(problems...)
@@ -193,7 +198,7 @@ func choose(add func(string, ...any), field string, value string, allowed []stri
 	case reserved[value] != "":
 		add("%s %q is planned but not available yet (%s); use %s", field, value, reserved[value], strings.Join(allowed, " or "))
 	case strings.HasSuffix(field, ".template"):
-		add("%s %q: custom templates are planned but not available yet (#97); use default", field, value)
+		add("%s %q: a content entry only takes default; set the template on the output (outputs[].template)", field, value)
 	default:
 		add("%s %q is not one of %s", field, value, strings.Join(allowed, ", "))
 	}

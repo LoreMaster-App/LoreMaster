@@ -49,6 +49,13 @@ type wikiPage struct {
 // _Sidebar.md that mirrors the tree. Links between documents and to local images and files are
 // rewritten to where the wiki serves them. It is pure: nothing is written.
 func GenerateWiki(tree documenttree.DocumentTree) []siterender.SiteFile {
+	return GenerateWikiTemplated(tree, "")
+}
+
+// GenerateWikiTemplated is GenerateWiki with each page's Markdown put into shell, a Markdown
+// text holding {{content}} (and optionally {{title}} and {{source}}). An empty shell leaves the
+// pages as they are. The sidebar is not wrapped.
+func GenerateWikiTemplated(tree documenttree.DocumentTree, shell string) []siterender.SiteFile {
 	pages := collectPages(tree)
 	byPath := make(map[string]string, len(pages))
 	for _, page := range pages {
@@ -57,7 +64,7 @@ func GenerateWiki(tree documenttree.DocumentTree) []siterender.SiteFile {
 
 	files := make([]siterender.SiteFile, 0, len(pages)+1)
 	for _, page := range pages {
-		files = append(files, siterender.SiteFile{Path: page.name + ".md", Content: rewriteLinks(page, byPath)})
+		files = append(files, siterender.SiteFile{Path: page.name + ".md", Content: wrapInShell(shell, page, rewriteLinks(page, byPath))})
 	}
 	if len(pages) > 0 {
 		files = append(files, siterender.SiteFile{Path: sidebarFile, Content: sidebar(pages)})

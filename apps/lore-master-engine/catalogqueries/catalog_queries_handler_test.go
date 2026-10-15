@@ -14,6 +14,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/sessionlifecycle"
+	"lore-master/libs/documentation-sync/confluenceplatform"
 	"lore-master/libs/documentation-sync/platformport"
 	"lore-master/libs/documentation-sync/workspacesettings"
 )
@@ -22,6 +23,14 @@ import (
 type fake struct{ *platformport.InMemoryPlatform }
 
 func (f fake) ForOutput(workspacesettings.Output) platformport.DocumentationPlatform { return f }
+
+func (f fake) ResolveTemplate(context.Context, string, string) (confluenceplatform.Template, error) {
+	return confluenceplatform.Template{}, nil
+}
+
+func (f fake) ForOutputWithTemplate(workspacesettings.Output, confluenceplatform.Template) platformport.DocumentationPlatform {
+	return f
+}
 
 // engine serves the catalog over a pipe, with one session on a fake platform.
 func engine(t *testing.T) (*jsonrpc2.Conn, string, map[string]string) {
