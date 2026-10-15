@@ -97,7 +97,7 @@ func inheritedDefaults(workspaceRoot string) (map[string]string, error) {
 	}
 	merged := mergeLayers(layers)
 	result := map[string]string{}
-	for _, key := range []string{keyConfluenceURL, keyDefaultsDirect, keyDefaultsMermaid, keyDefaultsLink, keyDefaultsCollide} {
+	for _, key := range []string{keyConfluenceURL, keyDefaultsDirect, keyDefaultsMermaid, keyDefaultsLink, keyDefaultsCollide, keyDefaultsPrefixT} {
 		var value string
 		if err := decodeKey(merged, key, &value); err != nil {
 			return nil, err
@@ -112,7 +112,8 @@ func minimalOutputs(outputs []workspacesettings.Output, inherited map[string]str
 	wires := make([]outputWire, 0, len(outputs))
 	for _, output := range outputs {
 		wire := outputWire{
-			Platform: output.Platform, Space: output.Space, ParentPageID: output.ParentPageID, TitlePrefix: output.TitlePrefix,
+			Platform: output.Platform, Space: output.Space, ParentPageID: output.ParentPageID,
+			TitlePrefix: unlessEffective(output.TitlePrefix, inherited[keyDefaultsPrefixT], ""),
 			Repo: output.Repo, Branch: output.Branch, Path: output.Path, Include: output.Include, Exclude: output.Exclude,
 			Direction:      unlessEffective(output.Direction, inherited[keyDefaultsDirect], builtinDefaults[keyDefaultsDirect]),
 			MermaidMode:    unlessEffective(output.MermaidMode, inherited[keyDefaultsMermaid], builtinDefaults[keyDefaultsMermaid]),

@@ -18,12 +18,13 @@ const (
 	keyDefaultsMermaid = keyDefaultsPrefix + "mermaidMode"
 	keyDefaultsLink    = keyDefaultsPrefix + "linkMode"
 	keyDefaultsCollide = keyDefaultsPrefix + "titleCollision"
+	keyDefaultsPrefixT = keyDefaultsPrefix + "titlePrefix"
 )
 
 var configKeys = map[string]bool{
 	keyOutputs: true, keyIgnore: true, keySkipGitignored: true, keyGenerators: true,
 	keyConfluenceURL: true, keyDefaultsDirect: true, keyDefaultsMermaid: true,
-	keyDefaultsLink: true, keyDefaultsCollide: true,
+	keyDefaultsLink: true, keyDefaultsCollide: true, keyDefaultsPrefixT: true,
 }
 
 // extensionOnlyKeys are the editor extension's own preferences; they are not part of the

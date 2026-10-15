@@ -743,6 +743,12 @@
           "default": "",
           "scope": "resource",
           "markdownDescription": "What an output that does not set `titleCollision` does when a title already exists. Empty means `fail`."
+        },
+        "loreMaster.defaults.titlePrefix": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "The title prefix of an output that does not set `titlePrefix`: its pages are titled `<prefix>: <first heading>`. Empty means the first sync asks for one (the selected parent page's title by default)."
         }
       }
     }
