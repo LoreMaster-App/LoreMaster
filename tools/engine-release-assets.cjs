@@ -29,7 +29,17 @@ function run (command, args, options = {}) {
   return result.stdout
 }
 
-const tag = run('git', ['tag', '--points-at', 'HEAD']).split(/\r?\n/).find(each => each.startsWith(EXTENSION + '@'))
+// Two releases can sit on one commit (a re-run with a forced version): attach to the newest.
+const versionParts = each => each.slice(EXTENSION.length + 1).split('.').map(Number)
+const byVersion = (a, b) => {
+  const [left, right] = [versionParts(a), versionParts(b)]
+  for (let index = 0; index < 3; index += 1) {
+    if ((left[index] ?? 0) !== (right[index] ?? 0)) return (left[index] ?? 0) - (right[index] ?? 0)
+  }
+
+  return 0
+}
+const tag = run('git', ['tag', '--points-at', 'HEAD']).split(/\r?\n/).filter(each => each.startsWith(EXTENSION + '@')).sort(byVersion).at(-1)
 if (!tag) {
   console.log('This run released no ' + EXTENSION + ' version - no engine zips to attach.')
   process.exit(0)
