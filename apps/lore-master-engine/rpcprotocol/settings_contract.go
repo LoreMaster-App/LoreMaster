@@ -71,6 +71,8 @@ type Generator struct {
 
 // Output is one place the lore goes.
 type Output struct {
+	// Name is what the editor calls this output; empty means a name made from where it goes.
+	Name         string    `json:"name,omitempty"`
 	Platform     string    `json:"platform"`
 	BaseURL      string    `json:"baseUrl"`
 	Space        string    `json:"space"`

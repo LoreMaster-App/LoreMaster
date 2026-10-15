@@ -141,6 +141,21 @@ func (l *intList) Set(value string) error {
 	return nil
 }
 
+// outputList is the --output flag: a position in the outputs list or an output's name, given
+// several times.
+type outputList []string
+
+func (l *outputList) String() string { return strings.Join(*l, ",") }
+
+func (l *outputList) Set(value string) error {
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("an output is a position or a name, not an empty value")
+	}
+	*l = append(*l, strings.TrimSpace(value))
+
+	return nil
+}
+
 // stringList is a flag that may be given several times.
 type stringList []string
 

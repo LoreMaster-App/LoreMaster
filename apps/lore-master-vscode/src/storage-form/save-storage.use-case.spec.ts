@@ -94,3 +94,32 @@ describe('saveStorage', () => {
     expect(result).toMatchObject({ saved: false, message: expect.stringContaining('no longer') })
   })
 })
+
+describe('saveStorage names', () => {
+  it('gives an unnamed new storage a name made from where it goes', async () => {
+    const { requests, saves } = engine({ version: 1, outputs: [existing] })
+
+    await saveStorage({ engine: requests, workspaceRoot: '/w', connectionCount: 1 }, confluenceValues)
+
+    expect(saves[0].outputs[1].name).toBe('Confluence · OPS')
+  })
+
+  it('refuses a name another storage already has, without saving', async () => {
+    const { requests, saves } = engine({ version: 1, outputs: [{ ...existing, name: 'Technical docs' }] })
+
+    const result = await saveStorage({ engine: requests, workspaceRoot: '/w', connectionCount: 1 }, { ...confluenceValues, name: 'technical DOCS' })
+
+    expect(result).toMatchObject({ saved: false, errors: { name: expect.stringContaining('already called') } })
+    expect(saves).toHaveLength(0)
+  })
+
+  it('lets a storage keep its own name when it is edited', async () => {
+    const { requests, saves } = engine({ version: 1, outputs: [{ ...existing, name: 'Technical docs' }] })
+    const values = { ...confluenceValues, name: 'Technical docs', space: 'ENG' }
+
+    const result = await saveStorage({ engine: requests, workspaceRoot: '/w', index: 0, connectionCount: 1 }, values)
+
+    expect(result).toEqual({ saved: true })
+    expect(saves[0].outputs[0].name).toBe('Technical docs')
+  })
+})

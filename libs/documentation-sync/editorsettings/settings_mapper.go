@@ -9,6 +9,7 @@ import (
 )
 
 type outputWire struct {
+	Name           string        `json:"name,omitempty"`
 	Platform       string        `json:"platform,omitempty"`
 	BaseURL        string        `json:"baseUrl,omitempty"`
 	Space          string        `json:"space,omitempty"`
@@ -79,7 +80,7 @@ func toSettings(values map[string]merged) (workspacesettings.Settings, error) {
 
 	for _, wire := range wires {
 		output := workspacesettings.Output{
-			Platform: wire.Platform, BaseURL: wire.BaseURL, Space: wire.Space, ParentPageID: wire.ParentPageID,
+			Name: wire.Name, Platform: wire.Platform, BaseURL: wire.BaseURL, Space: wire.Space, ParentPageID: wire.ParentPageID,
 			TitlePrefix: wire.TitlePrefix, Direction: wire.Direction, MermaidMode: wire.MermaidMode,
 			TitleCollision: wire.TitleCollision, LinkMode: wire.LinkMode, Repo: wire.Repo, Branch: wire.Branch,
 			Path: wire.Path, Include: wire.Include, Exclude: wire.Exclude, Template: wire.Template,

@@ -34,7 +34,7 @@ export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider
   if (checkable.length > 1) {
     const picked = await vscode.window.showQuickPick(
       checkable.map(each => ({
-        label:       isGitHubOutput(each.output) ? storageLabel(each.output) : `Confluence · ${each.output.space}`,
+        label:       isGitHubOutput(each.output) || (each.output.name ?? '') !== '' ? storageLabel(each.output) : `Confluence · ${each.output.space}`,
         description: isGitHubOutput(each.output) ? storageDescription(each.output) : each.output.baseUrl,
         each,
       })),

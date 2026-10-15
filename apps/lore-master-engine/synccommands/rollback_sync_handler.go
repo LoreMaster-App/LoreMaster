@@ -28,7 +28,7 @@ func ListJournals(journalCache string) rpcserver.Method {
 		for _, journal := range journals {
 			summary := journal.Summarize()
 			result.Journals = append(result.Journals, rpcprotocol.JournalSummary{
-				ID: journal.ID, StartedAt: journal.StartedAt, BaseURL: journal.Output.BaseURL, Space: journal.Output.Space,
+				ID: journal.ID, StartedAt: journal.StartedAt, Name: journal.Output.Name, BaseURL: journal.Output.BaseURL, Space: journal.Output.Space,
 				ParentPageID: journal.Output.ParentPageID, Created: summary.Created, Updated: summary.Updated,
 				Trashed: summary.Trashed, Files: summary.Files,
 			})

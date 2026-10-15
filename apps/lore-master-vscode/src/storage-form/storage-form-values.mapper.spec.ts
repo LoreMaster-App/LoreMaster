@@ -1,5 +1,5 @@
 import type { Output, Settings } from '../engine-protocol'
-import { emptyValues, ignoreFromValues, outputToValues, valuesToOutput } from './storage-form-values.mapper'
+import { emptyValues, ignoreFromValues, outputToValues, suggestStorageName, valuesToOutput } from './storage-form-values.mapper'
 
 const confluence: Output = {
   platform:       'confluence',
@@ -19,6 +19,7 @@ const settings: Settings = { version: 1, outputs: [confluence], ignore: ['intern
 describe('outputToValues', () => {
   it('shows every field of a Confluence storage and the workspace ignore list', () => {
     expect(outputToValues(confluence, settings)).toEqual({
+      name:           '',
       platform:       'confluence',
       connection:     'https://acme.atlassian.net/wiki',
       space:          'ENG',
@@ -95,5 +96,26 @@ describe('the page template', () => {
     expect(valuesToOutput({ ...values, template: ' templates/layout.xhtml ' }, base).template).toBe('templates/layout.xhtml')
     expect(valuesToOutput({ ...values, template: 'default' }, base).template).toBeUndefined()
     expect(valuesToOutput({ ...values, template: '' }, base).template).toBeUndefined()
+  })
+})
+
+describe('the storage name', () => {
+  it('is shown and saved, and an empty one is not written', () => {
+    const named: Output = { ...confluence, name: 'Technical documentation' }
+    const values = outputToValues(named, settings)
+
+    expect(values.name).toBe('Technical documentation')
+    expect(valuesToOutput({ ...values, name: ' User manuals ' }, named).name).toBe('User manuals')
+    expect(valuesToOutput({ ...values, name: '' }, named).name).toBeUndefined()
+  })
+
+  it('is suggested from where the storage goes, numbered when taken', () => {
+    const values = { ...outputToValues(confluence, settings), name: '' }
+
+    expect(suggestStorageName(values, [])).toBe('Confluence · ENG')
+    expect(suggestStorageName(values, ['confluence · eng'])).toBe('Confluence · ENG (2)')
+    expect(suggestStorageName(values, ['Confluence · ENG', 'Confluence · ENG (2)'])).toBe('Confluence · ENG (3)')
+    expect(suggestStorageName({ ...values, platform: 'github-wiki' }, [])).toBe('GitHub Wiki · this repository')
+    expect(suggestStorageName({ ...values, platform: 'github-pages', repo: 'acme/site' }, [])).toBe('GitHub Pages · acme/site')
   })
 })

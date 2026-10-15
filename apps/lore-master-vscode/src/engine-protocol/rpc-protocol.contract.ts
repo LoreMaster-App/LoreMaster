@@ -154,6 +154,8 @@ export interface Content {
 }
 
 export interface Output {
+  /** What the editor calls this storage; absent means a name made from where it goes. */
+  name?:          string
   platform:       string
   baseUrl:        string
   space:          string
@@ -396,6 +398,8 @@ export interface SyncJournalsParams {
 export interface JournalSummary {
   id:            string
   startedAt:     string
+  /** The storage's name, when it had one. */
+  name?:         string
   baseUrl:       string
   space:         string
   parentPageId?: string

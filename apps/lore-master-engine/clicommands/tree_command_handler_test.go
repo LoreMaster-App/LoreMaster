@@ -153,3 +153,34 @@ func TestTreeListsTheFilesLeftOutWithTheirRule(t *testing.T) {
 		}
 	}
 }
+
+func TestTreeFindsAnOutputByItsNameAndNamesItInTheHeading(t *testing.T) {
+	manuals := rpcprotocol.Output{Name: "User manuals", Platform: "confluence", BaseURL: "https://acme.atlassian.net/wiki", Space: "MAN"}
+	technical := rpcprotocol.Output{Name: "Technical docs", Platform: "confluence", BaseURL: "https://acme.atlassian.net/wiki", Space: "ENG"}
+	double := newEngineDouble(map[string]func(rpcserver.Call) (any, error){
+		rpcprotocol.MethodSettingsRead: settingsAnswer(technical, manuals),
+		rpcprotocol.MethodWorkspaceTree: treeAnswer(map[int]rpcprotocol.WorkspaceTreeResult{
+			0: {Nodes: []rpcprotocol.TreeNode{{Path: "eng.md", Title: "Eng"}}},
+			1: {Nodes: []rpcprotocol.TreeNode{{Path: "manual.md", Title: "Manual"}}},
+		}),
+	})
+
+	stdout, _, code := double.run(t, nil, "tree", "--output", "user MANUALS")
+
+	if code != ExitOK || !strings.Contains(stdout, `output 1 "User manuals": Confluence MAN`) || strings.Contains(stdout, "Technical docs") {
+		t.Fatalf("exit %d: %s", code, stdout)
+	}
+}
+
+func TestAnUnknownOutputNameListsTheNames(t *testing.T) {
+	named := rpcprotocol.Output{Name: "Technical docs", Platform: "confluence", BaseURL: "https://acme.atlassian.net/wiki", Space: "ENG"}
+	double := newEngineDouble(map[string]func(rpcserver.Call) (any, error){
+		rpcprotocol.MethodSettingsRead: settingsAnswer(named),
+	})
+
+	_, stderr, code := double.run(t, nil, "tree", "--output", "manuals")
+
+	if code != ExitFailed || !strings.Contains(stderr, `no output is named "manuals"; the names are "Technical docs"`) {
+		t.Fatalf("exit %d: %s", code, stderr)
+	}
+}

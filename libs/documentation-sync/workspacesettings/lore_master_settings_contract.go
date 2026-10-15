@@ -45,6 +45,10 @@ type Generator struct {
 
 // Output is one place the lore goes.
 type Output struct {
+	// Name tells this output from the others (two Confluences, a site and a wiki): it is what
+	// the tree, the sync and the form call it. Empty is allowed and shown as a name made from
+	// the platform and where it goes; when set, it is unique among the outputs.
+	Name         string    `yaml:"name,omitempty"`
 	Platform     string    `yaml:"platform"`
 	BaseURL      string    `yaml:"baseUrl"`
 	Space        string    `yaml:"space"`

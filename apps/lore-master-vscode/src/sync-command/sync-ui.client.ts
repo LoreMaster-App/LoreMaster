@@ -123,6 +123,9 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
 
 /** A short, human label for an output in the "sync to…" picker. */
 function outputLabel (output: Output): string {
+  if (output.name !== undefined && output.name.trim() !== '') {
+    return output.name
+  }
   if (output.platform === 'github-wiki') {
     return 'GitHub Wiki'
   }

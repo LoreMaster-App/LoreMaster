@@ -483,6 +483,11 @@
               "platform"
             ],
             "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 60,
+                "markdownDescription": "What this output is called in the tree, the sync and the settings form, so two Confluences (technical documentation, user manuals) are told apart. Unique among the outputs. Empty shows a name made from the platform and where it goes."
+              },
               "platform": {
                 "type": "string",
                 "enum": [

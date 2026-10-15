@@ -97,7 +97,7 @@ func outputToSync(params rpcprotocol.SyncPlanParams, sessionURL string) (workspa
 	}
 	output := loaded.Settings.Outputs[params.Output]
 	if !confluenceplatform.SameSite(output.BaseURL, sessionURL) {
-		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d syncs to %s but the session is open on %s", params.Output, output.BaseURL, sessionURL)
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d (%s) syncs to %s but the session is open on %s", params.Output, workspacesettings.DisplayName(loaded.Settings.Outputs, params.Output), output.BaseURL, sessionURL)
 	}
 
 	return output, loaded.Settings.DiscoveryScope(), nil

@@ -9,7 +9,7 @@ func toWire(settings workspacesettings.Settings) rpcprotocol.Settings {
 	wire := rpcprotocol.Settings{Version: settings.Version, SkipGitignored: settings.SkipGitignored, Ignore: settings.Ignore, Generators: generatorsToWire(settings.Generators), Outputs: make([]rpcprotocol.Output, len(settings.Outputs))}
 	for i, output := range settings.Outputs {
 		wire.Outputs[i] = rpcprotocol.Output{
-			Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
+			Name: output.Name, Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
 			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode,
 			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode, Repo: output.Repo, Branch: output.Branch, Path: output.Path,
 			Include: output.Include, Exclude: output.Exclude, Template: output.Template,
@@ -27,7 +27,7 @@ func fromWire(wire rpcprotocol.Settings) workspacesettings.Settings {
 	settings := workspacesettings.Settings{Version: wire.Version, SkipGitignored: wire.SkipGitignored, Ignore: wire.Ignore, Generators: generatorsFromWire(wire.Generators), Outputs: make([]workspacesettings.Output, len(wire.Outputs))}
 	for i, output := range wire.Outputs {
 		settings.Outputs[i] = workspacesettings.Output{
-			Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
+			Name: output.Name, Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
 			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode,
 			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode, Repo: output.Repo, Branch: output.Branch, Path: output.Path,
 			Include: output.Include, Exclude: output.Exclude, Template: output.Template,
