@@ -8,7 +8,7 @@ accepts it as of #163, wiring the pull through the engine and the VS Code previe
 Today the sync is one-way (`to-platform`): it pushes the workspace to Confluence and, when a
 page was edited on the platform since the last sync, reports a **conflict** and leaves it
 alone. Two-way sync adds the reverse direction — pulling remote edits back into the Markdown
-— using the two signals the annotation already gives per page:
+— using the two signals the sync state (`lore-master.json`) already gives per page:
 
 - **local changed** = the file's content hash differs from `annotation.ContentHash`
 - **remote changed** = the page's version differs from `annotation.Version`
@@ -53,8 +53,8 @@ than silently mangles) anything it cannot.
   left for the user; the pull does not overwrite the file with a lossy approximation.
 
 The author's `<!-- lore-master … -->` annotation and any `title:`/`parent:`/unknown keys are
-preserved across a pull; only the body below is rewritten, and the annotation's version and
-hashes are updated.
+preserved across a pull; only the body below is rewritten, and the page's version and hashes
+are updated in `lore-master.json`.
 
 ## Safety
 

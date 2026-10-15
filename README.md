@@ -160,7 +160,7 @@ Setup and examples: [`docs/mcp-server.md`](docs/mcp-server.md).
    `parent:` in the file's annotation → a **dotted filename**
    (`readme.architecture.md` nests under `readme.md`) → a **directory index**
    (`README.md`) → the Confluence parent page you selected.
-2. **Plan.** For each file, compare the `<!-- lore-master … -->` annotation against the
+2. **Plan.** For each file, compare its entry in `lore-master.json` against the
    file and the remote page, and choose one action:
    `create · update · move · rename_title · adopt · unchanged · conflict · orphan`.
 3. **Execute.** Parents first, so a new page's id is known before its children are made:
@@ -168,8 +168,8 @@ Setup and examples: [`docs/mcp-server.md`](docs/mcp-server.md).
    Confluence **storage format**. Links are emitted as `ri:page` references by the target's
    prefixed title, so cycles resolve without a second pass (an opt-in `linkMode: id` is the
    only case that re-renders).
-4. **Write back & report.** Update the annotation only in files whose page changed, then
-   report every outcome.
+4. **Write back & report.** Record the pages in `lore-master.json` (one file, so git shows
+   one change), then report every outcome.
 
 ### Page titles
 

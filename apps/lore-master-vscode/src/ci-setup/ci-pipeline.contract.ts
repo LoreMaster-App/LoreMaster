@@ -17,7 +17,7 @@ export interface CiNeeds {
   secrets:            CiSecret[]
   /** Pages and wiki outputs are pushed with git, so the job needs write access to the repository. */
   pushesToGit:        boolean
-  /** Confluence syncs write each page's annotation into its file; CI has to commit them back. */
+  /** Confluence syncs record each page in lore-master.json; CI has to commit that file back. */
   commitsAnnotations: boolean
   /** Generators whose `prepare` command runs in the job, with their toolchains. */
   prepareCommands:    string[]

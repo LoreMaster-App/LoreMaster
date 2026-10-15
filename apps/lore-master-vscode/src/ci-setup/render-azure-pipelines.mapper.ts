@@ -69,9 +69,10 @@ export function renderAzurePipelines (needs: CiNeeds): string {
       '      git config user.name "lore-master"',
       '      git config user.email "noreply@lore-master.invalid"',
       '      git add -u -- "*.md"',
-      '      git diff --cached --quiet || git commit -m "docs: update LoreMaster page annotations [skip ci]"',
+      '      git add -- lore-master.json || true',
+      '      git diff --cached --quiet || git commit -m "docs: update LoreMaster sync state [skip ci]"',
       '      git push origin HEAD:$(Build.SourceBranchName)',
-      '    displayName: Commit the page annotations',
+      '    displayName: Commit the sync state',
     )
   }
 

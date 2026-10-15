@@ -74,8 +74,8 @@ func ExecuteSync(sessions *sessionlifecycle.Store, plans *PlanStore, renderTimeo
 			Options:  syncexecution.Options{Force: params.Force, Prune: params.Prune},
 			Progress: hostbridge.Progress(ctx, call.Editor, stored.id),
 		})
-		before := syncjournal.CaptureFiles(stored.root, touchedFiles(report))
-		written := syncexecution.WriteAnnotations(stored.root, report)
+		before := syncjournal.CaptureFiles(stored.root, syncexecution.WriteTargets(report, stored.state))
+		written := syncexecution.WriteAnnotations(stored.root, report, stored.state)
 
 		result := rpcprotocol.SyncExecuteResult{Warnings: append(report.Warnings, written.Warnings...)}
 		if recorder != nil {
@@ -96,23 +96,6 @@ func ExecuteSync(sessions *sessionlifecycle.Store, plans *PlanStore, renderTimeo
 
 		return result, nil
 	}
-}
-
-// touchedFiles are the workspace-relative files the write-back may change: each written
-// page's file and the images a pull downloads.
-func touchedFiles(report syncexecution.SyncReport) []string {
-	var paths []string
-	for _, page := range report.Pages {
-		if page.Annotation == nil {
-			continue
-		}
-		paths = append(paths, string(page.Path))
-		for _, attachment := range page.PulledAttachments {
-			paths = append(paths, string(attachment.Path))
-		}
-	}
-
-	return paths
 }
 
 // keepJournal saves what the sync changed and returns the journal's id. A journal that

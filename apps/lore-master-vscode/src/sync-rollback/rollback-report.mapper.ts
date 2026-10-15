@@ -32,7 +32,7 @@ export function previewLines (preview: SyncRollbackResult): string[] {
     lines.push(`Put ${plural(restore, 'updated page')} back as ${restore === 1 ? 'it' : 'they'} were.`)
   }
   if (files > 0) {
-    lines.push(`Restore ${plural(files, 'local file')}, annotations included.`)
+    lines.push(`Restore ${plural(files, 'local file')}, the sync state included.`)
   }
 
   const skipped = preview.pages.filter(page => page.result === 'skipped')

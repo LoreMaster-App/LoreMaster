@@ -61,7 +61,7 @@ export function renderCiGuide (provider: CiProvider, needs: CiNeeds, pipeline: C
     notes.push('The job pushes the site to the output\'s branch, so it needs permission to write to the repository (the file asks for `contents: write`).')
   }
   if (needs.commitsAnnotations) {
-    notes.push('Each synced file carries a `<!-- lore-master ... -->` annotation (page id, version, hashes). The job commits them back with `[skip ci]`, so the next run updates the pages instead of adopting them again. The pipeline identity needs permission to push to `main`; if the branch is protected, allow it or push to a branch and merge.')
+    notes.push('The sync records each page (id, version, hashes) in `lore-master.json` at the workspace root. The job commits that file back with `[skip ci]`, so the next run updates the pages instead of adopting them again. The pipeline identity needs permission to push to `main`; if the branch is protected, allow it or push to a branch and merge.')
   }
   if (needs.prepareCommands.length > 0) {
     notes.push(`Generators run \`prepare\` commands in the job (${needs.prepareCommands.map(command => `\`${command}\``).join(', ')}). Install their toolchains in a step before the sync.`)

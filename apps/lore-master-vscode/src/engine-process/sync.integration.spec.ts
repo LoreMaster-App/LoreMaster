@@ -271,7 +271,7 @@ describeWithEngine('a full sync through the real engine against a fake Confluenc
     }
   }
 
-  it('creates the pages, writes annotations back, and is unchanged on the second run', async () => {
+  it('creates the pages, records them in lore-master.json, and is unchanged on the second run', async () => {
     client = createEngineClient({ binaryPath })
 
     const session = await client.request<SessionOpenResult>(SESSION_OPEN_METHOD, {
@@ -292,9 +292,12 @@ describeWithEngine('a full sync through the real engine against a fake Confluenc
     expect(titles.sort((a, b) => a.localeCompare(b))).toEqual(['ENG: Home', 'ENG: Setup'])
     expect(fake.pageCount()).toBe(3) // the two created pages plus the seeded parent
 
-    // The engine wrote the sync annotation back into each file, so the second run detects
-    // true no-ops rather than re-adopting by title.
-    expect(readFileSync(join(workspace, 'README.md'), 'utf8')).toContain('<!-- lore-master')
+    // The engine recorded the pages in one state file and left the Markdown alone, so the second
+    // run detects true no-ops rather than re-adopting by title.
+    expect(readFileSync(join(workspace, 'README.md'), 'utf8')).not.toContain('<!-- lore-master')
+    const state = JSON.parse(readFileSync(join(workspace, 'lore-master.json'), 'utf8')) as { storages: Record<string, { pages: Record<string, { pageId: string }> }> }
+    const [storage] = Object.values(state.storages)
+    expect(Object.keys(storage.pages).sort((a, b) => a.localeCompare(b))).toEqual(expect.arrayContaining(['README.md']))
 
     const second = await client.request<SyncPlanResult>(SYNC_PLAN_METHOD, { sessionId: session.sessionId, workspaceRoot: workspace, output: 0 })
     expect(second.counts.unchanged).toBe(2)

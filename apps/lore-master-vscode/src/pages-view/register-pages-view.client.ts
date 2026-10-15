@@ -58,8 +58,8 @@ function targetsOf (clicked: PagesNode | undefined, selected: PagesNode[] | unde
 
 /**
  * Registers the Pages view, its commands, and what keeps it current: a watcher on the
- * Markdown files, the settings file and the .gitignore files (a sync writes annotations
- * back into files, so it refreshes the view too), and the display settings.
+ * Markdown files, the settings file, the sync state (lore-master.json) and the .gitignore files
+ * (a sync writes the state back, so it refreshes the view too), and the display settings.
  */
 export function registerPagesView (deps: SyncCommandDeps): vscode.Disposable {
   const configuration = (): vscode.WorkspaceConfiguration => vscode.workspace.getConfiguration('loreMaster')
@@ -83,7 +83,7 @@ export function registerPagesView (deps: SyncCommandDeps): vscode.Disposable {
     clearTimeout(timer)
     timer = setTimeout(() => provider.refresh(), REFRESH_DEBOUNCE_MS)
   }
-  const watchers = ['**/*.md', '**/.lore-master.yaml', '**/.gitignore'].map(pattern => {
+  const watchers = ['**/*.md', '**/.lore-master.yaml', '**/lore-master.json', '**/.gitignore'].map(pattern => {
     const watcher = vscode.workspace.createFileSystemWatcher(pattern)
 
     return vscode.Disposable.from(watcher.onDidCreate(refreshSoon), watcher.onDidChange(refreshSoon), watcher.onDidDelete(refreshSoon), watcher)

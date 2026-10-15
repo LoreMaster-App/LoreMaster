@@ -272,3 +272,39 @@ func TestRenderLeavesABlockWithTheSameGeneratedKeyUntouched(t *testing.T) {
 		t.Fatalf("rendered %q (%v)", rendered, err)
 	}
 }
+
+func TestAnAnnotationWithNothingToSayIsNotWritten(t *testing.T) {
+	withBlock, err := Render([]byte("---\ntitle: X\n---\n# A\n"), Annotation{PageID: "p1", Title: "T"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stripped, err := Render(withBlock, AuthorFields(Annotation{PageID: "p1"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(stripped) != "---\ntitle: X\n---\n# A\n" {
+		t.Fatalf("stripped:\n%q", stripped)
+	}
+	untouched, err := Render([]byte("# A\n"), Annotation{})
+	if err != nil || string(untouched) != "# A\n" {
+		t.Fatalf("%q %v", untouched, err)
+	}
+	pulled, err := RenderWithBody(withBlock, Annotation{}, []byte("# Pulled\n"))
+	if err != nil || string(pulled) != "---\ntitle: X\n---\n# Pulled\n" {
+		t.Fatalf("%q %v", pulled, err)
+	}
+}
+
+func TestAuthorFieldsKeepOnlyWhatTheAuthorSet(t *testing.T) {
+	full := Annotation{PageID: "p1", Version: 2, ContentHash: "h", Title: "T", Parent: "./x.md", Generated: "g", Unknown: []Field{{Key: "k", Value: "v"}}}
+
+	got := AuthorFields(full)
+
+	if HasState(got) || got.Title != "T" || got.Parent != "./x.md" || got.Generated != "g" || len(got.Unknown) != 1 {
+		t.Fatalf("%+v", got)
+	}
+	if !HasState(full) || IsEmpty(full) || !IsEmpty(Annotation{}) {
+		t.Fatal("HasState or IsEmpty is wrong")
+	}
+}

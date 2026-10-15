@@ -9,6 +9,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/documentation-sync/documentloading"
 	"lore-master/libs/documentation-sync/syncplanning"
+	"lore-master/libs/documentation-sync/syncstate"
 	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documenttree"
@@ -43,7 +44,8 @@ func WorkspaceTree() rpcserver.Method {
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
-		result := rpcprotocol.WorkspaceTreeResult{Nodes: []rpcprotocol.TreeNode{}, Warnings: loaded.Warnings, Problems: loaded.Problems}
+		applied := syncstate.Apply(params.WorkspaceRoot, workspacesettings.DisplayName(outputs, params.Output), loaded.Documents)
+		result := rpcprotocol.WorkspaceTreeResult{Nodes: []rpcprotocol.TreeNode{}, Warnings: append(loaded.Warnings, applied.Warnings...), Problems: loaded.Problems}
 		leftOut, err := documentloading.ExplainOutputLeftOut(ctx, params.WorkspaceRoot, output, settings.Settings.DiscoveryScope(), loaded)
 		if err != nil {
 			result.Warnings = append(result.Warnings, "could not list the files left out: "+err.Error())

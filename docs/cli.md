@@ -94,7 +94,7 @@ use locally, so you do not have to write it from this page:
 
 The pipeline downloads the engine of your extension's version and checks its checksum, runs
 `sync --generate --yes` (with `--prepare` when a generator has a `prepare` command) and, for
-Confluence outputs, commits the page annotations back with `[skip ci]`.
+Confluence outputs, commits `lore-master.json` back with `[skip ci]`.
 
 ## Undo a sync
 
