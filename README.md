@@ -118,8 +118,9 @@ Or use the **GitHub Action** to publish a docs site beside your web app in one s
 ## Diagrams that just work
 
 Fence a diagram as ` ```mermaid ` or ` ```d2 ` and it is drawn for the platform: **Mermaid** by the
-editor's webview, **D2** by the engine itself (so it also works on CI, with no browser, and always
-draws the same SVG). On Confluence the SVG is attached and the source kept in a code macro; on GitHub
+engine in a headless Chrome, Chromium or Edge (so it works from the command line and on CI too; the
+editor's webview is the fallback when none is installed), **D2** by the engine itself (with no
+browser, and always the same SVG). On Confluence the SVG is attached and the source kept in a code macro; on GitHub
 Pages it is shown inline.
 
 ## A real site from your docs

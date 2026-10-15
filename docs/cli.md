@@ -132,8 +132,11 @@ GitHub Pages outputs need none: git carries the credentials.
 
 ## Limits
 
-Mermaid diagrams stay code blocks (the editor draws them; the command line has no browser), with
-the usual warning. D2 diagrams are drawn by the engine itself, so they are images from the
+Mermaid diagrams are drawn by the engine in a headless Chrome, Chromium or Edge, which it finds on
+PATH or in the usual install folders (set `LORE_MASTER_BROWSER` to point at one). With none
+installed they stay code blocks, with the usual warning, unless an editor is attached to draw
+them. `LORE_MASTER_MERMAID=editor` makes the engine leave Mermaid to the editor even when it has a
+browser. D2 diagrams are drawn by the engine itself, with no browser, so they are images from the
 command line too.
 
 ```yaml

@@ -90,3 +90,10 @@ func installedBrowsers(l locator) []string {
 		return []string{"/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser", "/snap/bin/chromium", "/usr/bin/microsoft-edge"}
 	}
 }
+
+// FindBrowser answers the path of the Chrome, Chromium or Edge to drive: the one named by
+// LORE_MASTER_BROWSER, then one on PATH, then the usual install folders. Anything that draws in a
+// browser (Storybook pages, Mermaid diagrams) finds it the same way.
+func FindBrowser() (string, error) {
+	return findBrowser(systemLocator())
+}
