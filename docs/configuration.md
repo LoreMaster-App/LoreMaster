@@ -38,6 +38,15 @@ differs:
 A list (`outputs`, `ignore`, `generators`) set at a more specific level **replaces** the
 less specific one; it is not appended to it.
 
+### Where the plugin saves
+
+When you change a storage, a generator or the ignore list from the plugin, it writes to the
+**`.code-workspace` file you have open** (its `settings`), and to the folder's
+`.vscode/settings.json` only when there is no workspace file, so a workspace configured in its
+`.code-workspace` file never grows a competing `.vscode` folder. The exception is a folder whose
+`.vscode/settings.json` already holds LoreMaster keys: those win over the workspace file, so the
+plugin keeps writing there. Comments and every other setting in the file are left as they were.
+
 `space` is the space's key. On Confluence Cloud the address can use an alias that differs from
 the key (`/wiki/spaces/LORE/...` for a space whose key is `TLM`), so LoreMaster accepts either, and
 when it finds neither it lists the spaces the signed-in user can see.

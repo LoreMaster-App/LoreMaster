@@ -218,3 +218,48 @@ func skipValue(source []byte, i int) int {
 		return i
 	}
 }
+
+// setNestedKey is setKey for a key inside the object held by parent (a .code-workspace file's
+// "settings"): the parent is created when it is missing, and only the key inside it is
+// touched, so every other setting and comment stays where it was.
+func setNestedKey(source []byte, parent string, key string, value []byte) ([]byte, error) {
+	if len(bytes.TrimSpace(source)) == 0 {
+		if value == nil {
+			return source, nil
+		}
+		inner, err := setKey(nil, key, value)
+		if err != nil {
+			return nil, err
+		}
+
+		return setKey(source, parent, bytes.TrimSpace(inner))
+	}
+	properties, _, err := scanProperties(source)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range properties {
+		if p.key != parent {
+			continue
+		}
+		inner := source[p.valueStart:p.valueEnd]
+		if len(bytes.TrimSpace(inner)) == 0 || inner[0] != '{' {
+			return nil, fmt.Errorf("%q is not an object", parent)
+		}
+		changed, err := setKey(inner, key, value)
+		if err != nil {
+			return nil, err
+		}
+
+		return splice(source, p.valueStart, p.valueEnd, bytes.ReplaceAll(changed, []byte{10}, []byte{10, 32, 32})), nil
+	}
+	if value == nil {
+		return source, nil
+	}
+	inner, err := setKey(nil, key, value)
+	if err != nil {
+		return nil, err
+	}
+
+	return setKey(source, parent, bytes.TrimSpace(inner))
+}

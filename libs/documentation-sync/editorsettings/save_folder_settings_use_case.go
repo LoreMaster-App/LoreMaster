@@ -27,6 +27,12 @@ var builtinDefaults = map[string]string{
 // a base URL set once in User settings is not copied into the folder. The settings are
 // validated first, and the file is written through a temporary file and a rename.
 func SaveFolderSettings(workspaceRoot string, settings workspacesettings.Settings) error {
+	return saveInto(FolderSettingsPath(workspaceRoot), false, workspaceRoot, settings)
+}
+
+// saveInto writes the configuration into path: a settings.json, or, with nested, the `settings`
+// object of a .code-workspace file. Only LoreMaster's keys are touched either way.
+func saveInto(path string, nested bool, workspaceRoot string, settings workspacesettings.Settings) error {
 	if err := workspacesettings.ValidateAllowingNoOutputs(settings); err != nil {
 		return err
 	}
@@ -35,7 +41,6 @@ func SaveFolderSettings(workspaceRoot string, settings workspacesettings.Setting
 		return err
 	}
 
-	path := FolderSettingsPath(workspaceRoot)
 	content, err := os.ReadFile(path)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
@@ -54,7 +59,13 @@ func SaveFolderSettings(workspaceRoot string, settings workspacesettings.Setting
 		{keySkipGitignored, settings.SkipGitignored, settings.SkipGitignored != nil},
 		{keyGenerators, generatorsToWire(settings.Generators), len(settings.Generators) > 0},
 	}
-	if content, err = setKey(content, keyOutputs, outputs); err != nil {
+	set := setKey
+	if nested {
+		set = func(source []byte, key string, value []byte) ([]byte, error) {
+			return setNestedKey(source, workspaceFileSettingsKey, key, value)
+		}
+	}
+	if content, err = set(content, keyOutputs, outputs); err != nil {
 		return err
 	}
 	for _, update := range updates {
@@ -64,7 +75,7 @@ func SaveFolderSettings(workspaceRoot string, settings workspacesettings.Setting
 				return err
 			}
 		}
-		if content, err = setKey(content, update.key, value); err != nil {
+		if content, err = set(content, update.key, value); err != nil {
 			return err
 		}
 	}
@@ -85,16 +96,25 @@ func SaveFolderSettings(workspaceRoot string, settings workspacesettings.Setting
 // values count too, as they are what an output inherits in this folder.
 func inheritedDefaults(workspaceRoot string) (map[string]string, error) {
 	var layers []Layer
-	for _, path := range []string{CurrentUserSettingsPath(), FolderSettingsPath(workspaceRoot)} {
-		if path == "" {
-			continue
+	if userPath := CurrentUserSettingsPath(); userPath != "" {
+		user, err := ReadLayer(userPath)
+		if err != nil {
+			return nil, err
 		}
-		layer, err := ReadLayer(path)
+		layers = append(layers, user)
+	}
+	if workspaceFile := os.Getenv(WorkspaceFileVariable); workspaceFile != "" {
+		layer, err := ReadWorkspaceFileLayer(workspaceFile)
 		if err != nil {
 			return nil, err
 		}
 		layers = append(layers, layer)
 	}
+	folder, err := ReadLayer(FolderSettingsPath(workspaceRoot))
+	if err != nil {
+		return nil, err
+	}
+	layers = append(layers, folder)
 	merged := mergeLayers(layers)
 	result := map[string]string{}
 	for _, key := range []string{keyConfluenceURL, keyDefaultsDirect, keyDefaultsMermaid, keyDefaultsLink, keyDefaultsCollide, keyDefaultsPrefixT} {
