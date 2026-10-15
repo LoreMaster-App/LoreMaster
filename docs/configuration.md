@@ -48,7 +48,7 @@ when it finds neither it lists the spaces the signed-in user can see.
 |---|---|
 | `loreMaster.outputs` | The places the lore goes: platform, space, parent page, title prefix, direction, content, Mermaid mode, links, repository and branch, `include` and `exclude` lists. |
 | `loreMaster.confluence.baseUrl` | The Confluence address an output uses unless it sets its own `baseUrl`. |
-| `loreMaster.defaults.*` | The `direction`, `mermaidMode`, `linkMode` and `titleCollision` of an output that does not set them. |
+| `loreMaster.defaults.*` | The `direction`, `mermaidMode`, `linkMode`, `titleCollision` and `titlePrefix` of an output that does not set them. All of them are in the Settings UI; a prefix set here means the first sync does not ask for one. |
 | `loreMaster.ignore` | Gitignore-style patterns every output leaves out. |
 | `loreMaster.skipGitignored` | Leave out Markdown that `.gitignore` ignores. Default on. |
 | `loreMaster.generators` | Generators that write Markdown from test reports and source documentation. |

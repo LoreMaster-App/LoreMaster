@@ -93,3 +93,39 @@ func TestSaveFolderSettingsRefusesInvalidSettings(t *testing.T) {
 		t.Fatal("a refused save wrote the file")
 	}
 }
+
+func TestSaveFolderSettingsDoesNotCopyTheTitlePrefixDefault(t *testing.T) {
+	root := t.TempDir()
+	user := t.TempDir() + "/settings.json"
+	writeSettings(t, user, `{"loreMaster.confluence.baseUrl": "https://user.atlassian.net/wiki", "loreMaster.defaults.titlePrefix": "Docs"}`)
+	t.Setenv(UserSettingsOverrideVariable, user)
+
+	settings := workspacesettings.Settings{
+		Version: workspacesettings.CurrentVersion,
+		Outputs: []workspacesettings.Output{
+			{Platform: "confluence", BaseURL: "https://user.atlassian.net/wiki", Space: "A", ParentPageID: "1", TitlePrefix: "Docs",
+				Direction: "to-platform", MermaidMode: "image", TitleCollision: "fail", LinkMode: "title",
+				Content: []workspacesettings.Content{{Type: "markdown", Roots: []string{"."}, Template: "default"}}},
+			{Platform: "confluence", BaseURL: "https://user.atlassian.net/wiki", Space: "B", ParentPageID: "2", TitlePrefix: "Quotes",
+				Direction: "to-platform", MermaidMode: "image", TitleCollision: "fail", LinkMode: "title",
+				Content: []workspacesettings.Content{{Type: "markdown", Roots: []string{"."}, Template: "default"}}},
+		},
+	}
+	if err := SaveFolderSettings(root, settings); err != nil {
+		t.Fatal(err)
+	}
+	saved, err := os.ReadFile(FolderSettingsPath(root))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(saved), `"Docs"`) || !strings.Contains(string(saved), `"Quotes"`) {
+		t.Fatalf("the inherited prefix was copied, or the output's own one lost:\n%s", saved)
+	}
+	loaded, err := LoadConfiguration(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if loaded.Settings.Outputs[0].TitlePrefix != "Docs" || loaded.Settings.Outputs[1].TitlePrefix != "Quotes" {
+		t.Fatalf("round trip: %+v", loaded.Settings.Outputs)
+	}
+}

@@ -68,7 +68,7 @@ func toSettings(values map[string]merged) (workspacesettings.Settings, error) {
 		return settings, err
 	}
 	defaults := map[string]*string{}
-	for _, key := range []string{keyDefaultsDirect, keyDefaultsMermaid, keyDefaultsLink, keyDefaultsCollide} {
+	for _, key := range []string{keyDefaultsDirect, keyDefaultsMermaid, keyDefaultsLink, keyDefaultsCollide, keyDefaultsPrefixT} {
 		var value string
 		if err := decodeKey(values, key, &value); err != nil {
 			return settings, err
@@ -95,6 +95,7 @@ func toSettings(values map[string]merged) (workspacesettings.Settings, error) {
 		fillEmpty(&output.MermaidMode, *defaults[keyDefaultsMermaid])
 		fillEmpty(&output.LinkMode, *defaults[keyDefaultsLink])
 		fillEmpty(&output.TitleCollision, *defaults[keyDefaultsCollide])
+		fillEmpty(&output.TitlePrefix, *defaults[keyDefaultsPrefixT])
 		settings.Outputs = append(settings.Outputs, output)
 	}
 	for _, generator := range generators {

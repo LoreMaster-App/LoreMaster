@@ -208,3 +208,24 @@ func TestOverridesRefuseASecretAndAnUnknownKey(t *testing.T) {
 		})
 	}
 }
+
+func TestTheTitlePrefixDefaultFillsAnOutputThatSetsNone(t *testing.T) {
+	root := t.TempDir()
+	user := filepath.Join(t.TempDir(), "settings.json")
+	writeSettings(t, user, `{"loreMaster.defaults.titlePrefix": "Docs"}`)
+	writeSettings(t, FolderSettingsPath(root), `{"loreMaster.outputs": [
+  {"space": "A", "parentPageId": "1"},
+  {"space": "B", "parentPageId": "2", "titlePrefix": "Own"}
+]}`)
+
+	result, err := LoadEditorSettings(root, user)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := result.Settings.Outputs[0].TitlePrefix; got != "Docs" {
+		t.Fatalf("titlePrefix = %q, want the default", got)
+	}
+	if got := result.Settings.Outputs[1].TitlePrefix; got != "Own" {
+		t.Fatalf("titlePrefix = %q, want the output's own", got)
+	}
+}
