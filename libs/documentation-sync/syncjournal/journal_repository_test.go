@@ -59,10 +59,11 @@ func TestOnlyTheLatestJournalsAreKept(t *testing.T) {
 }
 
 func TestAJournalOfAnotherWorkspaceIsInAnotherFolder(t *testing.T) {
-	if DirFor("/cache", "/work/a") == DirFor("/cache", "/work/b") {
+	first := DirFor("/cache", "/work/a")
+	if first == DirFor("/cache", "/work/b") {
 		t.Fatal("two workspaces share a journal folder")
 	}
-	if DirFor("/cache", "/work/a") != DirFor("/cache", "/work/a") {
+	if again := DirFor("/cache", "/work/a"); first != again {
 		t.Fatal("a workspace's folder is not stable")
 	}
 }

@@ -50,7 +50,7 @@ func (r *Recorder) CreatePage(ctx context.Context, page platformport.NewPage) (p
 func (r *Recorder) UpdatePage(ctx context.Context, update platformport.PageUpdate) (platformport.RemotePage, error) {
 	var before *platformport.PageSnapshot
 	if !r.seen(update.ID) {
-		snapshot, err := r.DocumentationPlatform.SnapshotPage(ctx, update.ID)
+		snapshot, err := r.SnapshotPage(ctx, update.ID)
 		if err != nil {
 			return platformport.RemotePage{}, fmt.Errorf("could not keep the page's current version for a rollback: %w", err)
 		}
@@ -68,11 +68,10 @@ func (r *Recorder) UpdatePage(ctx context.Context, update platformport.PageUpdat
 // TrashPage implements platformport.DocumentationPlatform.
 func (r *Recorder) TrashPage(ctx context.Context, id string) error {
 	var before *platformport.PageSnapshot
-	snapshot, err := r.DocumentationPlatform.SnapshotPage(ctx, id)
-	switch {
-	case err == nil:
+	snapshot, err := r.SnapshotPage(ctx, id)
+	if err == nil {
 		before = &snapshot
-	default:
+	} else {
 		var missing *platformport.PageNotFoundError
 		if !errors.As(err, &missing) {
 			return fmt.Errorf("could not keep the page before trashing it: %w", err)
