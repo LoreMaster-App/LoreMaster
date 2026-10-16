@@ -1,0 +1,50 @@
+package rpcprotocol
+
+// MethodExportFormats lists the formats a Markdown document can be exported to.
+const MethodExportFormats = "export/formats"
+
+// ExportFormatsResult is the list of formats, in the order a picker shows them.
+type ExportFormatsResult struct {
+	Formats []ExportFormat `json:"formats"`
+}
+
+// ExportFormat is one format a document can be exported to.
+type ExportFormat struct {
+	ID    string `json:"id"`
+	Label string `json:"label"`
+	// Extension is the file ending, with its dot.
+	Extension string `json:"extension"`
+	// Binary says the result is not text: it can be written to a file but not copied.
+	Binary bool `json:"binary,omitempty"`
+}
+
+// MethodExportRun converts one Markdown document to another format and either writes the result
+// into a folder or returns it as text. It reads no settings and needs no session.
+const MethodExportRun = "export/run"
+
+// ExportRunParams asks to export one document.
+type ExportRunParams struct {
+	// Path is the Markdown file, as an absolute path. Its folder is where relative images are read from.
+	Path string `json:"path"`
+	// Content is the document's text when the editor holds changes that are not saved; the file on
+	// disk is read when it is absent.
+	Content *string `json:"content,omitempty"`
+	// Format is the id of a format from MethodExportFormats.
+	Format string `json:"format"`
+	// OutDir is the absolute folder to write the result into. It is created when missing and
+	// defaults to the document's own folder. It is not used with Inline.
+	OutDir string `json:"outDir,omitempty"`
+	// Inline returns the result as text in the reply instead of writing a file. Only text formats
+	// can be returned.
+	Inline bool `json:"inline,omitempty"`
+}
+
+// ExportRunResult is what the export produced.
+type ExportRunResult struct {
+	// Name is the result's file name.
+	Name string `json:"name"`
+	// Path is where the file was written, as an absolute path. Empty with Inline.
+	Path string `json:"path,omitempty"`
+	// Text is the result when Inline asked for it.
+	Text string `json:"text,omitempty"`
+}

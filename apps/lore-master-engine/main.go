@@ -20,6 +20,7 @@ import (
 	"lore-master/apps/lore-master-engine/credentialcommands"
 	"lore-master/apps/lore-master-engine/credentialvault"
 	"lore-master/apps/lore-master-engine/editiondetect"
+	"lore-master/apps/lore-master-engine/exportcommands"
 	"lore-master/apps/lore-master-engine/generatorcommands"
 	"lore-master/apps/lore-master-engine/hostbridge"
 	"lore-master/apps/lore-master-engine/mcpserver"
@@ -125,6 +126,8 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodAgentInstructions: agentcommands.AgentInstructions(),
 		rpcprotocol.MethodWatchRoute:        watchcommands.RouteChanges(),
 		rpcprotocol.MethodFilesPlanMove:     movecommands.PlanMove(),
+		rpcprotocol.MethodExportFormats:     exportcommands.ListFormats(),
+		rpcprotocol.MethodExportRun:         exportcommands.RunExport(),
 	}
 }
 

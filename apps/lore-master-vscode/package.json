@@ -55,6 +55,17 @@
         "category": "LoreMaster"
       },
       {
+        "command": "loreMaster.exportMarkdown",
+        "title": "Export Markdown...",
+        "category": "LoreMaster",
+        "icon": "$(export)"
+      },
+      {
+        "command": "loreMaster.copyMarkdownAs",
+        "title": "Copy Markdown As...",
+        "category": "LoreMaster"
+      },
+      {
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
         "category": "LoreMaster"
@@ -233,6 +244,27 @@
       ]
     },
     "menus": {
+      "editor/title": [
+        {
+          "command": "loreMaster.exportMarkdown",
+          "when": "resourceLangId == markdown",
+          "group": "navigation@50"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "loreMaster.exportMarkdown",
+          "when": "resourceLangId == markdown || explorerResourceIsFolder",
+          "group": "loreMaster@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "loreMaster.copyMarkdownAs",
+          "when": "editorLangId == markdown",
+          "group": "9_cutcopypaste@99"
+        }
+      ],
       "view/title": [
         {
           "command": "loreMaster.addStorage",
@@ -339,6 +371,14 @@
       ],
       "commandPalette": [
         {
+          "command": "loreMaster.exportMarkdown",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.copyMarkdownAs",
+          "when": "editorLangId == markdown"
+        },
+        {
           "command": "loreMaster.removeStorage",
           "when": "false"
         },
@@ -385,6 +425,30 @@
     "configuration": {
       "title": "LoreMaster",
       "properties": {
+        "loreMaster.export.formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "html",
+              "docx",
+              "odt",
+              "txt",
+              "jira-wiki",
+              "jira-adf",
+              "mediawiki"
+            ]
+          },
+          "default": [
+            "html"
+          ],
+          "markdownDescription": "The formats ticked by default when you export a Markdown file with **LoreMaster: Export Markdown...**."
+        },
+        "loreMaster.export.folder": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Where exported files go. Leave blank to write each next to its Markdown file. A folder (relative to the workspace, or absolute) receives the exports with the document's own folders mirrored below it, so `docs/guide.md` exported to `dist` becomes `dist/docs/guide.html`."
+        },
         "loreMaster.engine.path": {
           "type": "string",
           "default": "",

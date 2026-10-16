@@ -31,6 +31,8 @@ export const GENERATORS_RUN_METHOD = 'generators/run'
 export const AGENT_INSTRUCTIONS_METHOD = 'agent/instructions'
 export const WATCH_ROUTE_METHOD = 'watch/route'
 export const FILES_PLAN_MOVE_METHOD = 'files/planMove'
+export const EXPORT_FORMATS_METHOD = 'export/formats'
+export const EXPORT_RUN_METHOD = 'export/run'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -575,4 +577,38 @@ export interface WatchRouteResult {
   generators: number[]
   /** The changed Markdown files. */
   markdown:   string[]
+}
+
+// ---- export/formats and export/run -----------------------------------------------------
+
+export interface ExportFormat {
+  id:        string
+  label:     string
+  /** The file ending, with its dot. */
+  extension: string
+  /** Not text: it can be written to a file but not copied. */
+  binary?:   boolean
+}
+
+export interface ExportFormatsResult {
+  formats: ExportFormat[]
+}
+
+export interface ExportRunParams {
+  /** The Markdown file, absolute; its folder is where relative images are read from. */
+  path:     string
+  /** The editor's unsaved text; the file on disk is read when absent. */
+  content?: string
+  format:   string
+  /** An absolute folder; created when missing. Defaults to the document's own folder. */
+  outDir?:  string
+  /** Return the result as text instead of writing a file. Text formats only. */
+  inline?:  boolean
+}
+
+export interface ExportRunResult {
+  name:  string
+  /** Where the file was written; absent with `inline`. */
+  path?: string
+  text?: string
 }
