@@ -18,6 +18,9 @@ import (
 type Options struct {
 	// BaseDir is the folder relative image paths are read from. Empty leaves images as links.
 	BaseDir string
+	// KeepMarkdownLinks leaves links to other Markdown files as they are, which is what a preview wants: the
+	// file is opened, not an HTML page that does not exist.
+	KeepMarkdownLinks bool
 }
 
 // Render writes the document as a complete HTML page.
@@ -178,7 +181,7 @@ func (w writer) inlines(inlines []exportmodel.Inline) string {
 		case exportmodel.StrikeInline:
 			out.WriteString("<del>" + w.inlines(inline.Children) + "</del>")
 		case exportmodel.LinkInline:
-			out.WriteString("<a href=\"" + html.EscapeString(linkTarget(inline.URL)) + "\">" + w.inlines(inline.Children) + "</a>")
+			out.WriteString("<a href=\"" + html.EscapeString(w.linkTarget(inline.URL)) + "\">" + w.inlines(inline.Children) + "</a>")
 		case exportmodel.ImageInline:
 			out.WriteString("<img src=\"" + html.EscapeString(w.imageSource(inline.URL)) + "\" alt=\"" + html.EscapeString(inline.Text) + "\">")
 		case exportmodel.SoftBreakInline:
@@ -193,8 +196,11 @@ func (w writer) inlines(inlines []exportmodel.Inline) string {
 	return out.String()
 }
 
-// linkTarget points a link to another Markdown file at the HTML file that file exports to.
-func linkTarget(target string) string {
+// linkTarget points a link to another Markdown file at the HTML file that file exports to, unless the page is a preview.
+func (w writer) linkTarget(target string) string {
+	if w.options.KeepMarkdownLinks {
+		return target
+	}
 	path, fragment, hasFragment := strings.Cut(target, "#")
 	if strings.Contains(path, "://") || strings.HasPrefix(path, "mailto:") {
 		return target

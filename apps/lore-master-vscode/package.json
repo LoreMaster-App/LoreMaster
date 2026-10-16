@@ -171,6 +171,17 @@
         "category": "LoreMaster Markdown"
       },
       {
+        "command": "loreMaster.markdown.openPreview",
+        "title": "Open Preview to the Side",
+        "category": "LoreMaster Markdown",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "loreMaster.markdown.previewAs",
+        "title": "Preview As...",
+        "category": "LoreMaster Markdown"
+      },
+      {
         "command": "loreMaster.markdown.insertToc",
         "title": "Insert Table of Contents",
         "category": "LoreMaster Markdown"
@@ -447,6 +458,11 @@
     "menus": {
       "editor/title": [
         {
+          "command": "loreMaster.markdown.openPreview",
+          "when": "resourceLangId == markdown",
+          "group": "navigation@40"
+        },
+        {
           "command": "loreMaster.exportMarkdown",
           "when": "resourceLangId == markdown",
           "group": "navigation@50"
@@ -571,6 +587,14 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "loreMaster.markdown.openPreview",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.previewAs",
+          "when": "editorLangId == markdown"
+        },
         {
           "command": "loreMaster.markdown.insertToc",
           "when": "editorLangId == markdown"
@@ -726,6 +750,16 @@
     "configuration": {
       "title": "LoreMaster",
       "properties": {
+        "loreMaster.markdown.preview.followActiveEditor": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "The LoreMaster preview shows whichever Markdown file you switch to."
+        },
+        "loreMaster.markdown.preview.scrollSync": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Scroll the LoreMaster preview with the editor, and the editor with the preview."
+        },
         "loreMaster.markdown.toc.minLevel": {
           "type": "number",
           "default": 2,

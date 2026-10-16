@@ -71,6 +71,22 @@ A pipe written `\|` is text, as on GitHub; a pipe inside a code span still divid
 - Front matter and fenced code are never read as headings. VS Code's own Outline view already lists a file's headings, so
   LoreMaster does not add a second one.
 
+## Preview
+
+**Open Preview to the Side** (the preview button on a Markdown file's title bar, or the palette) opens LoreMaster's own preview.
+It shows the page the way LoreMaster's HTML export writes it, so what you see is what you export:
+
+- It updates as you type, unsaved changes included, and follows the file you switch to (`preview.followActiveEditor`).
+- It scrolls with the editor and the editor scrolls with it (`preview.scrollSync`). The two are matched by how far down the
+  document each is, so they stay close but not line for line.
+- A link to another Markdown file opens that file in the editor; a web link opens in your browser; a link to a heading scrolls
+  to it. Nothing else opens, so a preview cannot be used to open arbitrary files, and scripts in the page do not run.
+- **Preview As...** shows the same file as the text of another format (Jira wiki, MediaWiki, plain text...) exactly as it would
+  be pasted, so you can see how a page converts before syncing or copying it.
+
+The preview does not draw Mermaid diagrams or math yet: a Mermaid block shows as code. It uses the colours of VS Code's
+light and dark themes only through the system setting of the same name, so a light page may show in a dark editor.
+
 ## Settings
 
 | Setting | Default | |
@@ -82,3 +98,5 @@ A pipe written `\|` is text, as on GitHub; a pipe inside a code span still divid
 | `loreMaster.markdown.toc.minLevel`, `maxLevel` | 2, 4 | The levels a table of contents lists and sections are numbered |
 | `loreMaster.markdown.toc.ordered` | off | Numbered items instead of bullets |
 | `loreMaster.markdown.toc.updateOnSave` | on | Keep a file's table of contents current on save |
+| `loreMaster.markdown.preview.followActiveEditor` | on | The preview follows the file you switch to |
+| `loreMaster.markdown.preview.scrollSync` | on | Scroll the preview and the editor together |

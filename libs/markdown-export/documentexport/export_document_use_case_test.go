@@ -98,3 +98,16 @@ func TestResultIsNamedAfterTheDocument(t *testing.T) {
 		t.Fatalf("name = %q, err = %v", file.Name, err)
 	}
 }
+
+func TestPreviewKeepsLinksToMarkdownFilesAsTheyAre(t *testing.T) {
+	source := []byte("# A\n\n[other](other.md#part)\n")
+
+	exported, err := Export("a.md", source, "html", Options{})
+	if err != nil || !strings.Contains(string(exported.Content), `href="other.html#part"`) {
+		t.Fatalf("export: %v %s", err, exported.Content)
+	}
+	preview, err := Export("a.md", source, "html", Options{Preview: true})
+	if err != nil || !strings.Contains(string(preview.Content), `href="other.md#part"`) {
+		t.Fatalf("preview: %v %s", err, preview.Content)
+	}
+}
