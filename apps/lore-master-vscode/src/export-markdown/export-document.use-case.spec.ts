@@ -36,6 +36,14 @@ describe('exportDocument', () => {
     ])
   })
 
+  it('hands the print settings to the engine for pdf and png', async () => {
+    const { engine: fake, runs } = engine()
+
+    await exportDocument(fake, { path: '/w/a.md', formats: ['pdf'], print: { browserPath: '/b/chrome', pageSize: 'Letter', imageWidth: 800 } })
+
+    expect(runs[0]).toMatchObject({ format: 'pdf', browserPath: '/b/chrome', pageSize: 'Letter', imageWidth: 800 })
+  })
+
   it('keeps going when one format fails and says which', async () => {
     const { engine: fake } = engine('html')
 

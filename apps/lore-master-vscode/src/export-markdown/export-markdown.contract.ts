@@ -13,6 +13,15 @@ export interface ExportRequest {
   formats:  string[]
   /** Absolute folder to write into; the document's own folder when absent. */
   outDir?:  string
+  /** How pdf and png are printed. */
+  print?:   PrintOptions
+}
+
+/** The settings that shape a PDF or a PNG. */
+export interface PrintOptions {
+  browserPath?: string
+  pageSize?:    string
+  imageWidth?:  number
 }
 
 export interface ExportedFile {

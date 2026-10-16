@@ -36,7 +36,8 @@ lore-master-engine pages build   --out DIR [--workspace DIR] [--output N|NAME] [
 lore-master-engine pages publish [--workspace DIR] [--output N|NAME] [--json]
 lore-master-engine pages check   [--workspace DIR] [--output N|NAME] [--exit-code] [--json]
 lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
-lore-master-engine export   --format ID [--out DIR | --stdout] FILE...   (--list shows the formats)
+lore-master-engine export   --format ID [--out DIR | --stdout] [--browser PATH] [--page-size A4] [--width 1000] FILE...
+                            (--list shows the formats)
 lore-master-engine version
 ```
 
@@ -79,7 +80,7 @@ document on stdout; progress lines always go to stderr.
 
 ## Export
 
-`export` converts Markdown files to Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF or MediaWiki. It reads no settings
+`export` converts Markdown files to PDF, PNG, Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF or MediaWiki. It reads no settings
 and needs no credentials. See [Exporting Markdown](export.md).
 
 ## The CI session

@@ -37,6 +37,12 @@ type ExportRunParams struct {
 	// Inline returns the result as text in the reply instead of writing a file. Only text formats
 	// can be returned.
 	Inline bool `json:"inline,omitempty"`
+	// BrowserPath is the Chrome, Edge or Chromium that prints pdf and png; one is looked for when empty.
+	BrowserPath string `json:"browserPath,omitempty"`
+	// PageSize is the paper of a pdf (A4, A3, A5, Letter, Legal); A4 when empty.
+	PageSize string `json:"pageSize,omitempty"`
+	// ImageWidth is the width of a png in pixels; 1000 when zero.
+	ImageWidth int `json:"imageWidth,omitempty"`
 }
 
 // ExportRunResult is what the export produced.

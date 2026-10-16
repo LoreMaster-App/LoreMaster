@@ -4,7 +4,8 @@ import { EXPORT_FORMATS_METHOD, EXPORT_RUN_METHOD, type ExportRunParams } from '
 import { copyMarkdownAsCommand, exportMarkdownCommand } from './export-markdown.handler'
 
 const window = vscode.window as unknown as Record<string, unknown>
-const virtualFiles = (vscode as unknown as { virtualFiles: Map<string, Uint8Array> }).virtualFiles
+const stub = vscode as unknown as { virtualFiles: Map<string, Uint8Array>, settings: Map<string, unknown> }
+const virtualFiles = stub.virtualFiles
 const original = { ...window }
 const messages: string[] = []
 const runs: ExportRunParams[] = []
@@ -27,6 +28,7 @@ beforeEach(() => {
   messages.length = 0
   runs.length = 0
   virtualFiles.clear()
+  stub.settings.clear()
   window.showInformationMessage = (message: string) => {
     messages.push(`info: ${message}`)
 
@@ -98,6 +100,19 @@ describe('exportMarkdownCommand', () => {
 
     expect(runs.map(run => run.format)).toEqual(['html', 'docx'])
     expect(messages).toEqual(['info: LoreMaster: exported 2 files.'])
+  })
+
+  it('passes the PDF and PNG settings, and leaves blank ones to the engine', async () => {
+    virtualFiles.set('/w/a.md', new Uint8Array())
+    window.showQuickPick = (items: { id: string }[]) => Promise.resolve(items.filter(item => item.id === 'html'))
+    stub.settings.set('loreMaster.export.pageSize', 'Letter')
+    stub.settings.set('loreMaster.export.pngWidth', 800)
+    stub.settings.set('loreMaster.export.browserPath', '  ')
+
+    await exportMarkdownCommand({ engine, output }, vscode.Uri.file('/w/a.md'))
+
+    expect(runs[0]).toMatchObject({ pageSize: 'Letter', imageWidth: 800 })
+    expect(runs[0].browserPath).toBeUndefined()
   })
 
   it('does nothing when the picker is dismissed', async () => {

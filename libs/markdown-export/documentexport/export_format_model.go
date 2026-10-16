@@ -17,6 +17,8 @@ type Format struct {
 var formats = []Format{
 	{ID: "html", Label: "HTML (one self-contained file)", Extension: ".html"},
 	{ID: "txt", Label: "Plain text (Markdown without the tags)", Extension: ".txt"},
+	{ID: "pdf", Label: "PDF (printed by Chrome, Edge or Chromium)", Extension: ".pdf", Binary: true},
+	{ID: "png", Label: "PNG image of the page (Chrome, Edge or Chromium)", Extension: ".png", Binary: true},
 	{ID: "docx", Label: "Word document", Extension: ".docx", Binary: true},
 	{ID: "odt", Label: "OpenDocument text (LibreOffice)", Extension: ".odt", Binary: true},
 	{ID: "jira-wiki", Label: "Jira wiki markup", Extension: ".jira.txt"},

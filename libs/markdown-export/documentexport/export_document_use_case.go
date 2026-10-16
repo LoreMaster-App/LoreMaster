@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"lore-master/libs/markdown-export/browserexport"
 	"lore-master/libs/markdown-export/docxexport"
 	"lore-master/libs/markdown-export/exportbuilding"
 	"lore-master/libs/markdown-export/exportmodel"
@@ -22,6 +23,12 @@ import (
 type Options struct {
 	// BaseDir is the folder the document's relative image paths are read from.
 	BaseDir string
+	// BrowserPath is the browser PDF and PNG are printed with; one is looked for when empty.
+	BrowserPath string
+	// PageSize is the PDF's paper (A4, Letter...); A4 when empty.
+	PageSize string
+	// Width is the PNG's width in pixels; 1000 when zero.
+	Width int
 }
 
 // Export converts one Markdown file's content to the format with the given id. path is the file's
@@ -51,6 +58,10 @@ func render(id string, document exportmodel.Document, options Options) ([]byte, 
 		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir})), nil
 	case "txt":
 		return []byte(plaintextexport.Render(document)), nil
+	case "pdf":
+		return browserexport.RenderPDF(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir}), browserexport.Options{BrowserPath: options.BrowserPath, PageSize: options.PageSize})
+	case "png":
+		return browserexport.RenderPNG(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir}), browserexport.Options{BrowserPath: options.BrowserPath, Width: options.Width})
 	case "docx":
 		return docxexport.Render(document, docxexport.Options{BaseDir: options.BaseDir})
 	case "odt":
