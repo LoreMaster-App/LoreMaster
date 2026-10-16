@@ -31,6 +31,11 @@ Start here, then dive into the architecture decisions.
   real screenshots, and code documentation for Go, TypeScript, Python, C# and Dart.
 - [Watch mode](watch.md): regenerate and sync only what changed, as you type.
 
+**Convert**
+
+- [Exporting Markdown](export.md): HTML, plain text, Jira wiki, Jira Cloud ADF and MediaWiki from the
+  command line, with PDF, Word and more on the way.
+
 **Automate**
 
 - [Command line](cli.md): `generate`, `sync`, `tree`, `watch` and `pages` for CI and git hooks,
