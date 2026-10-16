@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { pickWorkspaceFolder } from '../workspace-files'
-import type { GeneratorsViewDeps } from './add-generator.handler'
+import type { GeneratorsViewDeps } from './generators-view-deps.contract'
 import { generatorTypeOf } from './generator-type.config'
 import type { GeneratorNode } from './generators-view.client'
 import { removeGenerator } from './generators.use-case'

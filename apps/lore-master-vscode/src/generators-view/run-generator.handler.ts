@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { runAndReport } from '../generators-command'
 import { pickWorkspaceFolder } from '../workspace-files'
-import type { GeneratorsViewDeps } from './add-generator.handler'
+import type { GeneratorsViewDeps } from './generators-view-deps.contract'
 import type { GeneratorNode } from './generators-view.client'
 
 /** The command id contributed in package.json. */

@@ -1,8 +1,7 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import { RUN_GENERATORS_COMMAND, runGeneratorsCommand } from '../generators-command'
-import { ADD_GENERATOR_COMMAND, addGeneratorCommand, type GeneratorsViewDeps } from './add-generator.handler'
-import { EDIT_GENERATOR_COMMAND, editGeneratorCommand } from './edit-generator.handler'
+import type { GeneratorsViewDeps } from './generators-view-deps.contract'
 import { GENERATORS_VIEW_ID, type GeneratorNode, GeneratorsViewProvider } from './generators-view.client'
 import { REMOVE_GENERATOR_COMMAND, removeGeneratorCommand } from './remove-generator.handler'
 import { RUN_GENERATOR_COMMAND, runGeneratorCommand } from './run-generator.handler'
@@ -16,9 +15,10 @@ const REFRESH_DEBOUNCE_MS = 300
 /**
  * Registers the Generators view and its commands, and keeps it current: it re-reads when
  * .lore-master.yaml changes, by hand or through another command. The Command Palette's
- * "Run generators" is registered here too, so what it ran shows on the rows.
+ * "Run generators" is registered here too, so what it ran shows on the rows. `more` registers
+ * further commands that work on the same view (the generator form's add and edit).
  */
-export function registerGeneratorsView (deps: { engine: EngineClient; output: vscode.OutputChannel }): vscode.Disposable {
+export function registerGeneratorsView (deps: { engine: EngineClient; output: vscode.OutputChannel }, more?: (viewDeps: GeneratorsViewDeps) => vscode.Disposable): vscode.Disposable {
   const provider = new GeneratorsViewProvider(deps.engine)
   const viewDeps: GeneratorsViewDeps = { ...deps, provider }
 
@@ -32,9 +32,7 @@ export function registerGeneratorsView (deps: { engine: EngineClient; output: vs
   return vscode.Disposable.from(
     vscode.window.registerTreeDataProvider(GENERATORS_VIEW_ID, provider),
     vscode.commands.registerCommand(REFRESH_GENERATORS_COMMAND, () => provider.refresh()),
-    vscode.commands.registerCommand(ADD_GENERATOR_COMMAND, () => addGeneratorCommand(viewDeps)),
     vscode.commands.registerCommand(RUN_GENERATOR_COMMAND, (node: GeneratorNode | undefined) => runGeneratorCommand(viewDeps, node)),
-    vscode.commands.registerCommand(EDIT_GENERATOR_COMMAND, (node: GeneratorNode | undefined) => editGeneratorCommand(viewDeps, node)),
     vscode.commands.registerCommand(REMOVE_GENERATOR_COMMAND, (node: GeneratorNode | undefined) => removeGeneratorCommand(viewDeps, node)),
     vscode.commands.registerCommand(RUN_GENERATORS_COMMAND, async () => {
       const result = await runGeneratorsCommand(deps)
@@ -42,6 +40,7 @@ export function registerGeneratorsView (deps: { engine: EngineClient; output: vs
         provider.recordRun(result)
       }
     }),
+    more?.(viewDeps) ?? vscode.Disposable.from(),
     watcher.onDidCreate(refreshSoon),
     watcher.onDidChange(refreshSoon),
     watcher.onDidDelete(refreshSoon),
