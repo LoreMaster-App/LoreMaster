@@ -93,6 +93,28 @@ suite('Markdown editing in a real VS Code host', () => {
     assert.deepStrictEqual([editor.selection.active.line, editor.selection.active.character], [3, 2])
   })
 
+  test('writes a table of contents and keeps it in step with the headings', async () => {
+    const { document, editor } = await open('# Guide\n\n## One\n\n## Two')
+    select(editor, [1, 0])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.insertToc')
+    assert.ok(document.getText().includes('<!-- toc -->\n- [One](#one)\n- [Two](#two)\n<!-- /toc -->'), document.getText())
+
+    await editor.edit(builder => builder.insert(new vscode.Position(document.lineCount, 0), '\n## Three\n'))
+    await vscode.commands.executeCommand('loreMaster.markdown.updateToc')
+    assert.ok(document.getText().includes('- [Three](#three)\n<!-- /toc -->'), document.getText())
+  })
+
+  test('numbers the headings and takes the numbers off again', async () => {
+    const { document } = await open('# Guide\n## A\n### A1\n## B')
+
+    await vscode.commands.executeCommand('loreMaster.markdown.addSectionNumbers')
+    assert.strictEqual(document.getText(), '# Guide\n## 1 A\n### 1.1 A1\n## 2 B')
+
+    await vscode.commands.executeCommand('loreMaster.markdown.removeSectionNumbers')
+    assert.strictEqual(document.getText(), '# Guide\n## A\n### A1\n## B')
+  })
+
   test('does nothing in a file that is not Markdown', async () => {
     const document = await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'hello' })
     const editor = await vscode.window.showTextDocument(document)

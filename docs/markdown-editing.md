@@ -56,6 +56,21 @@ With `loreMaster.markdown.tableEditing` on (the default), inside a table:
 
 A pipe written `\|` is text, as on GitHub; a pipe inside a code span still divides cells, as GitHub does.
 
+## Table of contents and section numbers
+
+- **Insert Table of Contents** writes a list of links to the headings at the cursor, between `<!-- toc -->` and
+  `<!-- /toc -->`. **Update Table of Contents** brings it up to date, and so does saving the file when
+  `loreMaster.markdown.toc.updateOnSave` is on (the default); only a file that has the two marks is touched. The anchors are
+  GitHub's (lower case, punctuation dropped, a repeated heading gets `-1`, `-2`), so the links work on GitHub and in the site
+  LoreMaster builds.
+- It lists the levels from `toc.minLevel` (default 2, which leaves out the title) to `toc.maxLevel` (default 4), nested
+  from the shallowest level that is there, with bullets or, with `toc.ordered`, numbers.
+- **Add Section Numbers** gives the headings in those levels numbers (`## 1 Install`, `### 1.1 Windows`, `## 2 Use`), replacing
+  any they have, so it can be run again after reorganising; **Remove Section Numbers** takes them off. Both then update the
+  table of contents. Only headings written with `#` marks are numbered.
+- Front matter and fenced code are never read as headings. VS Code's own Outline view already lists a file's headings, so
+  LoreMaster does not add a second one.
+
 ## Settings
 
 | Setting | Default | |
@@ -64,3 +79,6 @@ A pipe written `\|` is text, as on GitHub; a pipe inside a code span still divid
 | `loreMaster.markdown.listEditing` | on | Enter, Tab and Shift+Tab in lists |
 | `loreMaster.markdown.tableEditing` | on | Tab and Shift+Tab in tables |
 | `loreMaster.markdown.formatTablesOnSave` | off | Line tables up on save |
+| `loreMaster.markdown.toc.minLevel`, `maxLevel` | 2, 4 | The levels a table of contents lists and sections are numbered |
+| `loreMaster.markdown.toc.ordered` | off | Numbered items instead of bullets |
+| `loreMaster.markdown.toc.updateOnSave` | on | Keep a file's table of contents current on save |
