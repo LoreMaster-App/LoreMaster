@@ -37,6 +37,8 @@ type ExportRunParams struct {
 	// Inline returns the result as text in the reply instead of writing a file. Only text formats
 	// can be returned.
 	Inline bool `json:"inline,omitempty"`
+	// Preview makes html for a preview pane: links to other Markdown files are left as they are.
+	Preview bool `json:"preview,omitempty"`
 	// BrowserPath is the Chrome, Edge or Chromium that prints pdf and png; one is looked for when empty.
 	BrowserPath string `json:"browserPath,omitempty"`
 	// PageSize is the paper of a pdf (A4, A3, A5, Letter, Legal); A4 when empty.

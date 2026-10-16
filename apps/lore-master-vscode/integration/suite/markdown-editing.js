@@ -115,6 +115,29 @@ suite('Markdown editing in a real VS Code host', () => {
     assert.strictEqual(document.getText(), '# Guide\n## A\n### A1\n## B')
   })
 
+  test('opens the preview beside the editor and follows the file', async () => {
+    const { document } = await open('# Preview me\n\nSome **text**.')
+    const previewTabs = () => vscode.window.tabGroups.all.flatMap(group => group.tabs).filter(tab => tab.input instanceof vscode.TabInputWebview && tab.input.viewType.includes('loreMasterMarkdownPreview'))
+    // The tab list is updated a moment after the command returns.
+    const settled = async (count) => {
+      for (let attempt = 0; attempt < 40 && previewTabs().length !== count; attempt += 1) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    }
+
+    await vscode.commands.executeCommand('loreMaster.markdown.openPreview')
+    await settled(1)
+    const tabs = vscode.window.tabGroups.all.flatMap(group => group.tabs).map(tab => `${tab.label} (${tab.input?.constructor?.name}: ${tab.input?.viewType ?? ''})`)
+    assert.strictEqual(previewTabs().length, 1, `one preview tab is open; tabs are ${JSON.stringify(tabs)}`)
+    assert.ok(previewTabs()[0].label.startsWith('Preview '), previewTabs()[0].label)
+
+    // A second request brings the same preview forward and does not open another one.
+    await vscode.window.showTextDocument(document)
+    await vscode.commands.executeCommand('loreMaster.markdown.openPreview')
+    await new Promise(resolve => setTimeout(resolve, 500))
+    assert.strictEqual(previewTabs().length, 1)
+  })
+
   test('does nothing in a file that is not Markdown', async () => {
     const document = await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'hello' })
     const editor = await vscode.window.showTextDocument(document)

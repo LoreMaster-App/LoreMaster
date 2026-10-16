@@ -11,6 +11,7 @@ import { registerGeneratorForm } from './generator-form'
 import { registerGeneratorsView } from './generators-view'
 import { registerMarkdownFormatting } from './markdown-formatting'
 import { registerMarkdownLists } from './markdown-lists'
+import { registerMarkdownPreview } from './markdown-preview'
 import { registerMarkdownTables } from './markdown-tables'
 import { registerMarkdownToc } from './markdown-toc'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
@@ -95,6 +96,7 @@ export function activate (context: vscode.ExtensionContext): void {
     registerMarkdownLists(),
     registerMarkdownTables(),
     registerMarkdownToc(),
+    registerMarkdownPreview({ engine }),
     vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),

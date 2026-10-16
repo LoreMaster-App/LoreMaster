@@ -29,8 +29,8 @@ export async function exportDocument (engine: ExportEngine, request: ExportReque
 }
 
 /** The text of a document (or of a piece of it) in a text format, to put on the clipboard. */
-export async function exportDocumentAsText (engine: ExportEngine, request: { path: string, content?: string, format: string }): Promise<string> {
-  const result = await engine.request<ExportRunResult>(EXPORT_RUN_METHOD, { path: request.path, content: request.content, format: request.format, inline: true } satisfies ExportRunParams)
+export async function exportDocumentAsText (engine: ExportEngine, request: { path: string, content?: string, format: string, preview?: boolean }): Promise<string> {
+  const result = await engine.request<ExportRunResult>(EXPORT_RUN_METHOD, { path: request.path, content: request.content, format: request.format, inline: true, preview: request.preview } satisfies ExportRunParams)
 
   return result.text ?? ''
 }

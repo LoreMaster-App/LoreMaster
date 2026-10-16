@@ -29,6 +29,8 @@ type Options struct {
 	PageSize string
 	// Width is the PNG's width in pixels; 1000 when zero.
 	Width int
+	// Preview makes the HTML for a preview pane: links to other Markdown files stay as they are.
+	Preview bool
 }
 
 // Export converts one Markdown file's content to the format with the given id. path is the file's
@@ -55,7 +57,7 @@ func Export(path string, content []byte, formatID string, options Options) (File
 func render(id string, document exportmodel.Document, options Options) ([]byte, error) {
 	switch id {
 	case "html":
-		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir})), nil
+		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir, KeepMarkdownLinks: options.Preview})), nil
 	case "txt":
 		return []byte(plaintextexport.Render(document)), nil
 	case "pdf":

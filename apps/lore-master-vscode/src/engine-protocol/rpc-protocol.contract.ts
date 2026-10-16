@@ -604,6 +604,8 @@ export interface ExportRunParams {
   outDir?:      string
   /** Return the result as text instead of writing a file. Text formats only. */
   inline?:      boolean
+  /** Make html for a preview pane: links to other Markdown files are left as they are. */
+  preview?:     boolean
   /** The Chrome, Edge or Chromium that prints pdf and png; the engine looks for one when absent. */
   browserPath?: string
   /** The paper of a pdf: A4, A3, A5, Letter or Legal. */
