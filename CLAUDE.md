@@ -42,7 +42,8 @@ LoreMaster/                         one root go.mod, module lore-master (mnci de
 ├── libs/                           go-internal-lib each; import <module>/libs/<name>/<slice>
 │   ├── markdown-workspace/         understand a folder of .md files                          E1 #2
 │   ├── confluence-client/          talk to any Confluence edition                            E2 #3
-│   └── documentation-sync/         reconcile a workspace with a platform (owns the ports)    E3 #4
+│   ├── documentation-sync/         reconcile a workspace with a platform (owns the ports)    E3 #4
+│   └── markdown-export/            convert one Markdown file to HTML, text, Jira, MediaWiki…  #405
 ├── tools/slicecheck/               Go test enforcing the file-role rules                     #47
 ├── docs/                           the project's own docs (architecture, contributing)      #9
 ├── CLAUDE.md, ROADMAP.md

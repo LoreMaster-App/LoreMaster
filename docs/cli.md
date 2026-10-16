@@ -36,6 +36,7 @@ lore-master-engine pages build   --out DIR [--workspace DIR] [--output N|NAME] [
 lore-master-engine pages publish [--workspace DIR] [--output N|NAME] [--json]
 lore-master-engine pages check   [--workspace DIR] [--output N|NAME] [--exit-code] [--json]
 lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
+lore-master-engine export   --format ID [--out DIR | --stdout] FILE...   (--list shows the formats)
 lore-master-engine version
 ```
 
@@ -75,6 +76,11 @@ way to configure a CI job with no settings file) and `--workspace-file FILE` (a 
 file whose settings sit between the user's and the folder's). See
 [configuration](configuration.md#overrides-for-ci). `--json` prints one
 document on stdout; progress lines always go to stderr.
+
+## Export
+
+`export` converts Markdown files to HTML, plain text, Jira wiki, Jira Cloud ADF or MediaWiki. It reads no settings
+and needs no credentials. See [Exporting Markdown](export.md).
 
 ## The CI session
 
