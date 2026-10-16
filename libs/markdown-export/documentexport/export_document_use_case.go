@@ -5,11 +5,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"lore-master/libs/markdown-export/docxexport"
 	"lore-master/libs/markdown-export/exportbuilding"
+	"lore-master/libs/markdown-export/exportmodel"
 	"lore-master/libs/markdown-export/htmlexport"
 	"lore-master/libs/markdown-export/jiraadfexport"
 	"lore-master/libs/markdown-export/jirawikiexport"
 	"lore-master/libs/markdown-export/mediawikiexport"
+	"lore-master/libs/markdown-export/odtexport"
 	"lore-master/libs/markdown-export/plaintextexport"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/markdown-workspace/documentparsing"
@@ -34,24 +37,35 @@ func Export(path string, content []byte, formatID string, options Options) (File
 	}
 	document := exportbuilding.BuildDocument(parsed)
 
-	var text string
-	switch format.ID {
-	case "html":
-		text = htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir})
-	case "txt":
-		text = plaintextexport.Render(document)
-	case "jira-wiki":
-		text = jirawikiexport.Render(document)
-	case "jira-adf":
-		text, err = jiraadfexport.Render(document)
-		if err != nil {
-			return File{}, err
-		}
-	case "mediawiki":
-		text = mediawikiexport.Render(document)
+	result, err := render(format.ID, document, options)
+	if err != nil {
+		return File{}, err
 	}
 
-	return File{Name: resultName(path, format), Content: []byte(text)}, nil
+	return File{Name: resultName(path, format), Content: result}, nil
+}
+
+func render(id string, document exportmodel.Document, options Options) ([]byte, error) {
+	switch id {
+	case "html":
+		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir})), nil
+	case "txt":
+		return []byte(plaintextexport.Render(document)), nil
+	case "docx":
+		return docxexport.Render(document, docxexport.Options{BaseDir: options.BaseDir})
+	case "odt":
+		return odtexport.Render(document, odtexport.Options{BaseDir: options.BaseDir})
+	case "jira-wiki":
+		return []byte(jirawikiexport.Render(document)), nil
+	case "jira-adf":
+		text, err := jiraadfexport.Render(document)
+
+		return []byte(text), err
+	case "mediawiki":
+		return []byte(mediawikiexport.Render(document)), nil
+	default:
+		return nil, fmt.Errorf("unknown export format %q", id)
+	}
 }
 
 // resultName is the file name an export is written under: the document's, with the format's ending.

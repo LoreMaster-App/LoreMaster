@@ -15,6 +15,8 @@ lore-master-engine export --format mediawiki --stdout docs/guide.md # print it
 | Id | Result | File ending |
 |---|---|---|
 | `html` | One self-contained page: styles inlined, local images embedded, light and dark, print-ready. Links to other `.md` files point at the matching `.html`. | `.html` |
+| `docx` | A Word file: real Heading styles (so Word's navigation pane and table of contents work), numbered and bulleted lists that restart where the Markdown does, tables with a repeating header row, code in a shaded monospace style, quotes, task boxes, hyperlinks and embedded PNG, JPEG and GIF images. | `.docx` |
+| `odt` | The same as an OpenDocument text file, for LibreOffice and anywhere an open standard is required. | `.odt` |
 | `txt` | The text without Markdown syntax: headings underlined, lists kept, tables aligned, links as `text (url)`. | `.txt` |
 | `jira-wiki` | Jira wiki markup (`h1.`, `*bold*`, `{code:go}`, `\|\|table\|\|`). | `.jira.txt` |
 | `jira-adf` | Atlassian Document Format JSON for Jira Cloud and Confluence Cloud, with real task lists and tables. | `.adf.json` |
@@ -28,11 +30,13 @@ Front matter and the sync annotation are never part of an export.
   `mediawiki` they point at the file by name; attach it to the issue or upload it to the wiki.
 - **Nested structures** that ADF does not allow inside a list item (a table, a quote) are written as plain
   paragraphs of their text, so the document stays valid.
+- **Word and OpenDocument** embed PNG, JPEG and GIF images that sit beside the file; SVG, web images and missing
+  files are written as their alt text. Links to other Markdown files point at the matching `.docx` or `.odt`.
 - **Mermaid** blocks stay code blocks in every format for now.
 - **Links to other Markdown files** become `[[Page]]` links in MediaWiki and `.html` links in HTML. Elsewhere
   they keep the path.
 
 ## Still to come
 
-PDF, PNG, Word and OpenDocument, the GitHub wiki format, the editor command and settings, and more formats
+PDF and PNG, applying a company Word template, the GitHub wiki format, the editor command and settings, and more formats
 are tracked in the epic [#405](https://github.com/LoreMaster-App/LoreMaster/issues/405).

@@ -79,7 +79,7 @@ document on stdout; progress lines always go to stderr.
 
 ## Export
 
-`export` converts Markdown files to HTML, plain text, Jira wiki, Jira Cloud ADF or MediaWiki. It reads no settings
+`export` converts Markdown files to Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF or MediaWiki. It reads no settings
 and needs no credentials. See [Exporting Markdown](export.md).
 
 ## The CI session
