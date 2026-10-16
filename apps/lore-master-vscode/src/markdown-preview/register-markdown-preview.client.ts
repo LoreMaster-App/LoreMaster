@@ -4,8 +4,8 @@ import { MarkdownPreview } from './markdown-preview.client'
 import { OPEN_PREVIEW_COMMAND, openPreview, PREVIEW_AS_COMMAND, previewAs } from './open-markdown-preview.handler'
 
 /** Registers the preview commands and keeps the preview in step with the editor. */
-export function registerMarkdownPreview (deps: { engine: EngineClient }): vscode.Disposable {
-  const preview = new MarkdownPreview(deps.engine)
+export function registerMarkdownPreview (deps: { engine: EngineClient, extensionUri?: vscode.Uri }): vscode.Disposable {
+  const preview = new MarkdownPreview(deps.engine, deps.extensionUri)
 
   return vscode.Disposable.from(
     preview,

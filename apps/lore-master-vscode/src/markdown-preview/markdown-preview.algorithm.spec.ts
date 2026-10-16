@@ -54,6 +54,17 @@ describe('the preview page', () => {
     expect(page.match(/<script/g)).toHaveLength(1)
   })
 
+  it('loads the bundled Mermaid library and lets the page use it, only when it is given', () => {
+    const plain = renderHtmlPreview(exported, 'n')
+    const drawn = renderHtmlPreview(exported, 'n', { scriptUri: 'vscode-resource://x/mermaid.min.js', cspSource: 'vscode-resource:' })
+
+    expect(plain).not.toContain('mermaid.min.js')
+    expect(drawn).toContain('<script nonce="n" src="vscode-resource://x/mermaid.min.js"></script>')
+    expect(drawn).toContain('script-src \'nonce-n\' vscode-resource:')
+    expect(drawn.indexOf('mermaid.min.js')).toBeLessThan(drawn.indexOf('drawDiagrams'))
+    expect(drawn).toContain('securityLevel: \'strict\'')
+  })
+
   it('puts the script before the last closing body tag', () => {
     const page = renderHtmlPreview('<head></head><body><p>a</p></body>', 'n')
 

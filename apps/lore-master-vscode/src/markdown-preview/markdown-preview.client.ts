@@ -42,12 +42,22 @@ export class MarkdownPreview implements vscode.Disposable {
   private quietUntil = 0
   private generation = 0
 
-  constructor (private readonly engine: EngineClient) {}
+  constructor (private readonly engine: EngineClient, private readonly extensionUri?: vscode.Uri) {}
 
   private title (): string {
     const name = this.document ? this.document.uri.path.split('/').pop() ?? '' : ''
 
     return this.format === RENDERED ? `Preview ${name}` : `Preview ${name} as ${this.formatLabel}`
+  }
+
+  /** The bundled Mermaid library as the panel can load it, when the extension knows where it is. */
+  private mermaidIn (panel: vscode.WebviewPanel): { scriptUri: string, cspSource: string } | undefined {
+    if (!this.extensionUri) {
+      return undefined
+    }
+    const script = vscode.Uri.joinPath(this.extensionUri, 'dist', 'assets', 'webview', 'mermaid.min.js')
+
+    return { scriptUri: panel.webview.asWebviewUri(script).toString(), cspSource: panel.webview.cspSource }
   }
 
   private schedule (): void {
@@ -67,7 +77,7 @@ export class MarkdownPreview implements vscode.Disposable {
       const rendered = this.format === RENDERED
       const text = await exportDocumentAsText(this.engine, { path: document.uri.fsPath, content: document.getText(), format: this.format, preview: rendered })
       if (mine === this.generation && this.panel === panel) {
-        panel.webview.html = rendered ? renderHtmlPreview(text, nonce()) : renderTextPage(text, this.formatLabel, nonce())
+        panel.webview.html = rendered ? renderHtmlPreview(text, nonce(), this.mermaidIn(panel)) : renderTextPage(text, this.formatLabel, nonce())
       }
     } catch (error) {
       if (mine === this.generation && this.panel === panel) {
@@ -135,7 +145,7 @@ export class MarkdownPreview implements vscode.Disposable {
       this.panel.title = this.title()
       this.panel.reveal(vscode.ViewColumn.Beside, true)
     } else {
-      this.panel = vscode.window.createWebviewPanel(PREVIEW_VIEW_TYPE, this.title(), { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true }, { enableScripts: true, retainContextWhenHidden: true })
+      this.panel = vscode.window.createWebviewPanel(PREVIEW_VIEW_TYPE, this.title(), { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true }, { enableScripts: true, retainContextWhenHidden: true, localResourceRoots: this.extensionUri ? [vscode.Uri.joinPath(this.extensionUri, 'dist', 'assets')] : [] })
       this.panel.onDidDispose(() => { this.panel = undefined })
       this.panel.webview.onDidReceiveMessage((message: PreviewToHost) => this.receive(message))
     }

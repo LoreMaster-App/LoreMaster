@@ -84,8 +84,9 @@ It shows the page the way LoreMaster's HTML export writes it, so what you see is
 - **Preview As...** shows the same file as the text of another format (Jira wiki, MediaWiki, plain text...) exactly as it would
   be pasted, so you can see how a page converts before syncing or copying it.
 
-The preview does not draw Mermaid diagrams or math yet: a Mermaid block shows as code. It uses the colours of VS Code's
-light and dark themes only through the system setting of the same name, so a light page may show in a dark editor.
+Mermaid diagrams are drawn in the preview (with the same Mermaid library LoreMaster uses to draw them for Confluence); one that
+has an error shows the error where the diagram would be. Math is not drawn yet. The page follows the system's light or dark
+setting and not VS Code's own theme, so a light page may show in a dark editor.
 
 ## Settings
 
