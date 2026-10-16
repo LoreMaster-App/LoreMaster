@@ -1,0 +1,5 @@
+export { applyEditResults, documentLines, selectionsOf } from './apply-edit-results.client'
+export { followLines, linesOf, replaceLines, replaceText } from './build-edit-result.algorithm'
+export { combineEditResults } from './combine-edit-results.algorithm'
+export type { EditResult, TextEdit, TextPosition, TextRange, TextSelection } from './text-edit.contract'
+export { comparePositions, toOffset, toPosition } from './text-offsets.algorithm'

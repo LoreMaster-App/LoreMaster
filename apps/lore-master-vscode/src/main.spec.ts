@@ -25,7 +25,7 @@ describe('activate', () => {
 
     activate(context)
 
-    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.exportMarkdown', 'loreMaster.copyMarkdownAs', 'loreMaster.addConnection', 'loreMaster.addStorage', 'loreMaster.openConfig', 'loreMaster.removeStorage', 'loreMaster.refreshStorages', 'loreMaster.copyMcpConfig', 'loreMaster.refreshPages', 'loreMaster.checkRemote', 'loreMaster.togglePageLabel', 'loreMaster.syncPage', 'loreMaster.editStorage', 'loreMaster.runGenerators', 'loreMaster.createAgent', 'loreMaster.setUpCi', 'loreMaster.rollbackSync', 'loreMaster.addGenerator', 'loreMaster.runGenerator', 'loreMaster.editGenerator', 'loreMaster.removeGenerator', 'loreMaster.refreshGenerators', 'loreMaster.generateAndSync', 'loreMaster.toggleWatch', 'loreMaster.choosePagesView', 'loreMaster.togglePagesExcluded', 'loreMaster.excludeFromSync', 'loreMaster.includeInSync'])
+    expect(contributed).toEqual(['loreMaster.sync', 'loreMaster.syncTo', 'loreMaster.syncCurrentFile', 'loreMaster.publishPages', 'loreMaster.exportMarkdown', 'loreMaster.copyMarkdownAs', 'loreMaster.markdown.toggleBold', 'loreMaster.markdown.toggleItalic', 'loreMaster.markdown.toggleStrikethrough', 'loreMaster.markdown.toggleInlineCode', 'loreMaster.markdown.toggleCodeBlock', 'loreMaster.markdown.toggleQuote', 'loreMaster.markdown.toggleTask', 'loreMaster.markdown.increaseHeading', 'loreMaster.markdown.decreaseHeading', 'loreMaster.markdown.listEnter', 'loreMaster.markdown.listIndent', 'loreMaster.markdown.listOutdent', 'loreMaster.markdown.formatTable', 'loreMaster.markdown.tableNextCell', 'loreMaster.markdown.tablePreviousCell', 'loreMaster.markdown.tableInsertRowAbove', 'loreMaster.markdown.tableInsertRowBelow', 'loreMaster.markdown.tableDeleteRow', 'loreMaster.markdown.tableInsertColumnLeft', 'loreMaster.markdown.tableInsertColumnRight', 'loreMaster.markdown.tableDeleteColumn', 'loreMaster.addConnection', 'loreMaster.addStorage', 'loreMaster.openConfig', 'loreMaster.removeStorage', 'loreMaster.refreshStorages', 'loreMaster.copyMcpConfig', 'loreMaster.refreshPages', 'loreMaster.checkRemote', 'loreMaster.togglePageLabel', 'loreMaster.syncPage', 'loreMaster.editStorage', 'loreMaster.runGenerators', 'loreMaster.createAgent', 'loreMaster.setUpCi', 'loreMaster.rollbackSync', 'loreMaster.addGenerator', 'loreMaster.runGenerator', 'loreMaster.editGenerator', 'loreMaster.removeGenerator', 'loreMaster.refreshGenerators', 'loreMaster.generateAndSync', 'loreMaster.toggleWatch', 'loreMaster.choosePagesView', 'loreMaster.togglePagesExcluded', 'loreMaster.excludeFromSync', 'loreMaster.includeInSync'])
     expect(await vscode.commands.getCommands()).toEqual(expect.arrayContaining(contributed))
     // The commands plus the engine client, output channel, diagram renderer, its
     // host/renderDiagram subscription, the Confluence authentication provider, the MCP
@@ -36,6 +36,8 @@ describe('activate', () => {
     const generatorsViewCommands = 6
     // Export and Copy As are one disposable too.
     const exportCommands = 2
-    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands - exportCommands + 14)
+    // The Markdown editing commands are three disposables: formatting, lists and tables.
+    const markdownEditingCommands = 21
+    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands - exportCommands - markdownEditingCommands + 14 + 3)
   })
 })

@@ -31,6 +31,11 @@ Start here, then dive into the architecture decisions.
   real screenshots, and code documentation for Go, TypeScript, Python, C# and Dart.
 - [Watch mode](watch.md): regenerate and sync only what changed, as you type.
 
+**Write**
+
+- [Editing Markdown](markdown-editing.md): formatting shortcuts, lists that continue and renumber, and tables that
+  stay lined up, on every cursor.
+
 **Convert**
 
 - [Exporting Markdown](export.md): PDF, PNG, Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF and

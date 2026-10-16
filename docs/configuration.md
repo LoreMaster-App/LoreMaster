@@ -63,7 +63,7 @@ when it finds neither it lists the spaces the signed-in user can see.
 | `loreMaster.generators` | Generators that write Markdown from test reports and source documentation. |
 
 The editor's own preferences (`loreMaster.credentials.useKeychain`, `loreMaster.pages.*`, `loreMaster.generateBeforeSync`,
-`loreMaster.watchDebounceSeconds`, `loreMaster.engine.path`, `loreMaster.export.*`) are separate and are not part of
+`loreMaster.watchDebounceSeconds`, `loreMaster.engine.path`, `loreMaster.export.*`, `loreMaster.markdown.*`) are separate and are not part of
 the configuration.
 
 A misspelt key or field is reported with the file and the key, and a key that looks like a
