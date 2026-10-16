@@ -1,7 +1,7 @@
 # Exporting Markdown
 
 LoreMaster converts a Markdown file to other formats without any storage, settings or credentials.
-It is the same converter whether you call it from the command line, a CI job or (soon) the editor.
+It is the same converter whether you call it from the command line, a CI job or the editor.
 
 ```bash
 lore-master-engine export --list
@@ -9,6 +9,23 @@ lore-master-engine export --format jira-wiki docs/guide.md          # writes doc
 lore-master-engine export --format html --out dist docs/*.md        # one file per document
 lore-master-engine export --format mediawiki --stdout docs/guide.md # print it
 ```
+
+## In the editor
+
+- **LoreMaster: Export Markdown...** is on the editor title bar of a Markdown file, in the explorer's context menu
+  for a file or a folder (every Markdown file in it, skipping `node_modules` and `.git`), and in the command
+  palette. Select several files in the explorer to export them together. It asks which formats to produce, and you
+  can tick more than one: each becomes its own file. Unsaved changes in the editor are exported, not the file on disk.
+- **LoreMaster: Copy Markdown As...** is in the editor's context menu and the command palette. It puts the document,
+  or just the selection when there is one, on the clipboard as Jira wiki markup, Jira Cloud ADF, MediaWiki, HTML or
+  plain text, ready to paste. Word and OpenDocument are files, so they are not offered.
+
+| Setting | Meaning |
+|---|---|
+| `loreMaster.export.formats` | The formats ticked by default (default `["html"]`). |
+| `loreMaster.export.folder` | Where exports go. Blank writes each next to its Markdown file. A folder, relative to the workspace or absolute, receives them with the document's own folders mirrored below it, so `docs/guide.md` exported to `dist` becomes `dist/docs/guide.html`. |
+
+Behind both commands are the engine's `export/formats` and `export/run` calls, which any editor shell can use.
 
 ## Formats
 
@@ -38,5 +55,5 @@ Front matter and the sync annotation are never part of an export.
 
 ## Still to come
 
-PDF and PNG, applying a company Word template, the GitHub wiki format, the editor command and settings, and more formats
+PDF and PNG, applying a company Word template, the GitHub wiki format, and more formats
 are tracked in the epic [#405](https://github.com/LoreMaster-App/LoreMaster/issues/405).

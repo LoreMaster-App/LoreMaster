@@ -9,14 +9,16 @@ type Format struct {
 	Label string
 	// Extension is the file name's ending, with its dot.
 	Extension string
+	// Binary says the result is not text, so it can be written to a file but not shown or copied.
+	Binary bool
 }
 
 // formats lists every format, in the order a picker shows them.
 var formats = []Format{
 	{ID: "html", Label: "HTML (one self-contained file)", Extension: ".html"},
 	{ID: "txt", Label: "Plain text (Markdown without the tags)", Extension: ".txt"},
-	{ID: "docx", Label: "Word document", Extension: ".docx"},
-	{ID: "odt", Label: "OpenDocument text (LibreOffice)", Extension: ".odt"},
+	{ID: "docx", Label: "Word document", Extension: ".docx", Binary: true},
+	{ID: "odt", Label: "OpenDocument text (LibreOffice)", Extension: ".odt", Binary: true},
 	{ID: "jira-wiki", Label: "Jira wiki markup", Extension: ".jira.txt"},
 	{ID: "jira-adf", Label: "Jira Cloud document (ADF JSON)", Extension: ".adf.json"},
 	{ID: "mediawiki", Label: "MediaWiki / Wikipedia", Extension: ".wiki"},

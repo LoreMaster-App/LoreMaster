@@ -4,6 +4,7 @@ import { SET_UP_CI_COMMAND, setUpCiCommand } from './ci-setup'
 import { ADD_CONNECTION_COMMAND, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
+import { registerExportMarkdown } from './export-markdown'
 import { registerFileMoves } from './file-moves'
 import { GENERATE_AND_SYNC_COMMAND, generateAndSyncCommand, syncCommand } from './generate-and-sync'
 import { registerGeneratorForm } from './generator-form'
@@ -85,6 +86,7 @@ export function activate (context: vscode.ExtensionContext): void {
     registerPagesView(syncDeps),
     registerFileMoves({ engine }),
     registerGeneratorsView({ engine, output }, registerGeneratorForm),
+    registerExportMarkdown({ engine, output }),
     vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),

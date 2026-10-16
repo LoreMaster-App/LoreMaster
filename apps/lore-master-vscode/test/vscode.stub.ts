@@ -69,6 +69,9 @@ export const window = {
   withProgress<T> (_options: unknown, task: () => Promise<T>): Promise<T> {
     return task()
   },
+  setStatusBarMessage (_message: string, _hideAfterTimeout?: number): { dispose: () => void } {
+    return { dispose () {} }
+  },
   activeTextEditor: undefined as { document: { uri: unknown } } | undefined,
 }
 
@@ -142,7 +145,13 @@ export const env = {
       return Promise.resolve(clipboardContent)
     },
   },
+  openExternal (_uri: unknown): Promise<boolean> {
+    return Promise.resolve(true)
+  },
 }
+
+/** What a file system entry is; matches vscode's enum values. */
+export const FileType = { Unknown: 0, File: 1, Directory: 2, SymbolicLink: 64 } as const
 
 /** Test helpers: the files and folders workspace.fs holds; clear between tests. */
 export const virtualFiles = new Map<string, Uint8Array>()
@@ -217,6 +226,23 @@ export const workspace = {
 
       return Promise.resolve()
     },
+    stat (uri: { fsPath: string }): Promise<{ type: number }> {
+      if (virtualDirectories.has(uri.fsPath)) {
+        return Promise.resolve({ type: FileType.Directory })
+      }
+      if (virtualFiles.has(uri.fsPath)) {
+        return Promise.resolve({ type: FileType.File })
+      }
+
+      return Promise.reject(new Error(`${uri.fsPath} does not exist`))
+    },
+  },
+  textDocuments: [] as { uri: { fsPath: string }; isDirty: boolean; getText: () => string }[],
+  asRelativePath (target: string | { fsPath: string }): string {
+    return typeof target === 'string' ? target : target.fsPath
+  },
+  findFiles (_include: unknown, _exclude?: unknown): Promise<{ fsPath: string }[]> {
+    return Promise.resolve([])
   },
   getWorkspaceFolder (_uri: unknown): { uri: { fsPath: string } } | undefined {
     return undefined
