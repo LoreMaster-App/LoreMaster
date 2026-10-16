@@ -33,8 +33,8 @@ Start here, then dive into the architecture decisions.
 
 **Convert**
 
-- [Exporting Markdown](export.md): Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF and MediaWiki from the
-  command line, with PDF and more on the way.
+- [Exporting Markdown](export.md): PDF, PNG, Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF and
+  MediaWiki, from the editor or the command line.
 
 **Automate**
 

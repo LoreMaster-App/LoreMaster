@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import type { ExportFormat } from '../engine-protocol'
-import type { ExportOutcome } from './export-markdown.contract'
+import type { ExportOutcome, PrintOptions } from './export-markdown.contract'
 import { exportDestination } from './export-destination.policy'
 import { exportDocument, exportDocumentAsText, listExportFormats } from './export-document.use-case'
 import { markdownTargets, unsavedText } from './export-targets.client'
@@ -26,6 +26,15 @@ function messageOf (error: unknown): string {
 
 function setting<T> (key: string, fallback: T): T {
   return vscode.workspace.getConfiguration('loreMaster.export').get<T>(key, fallback)
+}
+
+/** The settings that shape a PDF or a PNG; blank or unset ones are left to the engine's defaults. */
+function printOptions (): PrintOptions {
+  return {
+    browserPath: setting<string>('browserPath', '').trim() || undefined,
+    pageSize:    setting<string>('pageSize', '') || undefined,
+    imageWidth:  setting<number>('pngWidth', 0) || undefined,
+  }
 }
 
 /**
@@ -71,6 +80,7 @@ async function exportAll (deps: ExportCommandDeps, targets: readonly vscode.Uri[
       content: unsavedText(target),
       formats: formatIds,
       outDir:  exportDestination(target.fsPath, root, folder),
+      print:   printOptions(),
     })
     total.written.push(...outcome.written)
     total.failed.push(...outcome.failed.map(failure => ({ ...failure, message: `${vscode.workspace.asRelativePath(target)} (${failure.format}): ${failure.message}` })))

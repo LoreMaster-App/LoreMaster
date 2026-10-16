@@ -431,6 +431,8 @@
             "type": "string",
             "enum": [
               "html",
+              "pdf",
+              "png",
               "docx",
               "odt",
               "txt",
@@ -443,6 +445,30 @@
             "html"
           ],
           "markdownDescription": "The formats ticked by default when you export a Markdown file with **LoreMaster: Export Markdown...**."
+        },
+        "loreMaster.export.pageSize": {
+          "type": "string",
+          "enum": [
+            "A4",
+            "A3",
+            "A5",
+            "Letter",
+            "Legal"
+          ],
+          "default": "A4",
+          "markdownDescription": "The paper a PDF export is printed on."
+        },
+        "loreMaster.export.pngWidth": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 320,
+          "maximum": 4000,
+          "markdownDescription": "The width in pixels of a PNG export. The image is as tall as the page."
+        },
+        "loreMaster.export.browserPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "The Chrome, Edge or Chromium that prints PDF and PNG exports. Leave blank to use the one installed in the usual place. The `LORE_MASTER_BROWSER` environment variable does the same."
         },
         "loreMaster.export.folder": {
           "type": "string",

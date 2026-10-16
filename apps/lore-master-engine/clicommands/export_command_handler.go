@@ -18,10 +18,14 @@ func exportCommand(_ context.Context, env Environment, _ rpcserver.Methods, args
 	flags.SetOutput(env.Stderr)
 	var format, out string
 	var toStdout, list bool
+	var options documentexport.Options
 	flags.StringVar(&format, "format", "", "what to export to (see --list)")
 	flags.StringVar(&out, "out", "", "the folder to write into (default: next to each file)")
 	flags.BoolVar(&toStdout, "stdout", false, "print the result instead of writing a file (one file only)")
 	flags.BoolVar(&list, "list", false, "list the formats and stop")
+	flags.StringVar(&options.BrowserPath, "browser", "", "the Chrome, Edge or Chromium that prints pdf and png (default: look for one; or set LORE_MASTER_BROWSER)")
+	flags.StringVar(&options.PageSize, "page-size", "", "the paper of a pdf: A4, A3, A5, Letter or Legal (default A4)")
+	flags.IntVar(&options.Width, "width", 0, "the width of a png in pixels (default 1000)")
 	if err := flags.Parse(args); err != nil {
 		return ExitUsage
 	}
@@ -46,7 +50,7 @@ func exportCommand(_ context.Context, env Environment, _ rpcserver.Methods, args
 
 	code := ExitOK
 	for _, name := range flags.Args() {
-		if err := exportFile(env, name, format, out, toStdout); err != nil {
+		if err := exportFile(env, name, format, out, toStdout, options); err != nil {
 			_, _ = fmt.Fprintf(env.Stderr, "%s: %v\n", name, err)
 			code = ExitFailed
 		}
@@ -55,7 +59,7 @@ func exportCommand(_ context.Context, env Environment, _ rpcserver.Methods, args
 	return code
 }
 
-func exportFile(env Environment, name, format, out string, toStdout bool) error {
+func exportFile(env Environment, name, format, out string, toStdout bool, options documentexport.Options) error {
 	path := name
 	if !filepath.IsAbs(path) {
 		path = filepath.Join(env.WorkingDir, path)
@@ -64,7 +68,8 @@ func exportFile(env Environment, name, format, out string, toStdout bool) error 
 	if err != nil {
 		return err
 	}
-	file, err := documentexport.Export(path, content, format, documentexport.Options{BaseDir: filepath.Dir(path)})
+	options.BaseDir = filepath.Dir(path)
+	file, err := documentexport.Export(path, content, format, options)
 	if err != nil {
 		return err
 	}
