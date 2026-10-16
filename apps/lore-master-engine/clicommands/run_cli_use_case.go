@@ -102,7 +102,7 @@ Usage:
 
 auth       remember a Confluence connection in the OS keychain (login), forget it (logout) or list them
            (status); sync and rollback use it when the LORE_MASTER_* variables are not set.
-export     convert Markdown files to HTML, plain text, Jira wiki, Jira Cloud ADF or MediaWiki; reads no settings
+export     convert Markdown files to Word, OpenDocument, HTML, text, Jira wiki, Jira ADF or MediaWiki; reads no settings
            and needs no credentials.
 rollback   undo a sync: delete the pages it created, put the pages it updated back as they were, restore
            the files it rewrote. Without --yes it only shows what would happen; --list shows the syncs.

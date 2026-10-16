@@ -15,6 +15,8 @@ type Format struct {
 var formats = []Format{
 	{ID: "html", Label: "HTML (one self-contained file)", Extension: ".html"},
 	{ID: "txt", Label: "Plain text (Markdown without the tags)", Extension: ".txt"},
+	{ID: "docx", Label: "Word document", Extension: ".docx"},
+	{ID: "odt", Label: "OpenDocument text (LibreOffice)", Extension: ".odt"},
 	{ID: "jira-wiki", Label: "Jira wiki markup", Extension: ".jira.txt"},
 	{ID: "jira-adf", Label: "Jira Cloud document (ADF JSON)", Extension: ".adf.json"},
 	{ID: "mediawiki", Label: "MediaWiki / Wikipedia", Extension: ".wiki"},
