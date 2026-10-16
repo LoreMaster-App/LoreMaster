@@ -66,6 +66,111 @@
         "category": "LoreMaster"
       },
       {
+        "command": "loreMaster.markdown.toggleBold",
+        "title": "Toggle Bold",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.toggleItalic",
+        "title": "Toggle Italic",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.toggleStrikethrough",
+        "title": "Toggle Strikethrough",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.toggleInlineCode",
+        "title": "Toggle Inline Code",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.toggleCodeBlock",
+        "title": "Toggle Code Block",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.toggleQuote",
+        "title": "Toggle Quote",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.toggleTask",
+        "title": "Toggle Task",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.increaseHeading",
+        "title": "Increase Heading Level",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.decreaseHeading",
+        "title": "Decrease Heading Level",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.listEnter",
+        "title": "List: Continue on Enter",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.listIndent",
+        "title": "List: Indent Item",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.listOutdent",
+        "title": "List: Outdent Item",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.formatTable",
+        "title": "Format Table",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tableNextCell",
+        "title": "Table: Next Cell",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tablePreviousCell",
+        "title": "Table: Previous Cell",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tableInsertRowAbove",
+        "title": "Table: Insert Row Above",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tableInsertRowBelow",
+        "title": "Table: Insert Row Below",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tableDeleteRow",
+        "title": "Table: Delete Row",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tableInsertColumnLeft",
+        "title": "Table: Insert Column Left",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tableInsertColumnRight",
+        "title": "Table: Insert Column Right",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.tableDeleteColumn",
+        "title": "Table: Delete Column",
+        "category": "LoreMaster Markdown"
+      },
+      {
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
         "category": "LoreMaster"
@@ -243,6 +348,82 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "loreMaster.markdown.toggleBold",
+        "key": "ctrl+b",
+        "mac": "cmd+b",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.toggleItalic",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.toggleStrikethrough",
+        "key": "alt+s",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.toggleInlineCode",
+        "key": "alt+c",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.toggleCodeBlock",
+        "key": "alt+shift+c",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.toggleQuote",
+        "key": "alt+q",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.toggleTask",
+        "key": "alt+t",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.increaseHeading",
+        "key": "ctrl+shift+]",
+        "mac": "cmd+shift+]",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.decreaseHeading",
+        "key": "ctrl+shift+[",
+        "mac": "cmd+shift+[",
+        "when": "editorTextFocus && editorLangId == markdown && config.loreMaster.markdown.shortcuts"
+      },
+      {
+        "command": "loreMaster.markdown.listEnter",
+        "key": "enter",
+        "when": "editorTextFocus && editorLangId == markdown && loreMaster.markdown.inList && !suggestWidgetVisible && !editorHasSelection && !inSnippetMode"
+      },
+      {
+        "command": "loreMaster.markdown.listIndent",
+        "key": "tab",
+        "when": "editorTextFocus && editorLangId == markdown && loreMaster.markdown.inList && !suggestWidgetVisible && !inlineSuggestionVisible && !inSnippetMode && !editorTabMovesFocus"
+      },
+      {
+        "command": "loreMaster.markdown.listOutdent",
+        "key": "shift+tab",
+        "when": "editorTextFocus && editorLangId == markdown && loreMaster.markdown.inList && !suggestWidgetVisible && !inlineSuggestionVisible && !inSnippetMode && !editorTabMovesFocus"
+      },
+      {
+        "command": "loreMaster.markdown.tableNextCell",
+        "key": "tab",
+        "when": "editorTextFocus && editorLangId == markdown && loreMaster.markdown.inTable && !suggestWidgetVisible && !inlineSuggestionVisible && !inSnippetMode && !editorTabMovesFocus"
+      },
+      {
+        "command": "loreMaster.markdown.tablePreviousCell",
+        "key": "shift+tab",
+        "when": "editorTextFocus && editorLangId == markdown && loreMaster.markdown.inTable && !suggestWidgetVisible && !inlineSuggestionVisible && !inSnippetMode && !editorTabMovesFocus"
+      }
+    ],
     "menus": {
       "editor/title": [
         {
@@ -371,6 +552,90 @@
       ],
       "commandPalette": [
         {
+          "command": "loreMaster.markdown.listEnter",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.markdown.listIndent",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.markdown.listOutdent",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.markdown.tableNextCell",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.markdown.tablePreviousCell",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.markdown.toggleBold",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.toggleItalic",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.toggleStrikethrough",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.toggleInlineCode",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.toggleCodeBlock",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.toggleQuote",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.toggleTask",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.increaseHeading",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.decreaseHeading",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.formatTable",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.tableInsertRowAbove",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.tableInsertRowBelow",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.tableDeleteRow",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.tableInsertColumnLeft",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.tableInsertColumnRight",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.tableDeleteColumn",
+          "when": "editorLangId == markdown"
+        },
+        {
           "command": "loreMaster.exportMarkdown",
           "when": "editorLangId == markdown"
         },
@@ -425,6 +690,26 @@
     "configuration": {
       "title": "LoreMaster",
       "properties": {
+        "loreMaster.markdown.shortcuts": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Formatting shortcuts in Markdown files: bold `Ctrl+B`, italic `Ctrl+I`, strikethrough `Alt+S`, inline code `Alt+C`, code block `Alt+Shift+C`, quote `Alt+Q`, task `Alt+T`, heading level `Ctrl+Shift+]` and `Ctrl+Shift+[`. Every one is also a command and can be rebound."
+        },
+        "loreMaster.markdown.listEditing": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "In a Markdown list, `Enter` starts the next item (and ends the list on an empty one), and `Tab` and `Shift+Tab` nest and un-nest items and number the lists again."
+        },
+        "loreMaster.markdown.tableEditing": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "In a Markdown table, `Tab` and `Shift+Tab` move between cells, lining the table up as they go, and `Tab` in the last cell adds a row."
+        },
+        "loreMaster.markdown.formatTablesOnSave": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Line up the pipes of every table in a Markdown file when it is saved."
+        },
         "loreMaster.export.formats": {
           "type": "array",
           "items": {

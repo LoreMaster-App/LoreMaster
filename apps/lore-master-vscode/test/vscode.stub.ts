@@ -69,6 +69,12 @@ export const window = {
   withProgress<T> (_options: unknown, task: () => Promise<T>): Promise<T> {
     return task()
   },
+  onDidChangeTextEditorSelection (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidChangeActiveTextEditor (_listener: (editor: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
   setStatusBarMessage (_message: string, _hideAfterTimeout?: number): { dispose: () => void } {
     return { dispose () {} }
   },
@@ -258,6 +264,9 @@ export const workspace = {
         return Promise.resolve()
       },
     }
+  },
+  onWillSaveTextDocument (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
   },
   onDidChangeConfiguration (_listener: (event: { affectsConfiguration: (section: string) => boolean }) => unknown): { dispose: () => void } {
     return { dispose () {} }

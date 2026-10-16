@@ -1,0 +1,105 @@
+// The Markdown editing commands run against a real document in a real VS Code: the unit tests cover the text
+// algorithms, and this covers what only a host can: that the commands find the active editor, apply their
+// edits and move the cursors.
+const assert = require('node:assert')
+const path = require('node:path')
+const vscode = require('vscode')
+
+const manifest = require(path.resolve(__dirname, '..', '..', 'package.json'))
+const EXTENSION_ID = `${manifest.publisher}.${manifest.name}`
+
+async function open (content) {
+  const document = await vscode.workspace.openTextDocument({ language: 'markdown', content })
+  const editor = await vscode.window.showTextDocument(document)
+
+  return { document, editor }
+}
+
+const select = (editor, ...ranges) => {
+  editor.selections = ranges.map(([line, from, toLine, to]) => new vscode.Selection(line, from, toLine ?? line, to ?? from))
+}
+
+suite('Markdown editing in a real VS Code host', () => {
+  suiteSetup(async function () {
+    this.timeout(60_000)
+    await vscode.extensions.getExtension(EXTENSION_ID).activate()
+  })
+
+  teardown(() => vscode.commands.executeCommand('workbench.action.closeAllEditors'))
+
+  test('toggles bold on a selection and off again, keeping it selected', async () => {
+    const { document, editor } = await open('hello world')
+    select(editor, [0, 0, 0, 5])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.toggleBold')
+    assert.strictEqual(document.getText(), '**hello** world')
+    assert.strictEqual(document.getText(editor.selection), 'hello')
+
+    await vscode.commands.executeCommand('loreMaster.markdown.toggleBold')
+    assert.strictEqual(document.getText(), 'hello world')
+  })
+
+  test('formats every cursor, and moves each past the edits above it', async () => {
+    const { document, editor } = await open('one two')
+    select(editor, [0, 1], [0, 5])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.toggleItalic')
+
+    assert.strictEqual(document.getText(), '*one* *two*')
+    assert.deepStrictEqual(editor.selections.map(selection => [selection.active.line, selection.active.character]), [[0, 2], [0, 8]])
+  })
+
+  test('cycles a line through a task list', async () => {
+    const { document } = await open('buy milk')
+
+    await vscode.commands.executeCommand('loreMaster.markdown.toggleTask')
+    assert.strictEqual(document.getText(), '- [ ] buy milk')
+    await vscode.commands.executeCommand('loreMaster.markdown.toggleTask')
+    assert.strictEqual(document.getText(), '- [x] buy milk')
+  })
+
+  test('Enter in a list starts the next numbered item, and on an empty one ends the list', async () => {
+    const { document, editor } = await open('1. one\n2. two')
+    select(editor, [1, 6])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.listEnter')
+    assert.strictEqual(document.getText(), '1. one\n2. two\n3. ')
+    assert.deepStrictEqual([editor.selection.active.line, editor.selection.active.character], [2, 3])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.listEnter')
+    assert.strictEqual(document.getText(), '1. one\n2. two\n')
+  })
+
+  test('Tab nests a list item and numbers the list again', async () => {
+    const { document, editor } = await open('1. a\n2. b\n3. c')
+    select(editor, [1, 4])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.listIndent')
+
+    assert.strictEqual(document.getText(), '1. a\n   1. b\n2. c')
+  })
+
+  test('Tab in a table lines it up and moves to the next cell, and adds a row after the last', async () => {
+    const { document, editor } = await open('| a | b |\n|---|---|\n| longer | x |')
+    select(editor, [0, 3])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.tableNextCell')
+    assert.strictEqual(document.lineAt(0).text, '| a      | b   |')
+    assert.deepStrictEqual([editor.selection.active.line, editor.selection.active.character], [0, 11])
+
+    select(editor, [2, 12])
+    await vscode.commands.executeCommand('loreMaster.markdown.tableNextCell')
+    assert.strictEqual(document.lineCount, 4)
+    assert.deepStrictEqual([editor.selection.active.line, editor.selection.active.character], [3, 2])
+  })
+
+  test('does nothing in a file that is not Markdown', async () => {
+    const document = await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'hello' })
+    const editor = await vscode.window.showTextDocument(document)
+    select(editor, [0, 0, 0, 5])
+
+    await vscode.commands.executeCommand('loreMaster.markdown.toggleBold')
+
+    assert.strictEqual(document.getText(), 'hello')
+  })
+})
