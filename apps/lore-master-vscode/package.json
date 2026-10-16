@@ -171,6 +171,26 @@
         "category": "LoreMaster Markdown"
       },
       {
+        "command": "loreMaster.markdown.insertToc",
+        "title": "Insert Table of Contents",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.updateToc",
+        "title": "Update Table of Contents",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.addSectionNumbers",
+        "title": "Add Section Numbers",
+        "category": "LoreMaster Markdown"
+      },
+      {
+        "command": "loreMaster.markdown.removeSectionNumbers",
+        "title": "Remove Section Numbers",
+        "category": "LoreMaster Markdown"
+      },
+      {
         "command": "loreMaster.addConnection",
         "title": "Add Connection",
         "category": "LoreMaster"
@@ -552,6 +572,22 @@
       ],
       "commandPalette": [
         {
+          "command": "loreMaster.markdown.insertToc",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.updateToc",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.addSectionNumbers",
+          "when": "editorLangId == markdown"
+        },
+        {
+          "command": "loreMaster.markdown.removeSectionNumbers",
+          "when": "editorLangId == markdown"
+        },
+        {
           "command": "loreMaster.markdown.listEnter",
           "when": "false"
         },
@@ -690,6 +726,30 @@
     "configuration": {
       "title": "LoreMaster",
       "properties": {
+        "loreMaster.markdown.toc.minLevel": {
+          "type": "number",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 6,
+          "markdownDescription": "The shallowest heading level a table of contents lists (and section numbers start from). The default of 2 leaves out the title."
+        },
+        "loreMaster.markdown.toc.maxLevel": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 6,
+          "markdownDescription": "The deepest heading level a table of contents lists."
+        },
+        "loreMaster.markdown.toc.ordered": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Number the items of a table of contents (`1.`) instead of using bullets."
+        },
+        "loreMaster.markdown.toc.updateOnSave": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Bring the table of contents of a Markdown file up to date when it is saved. Only a file that has one, between `<!-- toc -->` and `<!-- /toc -->`, is touched."
+        },
         "loreMaster.markdown.shortcuts": {
           "type": "boolean",
           "default": true,
