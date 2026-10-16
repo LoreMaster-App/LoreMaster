@@ -96,7 +96,7 @@ export function activate (context: vscode.ExtensionContext): void {
     registerMarkdownLists(),
     registerMarkdownTables(),
     registerMarkdownToc(),
-    registerMarkdownPreview({ engine }),
+    registerMarkdownPreview({ engine, extensionUri: context.extensionUri }),
     vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),

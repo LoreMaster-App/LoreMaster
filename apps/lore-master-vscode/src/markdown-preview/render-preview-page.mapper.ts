@@ -1,13 +1,22 @@
 const escape = (text: string): string => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
 /** The content security policy of the preview: nothing runs but its own script, and images are the embedded ones or from the web. */
-function policy (nonce: string): string {
-  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https: http:; style-src 'unsafe-inline'; font-src data:; script-src 'nonce-${nonce}'">`
+function policy (nonce: string, cspSource = ''): string {
+  const own = cspSource === '' ? '' : ` ${cspSource}`
+
+  return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src${own} data: https: http:; style-src 'unsafe-inline'${own}; font-src data:; script-src 'nonce-${nonce}'${own}">`
+}
+
+/** Where the bundled Mermaid library is served from, and the webview origin the page must allow for it. */
+export interface MermaidSource {
+  scriptUri: string
+  cspSource: string
 }
 
 /**
- * The page's own script: keeps the scroll position when the page is replaced, scrolls with the editor and tells the extension
- * how far it was scrolled, and hands clicks on links to the extension (except links within the page, which scroll as usual).
+ * The page's own script: draws the Mermaid diagrams, keeps the scroll position when the page is replaced, scrolls with the
+ * editor and tells the extension how far it was scrolled, and hands clicks on links to the extension (except links within
+ * the page, which scroll as usual).
  */
 function script (nonce: string): string {
   return `<script nonce="${nonce}">
@@ -21,7 +30,29 @@ function scrollToFraction (value) {
   vscode.setState({ fraction: value })
   setTimeout(() => { quiet = false }, 120)
 }
-window.addEventListener('load', () => {
+async function drawDiagrams () {
+  if (typeof mermaid === 'undefined') { return }
+  const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: dark ? 'dark' : 'default' })
+  let count = 0
+  for (const block of document.querySelectorAll('pre > code.language-mermaid')) {
+    const holder = document.createElement('div')
+    holder.className = 'diagram'
+    try {
+      const { svg } = await mermaid.render('lore-master-diagram-' + count, block.textContent)
+      holder.innerHTML = svg
+    } catch (error) {
+      holder.textContent = 'The diagram could not be drawn: ' + (error && error.message ? error.message : String(error))
+      holder.style.color = '#c0392b'
+      // Mermaid leaves its own error picture in the page when a diagram fails; the message above replaces it.
+      for (const leftover of [document.getElementById('lore-master-diagram-' + count), document.getElementById('dlore-master-diagram-' + count)]) { if (leftover) { leftover.remove() } }
+    }
+    count += 1
+    block.parentElement.replaceWith(holder)
+  }
+}
+window.addEventListener('load', async () => {
+  await drawDiagrams()
   const saved = vscode.getState()
   if (saved && typeof saved.fraction === 'number') { scrollToFraction(saved.fraction) }
   vscode.postMessage({ type: 'ready' })
@@ -44,19 +75,28 @@ document.addEventListener('click', event => {
 </script>`
 }
 
-/** The preview of a document: the HTML the engine exported, with the policy and the script added. */
-export function renderHtmlPreview (html: string, nonce: string): string {
+/**
+ * The preview of a document: the HTML the engine exported, with the policy and the script added, and the bundled Mermaid
+ * library when it is given, so diagrams are drawn.
+ */
+export function renderHtmlPreview (html: string, nonce: string, mermaid?: MermaidSource): string {
   const head = html.indexOf('<head>')
+  const rule = policy(nonce, mermaid?.cspSource)
   const withPolicy = head === -1
-    ? policy(nonce) + html
+    ? rule + html
     : `${html.slice(0, head + 6)}
-${policy(nonce)}${html.slice(head + 6)}`
+${rule}${html.slice(head + 6)}`
+  const library = mermaid
+    ? `<script nonce="${nonce}" src="${mermaid.scriptUri}"></script>
+`
+    : ''
   // The last one, in case the document itself writes `</body>`.
   const body = withPolicy.lastIndexOf('</body>')
+  const scripts = `${library}${script(nonce)}`
 
   return body === -1
-    ? withPolicy + script(nonce)
-    : `${withPolicy.slice(0, body)}${script(nonce)}
+    ? withPolicy + scripts
+    : `${withPolicy.slice(0, body)}${scripts}
 ${withPolicy.slice(body)}`
 }
 
