@@ -352,7 +352,8 @@ file that is not an OpenAPI description, is reported and skipped; the rest are s
 
 You do not have to edit the YAML. The **Generators** view in the LoreMaster sidebar lists your
 generators — what each one is, where it writes, and what its last run did — and its buttons add,
-run, edit and remove them: **Add generator** asks which kind, the output folder and what to read,
+run, edit and remove them: **Add generator** opens a form (a panel, like the storage form) with the kind, the output folder,
+what to read, the command that produces it and the index title, checks them as you save,
 saves it with your comments kept, warns if no storage syncs that folder, and offers to run it at
 once. Removing a generator never deletes the pages it wrote.
 
@@ -389,9 +390,9 @@ the step for you, say so with an optional `prepare` command on the generator:
 }
 ```
 
-In VS Code you do not have to write it by hand: **Add generator** asks for the command when you pick
-*Recognise it from the output* (required, since it is the only thing that writes the files to read) or
-*Storybook components* (optional), and **Edit generator** has a *Command that produces it* field. After
+In VS Code you do not have to write it by hand: the **Add generator** form has a *Command that produces it* field, required for
+*Recognise it from the output* (it is the only thing that writes the files to read) and optional for
+the others, and **Edit generator** opens the same form on an existing generator (its kind cannot change). After
 adding, **Generate and sync** runs the generators, asking to approve the command as described below, and
 then shows the sync plan.
 

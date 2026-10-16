@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import { type Generator, SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD, type Settings } from '../engine-protocol'
-import type { GeneratorsViewDeps } from './add-generator.handler'
+import type { GeneratorsViewDeps } from './generators-view-deps.contract'
 import { GeneratorsViewProvider } from './generators-view.client'
 import { removeGeneratorCommand } from './remove-generator.handler'
 

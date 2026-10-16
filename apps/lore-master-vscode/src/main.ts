@@ -6,6 +6,7 @@ import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering
 import { createEngineClient, resolveEngineBinary } from './engine-process'
 import { registerFileMoves } from './file-moves'
 import { GENERATE_AND_SYNC_COMMAND, generateAndSyncCommand, syncCommand } from './generate-and-sync'
+import { registerGeneratorForm } from './generator-form'
 import { registerGeneratorsView } from './generators-view'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
@@ -83,7 +84,7 @@ export function activate (context: vscode.ExtensionContext): void {
     registerSyncView(),
     registerPagesView(syncDeps),
     registerFileMoves({ engine }),
-    registerGeneratorsView({ engine, output }),
+    registerGeneratorsView({ engine, output }, registerGeneratorForm),
     vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),
