@@ -11,7 +11,7 @@ import { registerGeneratorForm } from './generator-form'
 import { registerGeneratorsView } from './generators-view'
 import { registerMarkdownFormatting } from './markdown-formatting'
 import { registerMarkdownLists } from './markdown-lists'
-import { registerMarkdownPreview } from './markdown-preview'
+import { registerMarkdownDiagrams, type MarkdownItExtension } from './markdown-diagrams'
 import { registerMarkdownTables } from './markdown-tables'
 import { registerMarkdownToc } from './markdown-toc'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
@@ -33,7 +33,8 @@ function workspaceFileEnvironment (workspaceFile: vscode.Uri | undefined): Recor
   return workspaceFile?.scheme === 'file' ? { LORE_MASTER_WORKSPACE_FILE: workspaceFile.fsPath } : undefined
 }
 
-export function activate (context: vscode.ExtensionContext): void {
+/** Returns the markdown-it extension VS Code's built-in Markdown preview uses to draw Mermaid and D2. */
+export function activate (context: vscode.ExtensionContext): MarkdownItExtension {
   const engine = createEngineClient({
     binaryPath: resolveEngineBinary({
       platform:       process.platform,
@@ -81,6 +82,7 @@ export function activate (context: vscode.ExtensionContext): void {
     registerMcpServer(context),
   )
 
+  const markdownDiagrams = registerMarkdownDiagrams({ engine })
   const syncDeps = { engine, connections, targets, output }
   const storages = new StoragesViewProvider(engine)
   const watchMode = new WatchMode(syncDeps)
@@ -96,7 +98,7 @@ export function activate (context: vscode.ExtensionContext): void {
     registerMarkdownLists(),
     registerMarkdownTables(),
     registerMarkdownToc(),
-    registerMarkdownPreview({ engine, extensionUri: context.extensionUri }),
+    markdownDiagrams,
     vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),
@@ -120,6 +122,8 @@ export function activate (context: vscode.ExtensionContext): void {
   void runSettingsMigration({ engine, onMigrated: () => storages.refresh() }).catch((error: unknown) => {
     output.appendLine(`Settings migration failed: ${error instanceof Error ? error.message : String(error)}`)
   })
+
+  return markdownDiagrams
 }
 
 export function deactivate (): void {}

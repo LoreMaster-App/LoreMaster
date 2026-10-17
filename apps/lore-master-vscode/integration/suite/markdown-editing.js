@@ -115,27 +115,31 @@ suite('Markdown editing in a real VS Code host', () => {
     assert.strictEqual(document.getText(), '# Guide\n## A\n### A1\n## B')
   })
 
-  test('opens the preview beside the editor and follows the file', async () => {
-    const { document } = await open('# Preview me\n\nSome **text**.')
-    const previewTabs = () => vscode.window.tabGroups.all.flatMap(group => group.tabs).filter(tab => tab.input instanceof vscode.TabInputWebview && tab.input.viewType.includes('loreMasterMarkdownPreview'))
-    // The tab list is updated a moment after the command returns.
-    const settled = async (count) => {
-      for (let attempt = 0; attempt < 40 && previewTabs().length !== count; attempt += 1) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
+  test('the built-in Markdown preview draws mermaid and d2', async function () {
+    this.timeout(60_000)
+    // The same call VS Code's preview makes to turn Markdown into the page, with this extension's markdown-it plugin in it.
+    const render = (markdown) => vscode.commands.executeCommand('markdown.api.render', markdown)
+
+    const mermaid = await render('```mermaid\ngraph TD\n  A-->B\n```')
+    // Recent VS Code draws Mermaid itself and the extension steps aside; older ones get the extension's own.
+    if (vscode.extensions.getExtension('vscode.mermaid-markdown-features')) {
+      assert.ok(mermaid.includes('markdown-mermaid') && !mermaid.includes('loremaster-mermaid'), mermaid)
+    } else {
+      assert.ok(mermaid.includes('loremaster-mermaid') && mermaid.includes('A--&gt;B'), mermaid)
     }
 
-    await vscode.commands.executeCommand('loreMaster.markdown.openPreview')
-    await settled(1)
-    const tabs = vscode.window.tabGroups.all.flatMap(group => group.tabs).map(tab => `${tab.label} (${tab.input?.constructor?.name}: ${tab.input?.viewType ?? ''})`)
-    assert.strictEqual(previewTabs().length, 1, `one preview tab is open; tabs are ${JSON.stringify(tabs)}`)
-    assert.ok(previewTabs()[0].label.startsWith('Preview '), previewTabs()[0].label)
+    // D2 is drawn by the engine, so the first render says so and a later one has the picture.
+    const source = '```d2\nclient -> server\n```'
+    assert.ok((await render(source)).includes('loremaster-d2'))
+    let drawn = ''
+    for (let attempt = 0; attempt < 100 && !drawn.includes('<svg'); attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 200))
+      drawn = await render(source)
+    }
+    assert.ok(drawn.includes('<svg'), drawn)
 
-    // A second request brings the same preview forward and does not open another one.
-    await vscode.window.showTextDocument(document)
-    await vscode.commands.executeCommand('loreMaster.markdown.openPreview')
-    await new Promise(resolve => setTimeout(resolve, 500))
-    assert.strictEqual(previewTabs().length, 1)
+    const plain = await render('```ts\nlet a = 1\n```')
+    assert.ok(!plain.includes('loremaster-diagram'), plain)
   })
 
   test('does nothing in a file that is not Markdown', async () => {
