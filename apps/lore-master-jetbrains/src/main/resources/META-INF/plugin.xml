@@ -41,5 +41,17 @@
                 description="Open .vscode/settings.json, where the loreMaster.* outputs, ignore list and generators live">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action id="loremaster.connect"
+                class="loremaster.connection.ConnectHandler"
+                text="LoreMaster: Connect to Confluence..."
+                description="Sign in to Confluence and keep the credential in the IDE's password safe">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="loremaster.forgetConnection"
+                class="loremaster.connection.ForgetConnectionHandler"
+                text="LoreMaster: Forget Confluence Connection..."
+                description="Remove a site's credential from the password safe">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
