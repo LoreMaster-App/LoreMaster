@@ -15,6 +15,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="LoreMaster" displayType="BALLOON"/>
+        <toolWindow id="LoreMaster" anchor="right" secondary="true" icon="AllIcons.Nodes.Folder"
+                    factoryClass="loremaster.pagestree.PagesToolWindowFactory"/>
         <applicationService serviceImplementation="loremaster.pluginsettings.PluginSettingsStore"/>
         <applicationConfigurable parentId="tools" instanceId="loremaster.settings" displayName="LoreMaster"
                                  id="loremaster.settings" instance="loremaster.pluginsettings.PluginSettingsHandler"/>
@@ -47,6 +49,22 @@
                 description="Sync the selected Markdown files, or the whole project, to a Confluence output after reviewing the plan">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+        <action id="loremaster.checkPages" class="loremaster.pages.CheckPagesHandler" text="LoreMaster: Check GitHub Pages"
+                description="Compare the site with what is published, without publishing">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="loremaster.buildPages" class="loremaster.pages.BuildPagesHandler" text="LoreMaster: Build GitHub Pages Site..."
+                description="Write the static site into a folder, with no git and no network">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="loremaster.publishPages" class="loremaster.pages.PublishPagesHandler" text="LoreMaster: Publish GitHub Pages"
+                description="Publish the site to its branch with your own git">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="loremaster.runGenerators" class="loremaster.generators.RunGeneratorsHandler" text="LoreMaster: Run Generators"
+                description="Write Markdown from test reports and source documentation">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="loremaster.connect"
                 class="loremaster.connection.ConnectHandler"

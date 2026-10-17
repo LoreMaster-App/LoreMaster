@@ -30,6 +30,13 @@ class CheckEngineHandlerTest : BasePlatformTestCase() {
         }
     }
 
+    fun `test the pages, generators and tool window are registered`() {
+        val manager = ActionManager.getInstance()
+        listOf("loremaster.sync", "loremaster.checkPages", "loremaster.buildPages", "loremaster.publishPages", "loremaster.runGenerators")
+            .forEach { assertNotNull("missing $it", manager.getAction(it)) }
+        assertTrue(com.intellij.openapi.wm.ToolWindowEP.EP_NAME.extensionList.any { it.id == "LoreMaster" })
+    }
+
     fun `test the store starts the real engine and it answers ping`() {
         val binary = System.getenv("LORE_MASTER_ENGINE")?.takeIf { it.isNotBlank() }?.let(Path::of)
         if (binary == null || !Files.exists(binary)) {
