@@ -5,36 +5,54 @@ import (
 	"strings"
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
+	"lore-master/libs/documentation-sync/configcatalog"
 )
 
-// The environment variables a Confluence credential is read from. Secrets never go in
-// the settings; in CI they are the pipeline's secrets.
-const (
-	envEmail    = "LORE_MASTER_EMAIL"
-	envToken    = "LORE_MASTER_TOKEN"
-	envPAT      = "LORE_MASTER_PAT"
-	envUser     = "LORE_MASTER_USER"
-	envPassword = "LORE_MASTER_PASSWORD"
-)
+// The environment variables a credential is read from are the ones the platform's description names: each field of each sign-in
+// method says its own. Secrets never go in the settings; in CI they are the pipeline's secrets.
 
-// errNoCredential tells the user which variables would have worked.
-var errNoCredential = errors.New("no Confluence credential in the environment: set " + envEmail + " and " + envToken +
-	" (Cloud API token), or " + envPAT + " (Data Center or Server personal access token), or " + envUser + " and " + envPassword + " (basic)")
-
-// credentialFromEnvironment picks the credential the environment holds: an email with an API
-// token (Confluence Cloud), else a personal access token (Data Center, Server 7.9+), else a
-// user and password (older Server). The same credential is used for every Confluence output.
-func credentialFromEnvironment(getenv func(string) string) (rpcprotocol.Credential, error) {
-	value := func(name string) string { return strings.TrimSpace(getenv(name)) }
-
-	switch {
-	case value(envEmail) != "" && value(envToken) != "":
-		return rpcprotocol.Credential{Kind: "apitoken", Email: value(envEmail), Token: value(envToken)}, nil
-	case value(envPAT) != "":
-		return rpcprotocol.Credential{Kind: "pat", Token: value(envPAT)}, nil
-	case value(envUser) != "" && value(envPassword) != "":
-		return rpcprotocol.Credential{Kind: "basic", User: value(envUser), Password: value(envPassword)}, nil
+// signIn is the sign-in the command line uses: the first platform that signs in (Confluence today), and what it is called.
+func signIn() (string, configcatalog.Connection) {
+	for _, platform := range configcatalog.Platforms() {
+		if platform.Connection != nil {
+			return platform.Label, *platform.Connection
+		}
 	}
 
-	return rpcprotocol.Credential{}, errNoCredential
+	return "", configcatalog.Connection{}
+}
+
+// errNoCredential tells the user which variables would have worked.
+func errNoCredential() error {
+	label, connection := signIn()
+	var ways []string
+	for _, kind := range connection.Kinds {
+		var names []string
+		for _, field := range kind.Fields {
+			names = append(names, field.Env)
+		}
+		ways = append(ways, strings.Join(names, " and ")+" ("+kind.Label+")")
+	}
+
+	return errors.New("no " + label + " credential in the environment: set " + strings.Join(ways, ", or "))
+}
+
+// credentialFromEnvironment picks the credential the environment holds: the first sign-in method, in the order the description
+// lists them, whose variables are all set (an email with an API token, else a personal access token, else a user and password).
+// The same credential is used for every output that signs in.
+func credentialFromEnvironment(getenv func(string) string) (rpcprotocol.Credential, error) {
+	_, connection := signIn()
+	for _, kind := range connection.Kinds {
+		values := map[string]string{}
+		complete := true
+		for _, field := range kind.Fields {
+			values[field.Key] = strings.TrimSpace(getenv(field.Env))
+			complete = complete && values[field.Key] != ""
+		}
+		if complete {
+			return rpcprotocol.Credential{Kind: kind.ID, Email: values["email"], Token: values["token"], User: values["user"], Password: values["password"]}, nil
+		}
+	}
+
+	return rpcprotocol.Credential{}, errNoCredential()
 }
