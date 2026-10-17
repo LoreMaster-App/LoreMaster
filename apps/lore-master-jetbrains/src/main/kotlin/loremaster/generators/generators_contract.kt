@@ -3,7 +3,7 @@ package loremaster.generators
 const val METHOD_GENERATORS_RUN = "generators/run"
 
 /** [prepare] runs each generator's prepare command first; without it no command is ever executed. */
-data class GeneratorsRunParams(val workspaceRoot: String, val prepare: Boolean = false)
+data class GeneratorsRunParams(val workspaceRoot: String, val prepare: Boolean = false, val generators: List<Int>? = null)
 
 data class GeneratorRun(
     val index: Int = 0,

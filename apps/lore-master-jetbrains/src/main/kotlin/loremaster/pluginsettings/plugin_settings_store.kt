@@ -15,6 +15,7 @@ data class PluginSettings(
     var pngWidth: Int = 1000,
     var docxTemplate: String = "",
     var odtTemplate: String = "",
+    var watchDebounceSeconds: Int = 2,
 )
 
 /** The IDE-wide preferences of the plugin, kept in loremaster.xml. Connections and secrets are not here. */

@@ -23,6 +23,12 @@ class PluginSettingsHandler : BoundSearchableConfigurable("LoreMaster", "loremas
                         .comment("A locally built lore-master-engine. Blank uses the one bundled with the plugin (or the LORE_MASTER_ENGINE variable).")
                 }
             }
+            group("Watch mode") {
+                row("Quiet seconds:") {
+                    intTextField(1..300).bindIntText(settings::watchDebounceSeconds)
+                        .comment("How long nothing may change before the changes sync, so a burst of saves is one sync.")
+                }
+            }
             group("Export") {
                 row("Folder:") {
                     textField().columns(COLUMNS_LARGE).bindText(settings::exportFolder)
