@@ -17,6 +17,7 @@ func Describe() Description {
 	return Description{
 		Platforms:       Platforms(),
 		OutputFields:    outputFields(),
+		ContentFields:   contentFields(),
 		Generators:      types,
 		GeneratorFields: fields,
 		Sections:        sections(),

@@ -2,6 +2,7 @@ package configcatalog_test
 
 import (
 	"reflect"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -61,6 +62,39 @@ func TestEverySettingOfAnOutputIsDescribed(t *testing.T) {
 	for _, key := range yamlKeys(t, workspacesettings.Output{}) {
 		if key != "platform" && key != "content" && !slices.Contains(described, key) {
 			t.Errorf("the output setting %q is described by no platform; add it to a descriptor so editors can show it", key)
+		}
+	}
+}
+
+func TestTheContentFieldsAreSettingsOfAContentEntry(t *testing.T) {
+	known := yamlKeys(t, workspacesettings.Content{})
+	for _, key := range keysOf(configcatalog.Describe().ContentFields) {
+		if !slices.Contains(known, key) {
+			t.Errorf("content field %q is not a setting of a content entry", key)
+		}
+	}
+}
+
+func TestEveryPatternCompilesAndAcceptsItsOwnExample(t *testing.T) {
+	description := configcatalog.Describe()
+	fields := slices.Clone(description.OutputFields)
+	for _, platform := range description.Platforms {
+		fields = append(fields, platform.Fields...)
+	}
+	accepted := map[string]string{"parentPageId": "98306", "repo": "acme/docs"}
+	for _, field := range fields {
+		if field.Pattern == "" {
+			continue
+		}
+		expression, err := regexp.Compile(field.Pattern)
+		if err != nil {
+			t.Fatalf("%s: %v", field.Key, err)
+		}
+		if !expression.MatchString(accepted[field.Key]) {
+			t.Errorf("%s: the pattern %s refuses %q", field.Key, field.Pattern, accepted[field.Key])
+		}
+		if field.PatternHelp == "" {
+			t.Errorf("%s has a pattern and no help to show when it is not met", field.Key)
 		}
 	}
 }

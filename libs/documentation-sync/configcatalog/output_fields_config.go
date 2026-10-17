@@ -1,5 +1,19 @@
 package configcatalog
 
+// contentFields are the settings of the Markdown an output reads.
+func contentFields() []Field {
+	return []Field{
+		{
+			Key: "roots", Label: "Folders to sync", Type: FieldList, Default: ".",
+			Help: "Folders relative to the workspace. \".\" is the whole workspace.",
+		},
+		{
+			Key: "excludes", Label: "Excluded paths", Type: FieldList,
+			Help: "Gitignore-style patterns this storage leaves out.",
+		},
+	}
+}
+
 // outputFields are the settings every storage has, whatever the platform.
 func outputFields() []Field {
 	return []Field{

@@ -2,6 +2,11 @@ package configcatalog
 
 import "lore-master/libs/documentation-sync/templatereference"
 
+// repoPattern is "owner/name", a clone URL or an scp-style git address.
+const repoPattern = `^(?:[\w.-]+/[\w.-]+|\S+://\S+|git@\S+)$`
+
+const repoPatternHelp = "Use owner/name or a clone URL, or leave it empty for this workspace's own origin."
+
 func githubPagesPlatform() Platform {
 	return Platform{
 		ID: "github-pages", Label: "GitHub Pages", Icon: "site", Delivery: DeliverySite,
@@ -10,7 +15,8 @@ func githubPagesPlatform() Platform {
 		Fields: []Field{
 			{
 				Key: "repo", Label: "Repository", Type: FieldText, Placeholder: "owner/name",
-				Help: "\"owner/name\" or a clone URL. Empty means this workspace's own origin.",
+				Help:    "\"owner/name\" or a clone URL. Empty means this workspace's own origin.",
+				Pattern: repoPattern, PatternHelp: repoPatternHelp,
 			},
 			{
 				Key: "branch", Label: "Branch", Type: FieldText, Default: "gh-pages", Advanced: true,
@@ -37,7 +43,8 @@ func githubWikiPlatform() Platform {
 		Fields: []Field{
 			{
 				Key: "repo", Label: "Repository", Type: FieldText, Placeholder: "owner/name",
-				Help: "\"owner/name\" or a clone URL. Empty means this workspace's own origin.",
+				Help:    "\"owner/name\" or a clone URL. Empty means this workspace's own origin.",
+				Pattern: repoPattern, PatternHelp: repoPatternHelp,
 			},
 			{
 				Key: "branch", Label: "Branch", Type: FieldText, Advanced: true,

@@ -47,7 +47,8 @@ func confluencePlatform() Platform {
 			},
 			{
 				Key: "parentPageId", Label: "Parent page", Type: FieldText, Required: true,
-				Help: "The page the tree hangs under.",
+				Help:    "The page the tree hangs under.",
+				Pattern: `^\d+$`, PatternHelp: "The parent page is a page id: digits only. Search for it by title to fill it in.",
 				Lookup: &Lookup{
 					Kind: LookupPage, Needs: []string{"space"},
 					Fills: []Fill{{Field: "titlePrefix", From: "title"}},

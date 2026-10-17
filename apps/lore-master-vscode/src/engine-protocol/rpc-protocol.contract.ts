@@ -601,6 +601,8 @@ export interface ExportFormat {
 export interface ConfigDescription {
   platforms:       PlatformDescriptor[]
   outputFields:    FieldDescriptor[]
+  /** The settings of the Markdown an output reads (`roots`, `excludes`). */
+  contentFields:   FieldDescriptor[]
   generators:      GeneratorTypeDescriptor[]
   generatorFields: FieldDescriptor[]
   sections:        SectionDescriptor[]
@@ -646,6 +648,9 @@ export interface FieldDescriptor {
   min?:         number
   max?:         number
   pathKind?:    'file' | 'folder'
+  /** A regular expression a non-empty value must match, and what to tell the user when it does not. */
+  pattern?:     string
+  patternHelp?: string
   advanced?:    boolean
   lookup?:      { kind: string, needs?: string[], fills?: Array<{ field: string, from: string }> }
 }

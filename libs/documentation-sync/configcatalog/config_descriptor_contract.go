@@ -48,6 +48,9 @@ type Description struct {
 	Platforms []Platform `json:"platforms"`
 	// OutputFields are the settings every storage has, whatever the platform.
 	OutputFields []Field `json:"outputFields"`
+	// ContentFields are the settings of the Markdown an output reads (its content entry): the
+	// folders and what it leaves out. A shell shows them with the output's other settings.
+	ContentFields []Field `json:"contentFields"`
 	// Generators are the kinds of generator.
 	Generators []GeneratorType `json:"generators"`
 	// GeneratorFields are the settings every generator has; a GeneratorType adds its own.
@@ -134,6 +137,10 @@ type Field struct {
 	Max *int `json:"max,omitempty"`
 	// PathKind is "file" or "folder" for a FieldPath.
 	PathKind string `json:"pathKind,omitempty"`
+	// Pattern is a regular expression (the syntax JavaScript and Java share) a non-empty value must
+	// match; PatternHelp tells the user what to write when it does not.
+	Pattern     string `json:"pattern,omitempty"`
+	PatternHelp string `json:"patternHelp,omitempty"`
 	// Advanced fields are folded away until asked for.
 	Advanced bool `json:"advanced,omitempty"`
 	// Lookup, when present, lets the user pick the value from the platform.
