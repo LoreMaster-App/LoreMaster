@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strings"
 
+	"lore-master/libs/documentation-sync/configcatalog"
 	"lore-master/libs/documentation-sync/templatereference"
 )
 
@@ -49,7 +50,7 @@ func validate(settings Settings, requireOutputs bool) error {
 	namesSeen := map[string]int{}
 	for i, output := range settings.Outputs {
 		where := fmt.Sprintf("outputs[%d]", i)
-		choose(add, where+".platform", output.Platform, []string{"confluence", "github-pages", "github-wiki"}, reservedPlatforms)
+		choose(add, where+".platform", output.Platform, configcatalog.PlatformIDs(), reservedPlatforms)
 		switch output.Platform {
 		case "confluence":
 			validateConfluenceOutput(add, where, output, confluenceSeen, i)
@@ -218,7 +219,7 @@ func validateIgnore(add func(string, ...any), patterns []string) {
 
 // BuiltGeneratorTypes are the generator types that exist; the rest the format names are
 // reserved until they are built.
-var BuiltGeneratorTypes = []string{"test-results", "coverage", "markdown-docs", "go-docs", "openapi-docs", "python-docs", "csharp-docs", "dart-docs", "ts-docs", "storybook-docs"}
+var BuiltGeneratorTypes = configcatalog.GeneratorIDs()
 
 var reservedGenerators = map[string]string{}
 

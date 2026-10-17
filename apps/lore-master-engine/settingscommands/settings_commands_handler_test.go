@@ -267,3 +267,22 @@ func TestMigrateDoesNothingWithoutAYaml(t *testing.T) {
 		t.Fatalf("%+v", result)
 	}
 }
+
+func TestSettingsComeBackWithTheNamesTheEngineMakesUp(t *testing.T) {
+	conn, root := connect(t), t.TempDir()
+	fresh := read(t, conn, root)
+	if len(fresh.DisplayNames) != 1 || fresh.DisplayNames[0] != "Confluence · no space yet" {
+		t.Fatalf("a fresh project: %v", fresh.DisplayNames)
+	}
+
+	settings := answer(fresh.Settings)
+	settings.Outputs = append(settings.Outputs, rpcprotocol.Output{Platform: "github-pages", Repo: "acme/docs", Content: settings.Outputs[0].Content, Direction: "to-platform"})
+	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsSave, rpcprotocol.SettingsSaveParams{WorkspaceRoot: root, Settings: settings}, nil); err != nil {
+		t.Fatal(err)
+	}
+
+	saved := read(t, conn, root)
+	if len(saved.DisplayNames) != 2 || saved.DisplayNames[0] != "Confluence · ENG" || saved.DisplayNames[1] != "GitHub Pages · acme/docs" {
+		t.Fatalf("names: %v", saved.DisplayNames)
+	}
+}

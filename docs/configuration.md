@@ -106,6 +106,28 @@ when you like. A workspace with neither is configured in settings from the start
 The decision and its trade-offs are in
 [architecture/configuration-in-editor-settings.md](architecture/configuration-in-editor-settings.md).
 
+## What can be configured
+
+Every editor builds its settings forms from the engine, not from a list of its own. The engine's
+`config/describe` method returns:
+
+- **platforms**: each storage (`confluence`, `github-pages`, `github-wiki`) with its label, how it
+  delivers pages (`pages`: page by page, with a page tree and rollback; `site`: published as one
+  unit), the name it makes up for an unnamed output, how to sign in (the credential kinds and the
+  fields each one asks for) and its fields. A field has a key, label, help, type (`text`, `choice`,
+  `list`, `bool`, `number`, `path`), default, choices, whether it is required or advanced, and an
+  optional **lookup** that lets the user pick the value from the platform (a space, a parent page)
+  and fill other fields from the choice.
+- **outputFields**: the settings every storage has (`name`, `include`, `exclude`).
+- **generators** and **generatorFields**: the kinds of generator and the settings of a generator.
+- **sections**: the remaining settings, grouped for a settings page and marked `project` (they travel
+  with the repository) or `user` (the person's own preferences): the project's ignore list and
+  defaults, sync and watch behaviour, and export.
+
+Adding a storage means describing it once in the engine (`libs/documentation-sync/configcatalog`)
+next to its adapter; tests make sure every setting an output accepts is described, that the
+validator accepts exactly the described platforms, and that VS Code's `package.json` has them too.
+
 ## Naming your storages
 
 Give each output a `name` when you have more than one of a kind, such as one Confluence for
