@@ -15,6 +15,9 @@ package per slice under `src/main/kotlin/loremaster/`, tests beside them under `
 | `projectsettings` | Reads the project's outputs through the engine; opens `.vscode/settings.json` |
 | `connection` | Connect to Confluence, credentials in the IDE's password safe, session open/close |
 | `sync` | Sync to Confluence: plan, review dialog, execute with progress |
+| `rollback` | Roll back a sync: journals, dry run, undo |
+| `watch` | Watch mode: debouncing batcher, routing by the engine, silent sync |
+| `outputs` | Add a Confluence output: sign in, spaces, parent page browser, write `loreMaster.outputs` |
 | `pages` | Check, build and publish GitHub Pages / wiki outputs |
 | `generators` | Run generators |
 | `pagestree` | The LoreMaster tool window: the page tree of an output |
@@ -48,6 +51,6 @@ a GitHub Release `lore-master-jetbrains@<version>` with the zip, and the JetBrai
 
 ## Not done
 
-Markdown editing and preview (the IDE has its own), a page-level sync status in the editor, rollback of a sync, watch mode,
-and the Confluence "pick a parent page" browser. Never run by hand in a live IDE: the dialogs, the tool window and the
-progress bar are covered by headless tests only.
+Markdown editing and preview (the IDE has its own Markdown plugin), and a page-level sync status in the editor. Never run by
+hand in a live IDE: the dialogs, the tool window, the progress bar and watch mode's file listener are covered by headless
+tests, or not at all (the listener).

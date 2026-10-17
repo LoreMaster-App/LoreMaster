@@ -28,7 +28,7 @@ intellijPlatform {
     pluginConfiguration {
         name = "LoreMaster"
         ideaVersion { sinceBuild = "251" }
-        changeNotes = "Sync to Confluence with a plan to review, GitHub Pages and wiki (check, build, publish), generators, a page-tree tool window, a settings page, and the export now draws Mermaid diagrams."
+        changeNotes = "Add a Confluence output by browsing for the parent page, roll back a sync, and watch mode that syncs only what you save."
     }
     pluginVerification {
         ides { create(org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaCommunity, "2025.1") }
