@@ -362,7 +362,7 @@ method all run the same thing.
 
 ## Generate and sync in one step
 
-**LoreMaster: Generate and sync documentation** (also a row in the Sync view and a button in the
+**LoreMaster: Generate and sync documentation** (also a button in the Sync view's title and on each storage's row, and in the
 Generators view) runs every generator and then syncs, so the pages that reach the storage are as
 fresh as the code. The sync previews its plan as usual, and unchanged generated pages are not in
 it. If a generator **fails**, you are asked before the pages go out, since some may be missing or

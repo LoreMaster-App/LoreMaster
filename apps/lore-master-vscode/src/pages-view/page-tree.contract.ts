@@ -1,7 +1,15 @@
 import type { TreeNode } from '../engine-protocol'
+import type { ExcludedMode, ViewMode } from '../pages-display'
 
 /** How a page is named in the tree: by its content title or by its file name. */
 export type LabelMode = 'title' | 'fileName'
+
+/** How a location (Local or a storage) is shown: how its pages are named and arranged, and what happens to the files it leaves out. */
+export interface DisplayOptions {
+  label:    LabelMode
+  view:     ViewMode
+  excluded: ExcludedMode
+}
 
 /** Where a page stands, combining the file's own status with the platform's when known. */
 export type PageStatus = 'new' | 'synced' | 'local-changes' | 'remote-changes' | 'conflict' | 'adopt'

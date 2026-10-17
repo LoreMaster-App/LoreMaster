@@ -22,7 +22,7 @@ import { runSettingsMigration } from './settings-migration'
 import { EDIT_STORAGE_COMMAND } from './storage-editing'
 import { addStorageForm, editStorageForm } from './storage-form'
 import { ROLLBACK_SYNC_COMMAND, rollbackSyncCommand } from './sync-rollback'
-import { ADD_STORAGE_COMMAND, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, registerSyncView, removeStorageCommand, STORAGES_VIEW_ID, type StorageNode, StoragesViewProvider } from './sidebar'
+import { ADD_STORAGE_COMMAND, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, removeStorageCommand, type StorageNode } from './sidebar'
 import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
 import { TOGGLE_WATCH_COMMAND, WatchMode } from './watch-mode'
@@ -84,13 +84,11 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
 
   const markdownDiagrams = registerMarkdownDiagrams({ engine })
   const syncDeps = { engine, connections, targets, output }
-  const storages = new StoragesViewProvider(engine)
   const watchMode = new WatchMode(syncDeps)
 
   context.subscriptions.push(
     watchMode,
-    registerSyncView(),
-    registerPagesView(syncDeps),
+    registerPagesView(syncDeps, context.workspaceState),
     registerFileMoves({ engine }),
     registerGeneratorsView({ engine, output }, registerGeneratorForm),
     registerExportMarkdown({ engine, output, extensionPath: context.extensionPath }),
@@ -99,7 +97,6 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     registerMarkdownTables(),
     registerMarkdownToc(),
     markdownDiagrams,
-    vscode.window.registerTreeDataProvider(STORAGES_VIEW_ID, storages),
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),
     vscode.commands.registerCommand(TOGGLE_WATCH_COMMAND, () => watchMode.toggle()),
@@ -111,15 +108,14 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     vscode.commands.registerCommand(SET_UP_CI_COMMAND, () => setUpCiCommand({ engine, version: String(context.extension.packageJSON.version) })),
     vscode.commands.registerCommand(ADD_STORAGE_COMMAND, () => addStorageForm({ engine, connections })),
     vscode.commands.registerCommand(OPEN_CONFIG_COMMAND, () => openConfig()),
-    vscode.commands.registerCommand(REMOVE_STORAGE_COMMAND, async (node: StorageNode | undefined) => { await removeStorageCommand({ engine }, node); storages.refresh() }),
-    vscode.commands.registerCommand(REFRESH_STORAGES_COMMAND, () => storages.refresh()),
+    vscode.commands.registerCommand(REMOVE_STORAGE_COMMAND, async (node: StorageNode | undefined) => { await removeStorageCommand({ engine }, node); await vscode.commands.executeCommand(REFRESH_STORAGES_COMMAND) }),
     vscode.commands.registerCommand(EDIT_STORAGE_COMMAND, (node: StorageNode | undefined) => editStorageForm({ engine, connections }, node)),
     vscode.commands.registerCommand(ADD_CONNECTION_COMMAND, () => setUpConnection({ engine, store: connections, ui: createConnectionUI() })),
     vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )
 
   // A workspace configured by the deprecated .lore-master.yaml moves into VS Code settings.
-  void runSettingsMigration({ engine, onMigrated: () => storages.refresh() }).catch((error: unknown) => {
+  void runSettingsMigration({ engine, onMigrated: () => { void vscode.commands.executeCommand(REFRESH_STORAGES_COMMAND) } }).catch((error: unknown) => {
     output.appendLine(`Settings migration failed: ${error instanceof Error ? error.message : String(error)}`)
   })
 

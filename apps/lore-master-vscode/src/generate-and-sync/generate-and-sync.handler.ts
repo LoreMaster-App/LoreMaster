@@ -13,7 +13,7 @@ export const GENERATE_BEFORE_SYNC_SETTING = 'generateBeforeSync'
 
 export interface GenerateAndSyncDeps extends SyncCommandDeps {
   /** How the sync itself runs; the real Sync command unless a test supplies one. */
-  runSync?: (deps: SyncCommandDeps, folder?: string) => Promise<void>
+  runSync?: (deps: SyncCommandDeps, folder?: string, only?: number[]) => Promise<void>
 }
 
 const SYNC_ANYWAY = 'Sync anyway'
@@ -24,7 +24,7 @@ const SYNC_ANYWAY = 'Sync anyway'
  * as usual. When a generator fails the user is asked before the pages go out; warnings alone do
  * not stop it. With no generators configured it says so and syncs the Markdown.
  */
-export async function generateAndSyncCommand (deps: GenerateAndSyncDeps): Promise<void> {
+export async function generateAndSyncCommand (deps: GenerateAndSyncDeps, only?: number[]): Promise<void> {
   const folder = await pickWorkspaceFolder()
   if (!folder) {
     await vscode.window.showInformationMessage('LoreMaster: open a folder to generate and sync its documentation.')
@@ -45,7 +45,7 @@ export async function generateAndSyncCommand (deps: GenerateAndSyncDeps): Promis
     return
   }
 
-  await (deps.runSync ?? sync)(deps, folder)
+  await (deps.runSync ?? sync)(deps, folder, only)
 }
 
 /** The Sync command: it generates first when the user asked it to in the settings. */

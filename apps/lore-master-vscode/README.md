@@ -46,14 +46,13 @@ Tokens live in VS Code's secret store, never in settings or in the repository.
 
 ![The VS Code sidebar and commands](https://raw.githubusercontent.com/LoreMaster-App/LoreMaster/main/assets/listing/editor.png)
 
-The LoreMaster icon in the activity bar has four views:
+The LoreMaster icon in the activity bar has two views:
 
-- **Sync**: add a storage, sync everything or one file, generate and sync in one step.
-- **Pages**: your Markdown as the tree it becomes, with an icon per page (new, synced, local changes,
-  remote changes, conflict). Name pages by title or by file name.
+- **Sync**: everything about where your Markdown goes, in one tree. A **Local** row and a row per storage, with your Markdown
+  under each as the tree it becomes and an icon per page (new, synced, local changes, remote changes, conflict). The view's title
+  has the actions for all storages (add, config, refresh, sync, generate and sync); each row has its own (check remote, page
+  titles or file names, tree or flat, show or hide ignored, refresh, sync, edit, remove).
 - **Generators**: add, run, edit and remove generators, and see what each one did.
-- **Storages**: change a prefix, direction or diagram mode without editing JSON; the file keeps your
-  comments.
 
 Also: **two-way** sync for Confluence (pull remote edits back into Markdown), **Sync Current File**,
 **Check remote status** (read-only), and a **documentation agent** written for Claude Code, VS Code

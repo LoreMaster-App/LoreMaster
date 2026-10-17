@@ -4,7 +4,7 @@ import { isSiteOutput } from '../config-description'
 import type { ConnectionStore } from '../secret-storage'
 import { checkRemote } from './check-remote.use-case'
 import { checkPages } from './check-pages.use-case'
-import type { PagesViewProvider } from './pages-view.client'
+import type { PagesNode, PagesViewProvider } from './pages-view.client'
 
 /** The command id contributed in package.json. */
 export const CHECK_REMOTE_COMMAND = 'loreMaster.checkRemote'
@@ -20,7 +20,7 @@ export interface CheckRemoteCommandDeps {
  * change anything, because a site has no per-page remote state. With several storages it asks
  * which.
  */
-export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider: PagesViewProvider): Promise<void> {
+export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider: PagesViewProvider, row?: PagesNode): Promise<void> {
   const { folder, outputs, description } = await provider.configuredOutputs()
   const checkable = description ? outputs.filter(each => description.platforms.some(platform => platform.id === each.output.platform)) : []
   if (!description || checkable.length === 0) {
@@ -29,8 +29,8 @@ export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider
     return
   }
 
-  let chosen = checkable[0]
-  if (checkable.length > 1) {
+  let chosen = checkable.find(each => row?.kind === 'storage' && each.index === row.index) ?? checkable[0]
+  if (checkable.length > 1 && row?.kind !== 'storage') {
     const picked = await vscode.window.showQuickPick(
       checkable.map(each => ({ label: each.label, description: each.detail, each })),
       { title: 'LoreMaster: check which storage?' },

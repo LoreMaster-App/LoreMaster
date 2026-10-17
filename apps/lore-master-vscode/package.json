@@ -36,8 +36,9 @@
     "commands": [
       {
         "command": "loreMaster.sync",
-        "title": "Sync",
-        "category": "LoreMaster"
+        "title": "Sync All Storages",
+        "category": "LoreMaster",
+        "icon": "$(sync)"
       },
       {
         "command": "loreMaster.syncTo",
@@ -197,26 +198,21 @@
       },
       {
         "command": "loreMaster.addStorage",
-        "title": "Add sync storage",
+        "title": "Add Sync Storage",
         "category": "LoreMaster",
         "icon": "$(add)"
       },
       {
         "command": "loreMaster.openConfig",
-        "title": "Open settings",
-        "category": "LoreMaster"
+        "title": "LoreMaster Config",
+        "category": "LoreMaster",
+        "icon": "$(gear)"
       },
       {
         "command": "loreMaster.removeStorage",
-        "title": "Remove storage",
+        "title": "Remove Storage",
         "category": "LoreMaster",
         "icon": "$(trash)"
-      },
-      {
-        "command": "loreMaster.refreshStorages",
-        "title": "Refresh storages",
-        "category": "LoreMaster",
-        "icon": "$(refresh)"
       },
       {
         "command": "loreMaster.copyMcpConfig",
@@ -225,21 +221,15 @@
       },
       {
         "command": "loreMaster.refreshPages",
-        "title": "Refresh pages",
+        "title": "Refresh All Storages",
         "category": "LoreMaster",
         "icon": "$(refresh)"
       },
       {
         "command": "loreMaster.checkRemote",
-        "title": "Check remote status",
+        "title": "Check Remote Status",
         "category": "LoreMaster",
         "icon": "$(cloud)"
-      },
-      {
-        "command": "loreMaster.togglePageLabel",
-        "title": "Show page titles or file names",
-        "category": "LoreMaster",
-        "icon": "$(symbol-string)"
       },
       {
         "command": "loreMaster.syncPage",
@@ -249,7 +239,7 @@
       },
       {
         "command": "loreMaster.editStorage",
-        "title": "Edit storage",
+        "title": "Edit Storage",
         "category": "LoreMaster",
         "icon": "$(edit)"
       },
@@ -306,25 +296,13 @@
       },
       {
         "command": "loreMaster.generateAndSync",
-        "title": "Generate and sync documentation",
+        "title": "Generate and Sync All",
         "category": "LoreMaster",
         "icon": "$(debug-start)"
       },
       {
         "command": "loreMaster.toggleWatch",
         "title": "Toggle watch mode",
-        "category": "LoreMaster",
-        "icon": "$(eye)"
-      },
-      {
-        "command": "loreMaster.choosePagesView",
-        "title": "Arrange pages: storage tree, flat list or repository tree",
-        "category": "LoreMaster",
-        "icon": "$(list-tree)"
-      },
-      {
-        "command": "loreMaster.togglePagesExcluded",
-        "title": "Show or hide the files a storage leaves out",
         "category": "LoreMaster",
         "icon": "$(eye)"
       },
@@ -336,6 +314,66 @@
       {
         "command": "loreMaster.includeInSync",
         "title": "Sync this file...",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.showPageTitles",
+        "title": "Show Page Titles",
+        "icon": "$(symbol-string)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.showFileNames",
+        "title": "Show File Names",
+        "icon": "$(markdown)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.viewTree",
+        "title": "Tree View",
+        "icon": "$(list-tree)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.viewFlat",
+        "title": "Flat View",
+        "icon": "$(list-flat)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.viewRepository",
+        "title": "Repository View",
+        "icon": "$(repo)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.showIgnored",
+        "title": "Show Ignored",
+        "icon": "$(eye)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.hideIgnored",
+        "title": "Hide Ignored",
+        "icon": "$(eye-closed)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.refreshStorage",
+        "title": "Refresh Storage",
+        "icon": "$(refresh)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.syncStorage",
+        "title": "Sync Storage",
+        "icon": "$(sync)",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.generateAndSyncStorage",
+        "title": "Generate and Sync",
+        "icon": "$(debug-start)",
         "category": "LoreMaster"
       }
     ],
@@ -355,16 +393,8 @@
           "name": "Sync"
         },
         {
-          "id": "loreMaster.pages",
-          "name": "Pages"
-        },
-        {
           "id": "loreMaster.generators",
           "name": "Generators"
-        },
-        {
-          "id": "loreMaster.storages",
-          "name": "Storages"
         }
       ]
     },
@@ -469,27 +499,27 @@
       "view/title": [
         {
           "command": "loreMaster.addStorage",
-          "when": "view == loreMaster.storages",
+          "when": "view == loreMaster.sync",
           "group": "navigation@1"
         },
         {
-          "command": "loreMaster.refreshStorages",
-          "when": "view == loreMaster.storages",
-          "group": "navigation@2"
-        },
-        {
-          "command": "loreMaster.checkRemote",
-          "when": "view == loreMaster.pages",
-          "group": "navigation@1"
-        },
-        {
-          "command": "loreMaster.togglePageLabel",
-          "when": "view == loreMaster.pages",
+          "command": "loreMaster.openConfig",
+          "when": "view == loreMaster.sync",
           "group": "navigation@2"
         },
         {
           "command": "loreMaster.refreshPages",
-          "when": "view == loreMaster.pages",
+          "when": "view == loreMaster.sync",
+          "group": "navigation@3"
+        },
+        {
+          "command": "loreMaster.sync",
+          "when": "view == loreMaster.sync",
+          "group": "navigation@4"
+        },
+        {
+          "command": "loreMaster.generateAndSync",
+          "when": "view == loreMaster.sync",
           "group": "navigation@5"
         },
         {
@@ -516,32 +546,77 @@
           "command": "loreMaster.toggleWatch",
           "when": "view == loreMaster.generators",
           "group": "navigation@5"
-        },
-        {
-          "command": "loreMaster.choosePagesView",
-          "when": "view == loreMaster.pages",
-          "group": "navigation@3"
-        },
-        {
-          "command": "loreMaster.togglePagesExcluded",
-          "when": "view == loreMaster.pages",
-          "group": "navigation@4"
         }
       ],
       "view/item/context": [
         {
-          "command": "loreMaster.editStorage",
-          "when": "view == loreMaster.storages && viewItem == loreMasterStorage",
+          "command": "loreMaster.checkRemote",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/",
           "group": "inline@1"
         },
         {
-          "command": "loreMaster.removeStorage",
-          "when": "view == loreMaster.storages && viewItem == loreMasterStorage",
+          "command": "loreMaster.showFileNames",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /label-title/",
           "group": "inline@2"
         },
         {
+          "command": "loreMaster.showPageTitles",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /label-fileName/",
+          "group": "inline@2"
+        },
+        {
+          "command": "loreMaster.viewFlat",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /view-storage/",
+          "group": "inline@3"
+        },
+        {
+          "command": "loreMaster.viewTree",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /view-(flat|repo)/",
+          "group": "inline@3"
+        },
+        {
+          "command": "loreMaster.hideIgnored",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/ && viewItem =~ /ignored-faded/",
+          "group": "inline@4"
+        },
+        {
+          "command": "loreMaster.showIgnored",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/ && viewItem =~ /ignored-hidden/",
+          "group": "inline@4"
+        },
+        {
+          "command": "loreMaster.refreshStorage",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/",
+          "group": "inline@5"
+        },
+        {
+          "command": "loreMaster.syncStorage",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/",
+          "group": "inline@6"
+        },
+        {
+          "command": "loreMaster.generateAndSyncStorage",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/",
+          "group": "inline@7"
+        },
+        {
+          "command": "loreMaster.editStorage",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/",
+          "group": "inline@8"
+        },
+        {
+          "command": "loreMaster.removeStorage",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/",
+          "group": "inline@9"
+        },
+        {
+          "command": "loreMaster.viewRepository",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && !(viewItem =~ /view-repo/)",
+          "group": "1_view@1"
+        },
+        {
           "command": "loreMaster.syncPage",
-          "when": "view == loreMaster.pages && viewItem == loreMasterPage",
+          "when": "view == loreMaster.sync && viewItem == loreMasterPage",
           "group": "inline"
         },
         {
@@ -561,12 +636,12 @@
         },
         {
           "command": "loreMaster.excludeFromSync",
-          "when": "view == loreMaster.pages && viewItem =~ /^(loreMasterPage|loreMasterFolder)/",
+          "when": "view == loreMaster.sync && viewItem =~ /^(loreMasterPage|loreMasterFolder)/",
           "group": "2_selection@1"
         },
         {
           "command": "loreMaster.includeInSync",
-          "when": "view == loreMaster.pages && viewItem == loreMasterLeftOutFile",
+          "when": "view == loreMaster.sync && viewItem == loreMasterLeftOutFile",
           "group": "2_selection@1"
         }
       ],
@@ -684,10 +759,6 @@
           "when": "false"
         },
         {
-          "command": "loreMaster.refreshStorages",
-          "when": "false"
-        },
-        {
           "command": "loreMaster.syncPage",
           "when": "false"
         },
@@ -706,6 +777,46 @@
         {
           "command": "loreMaster.refreshGenerators",
           "when": "false"
+        },
+        {
+          "command": "loreMaster.showPageTitles",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.showFileNames",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.viewTree",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.viewFlat",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.viewRepository",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.showIgnored",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.hideIgnored",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.refreshStorage",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.syncStorage",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.generateAndSyncStorage",
+          "when": "false"
         }
       ]
     },
@@ -715,12 +826,8 @@
         "contents": "No generators yet. A generator writes Markdown pages from your test reports, Go packages or OpenAPI descriptions, and they sync like any other page.\n[Add generator](command:loreMaster.addGenerator)"
       },
       {
-        "view": "loreMaster.pages",
-        "contents": "No Markdown pages to show yet.\n[Add sync storage](command:loreMaster.addStorage)"
-      },
-      {
-        "view": "loreMaster.storages",
-        "contents": "No sync storages yet.\n[Add sync storage](command:loreMaster.addStorage)"
+        "view": "loreMaster.sync",
+        "contents": "No sync storage yet. A storage is where your Markdown goes: Confluence, GitHub Pages or the wiki.\n[Add sync storage](command:loreMaster.addStorage)"
       }
     ],
     "configuration": {

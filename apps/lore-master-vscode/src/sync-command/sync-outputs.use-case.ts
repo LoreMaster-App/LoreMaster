@@ -14,6 +14,8 @@ import { type SyncDeps, syncConfluenceOutput } from './sync-run.use-case'
 export interface SyncOutputsOptions {
   /** Ask the user to pick a subset of the configured outputs, rather than syncing all. */
   choose?:    boolean
+  /** Sync only these outputs (by their place in the settings), as the row of one storage asks. */
+  only?:      number[]
   /** Sync only outputs that sync page by page (the current-file sync, which a published site cannot scope). */
   pagesOnly?: boolean
 }
@@ -47,6 +49,16 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
     }
     outputs = created
     indices = created.map((_, index) => index)
+  }
+
+  if (options.only) {
+    const wanted = options.only
+    indices = indices.filter(index => wanted.includes(index))
+    if (indices.length === 0) {
+      await ui.error('That storage is not ready to sync yet: fill in what it is missing (Edit storage).')
+
+      return
+    }
   }
 
   if (options.pagesOnly) {

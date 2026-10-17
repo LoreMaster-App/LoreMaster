@@ -20,10 +20,3 @@ export function excludedModeFrom (value: unknown): ExcludedMode {
 export function otherExcludedMode (mode: ExcludedMode): ExcludedMode {
   return mode === 'faded' ? 'hidden' : 'faded'
 }
-
-/** What each view mode is called in the picker, and what it shows. */
-export const VIEW_MODE_CHOICES: { mode: ViewMode; label: string; description: string }[] = [
-  { mode: 'storage', label: 'Storage tree', description: 'the pages as the storage will nest them' },
-  { mode: 'flat', label: 'Flat list', description: 'every page in one list' },
-  { mode: 'repo', label: 'Repository tree', description: 'the files where they sit in the repository' },
-]

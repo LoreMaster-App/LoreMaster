@@ -1,9 +1,9 @@
 import { type Settings, SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD, type SettingsReadResult } from '../engine-protocol'
-import type { StoragesEngine } from '../sidebar'
+import type { OutputsEngine } from '../sidebar'
 import { excludeEntry, includeEntry, type SelectionScope } from './selection-lists.algorithm'
 
 export interface ChangeSelectionDeps {
-  engine:        StoragesEngine
+  engine:        OutputsEngine
   workspaceRoot: string
 }
 

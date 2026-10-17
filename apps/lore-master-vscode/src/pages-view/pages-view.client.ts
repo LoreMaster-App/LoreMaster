@@ -6,16 +6,17 @@ import {
   WORKSPACE_TREE_METHOD,
   type WorkspaceTreeResult,
 } from '../engine-protocol'
-import { type ExcludedMode, flatten, repoTree, type RepoFolder, type ViewMode } from '../pages-display'
+import { flatten, repoTree, type RepoFolder } from '../pages-display'
 import { type ConfiguredOutput, readConfiguredOutputs } from '../sidebar'
 import { buildPageEntries } from './build-page-entries.algorithm'
 import { leftOutReason } from './left-out-reason.policy'
 import { pageDescription, pageLabel } from './page-label.policy'
 import { statusPresentation } from './page-status.policy'
-import type { LabelMode, PageEntry, RemoteCheck } from './page-tree.contract'
+import type { DisplayOptions, PageEntry, RemoteCheck } from './page-tree.contract'
+import { rowContext } from './row-context.policy'
 
 /** The view id contributed in package.json (inside the LoreMaster view container). */
-export const PAGES_VIEW_ID = 'loreMaster.pages'
+export const PAGES_VIEW_ID = 'loreMaster.sync'
 
 /** The index the Local node stands for: every Markdown file, whatever the storages leave out. */
 export const LOCAL_INDEX = -1
@@ -23,13 +24,6 @@ export const LOCAL_INDEX = -1
 /** The minimal engine surface the view needs. */
 export interface PagesEngine {
   request<R> (method: string, params?: unknown): Promise<R>
-}
-
-/** How the view is arranged, read from the settings each time it is drawn. */
-export interface DisplayOptions {
-  label:    LabelMode
-  view:     ViewMode
-  excluded: ExcludedMode
 }
 
 /** A file in the repository tree: a page, or a file the storage leaves out. */
@@ -67,7 +61,8 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
 
   readonly onDidChangeTreeData = this.changed.event
 
-  constructor (private readonly engine: PagesEngine, private readonly options: () => DisplayOptions) {}
+  /** `options` says how one location is shown: Local is index -1, a storage its index in the settings. */
+  constructor (private readonly engine: PagesEngine, private readonly options: (index: number) => DisplayOptions) {}
 
   private async pagesOf (index: number): Promise<PagesNode[]> {
     let tree: WorkspaceTreeResult
@@ -77,7 +72,7 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
       return [{ kind: 'notice', message: error instanceof Error ? error.message : String(error) }]
     }
 
-    const { label, view, excluded } = this.options()
+    const { label, view, excluded } = this.options(index)
     const local = index === LOCAL_INDEX
     const remote = local ? undefined : this.remote.get(index)
     const rows: PagesNode[] = (tree.problems ?? []).map(message => ({ kind: 'notice', message }))
@@ -134,7 +129,7 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
     item.description = 'every Markdown file in the repository'
     item.iconPath = new vscode.ThemeIcon('root-folder')
     item.tooltip = 'Every Markdown file of the workspace, including the ones a storage leaves out. Each row says which storages sync it.'
-    item.contextValue = 'loreMasterPagesLocal'
+    item.contextValue = rowContext('loreMasterLocal', this.options(LOCAL_INDEX))
 
     return item
   }
@@ -144,7 +139,7 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
     item.id = `storage:${node.index}`
     item.description = node.detail
     item.iconPath = new vscode.ThemeIcon(node.icon)
-    item.contextValue = 'loreMasterPagesStorage'
+    item.contextValue = rowContext('loreMasterStorage', this.options(node.index))
 
     return item
   }
@@ -172,7 +167,7 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
 
   private pageItem (node: { index: number; entry: PageEntry }): vscode.TreeItem {
     const { entry } = node
-    const { label: mode } = this.options()
+    const { label: mode } = this.options(node.index)
     const local = node.index === LOCAL_INDEX
     const item = new vscode.TreeItem(pageLabel(entry.node, mode), entry.children.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
     item.id = `page:${node.index}:${entry.node.path}`
@@ -249,6 +244,13 @@ ${reason.detail}`
     this.changed.fire(undefined)
   }
 
+  /** One location was asked to refresh: re-read its tree and forget what the platform said about it. */
+  refreshLocation (index: number): void {
+    this.trees.delete(index)
+    this.remote.delete(index)
+    this.changed.fire(undefined)
+  }
+
   /** Only the naming or arrangement changed: redraw without losing the platform's answer. */
   redraw (): void {
     this.changed.fire(undefined)
@@ -322,7 +324,7 @@ ${reason.detail}`
       }
       case 'left-out': { return this.leftOutItem(node)
       }
-      case 'left-out-file': { return this.leftOutFileItem(node, this.options().view === 'repo')
+      case 'left-out-file': { return this.leftOutFileItem(node, this.options(node.index).view === 'repo')
       }
       case 'notice': { return noticeItem(node)
       }

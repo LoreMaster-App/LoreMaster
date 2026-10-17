@@ -48,12 +48,12 @@ lore-master-engine pages publish --output N
 lore-master-engine pages build   --out DIR --output N        # the pages, into a local folder
 ```
 
-In VS Code the same output appears in the Storages and Pages views, **Sync** publishes it and
+In VS Code the same output appears in the Sync view, **Sync** publishes it and
 **Check remote status** compares it with the published wiki.
 
 ## Limits
 
 - One level of folders only: wiki pages are a flat list, so nesting shows in the sidebar, not in
   the page addresses.
-- There is no per-page status in the Pages view for a wiki, only the whole-wiki check.
+- There is no per-page status in the Sync view for a wiki, only the whole-wiki check.
 - A wiki and a Pages site of the same repository are two separate outputs.

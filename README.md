@@ -52,8 +52,10 @@ Step by step, with Confluence connection screens: [`docs/getting-started.md`](do
 
 - **Preview, then publish.** The plan lists every page as *create, update, move, rename, adopt,
   unchanged or conflict* before anything is written.
-- **The Pages view** shows your Markdown as the tree it becomes, with an icon per page: new, synced,
-  local changes, remote changes, conflict. Name pages by title or file name.
+- **The Sync view** is one place for everything: **Local** and each storage as rows, your Markdown under them as the tree it
+  becomes, with an icon per page (new, synced, local changes, remote changes, conflict). The view's title has the actions for
+  all storages (add, config, refresh, sync, generate and sync); each row has its own (check remote, page titles or file names,
+  tree or flat, show or hide ignored, refresh, sync, edit, remove).
 - **Many storages at once.** One Sync fans out across Confluence, GitHub Pages and the wiki. Send
   some pages to one and some to another with exclude and include lists
   ([`docs/choosing-what-goes-where.md`](docs/choosing-what-goes-where.md)).

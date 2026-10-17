@@ -44,11 +44,11 @@ and waits for you to confirm before writing anything. Confirm, and it creates th
 parents-first, uploads images, renders Mermaid diagrams to images, and links pages to each
 other by title.
 
-## 5. See where everything stands: the Pages view
+## 5. See where everything stands: the Sync view
 
-Open the LoreMaster icon in the activity bar and expand **Pages**. It lists every Markdown
-file as the tree it is, or will be, on the storage — the same nesting the sync applies —
-each with an icon:
+Open the LoreMaster icon in the activity bar and expand **Sync**. It has a **Local** row and a row for each
+storage, and under each the Markdown files as the tree they are, or will be, on the storage — the same nesting the sync
+applies — each with an icon:
 
 | Icon | Meaning |
 |---|---|
@@ -60,17 +60,19 @@ each with an icon:
 | 🔗 will adopt | A page with this title exists; the next sync takes it over. |
 
 Without a connection the view knows the **local** half: new, synced or local changes, read
-from the files and their annotations. Click **Check remote status** (the cloud button in the
-view's title bar) to ask the platform too — it only reads, and adds remote changes,
+from the files and their annotations. Click **Check remote status** (the cloud button on a storage's row) to ask the platform too — it only reads, and adds remote changes,
 conflicts and pages whose file is gone. The answer is dropped again as soon as a file
 changes, so the view never shows a platform state it has not just asked for.
 
-- **Titles or file names:** the button next to it switches how pages are named — their
-  content title (first heading) or their file name. The other one is shown beside it, and
-  the choice is the `loreMaster.pages.label` setting.
+- **The view's title bar** has the actions for every storage: **Add sync storage**, **LoreMaster config**, **Refresh all
+  storages**, **Sync all storages** and **Generate and sync all**.
+- **Each row has its own actions**, shown when you point at it. A storage: **Check remote status**, **Show page titles / file
+  names**, **Tree / flat view**, **Show / hide ignored**, **Refresh**, **Sync**, **Generate and sync**, **Edit** (the pencil)
+  and **Remove** (the bin). Local has the display ones and Refresh, since it is not a place pages are sent to. Right-click a row
+  for **Repository view**, the files where they sit in the repository. Each row remembers its own choices; the
+  `loreMaster.pages.label`, `pages.view` and `pages.excluded` settings are what a row shows until you choose.
 - Click a page to open its file; the cloud-upload button on a row syncs just that page.
-- A **Local** node above the storages lists every Markdown file in the repository and which
-  storages sync it; each storage gets its own group.
+- The **Local** row lists every Markdown file in the repository and which storages sync it.
 - The tree follows `roots`, `excludes`, `ignore` and `skipGitignored` from
   your LoreMaster settings, so what you see is what a sync would read.
 - **Left out** (collapsed, under the pages) lists the Markdown files the sync does not read, each
@@ -91,7 +93,7 @@ more specific entry:
 | `skipGitignored` | the workspace | `true` by default: Markdown a `.gitignore` ignores is not synced |
 
 Change the `ignore` list from **Edit storage → Ignored paths (all storages)**, or in the file,
-and right-click a page or folder in the **Pages** view for **Do not sync…**. The **Local** node
+and right-click a page or folder in the **Sync** view for **Do not sync…**. The **Local** node
 lists every file with where it goes. See [Choosing what goes where](choosing-what-goes-where.md).
 
 ## Remember your connections on this machine
@@ -105,7 +107,7 @@ forgets it there too.
 
 ## 6. Change a storage's settings
 
-In the **Storages** view, click the pencil on a storage (or run **LoreMaster: Edit storage**). A form
+In the **Sync** view, click the pencil on a storage row (or run **LoreMaster: Edit storage**). A form
 opens with every setting of the storage at once:
 
 - **Confluence:** the connection, the **space** (browse the space list or type its key), the **parent
