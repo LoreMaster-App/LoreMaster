@@ -1,6 +1,6 @@
 /** A kind of generator the engine can run, as the sidebar presents it. */
 export interface GeneratorType {
-  /** The `type:` value in .lore-master.yaml. */
+  /** The `type:` value in loreMaster.generators. */
   type:          string
   label:         string
   description:   string

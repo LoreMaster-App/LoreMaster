@@ -1,26 +1,13 @@
 package rpcprotocol
 
-// MethodSettingsRead reads .lore-master.yaml, with defaults applied: what the editor's
+// MethodSettingsRead reads the LoreMaster configuration (the loreMaster.* editor settings), with defaults applied: what the editor's
 // first-sync wizard starts from. A file that is not valid settings is an
 // invalid-settings error naming each problem.
 const MethodSettingsRead = "settings/read"
 
-// MethodSettingsSave validates and saves .lore-master.yaml, keeping the author's
+// MethodSettingsSave validates and saves the configuration into the editor's settings, keeping the author's
 // comments and key order. Result: null.
 const MethodSettingsSave = "settings/save"
-
-// MethodSettingsMigrate imports an existing .lore-master.yaml into the folder's
-// .vscode/settings.json (#308), unless the editor's settings already hold the
-// configuration. The yaml is left in place. Result: SettingsMigrateResult.
-const MethodSettingsMigrate = "settings/migrate"
-
-// SettingsMigrateResult says whether anything was written.
-type SettingsMigrateResult struct {
-	// Migrated is true when the yaml was imported on this call.
-	Migrated bool `json:"migrated"`
-	// Path is the settings file written; empty when nothing was.
-	Path string `json:"path,omitempty"`
-}
 
 // SettingsReadParams names the workspace.
 type SettingsReadParams struct {
@@ -48,7 +35,7 @@ type SettingsSaveParams struct {
 	Settings      Settings `json:"settings"`
 }
 
-// Settings mirrors .lore-master.yaml.
+// Settings mirrors the loreMaster.* editor settings.
 type Settings struct {
 	Version int `json:"version"`
 	// SkipGitignored leaves out Markdown the workspace's .gitignore files ignore; absent means true.
@@ -60,7 +47,7 @@ type Settings struct {
 	Outputs    []Output    `json:"outputs"`
 }
 
-// Generator is one generator of .lore-master.yaml.
+// Generator is one generator of the loreMaster.generators setting.
 type Generator struct {
 	Type   string   `json:"type"`
 	Input  []string `json:"input,omitempty"`

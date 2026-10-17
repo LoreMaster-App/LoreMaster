@@ -6,14 +6,25 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 // workspace writes the given files (path -> contents) into a fresh temp directory and
 // returns its root. Shared by the workspace-aware tools' tests.
+// settingsFixture is the name a test gives the project's configuration among its files: described as YAML, written as the
+// editor's .vscode/settings.json.
+const settingsFixture = "loreMaster-settings.yaml"
+
 func workspace(t *testing.T, files map[string]string) string {
 	t.Helper()
 	root := t.TempDir()
 	for name, content := range files {
+		if name == settingsFixture {
+			settingsfixture.Write(t, root, content)
+
+			continue
+		}
 		full := filepath.Join(root, filepath.FromSlash(name))
 		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
 			t.Fatal(err)

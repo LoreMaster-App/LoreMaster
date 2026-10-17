@@ -16,7 +16,7 @@ type Layer struct {
 // Result is the configuration the layers add up to.
 type Result struct {
 	// Configured is false when no layer sets loreMaster.outputs: the editor's settings hold
-	// no configuration, and a caller falls back to .lore-master.yaml.
+	// no configuration.
 	Configured bool
 	// FirstSync is true while an output still lacks its first-sync answers.
 	FirstSync bool

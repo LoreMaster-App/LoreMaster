@@ -11,7 +11,7 @@ export interface GeneratorsEngine {
   request<R> (method: string, params?: unknown): Promise<R>
 }
 
-/** The generators the workspace's .lore-master.yaml configures, in order (an empty list when none). */
+/** The generators the workspace's loreMaster.generators setting configures, in order (an empty list when none). */
 export async function listGenerators (engine: GeneratorsEngine, workspaceRoot: string): Promise<Generator[]> {
   const read = await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot })
 

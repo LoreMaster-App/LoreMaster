@@ -15,10 +15,10 @@ import (
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
-	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/markdown-workspace/documentparsing"
 	"lore-master/libs/markdown-workspace/syncannotation"
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 func connect(t *testing.T) *jsonrpc2.Conn {
@@ -44,9 +44,18 @@ func code(err error) int64 {
 	return 0
 }
 
+// settingsFixture is the name a test gives the project's configuration among its files: described as YAML, written as the
+// editor's .vscode/settings.json.
+const settingsFixture = "loreMaster-settings.yaml"
+
 func write(t *testing.T, root string, files map[string]string) {
 	t.Helper()
 	for rel, content := range files {
+		if rel == settingsFixture {
+			settingsfixture.Write(t, root, content)
+
+			continue
+		}
 		full := filepath.Join(root, filepath.FromSlash(rel))
 		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
 			t.Fatal(err)
@@ -91,7 +100,7 @@ func tree(t *testing.T, conn *jsonrpc2.Conn, root string, output int) (rpcprotoc
 func TestTreeNestsPagesAndClassifiesThemFromTheFilesAlone(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, map[string]string{
-		workspacesettings.FileName: confluenceYAML,
+		settingsFixture: confluenceYAML,
 		"README.md":                synced(t, "# Home\n\nWelcome.\n", "11"),
 		"readme.setup.md":          "# Setup\n",
 		"docs/guide.md":            synced(t, "# Guide\n", "12") + "\nan edit after the sync\n",
@@ -124,7 +133,7 @@ func TestTreeNestsPagesAndClassifiesThemFromTheFilesAlone(t *testing.T) {
 func TestTreeListsParentsBeforeTheirChildren(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, map[string]string{
-		workspacesettings.FileName: confluenceYAML,
+		settingsFixture: confluenceYAML,
 		"readme.a.b.md":            "# B\n",
 		"readme.a.md":              "# A\n",
 		"README.md":                "# Home\n",
@@ -148,7 +157,7 @@ func TestTreeListsParentsBeforeTheirChildren(t *testing.T) {
 func TestTreeHonoursTheIgnoreList(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, map[string]string{
-		workspacesettings.FileName: "ignore: [drafts/]\n" + confluenceYAML,
+		settingsFixture: "ignore: [drafts/]\n" + confluenceYAML,
 		"keep.md":                  "# Keep\n", "drafts/wip.md": "# WIP\n",
 	})
 	result, err := tree(t, connect(t), root, 0)
@@ -163,7 +172,7 @@ func TestTreeHonoursTheIgnoreList(t *testing.T) {
 func TestTreeOfAGitHubPagesOutputHasNoStatus(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, map[string]string{
-		workspacesettings.FileName: "version: 1\noutputs:\n  - platform: github-pages\n    content:\n      - type: markdown\n        roots: [\".\"]\n",
+		settingsFixture: "version: 1\noutputs:\n  - platform: github-pages\n    content:\n      - type: markdown\n        roots: [\".\"]\n",
 		"README.md":                "# Home\n",
 	})
 	result, err := tree(t, connect(t), root, 0)
@@ -178,7 +187,7 @@ func TestTreeOfAGitHubPagesOutputHasNoStatus(t *testing.T) {
 func TestTreeRefusesBadParams(t *testing.T) {
 	conn := connect(t)
 	root := t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: confluenceYAML})
+	write(t, root, map[string]string{settingsFixture: confluenceYAML})
 
 	if _, err := tree(t, conn, "relative/path", 0); code(err) != rpcprotocol.CodeInvalidParams {
 		t.Fatalf("relative root: %v", err)
@@ -186,7 +195,7 @@ func TestTreeRefusesBadParams(t *testing.T) {
 	if _, err := tree(t, conn, root, 5); code(err) != rpcprotocol.CodeInvalidParams {
 		t.Fatalf("missing output: %v", err)
 	}
-	write(t, root, map[string]string{workspacesettings.FileName: "version: 1\nnonsense: true\n"})
+	write(t, root, map[string]string{settingsFixture: "version: 1\nnonsense: true\n"})
 	if _, err := tree(t, conn, root, 0); code(err) != rpcprotocol.CodeInvalidSettings {
 		t.Fatalf("bad settings: %v", err)
 	}
@@ -207,7 +216,7 @@ func TestTreeWithNoSettingsFileUsesTheDefaults(t *testing.T) {
 func TestTreeReportsTheFilesLeftOutAndTheRuleThatLeftEachOut(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, map[string]string{
-		workspacesettings.FileName: "version: 1\nignore:\n  - CLAUDE.md\noutputs:\n  - platform: github-pages\n    direction: to-platform\n    content:\n      - type: markdown\n        roots: [\"docs\"]\n        excludes: [\"docs/drafts/\"]\n        template: default\n",
+		settingsFixture: "version: 1\nignore:\n  - CLAUDE.md\noutputs:\n  - platform: github-pages\n    direction: to-platform\n    content:\n      - type: markdown\n        roots: [\"docs\"]\n        excludes: [\"docs/drafts/\"]\n        template: default\n",
 		"docs/README.md":           "# Docs\n",
 		"docs/drafts/idea.md":      "# Idea\n",
 		"CLAUDE.md":                "# Guide\n",
@@ -246,7 +255,7 @@ func sortedPairs(values map[string]string) []string {
 func TestLocalTreeShowsEveryFileWithWhereItSyncsAndWhetherGitIgnoresIt(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, map[string]string{
-		workspacesettings.FileName: `version: 1
+		settingsFixture: `version: 1
 ignore: ["notes/"]
 outputs:
   - platform: confluence

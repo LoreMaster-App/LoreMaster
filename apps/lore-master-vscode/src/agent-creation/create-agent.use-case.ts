@@ -22,7 +22,7 @@ export interface TargetOutcome {
 
 export interface CreateAgentResult {
   outcomes:  TargetOutcome[]
-  /** False when the workspace has no .lore-master.yaml yet, so the instructions are generic. */
+  /** False when the workspace has no LoreMaster configuration yet, so the instructions are generic. */
   hasConfig: boolean
 }
 

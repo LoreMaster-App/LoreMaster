@@ -119,7 +119,6 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodCredentialList:    credentialcommands.ListCredentials(vault),
 		rpcprotocol.MethodSettingsRead:      settingscommands.ReadSettings(),
 		rpcprotocol.MethodSettingsSave:      settingscommands.SaveSettings(),
-		rpcprotocol.MethodSettingsMigrate:   settingscommands.MigrateSettings(),
 		rpcprotocol.MethodPagesPublish:      pagescommands.PublishPages(),
 		rpcprotocol.MethodPagesBuild:        pagescommands.BuildPages(),
 		rpcprotocol.MethodPagesCheck:        pagescommands.CheckPages(),

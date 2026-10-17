@@ -21,8 +21,8 @@ type Plan struct {
 	Markdown []string
 }
 
-// settingsFiles are the configuration: the folder's editor settings (#308) and the deprecated yaml.
-var settingsFiles = []string{".vscode/settings.json", ".lore-master.yaml"}
+// settingsFiles are the configuration: the folder's editor settings (#308).
+var settingsFiles = []string{".vscode/settings.json"}
 
 // reads says which files a generator type reads: extensions and file names, and the patterns
 // that select its inputs when the generator has no input of its own.

@@ -48,7 +48,7 @@ func listGeneratorsResult(workspaceRoot string) toolCallResult {
 	if workspaceRoot != "" {
 		loaded, err := editorsettings.LoadConfiguration(workspaceRoot)
 		if err != nil {
-			report.Warnings = append(report.Warnings, fmt.Sprintf("%s could not be read: %v", workspacesettings.FileName, err))
+			report.Warnings = append(report.Warnings, fmt.Sprintf("%s could not be read: %v", workspacesettings.ConfigurationName, err))
 		}
 		for _, generator := range loaded.Settings.Generators {
 			report.Configured = append(report.Configured, configuredGenerator{

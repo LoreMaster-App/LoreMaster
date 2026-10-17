@@ -18,7 +18,6 @@ import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp
 import { PUBLISH_PAGES_COMMAND, publishPagesCommand } from './pages-command'
 import { registerPagesView } from './pages-view'
 import { createConnectionStore, createEngineVault, syncWithVault, withKeychain } from './secret-storage'
-import { runSettingsMigration } from './settings-migration'
 import { EDIT_STORAGE_COMMAND } from './storage-editing'
 import { addStorageForm, editStorageForm } from './storage-form'
 import { ROLLBACK_SYNC_COMMAND, rollbackSyncCommand } from './sync-rollback'
@@ -113,11 +112,6 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     vscode.commands.registerCommand(ADD_CONNECTION_COMMAND, () => setUpConnection({ engine, store: connections, ui: createConnectionUI() })),
     vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )
-
-  // A workspace configured by the deprecated .lore-master.yaml moves into VS Code settings.
-  void runSettingsMigration({ engine, onMigrated: () => { void vscode.commands.executeCommand(REFRESH_STORAGES_COMMAND) } }).catch((error: unknown) => {
-    output.appendLine(`Settings migration failed: ${error instanceof Error ? error.message : String(error)}`)
-  })
 
   return markdownDiagrams
 }

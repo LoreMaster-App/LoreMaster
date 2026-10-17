@@ -14,6 +14,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/apps/lore-master-engine/watchcommands"
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 const watchedSettings = `version: 1
@@ -27,10 +28,19 @@ generators:
     output: docs/api
 `
 
+// settingsFixture is the name a test gives the project's configuration among its files: described as YAML, written as the
+// editor's .vscode/settings.json.
+const settingsFixture = "loreMaster-settings.yaml"
+
 func watchedWorkspace(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
-	for file, content := range map[string]string{".lore-master.yaml": watchedSettings, "README.md": "# Home\n", "docs/guide.md": "# Guide\n", "libs/core/a.go": "package core\n"} {
+	for file, content := range map[string]string{settingsFixture: watchedSettings, "README.md": "# Home\n", "docs/guide.md": "# Guide\n", "libs/core/a.go": "package core\n"} {
+		if file == settingsFixture {
+			settingsfixture.Write(t, root, content)
+
+			continue
+		}
 		full := filepath.Join(root, filepath.FromSlash(file))
 		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
 			t.Fatal(err)
@@ -178,7 +188,7 @@ func TestChangedSettingsRegenerateAndSyncEverything(t *testing.T) {
 	root := watchedWorkspace(t)
 	double := syncEngine(changes, written)
 
-	watchWith(t, double, root, []string{"--yes"}, func() { edit(t, root, ".lore-master.yaml", watchedSettings+"# changed\n") }, func() bool { return executed(double) })
+	watchWith(t, double, root, []string{"--yes"}, func() { settingsfixture.Write(t, root, watchedSettings+"ignore: [drafts/]\n") }, func() bool { return executed(double) })
 
 	var plan rpcprotocol.SyncPlanParams
 	double.paramsOf(t, rpcprotocol.MethodSyncPlan, &plan)

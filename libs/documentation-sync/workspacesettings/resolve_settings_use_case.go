@@ -1,9 +1,8 @@
 package workspacesettings
 
-// ResolveSettings completes settings assembled somewhere other than .lore-master.yaml (the
-// editor's settings layers, #308): empty fields take their defaults and the result is
-// validated, exactly as for a file. It also reports whether an output still lacks its
-// first-sync answers.
+// ResolveSettings completes settings assembled from the editor's settings layers (#308): empty
+// fields take their defaults and the result is validated. It also reports whether an output
+// still lacks its first-sync answers.
 func ResolveSettings(settings Settings) (Settings, bool, error) {
 	applyDefaults(&settings)
 	if err := Validate(settings); err != nil {
@@ -15,7 +14,7 @@ func ResolveSettings(settings Settings) (Settings, bool, error) {
 
 // ResolveEditorSettings is ResolveSettings for settings read from the editor's layers, where an
 // empty loreMaster.outputs is meaningful: the user removed every storage. It is configured as
-// having none, and never falls back to a leftover .lore-master.yaml.
+// having none.
 func ResolveEditorSettings(settings Settings) (Settings, bool, error) {
 	applyDefaults(&settings)
 	if err := ValidateAllowingNoOutputs(settings); err != nil {

@@ -19,7 +19,7 @@ export function validateTitlePrefix (value: string): string | undefined {
 
 /**
  * The title prefix for a target, asked **only when there isn't one already** (a stored
- * value or one in `.lore-master.yaml`). The default offered is the chosen parent page's
+ * value or one in the settings). The default offered is the chosen parent page's
  * title. Returns the existing prefix untouched, the entered one, or undefined if the
  * prompt was cancelled.
  */

@@ -18,8 +18,10 @@ import (
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/content-generation/generatorregistry"
 	"lore-master/libs/documentation-sync/documentloading"
+	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documenttree"
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 func connect(t *testing.T) *jsonrpc2.Conn {
@@ -45,9 +47,18 @@ func code(err error) int64 {
 	return 0
 }
 
+// settingsFixture is the name a test gives the project's configuration among its files: described as YAML, written as the
+// editor's .vscode/settings.json.
+const settingsFixture = "loreMaster-settings.yaml"
+
 func write(t *testing.T, root string, files map[string]string) {
 	t.Helper()
 	for relative, content := range files {
+		if relative == settingsFixture {
+			settingsfixture.Write(t, root, content)
+
+			continue
+		}
 		full := filepath.Join(root, filepath.FromSlash(relative))
 		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
 			t.Fatal(err)
@@ -91,7 +102,7 @@ func call(t *testing.T, conn *jsonrpc2.Conn, root string, generators ...int) (rp
 
 func TestRunWritesPagesThenLeavesThemAloneWhenNothingChanged(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: settingsYAML, "reports/junit.xml": junit})
+	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit})
 	conn := connect(t)
 
 	first, err := call(t, conn, root, 0)
@@ -122,12 +133,12 @@ func TestRunWritesPagesThenLeavesThemAloneWhenNothingChanged(t *testing.T) {
 
 func TestGeneratedPagesJoinTheTreeLikeAnyOtherMarkdown(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: settingsYAML, "reports/junit.xml": junit, "docs/README.md": "# Docs\n"})
+	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit, "docs/README.md": "# Docs\n"})
 	if _, err := call(t, connect(t), root, 0); err != nil {
 		t.Fatal(err)
 	}
 
-	loaded, err := workspacesettings.LoadSettings(root)
+	loaded, err := editorsettings.LoadConfiguration(root)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,7 +169,7 @@ func TestGeneratedPagesJoinTheTreeLikeAnyOtherMarkdown(t *testing.T) {
 
 func TestRunWithNoIndexesRunsEveryGeneratorAndOneFailureDoesNotStopTheRest(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: settingsYAML, "reports/junit.xml": junit, "docs/ci-tests/README.md": "# Hand-written\n"})
+	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit, "docs/ci-tests/README.md": "# Hand-written\n"})
 
 	result, err := call(t, connect(t), root)
 	if err != nil {
@@ -179,7 +190,7 @@ func TestRunWithNoIndexesRunsEveryGeneratorAndOneFailureDoesNotStopTheRest(t *te
 
 func TestRunRefusesBadParamsAndSettings(t *testing.T) {
 	conn, root := connect(t), t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: settingsYAML})
+	write(t, root, map[string]string{settingsFixture: settingsYAML})
 
 	if _, err := call(t, conn, "relative"); code(err) != rpcprotocol.CodeInvalidParams {
 		t.Fatalf("relative root: %v", err)
@@ -187,7 +198,7 @@ func TestRunRefusesBadParamsAndSettings(t *testing.T) {
 	if _, err := call(t, conn, root, 7); code(err) != rpcprotocol.CodeInvalidParams {
 		t.Fatalf("missing generator: %v", err)
 	}
-	write(t, root, map[string]string{workspacesettings.FileName: "version: 1\ngenerators:\n  - type: crayon\n    output: docs/x\n"})
+	write(t, root, map[string]string{settingsFixture: "version: 1\ngenerators:\n  - type: crayon\n    output: docs/x\n"})
 	if _, err := call(t, conn, root); code(err) != rpcprotocol.CodeInvalidSettings || !strings.Contains(err.Error(), "crayon") {
 		t.Fatalf("bad settings: %v", err)
 	}
@@ -219,7 +230,7 @@ func TestEveryBuiltGeneratorTypeHasAGenerator(t *testing.T) {
 func TestRunGeneratesGoPackageDocumentation(t *testing.T) {
 	root := t.TempDir()
 	write(t, root, map[string]string{
-		workspacesettings.FileName: "version: 1\ngenerators:\n  - type: go-docs\n    input: [pkg/, '!pkg/internal/']\n    output: docs/api\n    title: API\noutputs:\n  - platform: github-pages\n    content:\n      - type: markdown\n        roots: [\"docs\"]\n",
+		settingsFixture: "version: 1\ngenerators:\n  - type: go-docs\n    input: [pkg/, '!pkg/internal/']\n    output: docs/api\n    title: API\noutputs:\n  - platform: github-pages\n    content:\n      - type: markdown\n        roots: [\"docs\"]\n",
 		"go.mod":                   "module example.com/m\n\ngo 1.24\n",
 		"pkg/a/a.go":               "// Package a does a.\npackage a\n\n// Do does it.\nfunc Do() {}\n",
 		"pkg/internal/b/b.go":      "// Package b is hidden.\npackage b\n",
@@ -270,7 +281,7 @@ func callPrepare(t *testing.T, conn *jsonrpc2.Conn, root string, prepare bool, g
 
 func TestPrepareCommandsRunOnlyWhenAsked(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: prepareSettingsYAML, "reports/junit.xml": junit})
+	write(t, root, map[string]string{settingsFixture: prepareSettingsYAML, "reports/junit.xml": junit})
 	conn := connect(t)
 
 	without := callPrepare(t, conn, root, false, 0)
@@ -292,7 +303,7 @@ func TestPrepareCommandsRunOnlyWhenAsked(t *testing.T) {
 
 func TestAFailingPrepareCommandStopsOnlyItsGenerator(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: prepareSettingsYAML, "reports/junit.xml": junit, "ci/junit.xml": junit})
+	write(t, root, map[string]string{settingsFixture: prepareSettingsYAML, "reports/junit.xml": junit, "ci/junit.xml": junit})
 
 	result := callPrepare(t, connect(t), root, true)
 	if len(result.Runs) != 2 {
@@ -324,7 +335,7 @@ outputs:
 
 func TestRunRecognisesTheFormatOfAGeneratorWithoutAType(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{workspacesettings.FileName: untypedSettingsYAML, "reports/junit.xml": junit, "unknown/pom.xml": "<project/>"})
+	write(t, root, map[string]string{settingsFixture: untypedSettingsYAML, "reports/junit.xml": junit, "unknown/pom.xml": "<project/>"})
 
 	result, err := call(t, connect(t), root)
 	if err != nil {

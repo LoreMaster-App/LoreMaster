@@ -36,7 +36,7 @@ func WorkspaceTree() rpcserver.Method {
 		}
 		outputs := settings.Settings.Outputs
 		if params.Output < 0 || params.Output >= len(outputs) {
-			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(outputs))
+			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.OutputsSetting, len(outputs))
 		}
 		output := outputs[params.Output]
 

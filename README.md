@@ -237,8 +237,8 @@ workspace. The sync reads the folder's `.vscode/settings.json`, for example:
 ```
 
 The guide, with the layers, the command line and the GitHub Action, is
-[`docs/configuration.md`](docs/configuration.md). A workspace that still has a `.lore-master.yaml` is
-imported into the folder's settings the first time the extension activates.
+[`docs/configuration.md`](docs/configuration.md). `.lore-master.yaml` is no longer read; see
+[moving from `.lore-master.yaml`](docs/configuration.md#moving-from-lore-masteryaml).
 
 `loreMaster.skipGitignored` (default `true`) skips Markdown that the workspace's `.gitignore` files (nested ones
 included) ignore — usually drafts, vendored copies or build output; set it to `false` to sync them. `loreMaster.ignore`

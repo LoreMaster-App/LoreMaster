@@ -42,7 +42,7 @@ Watch mode needs a storage already set up, so run **Sync** once first.
 - **Only what changed.** The engine's `watch/route` method maps each changed file to the
   generators that read it (by type and by the generator's `input` patterns) and to the Markdown
   pages. A generator's own output never re-triggers it.
-- **Settings.** Changing `.vscode/settings.json` (or the deprecated `.lore-master.yaml`) runs every generator and syncs everything.
+- **Settings.** Changing `.vscode/settings.json` runs every generator and syncs everything.
 - **Bursts.** Changes are gathered until nothing has changed for the debounce time. Changes made
   while a sync runs wait for the next one; two syncs never overlap.
 - **Our own writes.** The pages a generator writes and the `lore-master.json` a sync updates

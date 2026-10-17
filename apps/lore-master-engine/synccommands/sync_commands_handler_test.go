@@ -25,6 +25,7 @@ import (
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/documentation-sync/syncstate"
 	"lore-master/libs/markdown-workspace/syncannotation"
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 // session is the in-memory platform as a session's platform.
@@ -99,7 +100,7 @@ func newWorld(t *testing.T, platform func(*platformport.InMemoryPlatform) platfo
 	t.Helper()
 	fake := platformport.NewInMemoryPlatform(platformport.Space{ID: "1", Key: "ENG", Name: "Engineering"})
 	w := &world{t: t, root: t.TempDir(), fake: fake, parent: fake.SeedPage("ENG", "", "Engineering Home"), editor: &editor{}, journals: t.TempDir()}
-	w.write(".lore-master.yaml", strings.ReplaceAll(settings, "%PARENT%", w.parent))
+	w.settings(strings.ReplaceAll(settings, "%PARENT%", w.parent))
 	w.write("README.md", "# Home\n\nSee [the guide](readme.guide.md).\n")
 	w.write("readme.guide.md", "# Guide\n\n![flow](img/flow.png)\n\n```mermaid\ngraph TD; A-->B\n```\n")
 	w.write("readme.guide.deep.md", "# Deep\n")
@@ -125,6 +126,12 @@ func newWorld(t *testing.T, platform func(*platformport.InMemoryPlatform) platfo
 	t.Cleanup(func() { _ = w.conn.Close() })
 
 	return w
+}
+
+// settings writes the project's configuration, described as YAML, as the editor's settings.
+func (w *world) settings(configuration string) {
+	w.t.Helper()
+	settingsfixture.Write(w.t, w.root, configuration)
 }
 
 func (w *world) write(path string, content string) {
@@ -296,22 +303,22 @@ func TestACancelledSyncReportsAndWritesBackWhatItDid(t *testing.T) {
 func TestPlanRefusals(t *testing.T) {
 	w := newWorld(t, nil)
 
-	w.write(".lore-master.yaml", "version: 1\noutputs:\n  - platform: confluence\n")
+	w.settings("version: 1\noutputs:\n  - platform: confluence\n")
 	if _, err := w.plan(); code(err) != rpcprotocol.CodeInvalidSettings || !strings.Contains(err.Error(), "run the first sync") {
 		t.Fatalf("first sync: %v", err)
 	}
 
-	w.write(".lore-master.yaml", strings.ReplaceAll(strings.ReplaceAll(settings, "%PARENT%", w.parent), "docs.example", "other.example"))
+	w.settings(strings.ReplaceAll(strings.ReplaceAll(settings, "%PARENT%", w.parent), "docs.example", "other.example"))
 	if _, err := w.plan(); code(err) != rpcprotocol.CodeInvalidParams || !strings.Contains(err.Error(), "the session is open on https://docs.example") {
 		t.Fatalf("other site: %v", err)
 	}
 
-	w.write(".lore-master.yaml", strings.ReplaceAll(strings.ReplaceAll(settings, "%PARENT%", w.parent), "space: ENG", "space: NOPE"))
+	w.settings(strings.ReplaceAll(strings.ReplaceAll(settings, "%PARENT%", w.parent), "space: ENG", "space: NOPE"))
 	if _, err := w.plan(); code(err) != rpcprotocol.CodeNotFound {
 		t.Fatalf("unknown space: %v", err)
 	}
 
-	w.write(".lore-master.yaml", strings.ReplaceAll(settings, "%PARENT%", w.parent))
+	w.settings(strings.ReplaceAll(settings, "%PARENT%", w.parent))
 	w.write("other/README.md", "# Home\n")
 	plan, err := w.plan()
 	if err != nil || len(plan.Errors) != 1 || !strings.Contains(plan.Errors[0], `"ENG: Home"`) {

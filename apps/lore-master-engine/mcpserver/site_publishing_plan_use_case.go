@@ -13,7 +13,7 @@ import (
 
 const sitePublishingPlanToolName = "site_publishing_plan"
 
-const sitePublishingPlanToolDescription = "Works out how this repository deploys to GitHub Pages (from .github/workflows) and which LoreMaster setting puts the docs site beside that deploy instead of over it: build into the app's artifact folder, publish into a folder of the branch, or own the branch. Returns the .lore-master.yaml output and the workflow step to add, with the warnings that matter. Writes nothing; use it before editing a workflow or the settings."
+const sitePublishingPlanToolDescription = "Works out how this repository deploys to GitHub Pages (from .github/workflows) and which LoreMaster setting puts the docs site beside that deploy instead of over it: build into the app's artifact folder, publish into a folder of the branch, or own the branch. Returns the loreMaster.outputs entry and the workflow step to add, with the warnings that matter. Writes nothing; use it before editing a workflow or the settings."
 
 func sitePublishingPlanTool() toolDescriptor {
 	return toolDescriptor{
@@ -38,7 +38,7 @@ func sitePublishingPlanResult(workspaceRoot string) toolCallResult {
 	var notes []string
 	loaded, err := editorsettings.LoadConfiguration(workspaceRoot)
 	if err != nil {
-		notes = append(notes, fmt.Sprintf("%s could not be read: %v", workspacesettings.FileName, err))
+		notes = append(notes, fmt.Sprintf("%s could not be read: %v", workspacesettings.ConfigurationName, err))
 	}
 	for _, output := range loaded.Settings.Outputs {
 		if output.Platform == "github-pages" {

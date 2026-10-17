@@ -57,7 +57,7 @@ func pagesOutput(workspaceRoot string, outputIndex int) (workspacesettings.Outpu
 		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if outputIndex < 0 || outputIndex >= len(loaded.Settings.Outputs) {
-		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", outputIndex, workspacesettings.FileName, len(loaded.Settings.Outputs))
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", outputIndex, workspacesettings.OutputsSetting, len(loaded.Settings.Outputs))
 	}
 	output := loaded.Settings.Outputs[outputIndex]
 	if output.Platform != "github-pages" && output.Platform != "github-wiki" {

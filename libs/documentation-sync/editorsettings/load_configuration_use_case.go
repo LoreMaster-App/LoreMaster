@@ -15,8 +15,8 @@ func CurrentUserSettingsPath() string {
 }
 
 // LoadConfiguration is what every consumer of the configuration calls: the editor's
-// settings layers when they hold loreMaster.outputs, otherwise the deprecated
-// .lore-master.yaml, otherwise the defaults of a workspace not set up yet.
+// settings layers when they hold loreMaster.outputs, otherwise the defaults of a workspace
+// not set up yet.
 func LoadConfiguration(workspaceRoot string) (workspacesettings.Loaded, error) {
 	result, err := LoadEditorSettings(workspaceRoot, CurrentUserSettingsPath())
 	if err != nil {
@@ -26,5 +26,5 @@ func LoadConfiguration(workspaceRoot string) (workspacesettings.Loaded, error) {
 		return workspacesettings.LoadedFromSettings(result.Settings, result.FirstSync), nil
 	}
 
-	return workspacesettings.LoadSettings(workspaceRoot)
+	return workspacesettings.NotSetUp(), nil
 }

@@ -123,7 +123,7 @@ func pagesOutputIndex(workspaceRoot string, arguments []byte) (int, error) {
 	}
 	switch len(positions) {
 	case 0:
-		return 0, fmt.Errorf("%s has no github-pages output; call site_publishing_plan for the one to add", workspacesettings.FileName)
+		return 0, fmt.Errorf("%s has no github-pages output; call site_publishing_plan for the one to add", workspacesettings.OutputsSetting)
 	case 1:
 		return positions[0], nil
 	default:

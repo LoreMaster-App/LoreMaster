@@ -10,7 +10,7 @@ const pagesSettings = "version: 1\noutputs:\n  - platform: github-pages\n    dir
 
 func TestPreviewSiteCountsThePagesItWouldBuild(t *testing.T) {
 	root := workspace(t, map[string]string{
-		".lore-master.yaml": pagesSettings,
+		settingsFixture: pagesSettings,
 		"README.md":         "# Home\n\nWelcome.\n",
 		"guide.md":          "# Guide\n",
 	})
@@ -29,7 +29,7 @@ func TestPreviewSiteCountsThePagesItWouldBuild(t *testing.T) {
 
 func TestPreviewSiteReportsMarkdownProblemsAsAnError(t *testing.T) {
 	root := workspace(t, map[string]string{
-		".lore-master.yaml": pagesSettings,
+		settingsFixture: pagesSettings,
 		"a.md":              "<!-- lore-master\nparent: b.md\n-->\n# A\n",
 		"b.md":              "<!-- lore-master\nparent: a.md\n-->\n# B\n",
 	})

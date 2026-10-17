@@ -77,7 +77,7 @@ No input. Reads the repository's `.github/workflows` and LoreMaster settings and
 repository deploys to GitHub Pages and which setting puts the docs site **beside** that deploy:
 build into the app's artifact folder (an Actions-source deploy), publish into a `path` folder of
 the branch (a branch push), or own the branch (nothing else deploys). Returns the
-`.lore-master.yaml` output and the workflow step to use, and warns about what would go wrong: an
+`loreMaster.outputs` entry and the workflow step to use, and warns about what would go wrong: an
 app deploy that deletes the docs folder, a branch publish without `path`, a workflow `paths:`
 filter that will not redeploy on a docs change. It **writes nothing**.
 

@@ -6,7 +6,7 @@ import { type GeneratorsViewEngine, readGeneratorSettings } from './generators.u
 /** The view id contributed in package.json (inside the LoreMaster view container). */
 export const GENERATORS_VIEW_ID = 'loreMaster.generators'
 
-/** One generator of .lore-master.yaml, with its position in the list. */
+/** One generator of loreMaster.generators, with its position in the list. */
 export interface GeneratorNode {
   index:     number
   generator: Generator
@@ -14,7 +14,7 @@ export interface GeneratorNode {
 
 /**
  * The LoreMaster "Generators" sidebar view: one row per configured generator, with what it
- * reads and where its pages go, and after a run what it did. Read live from .lore-master.yaml,
+ * reads and where its pages go, and after a run what it did. Read live from the settings,
  * so it shows the same list the engine will run.
  */
 export class GeneratorsViewProvider implements vscode.TreeDataProvider<GeneratorNode> {

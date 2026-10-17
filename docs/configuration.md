@@ -96,12 +96,13 @@ The order, least to most specific: defaults, user settings, the `.code-workspace
 folder's `.vscode/settings.json`, the overrides. A key that looks like a secret is refused here
 too; credentials come from the environment variables in [the command line guide](cli.md#credentials).
 
-## From `.lore-master.yaml`
+## Moving from `.lore-master.yaml`
 
-The first time the extension activates in a workspace that has a `.lore-master.yaml` and no
-`loreMaster.outputs` setting, it imports the file into `.vscode/settings.json` and tells you
-once. The YAML is left where it is and is no longer read once the settings exist; delete it
-when you like. A workspace with neither is configured in settings from the start.
+LoreMaster no longer reads `.lore-master.yaml` (breaking, #316). If a workspace still has one,
+copy its keys into the folder's `.vscode/settings.json`, each prefixed with `loreMaster.`
+(`outputs` becomes `loreMaster.outputs`, `ignore` becomes `loreMaster.ignore`, and so on), drop
+the `version` line, and delete the file. Earlier versions import the file automatically on
+first activation; upgrade through one of them first if you would rather not do it by hand.
 
 The decision and its trade-offs are in
 [architecture/configuration-in-editor-settings.md](architecture/configuration-in-editor-settings.md).

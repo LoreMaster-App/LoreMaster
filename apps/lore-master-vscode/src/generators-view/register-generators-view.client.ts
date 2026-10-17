@@ -14,7 +14,7 @@ const REFRESH_DEBOUNCE_MS = 300
 
 /**
  * Registers the Generators view and its commands, and keeps it current: it re-reads when
- * .lore-master.yaml changes, by hand or through another command. The Command Palette's
+ * the settings change, by hand or through another command. The Command Palette's
  * "Run generators" is registered here too, so what it ran shows on the rows. `more` registers
  * further commands that work on the same view (the generator form's add and edit).
  */
@@ -23,7 +23,7 @@ export function registerGeneratorsView (deps: { engine: EngineClient; output: vs
   const viewDeps: GeneratorsViewDeps = { ...deps, provider }
 
   let timer: ReturnType<typeof setTimeout> | undefined
-  const watcher = vscode.workspace.createFileSystemWatcher('**/.lore-master.yaml')
+  const watcher = vscode.workspace.createFileSystemWatcher('**/.vscode/settings.json')
   const refreshSoon = (): void => {
     clearTimeout(timer)
     timer = setTimeout(() => provider.refresh(), REFRESH_DEBOUNCE_MS)

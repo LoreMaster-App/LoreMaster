@@ -21,7 +21,7 @@ export interface RunGeneratorsDeps {
 
 /**
  * Runs the workspace's generators: test results, Go package documentation, OpenAPI
- * descriptions. They write ordinary Markdown into the folders `.lore-master.yaml` names, which
+ * descriptions. They write ordinary Markdown into the folders the generators setting names, which
  * the next sync publishes like any other page. With several generators it asks which; the
  * answer is a one-line summary, with the details and any problems in the LoreMaster output.
  */

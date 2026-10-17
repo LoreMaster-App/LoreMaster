@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 class WatchedPathsPolicyTest {
     @Test
     fun `markdown, settings and what generators read matter`() {
-        listOf("README.md", "docs/a.md", ".vscode/settings.json", ".lore-master.yaml", "report/junit.xml", "src/main.go", "api/openapi.yaml")
+        listOf("README.md", "docs/a.md", ".vscode/settings.json", "report/junit.xml", "src/main.go", "api/openapi.yaml")
             .forEach { assertTrue(isWatchedPath(it), it) }
     }
 

@@ -27,7 +27,7 @@ func TestListGeneratorsNamesEveryGeneratorTheEngineHas(t *testing.T) {
 
 func TestListGeneratorsShowsWhereTheWorkspaceWritesGeneratedPages(t *testing.T) {
 	root := workspace(t, map[string]string{
-		".lore-master.yaml": docsSettings + "generators:\n  - type: test-results\n    output: docs/tests\n  - source: storybook-static\n    output: docs/components\n",
+		settingsFixture: docsSettings + "generators:\n  - type: test-results\n    output: docs/tests\n  - source: storybook-static\n    output: docs/components\n",
 	})
 
 	result := toolCall(t, root, listGeneratorsToolName, "{}")

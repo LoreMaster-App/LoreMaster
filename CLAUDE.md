@@ -27,7 +27,7 @@ Markdown.
 | Distribution | No npm packages. The engine binary doubles as a small CLI (`generate`, `sync`, `tree`; `docs/cli.md`, #273) for CI and hooks, distributed by #201. The extension goes to the VS Code Marketplace (later the Visual Studio Marketplace). The binary ships inside each extension | E5 #6, #65 |
 | Layout | Vertical feature slices in Go **and** TypeScript, even where no lint enforces it | `docs/architecture/vertical-feature-slices.md`, #47 |
 | Page titles | `<titlePrefix>: <H1>`; prefix asked once at first sync, default = selected parent page's title | E3 #4 |
-| Config file | The editor's settings, `loreMaster.*` (`outputs[]`, `ignore`, `generators`, `confluence.baseUrl`, `defaults.*`), layered folder > workspace > user (#308, `docs/configuration.md`). Tokens stay in the secret store, never in settings. `.lore-master.yaml` is a deprecated fallback, imported into `.vscode/settings.json` on first activation. `direction: two-way` is accepted (#163); still-reserved values (other content types, templates) are in the schema but refused until built | #308, #92, #32; #95 #96 #97 |
+| Config file | The editor's settings, `loreMaster.*` (`outputs[]`, `ignore`, `generators`, `confluence.baseUrl`, `defaults.*`), layered folder > workspace > user (#308, `docs/configuration.md`). Tokens stay in the secret store, never in settings. `.lore-master.yaml` is no longer read (removed in #316). `direction: two-way` is accepted (#163); still-reserved values (other content types, templates) are in the schema but refused until built | #308, #92, #32; #95 #96 #97 |
 | Mermaid | Default `image`: code macro + SVG attachment rendered by the editor's webview; `code`, `html-macro`, `marketplace-macro` selectable | E6 #7 |
 | Test runner (TS shell) | Jest | #45 |
 | Auth | Cloud: email + API token; DC: PAT; Server: PAT ≥ 7.9 else basic. **No OAuth** — removed in #208 (was E7 #8); reconsider only post-preview | `docs/architecture/confluence-editions.md` |
@@ -77,7 +77,7 @@ Capability → flat slice → role-suffixed files. Full ADR: `docs/architecture/
 
 ## How the sync works (the short version)
 
-1. Discover `.md` files (roots/excludes from `.lore-master.yaml`), parse with goldmark,
+1. Discover `.md` files (roots/excludes from the `loreMaster.*` settings), parse with goldmark,
    title = first H1, build the tree: explicit `parent:` → dotted filename
    (`readme.architecture.md` under `readme.md`) → directory index (`README.md`) → the
    selected Confluence parent.
@@ -129,7 +129,7 @@ Debug it with the `lore-master-vscode: debug` launch entry (Extension Developmen
   `mnci upgrade`; review them).
 - Conventional commits are enforced by commitlint; `nx release` versions the extension
   from them. Merge PRs with a **merge commit**, never squash or rebase (#50).
-- Secrets never touch this repo or `.lore-master.yaml`; they live in the editor's secret
+- Secrets never touch this repo or the settings; they live in the editor's secret
   store and travel to the engine per session over stdio.
 
 ## Where to look

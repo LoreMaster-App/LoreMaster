@@ -17,7 +17,7 @@ func yamlKeys(t *testing.T, value any) []string {
 	var keys []string
 	shape := reflect.TypeOf(value)
 	for i := 0; i < shape.NumField(); i++ {
-		name, _, _ := strings.Cut(shape.Field(i).Tag.Get("yaml"), ",")
+		name, _, _ := strings.Cut(shape.Field(i).Tag.Get("json"), ",")
 		if name != "" {
 			keys = append(keys, name)
 		}

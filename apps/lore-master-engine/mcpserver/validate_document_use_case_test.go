@@ -58,7 +58,7 @@ func TestValidateDocumentFlagsMissingHeading(t *testing.T) {
 
 func TestValidateDocumentFlagsAnExcludedFile(t *testing.T) {
 	root := workspace(t, map[string]string{
-		".lore-master.yaml": "version: 1\noutputs:\n  - platform: confluence\n    content:\n      - type: markdown\n        roots: [docs]\n",
+		settingsFixture: "version: 1\noutputs:\n  - platform: confluence\n    content:\n      - type: markdown\n        roots: [docs]\n",
 		"docs/README.md":    "# Docs\n",
 		"stray.md":          "# Stray\n",
 	})

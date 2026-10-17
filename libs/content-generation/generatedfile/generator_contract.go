@@ -2,7 +2,7 @@ package generatedfile
 
 import "context"
 
-// Spec is one generator as configured in .lore-master.yaml.
+// Spec is one generator as configured in the loreMaster.generators setting.
 type Spec struct {
 	// Type names the generator, for example "test-results".
 	Type string

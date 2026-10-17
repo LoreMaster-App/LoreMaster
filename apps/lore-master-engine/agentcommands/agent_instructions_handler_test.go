@@ -6,8 +6,6 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -15,8 +13,8 @@ import (
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
-	"lore-master/libs/documentation-sync/workspacesettings"
 	"lore-master/libs/markdown-workspace/documenttree"
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 func connect(t *testing.T) *jsonrpc2.Conn {
@@ -53,9 +51,7 @@ func instructions(t *testing.T, conn *jsonrpc2.Conn, root string) (rpcprotocol.A
 func TestInstructionsQuoteTheLiveRulesAndTheWorkspace(t *testing.T) {
 	root := t.TempDir()
 	yaml := "version: 1\nignore: [drafts/]\ngenerators:\n  - type: test-results\n    output: docs/tests\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"1\"\n    titlePrefix: ENG\n    content:\n      - type: markdown\n        roots: [docs]\n"
-	if err := os.WriteFile(filepath.Join(root, workspacesettings.FileName), []byte(yaml), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	settingsfixture.Write(t, root, yaml)
 
 	result, err := instructions(t, connect(t), root)
 	if err != nil {
@@ -95,9 +91,7 @@ func TestInstructionsRefuseBadParamsAndSettings(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, workspacesettings.FileName), []byte("version: 1\nnonsense: true\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	settingsfixture.Write(t, root, "version: 1\nnonsense: true\n")
 	if _, err := instructions(t, conn, root); code(err) != rpcprotocol.CodeInvalidSettings {
 		t.Fatalf("bad settings: %v", err)
 	}

@@ -11,7 +11,7 @@ import (
 
 // Compose writes the instructions as Markdown, without a top-level heading, so each tool's
 // file can frame them its own way. exists says whether the workspace has a
-// .lore-master.yaml; without one the workspace section says so instead of guessing. The
+// LoreMaster configuration; without one the workspace section says so instead of guessing. The
 // result depends only on its arguments.
 func Compose(settings workspacesettings.Settings, exists bool, conventions []documenttree.Convention) string {
 	var out strings.Builder

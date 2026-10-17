@@ -1,7 +1,7 @@
 # ADR: Configuration lives in the editor's settings
 
 Status: accepted (2026-10-11). Issue: #308. Supersedes the "Config file" decision
-(`.lore-master.yaml`, #92) once the migration ships.
+(`.lore-master.yaml`, #92). The yaml fallback was removed in #316.
 
 ## Context
 
@@ -46,9 +46,9 @@ in workspace settings). They stay in the editor's secret store, keyed by base UR
 
 ### Migration
 
-On first activation, an existing `.lore-master.yaml` is imported into workspace settings and
-the user is told once. The file stays a deprecated fallback for one minor version, with a
-warning, and is then removed.
+On first activation, an existing `.lore-master.yaml` was imported into workspace settings and
+the user told once. That fallback has been removed (#316): the file is no longer read and
+`settings/migrate` is gone; `docs/configuration.md` says how to move by hand.
 
 ## Consequences
 
