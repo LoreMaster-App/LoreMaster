@@ -54,6 +54,7 @@ export function createSilentSyncUI (output: vscode.OutputChannel): SilentSyncUI 
 
     // Setting up storages asks questions; a watch has to start from outputs that are already set up.
     pickStorageTypes: () => Promise.resolve(undefined),
+    promptField:      () => Promise.resolve(undefined),
 
     error (message: string) {
       problems.push(message)

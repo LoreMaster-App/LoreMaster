@@ -62,6 +62,17 @@ func DisplayName(outputs []Output, index int) string {
 
 // madeUpName is the name the platform's descriptor makes for an output without one; an output of
 // a platform the catalog does not know is named as a Confluence one, as it always was.
+// Summary is where an output goes, as the platform's descriptor words it: the site address of a
+// Confluence, the repository of a site or wiki.
+func Summary(output Output) string {
+	platform, known := configcatalog.FindPlatform(output.Platform)
+	if !known {
+		platform, _ = configcatalog.FindPlatform("confluence")
+	}
+
+	return platform.Summarise(func(key string) string { return outputValue(output, key) })
+}
+
 func madeUpName(output Output) string {
 	platform, known := configcatalog.FindPlatform(output.Platform)
 	if !known {

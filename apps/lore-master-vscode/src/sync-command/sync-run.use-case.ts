@@ -27,6 +27,9 @@ export interface ProgressStep {
 export interface OutputChoice {
   index:  number
   output: Output
+  /** What the engine calls it, and where it goes. */
+  label:  string
+  detail: string
 }
 
 /** Everything the sync flow asks of the editor. Composes the first-run storage setup (which

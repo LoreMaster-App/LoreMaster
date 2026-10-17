@@ -65,8 +65,17 @@ func FindPlatform(id string) (Platform, bool) {
 // MakeUpName fills the platform's NameTemplate with the output's values, read through value
 // (the output's setting by key). "{space|no space yet}" becomes the space, or the fallback.
 func (platform Platform) MakeUpName(value func(key string) string) string {
+	return fill(platform.NameTemplate, value)
+}
+
+// Summarise fills the platform's SummaryTemplate: where the output goes, for a row's second line.
+func (platform Platform) Summarise(value func(key string) string) string {
+	return fill(platform.SummaryTemplate, value)
+}
+
+func fill(template string, value func(key string) string) string {
 	var name strings.Builder
-	rest := platform.NameTemplate
+	rest := template
 	for {
 		open := strings.Index(rest, "{")
 		closing := strings.Index(rest, "}")

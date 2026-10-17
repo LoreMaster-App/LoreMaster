@@ -1,147 +1,135 @@
-import type { Content, Output, Settings } from '../engine-protocol'
+import { allOutputKeys, blankOutput, fieldsOf } from '../config-description'
+import type { ConfigDescription, Content, FieldDescriptor, Output, PlatformDescriptor, Settings } from '../engine-protocol'
 import { parseList } from '../storage-editing'
-import type { FormPlatform, StorageFormValues } from './storage-form.contract'
+import type { StorageFormDescription, StorageFormValues } from './storage-form.contract'
 
-/** An empty form: no platform chosen, the defaults a new Confluence storage starts from. */
-export function emptyValues (): StorageFormValues {
+type Record2 = Record<string, unknown>
+
+/** What the form shows, taken from the engine's description. */
+export function formDescription (description: ConfigDescription): StorageFormDescription {
+  const project = description.sections.find(section => section.id === 'project')
+
   return {
-    name:           '',
-    platform:       '',
-    connection:     '',
-    space:          '',
-    parentPageId:   '',
-    titlePrefix:    '',
-    direction:      'to-platform',
-    mermaidMode:    'image',
-    linkMode:       'title',
-    titleCollision: 'fail',
-    repo:           '',
-    branch:         '',
-    path:           '',
-    template:       '',
-    roots:          '.',
-    excludes:       '',
-    ignore:         '',
+    platforms:     description.platforms,
+    outputFields:  description.outputFields,
+    contentFields: description.contentFields,
+    ignoreField:   project?.settings.find(field => field.key === 'ignore'),
   }
+}
+
+/** The value a field starts with in a new storage: a text field starts empty (its default is a placeholder), the rest on their default. */
+function initialValue (field: FieldDescriptor): string {
+  return field.type === 'text' ? '' : field.default ?? ''
+}
+
+/** An empty form: no platform chosen, every choice on its default. */
+export function emptyValues (description: ConfigDescription): StorageFormValues {
+  const values: StorageFormValues = { platform: '', ignore: '' }
+  for (const platform of description.platforms) {
+    for (const field of platform.fields) {
+      values[field.key] ||= initialValue(field)
+    }
+  }
+  for (const field of [...description.outputFields, ...description.contentFields]) {
+    values[field.key] = initialValue(field)
+  }
+
+  return values
 }
 
 function firstMarkdown (output: Output): Content | undefined {
   return output.content.find(content => content.type === 'markdown')
 }
 
-/** The form's view of an existing storage and of the workspace-wide ignore list. */
-export function outputToValues (output: Output, settings: Settings): StorageFormValues {
-  const content = firstMarkdown(output)
-  const platform: FormPlatform = output.platform === 'github-pages' || output.platform === 'github-wiki' ? output.platform : 'confluence'
-
-  return {
-    name:           output.name ?? '',
-    platform,
-    connection:     output.baseUrl,
-    space:          output.space,
-    parentPageId:   output.parentPageId,
-    titlePrefix:    output.titlePrefix,
-    direction:      output.direction || 'to-platform',
-    mermaidMode:    output.mermaidMode || 'image',
-    linkMode:       output.linkMode || 'title',
-    titleCollision: output.titleCollision || 'fail',
-    repo:           output.repo ?? '',
-    branch:         output.branch ?? '',
-    path:           output.path ?? '',
-    template:       output.template ?? '',
-    roots:          (content?.roots ?? ['.']).join(', '),
-    excludes:       (content?.excludes ?? []).join(', '),
-    ignore:         (settings.ignore ?? []).join(', '),
+function text (value: unknown): string {
+  if (Array.isArray(value)) {
+    return value.join(', ')
   }
+
+  return typeof value === 'string' ? value : ''
 }
 
-function blankOutput (platform: FormPlatform): Output {
-  return {
-    platform,
-    baseUrl:        '',
-    space:          '',
-    parentPageId:   '',
-    titlePrefix:    '',
-    direction:      'to-platform',
-    content:        [{ type: 'markdown', roots: ['.'], template: 'default' }],
-    mermaidMode:    '',
-    titleCollision: '',
-    linkMode:       '',
+/** The form's view of an existing storage and of the workspace-wide ignore list. */
+export function outputToValues (description: ConfigDescription, output: Output, settings: Settings): StorageFormValues {
+  const values = emptyValues(description)
+  const platform = description.platforms.find(each => each.id === output.platform)
+  values.platform = platform?.id ?? ''
+  const held = output as unknown as Record2
+  const shown = platform ? fieldsOf(description, platform) : description.outputFields
+  for (const field of shown) {
+    const shown = text(held[field.key])
+    values[field.key] = shown === '' ? initialValue(field) : shown
+  }
+  const content = firstMarkdown(output)
+  values.roots = (content?.roots ?? ['.']).join(', ')
+  values.excludes = (content?.excludes ?? []).join(', ')
+  values.ignore = (settings.ignore ?? []).join(', ')
+
+  return values
+}
+
+/** Stores one field's value in the output; a list field holds a list, anything else its trimmed text. */
+function assign (output: Record2, field: FieldDescriptor, value: string): void {
+  if (field.type === 'list') {
+    const items = parseList(value)
+    if (items.length > 0) {
+      output[field.key] = items
+    } else {
+      delete output[field.key]
+    }
+
+    return
+  }
+  output[field.key] = value.trim()
+}
+
+/** Empties a setting that belongs to another platform than the chosen one. */
+function clear (output: Record2, key: string, description: ConfigDescription): void {
+  const field = [...description.outputFields, ...description.platforms.flatMap(platform => platform.fields)].find(each => each.key === key)
+  if (field?.type === 'list') {
+    delete output[key]
+  } else {
+    // A choice goes back to its default: the engine wants a valid direction even on a site.
+    output[key] = field?.type === 'choice' ? field.default ?? '' : ''
   }
 }
 
 /**
- * The storage the values describe. A storage being edited is the base, so what the form does
- * not show (extra content entries, templates, `include`) is kept; a new one starts blank.
- * Fields that do not apply to the platform are left empty.
+ * The storage the values describe. A storage being edited is the base, so what the form does not
+ * show (extra content entries, `include`) is kept; a new one starts blank. Settings of the other
+ * platforms are emptied, so a storage moved to another platform carries nothing of the old one.
  */
-export function valuesToOutput (values: StorageFormValues, base?: Output): Output {
-  const platform = values.platform === '' ? 'confluence' : values.platform
-  const output: Output = { ...(base ?? blankOutput(platform)), platform }
+export function valuesToOutput (description: ConfigDescription, values: StorageFormValues, base?: Output): Output {
+  const platform: PlatformDescriptor | undefined = description.platforms.find(each => each.id === values.platform) ?? description.platforms[0]
+  const output: Output = { ...(base ?? blankOutput(description, platform)), platform: platform.id }
+  const held = output as unknown as Record2
 
-  const roots = parseList(values.roots)
-  const excludes = parseList(values.excludes)
-  const markdown: Content = { ...(firstMarkdown(output) ?? { type: 'markdown', template: 'default', roots: ['.'] }), roots: roots.length > 0 ? roots : ['.'], excludes }
+  const shown = fieldsOf(description, platform)
+  for (const key of allOutputKeys(description)) {
+    if (shown.every(field => field.key !== key)) {
+      clear(held, key, description)
+    }
+  }
+  for (const field of shown) {
+    assign(held, field, values[field.key] ?? '')
+  }
+  if (typeof held.name === 'string' && held.name === '') {
+    delete held.name
+  }
+
+  const roots = parseList(values.roots ?? '')
+  const markdown: Content = { ...(firstMarkdown(output) ?? { type: 'markdown', template: 'default', roots: ['.'] }), roots: roots.length > 0 ? roots : ['.'], excludes: parseList(values.excludes ?? '') }
   const hadMarkdown = firstMarkdown(output) !== undefined
   output.content = hadMarkdown
     ? output.content.map(content => content === firstMarkdown(output) ? markdown : content)
     : [markdown, ...output.content]
 
-  if (platform === 'confluence') {
-    output.baseUrl = values.connection.trim()
-    output.space = values.space.trim()
-    output.parentPageId = values.parentPageId.trim()
-    output.titlePrefix = values.titlePrefix.trim()
-    output.direction = values.direction
-    output.mermaidMode = values.mermaidMode
-    output.linkMode = values.linkMode
-    output.titleCollision = values.titleCollision
-    output.repo = undefined
-    output.branch = undefined
-    output.path = undefined
-  } else {
-    output.baseUrl = ''
-    output.space = ''
-    output.parentPageId = ''
-    output.titlePrefix = ''
-    output.repo = values.repo.trim()
-    output.branch = values.branch.trim()
-    output.path = platform === 'github-pages' && values.path.trim() !== '' ? values.path.trim() : undefined
-  }
-
-  const name = values.name.trim()
-  output.name = name === '' ? undefined : name
-  const template = values.template.trim()
-  output.template = template === '' || template === 'default' ? undefined : template
-
   return output
-}
-
-/**
- * A name for a storage that was given none: where it goes, numbered when another storage already
- * has that name, so two storages on one platform are still told apart.
- */
-export function suggestStorageName (values: StorageFormValues, taken: string[]): string {
-  const lower = new Set(taken.map(name => name.toLowerCase()))
-  let base = 'Confluence'
-  if (values.platform === 'github-pages') {
-    base = `GitHub Pages · ${values.repo.trim() || values.branch.trim() || 'this repository'}`
-  } else if (values.platform === 'github-wiki') {
-    base = `GitHub Wiki · ${values.repo.trim() || 'this repository'}`
-  } else if (values.space.trim() !== '') {
-    base = `Confluence · ${values.space.trim()}`
-  }
-  let candidate = base
-  for (let number = 2; lower.has(candidate.toLowerCase()); number++) {
-    candidate = `${base} (${number})`
-  }
-
-  return candidate
 }
 
 /** The workspace-wide ignore list the values carry, or undefined for none. */
 export function ignoreFromValues (values: StorageFormValues): string[] | undefined {
-  const patterns = parseList(values.ignore)
+  const patterns = parseList(values.ignore ?? '')
 
   return patterns.length > 0 ? patterns : undefined
 }

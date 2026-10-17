@@ -1,11 +1,11 @@
 import * as vscode from 'vscode'
-import type { Output } from '../engine-protocol'
+import type { ConfiguredOutput } from '../sidebar'
 import { type ChangeSelectionDeps, excludeFromSync, includeInSync } from './change-selection.use-case'
 import { askExcludeScope, askIncludeIndexes, type SelectionTarget } from './choose-selection.handler'
 import { selectionEntries } from './selection-lists.algorithm'
 
 export interface SelectionCommandDeps extends ChangeSelectionDeps {
-  outputs: () => Promise<{ index: number; output: Output }[]>
+  outputs: () => Promise<ConfiguredOutput[]>
   /** Called after the settings changed, so the views re-read. */
   changed: () => void
 }

@@ -35,6 +35,6 @@ export async function syncFile (deps: SyncCommandDeps, folder: string, relativeP
       ui:            createSyncUI(deps.output),
       addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
     },
-    { confluenceOnly: true },
+    { pagesOnly: true },
   )
 }

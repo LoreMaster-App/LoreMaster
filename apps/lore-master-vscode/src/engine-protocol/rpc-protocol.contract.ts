@@ -224,6 +224,8 @@ export interface SettingsReadResult {
   settings:     Settings
   /** What each output is called, in the order of `settings.outputs`: its name or one the engine made up. */
   displayNames: string[]
+  /** Where each output goes (the site address, the repository), in the same order. */
+  summaries:    string[]
 }
 
 export interface SettingsSaveParams {
@@ -609,15 +611,17 @@ export interface ConfigDescription {
 }
 
 export interface PlatformDescriptor {
-  id:           string
-  label:        string
-  description:  string
-  icon:         string
+  id:              string
+  label:           string
+  description:     string
+  icon:            string
   /** `pages` syncs page by page (plan, execute, rollback, page tree); `site` publishes as one unit. */
-  delivery:     'pages' | 'site'
-  nameTemplate: string
-  connection?:  ConnectionDescriptor
-  fields:       FieldDescriptor[]
+  delivery:        'pages' | 'site'
+  nameTemplate:    string
+  /** Where an output goes, in the same syntax as `nameTemplate`. */
+  summaryTemplate: string
+  connection?:     ConnectionDescriptor
+  fields:          FieldDescriptor[]
 }
 
 export interface ConnectionDescriptor {

@@ -1,8 +1,11 @@
-import { isGitHubOutput, type Output, type Settings } from '../engine-protocol'
+import { isSiteOutput, platformOf } from '../config-description'
+import type { ConfigDescription, Output, Settings } from '../engine-protocol'
 import type { CiNeeds, CiSecret } from '../ci-pipeline-rendering'
 
 export interface PlanCiNeedsInput {
   settings:       Settings
+  /** The engine's description of the platforms: which sign in, and which publish with git. */
+  description:    ConfigDescription
   version:        string
   settingsInRepo: boolean
 }
@@ -21,11 +24,11 @@ const SELF_HOSTED_SECRETS: CiSecret[] = [
  * each Confluence output needs, and the side effects the job has to be allowed to have.
  * Credentials are never part of the settings, so they are only named here.
  */
-export function planCiNeeds ({ settings, version, settingsInRepo }: PlanCiNeedsInput): CiNeeds {
+export function planCiNeeds ({ settings, description, version, settingsInRepo }: PlanCiNeedsInput): CiNeeds {
   const outputs = settings.outputs
   const generators = settings.generators ?? []
   const prepareCommands = generators.flatMap(generator => generator.prepare ? [generator.prepare] : [])
-  const confluence = outputs.filter(output => !isGitHubOutput(output))
+  const confluence = outputs.filter(output => platformOf(description, output)?.connection !== undefined)
 
   const flags = [
     ...generators.length > 0 ? ['--generate'] : [],
@@ -37,7 +40,7 @@ export function planCiNeeds ({ settings, version, settingsInRepo }: PlanCiNeedsI
     version,
     command:            `sync ${flags.join(' ')}`,
     secrets:            secretsFor(confluence),
-    pushesToGit:        outputs.some(output => isGitHubOutput(output)),
+    pushesToGit:        outputs.some(output => isSiteOutput(description, output)),
     commitsAnnotations: confluence.length > 0,
     prepareCommands,
     settingsInRepo,

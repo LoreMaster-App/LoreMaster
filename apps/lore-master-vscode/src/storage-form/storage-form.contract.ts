@@ -1,34 +1,21 @@
-import type { Page, Space } from '../engine-protocol'
+import type { FieldDescriptor, Page, PlatformDescriptor, Space } from '../engine-protocol'
 
-/** The platforms a storage can publish to, as the form offers them. */
-export type FormPlatform = 'confluence' | 'github-pages' | 'github-wiki'
+/**
+ * Every field of a storage as the form holds it: all text, keyed by the engine's field keys, so an
+ * empty field is simply ''. `platform` is the chosen platform's id, `roots` and `excludes` are the
+ * Markdown content's, and `ignore` is the project-wide ignore list; lists are comma separated.
+ */
+export type StorageFormValues = Record<string, string>
 
-/** Every field of a storage as the form holds it: all text, so an empty field is simply ''. */
-export interface StorageFormValues {
-  /** What this storage is called; '' is filled with a suggestion when it is saved. */
-  name:           string
-  /** '' while the user has not chosen one (a new storage has none preselected). */
-  platform:       FormPlatform | ''
-  /** The Confluence site's base URL (a stored connection). */
-  connection:     string
-  space:          string
-  parentPageId:   string
-  titlePrefix:    string
-  direction:      string
-  mermaidMode:    string
-  linkMode:       string
-  titleCollision: string
-  repo:           string
-  branch:         string
-  path:           string
-  /** The page template: a built-in's name, a path or a Confluence page; '' is the default. */
-  template:       string
-  /** Folders to sync, separated by commas. */
-  roots:          string
-  /** Paths this storage leaves out, separated by commas. */
-  excludes:       string
-  /** Paths every storage leaves out (a setting of the whole workspace), separated by commas. */
-  ignore:         string
+/** What the form shows, all of it from the engine's description. */
+export interface StorageFormDescription {
+  platforms:     PlatformDescriptor[]
+  /** The settings every storage has. */
+  outputFields:  FieldDescriptor[]
+  /** The Markdown content's settings (folders, excluded paths). */
+  contentFields: FieldDescriptor[]
+  /** The project-wide ignore list, shown with the content; absent when the engine does not describe it. */
+  ignoreField?:  FieldDescriptor
 }
 
 /** A stored connection the form can pick. */
@@ -42,6 +29,7 @@ export interface StorageFormInit {
   mode:        'create' | 'edit'
   values:      StorageFormValues
   connections: ConnectionChoice[]
+  description: StorageFormDescription
 }
 
 /** The form's messages to the extension. */
@@ -60,5 +48,5 @@ export type FormReply =
   { type: 'pages', pages: Page[] } |
   { type: 'connections', connections: ConnectionChoice[], selected: string } |
   { type: 'lookupError', message: string } |
-  { type: 'invalid', errors: Partial<Record<keyof StorageFormValues, string>>, message?: string } |
+  { type: 'invalid', errors: Record<string, string>, message?: string } |
   { type: 'saved' }

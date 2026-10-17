@@ -1,3 +1,4 @@
+import { describedConfig } from '../../test/config-description/config-description.fixture'
 import type { EngineClient } from '../engine-process'
 import {
   type Edition,
@@ -6,7 +7,8 @@ import {
   SPACE_LIST_METHOD,
 } from '../engine-protocol'
 import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
-import { setUpStorages, type StorageSetupUI, type StorageType } from './set-up-storages.use-case'
+import { setUpStorages } from './set-up-storages.use-case'
+import type { StorageSetupUI } from './storage-setup.contract'
 
 type Route = (params: unknown) => unknown
 
@@ -36,19 +38,25 @@ function connectionStore (): ConnectionStore {
 
 const session = { sessionId: 's', baseUrl: meta.baseUrl, edition: 'cloud' as Edition, user: { displayName: 'Ed' } }
 
-function buildUI (types: StorageType[] | undefined): StorageSetupUI {
+function buildUI (types: string[] | undefined): StorageSetupUI & { offered: string[][] } {
+  const offered: string[][] = []
+
   return {
-    pickStorageTypes:  () => Promise.resolve(types),
+    offered,
+    pickStorageTypes: platforms => {
+      offered.push(platforms.map(platform => platform.id))
+
+      return Promise.resolve(types)
+    },
     pickSpace:         spaces => Promise.resolve(spaces[0]),
     pickAction:        () => Promise.resolve({ kind: 'use' }),
     promptSearchQuery: () => Promise.resolve(undefined),
     pickSearchResult:  () => Promise.resolve(undefined),
     promptTitlePrefix: value => Promise.resolve(value),
+    promptField:       (field, initial) => Promise.resolve(field.key === 'repo' ? 'owner/name' : initial ?? ''),
     pickConnection:    metas => Promise.resolve(metas[0]),
     noConnections:     () => Promise.resolve(),
     error:             () => Promise.resolve(),
-    promptRepo:        () => Promise.resolve('owner/name'),
-    promptBranch:      () => Promise.resolve('gh-pages'),
   }
 }
 
@@ -58,16 +66,20 @@ const engine = (): EngineClient => fakeEngine({
   [PAGE_CHILDREN_METHOD]: () => ({ pages: [] }),
 })
 
-describe('setUpStorages', () => {
-  it('configures each chosen storage type and returns the outputs to save', async () => {
-    const outputs = await setUpStorages({ engine: engine(), connections: connectionStore(), ui: buildUI(['confluence', 'github-pages']) })
+const description = describedConfig()
 
-    expect(outputs).toHaveLength(2)
+describe('setUpStorages', () => {
+  it('offers the platforms the engine describes, configures each chosen one and returns the outputs to save', async () => {
+    const ui = buildUI(['confluence', 'github-pages'])
+
+    const outputs = await setUpStorages({ engine: engine(), connections: connectionStore(), ui, description })
+
+    expect(ui.offered).toEqual([['confluence', 'github-pages', 'github-wiki']])
     expect(outputs?.map(output => output.platform)).toEqual(['confluence', 'github-pages'])
   })
 
   it('returns undefined when no type is chosen', async () => {
-    expect(await setUpStorages({ engine: engine(), connections: connectionStore(), ui: buildUI(undefined) })).toBeUndefined()
-    expect(await setUpStorages({ engine: engine(), connections: connectionStore(), ui: buildUI([]) })).toBeUndefined()
+    expect(await setUpStorages({ engine: engine(), connections: connectionStore(), ui: buildUI(undefined), description })).toBeUndefined()
+    expect(await setUpStorages({ engine: engine(), connections: connectionStore(), ui: buildUI([]), description })).toBeUndefined()
   })
 })

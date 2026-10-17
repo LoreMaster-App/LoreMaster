@@ -143,4 +143,5 @@ technical documentation and another for user manuals:
 The name is what the sidebar tree, the "sync to…" picker, the rollback list and the CLI show
 (`--output "User manuals"`), and it is the **Name** field of the storage form. Names are unique
 (case-insensitive), at most 60 characters. A storage without one is shown with a name made from
-the platform and where it goes (`Confluence · ENG`); the form fills that in when you save.
+the platform and where it goes (`Confluence · ENG`). The engine makes that name up, so every editor and the CLI show the
+same one; the form leaves an unnamed storage unnamed.

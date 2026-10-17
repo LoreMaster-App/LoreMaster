@@ -27,11 +27,13 @@ func ReadSettings() rpcserver.Method {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
 		names := make([]string, len(loaded.Settings.Outputs))
-		for i := range names {
+		summaries := make([]string, len(loaded.Settings.Outputs))
+		for i, output := range loaded.Settings.Outputs {
 			names[i] = workspacesettings.DisplayName(loaded.Settings.Outputs, i)
+			summaries[i] = workspacesettings.Summary(output)
 		}
 
-		return rpcprotocol.SettingsReadResult{Exists: loaded.Exists, FirstSync: loaded.FirstSync, Settings: toWire(loaded.Settings), DisplayNames: names}, nil
+		return rpcprotocol.SettingsReadResult{Exists: loaded.Exists, FirstSync: loaded.FirstSync, Settings: toWire(loaded.Settings), DisplayNames: names, Summaries: summaries}, nil
 	}
 }
 

@@ -1,0 +1,725 @@
+{
+  "platforms": [
+    {
+      "id": "confluence",
+      "label": "Confluence",
+      "description": "Atlassian Confluence: Cloud, Data Center or Server.",
+      "icon": "confluence",
+      "delivery": "pages",
+      "nameTemplate": "Confluence · {space|no space yet}",
+      "summaryTemplate": "{baseUrl}",
+      "connection": {
+        "field": "baseUrl",
+        "detectMethod": "edition/detect",
+        "kinds": [
+          {
+            "id": "apitoken",
+            "label": "Email and API token",
+            "help": "Atlassian Cloud: create the token at id.atlassian.com under Security \u003e API tokens.",
+            "editions": [
+              "cloud"
+            ],
+            "fields": [
+              {
+                "key": "email",
+                "label": "Email"
+              },
+              {
+                "key": "token",
+                "label": "API token",
+                "secret": true
+              }
+            ]
+          },
+          {
+            "id": "pat",
+            "label": "Personal access token",
+            "help": "Data Center, and Server 7.9 or later: create it in your profile under Personal Access Tokens.",
+            "editions": [
+              "datacenter",
+              "server"
+            ],
+            "fields": [
+              {
+                "key": "token",
+                "label": "Token",
+                "secret": true
+              }
+            ]
+          },
+          {
+            "id": "basic",
+            "label": "User and password",
+            "help": "Server before 7.9, which has no personal access tokens.",
+            "editions": [
+              "server"
+            ],
+            "fields": [
+              {
+                "key": "user",
+                "label": "User"
+              },
+              {
+                "key": "password",
+                "label": "Password",
+                "secret": true
+              }
+            ]
+          }
+        ]
+      },
+      "fields": [
+        {
+          "key": "baseUrl",
+          "label": "Confluence address",
+          "help": "The address of the site, https. Any page address of the site works.",
+          "type": "text",
+          "placeholder": "https://example.atlassian.net/wiki",
+          "required": true
+        },
+        {
+          "key": "space",
+          "label": "Space",
+          "help": "The space the pages go in.",
+          "type": "text",
+          "required": true,
+          "lookup": {
+            "kind": "space"
+          }
+        },
+        {
+          "key": "parentPageId",
+          "label": "Parent page",
+          "help": "The page the tree hangs under.",
+          "type": "text",
+          "required": true,
+          "pattern": "^\\d+$",
+          "patternHelp": "The parent page is a page id: digits only. Search for it by title to fill it in.",
+          "lookup": {
+            "kind": "page",
+            "needs": [
+              "space"
+            ],
+            "fills": [
+              {
+                "field": "titlePrefix",
+                "from": "title"
+              }
+            ]
+          }
+        },
+        {
+          "key": "titlePrefix",
+          "label": "Title prefix",
+          "help": "Pages are titled \"\u003cprefix\u003e: \u003cfirst heading\u003e\". Starts as the parent page's title.",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "direction",
+          "label": "Direction",
+          "help": "Which way changes flow.",
+          "type": "choice",
+          "default": "to-platform",
+          "choices": [
+            {
+              "value": "to-platform",
+              "label": "Files to Confluence",
+              "help": "Files are the source; the platform is overwritten."
+            },
+            {
+              "value": "two-way",
+              "label": "Both ways",
+              "help": "Edits made on the platform are pulled back into the files."
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "mermaidMode",
+          "label": "Mermaid diagrams",
+          "type": "choice",
+          "default": "image",
+          "choices": [
+            {
+              "value": "image",
+              "label": "Image",
+              "help": "A code macro plus an SVG attachment."
+            },
+            {
+              "value": "code",
+              "label": "Code only",
+              "help": "A code macro only."
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "titleCollision",
+          "label": "Title already exists",
+          "help": "What to do when an unsynced file's title already exists on the platform.",
+          "type": "choice",
+          "default": "fail",
+          "choices": [
+            {
+              "value": "fail",
+              "label": "Stop"
+            },
+            {
+              "value": "adopt",
+              "label": "Adopt the existing page"
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "linkMode",
+          "label": "Links between pages",
+          "type": "choice",
+          "default": "title",
+          "choices": [
+            {
+              "value": "title",
+              "label": "By page title"
+            },
+            {
+              "value": "id",
+              "label": "By page id"
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "template",
+          "label": "Template",
+          "help": "How the pages are laid out: a page id or address, or a file, with {{content}} where the page goes. Empty is the default layout.",
+          "type": "text",
+          "suggestions": [
+            "default"
+          ],
+          "advanced": true
+        }
+      ]
+    },
+    {
+      "id": "github-pages",
+      "label": "GitHub Pages",
+      "description": "A static site published to a branch of a GitHub repository.",
+      "icon": "site",
+      "delivery": "site",
+      "nameTemplate": "GitHub Pages · {repo|this repository}",
+      "summaryTemplate": "{repo|this repository's origin}",
+      "fields": [
+        {
+          "key": "repo",
+          "label": "Repository",
+          "help": "\"owner/name\" or a clone URL. Empty means this workspace's own origin.",
+          "type": "text",
+          "placeholder": "owner/name",
+          "pattern": "^(?:[\\w.-]+/[\\w.-]+|\\S+://\\S+|git@\\S+)$",
+          "patternHelp": "Use owner/name or a clone URL, or leave it empty for this workspace's own origin."
+        },
+        {
+          "key": "branch",
+          "label": "Branch",
+          "help": "The branch published to.",
+          "type": "text",
+          "default": "gh-pages",
+          "advanced": true
+        },
+        {
+          "key": "path",
+          "label": "Folder in the branch",
+          "help": "The folder inside the branch the site goes to, so another site can share the branch. Empty owns the whole branch.",
+          "type": "text",
+          "advanced": true
+        },
+        {
+          "key": "template",
+          "label": "Template",
+          "help": "A built-in layout, or a folder holding template.html. Write ./name for a folder named like a built-in.",
+          "type": "text",
+          "suggestions": [
+            "default",
+            "minimal",
+            "handbook",
+            "headless"
+          ],
+          "advanced": true
+        }
+      ]
+    },
+    {
+      "id": "github-wiki",
+      "label": "GitHub Wiki",
+      "description": "The repository's GitHub wiki.",
+      "icon": "wiki",
+      "delivery": "site",
+      "nameTemplate": "GitHub Wiki · {repo|this repository}",
+      "summaryTemplate": "{repo|this repository's origin}",
+      "fields": [
+        {
+          "key": "repo",
+          "label": "Repository",
+          "help": "\"owner/name\" or a clone URL. Empty means this workspace's own origin.",
+          "type": "text",
+          "placeholder": "owner/name",
+          "pattern": "^(?:[\\w.-]+/[\\w.-]+|\\S+://\\S+|git@\\S+)$",
+          "patternHelp": "Use owner/name or a clone URL, or leave it empty for this workspace's own origin."
+        },
+        {
+          "key": "branch",
+          "label": "Branch",
+          "help": "The wiki's branch. Empty means its default branch.",
+          "type": "text",
+          "advanced": true
+        },
+        {
+          "key": "template",
+          "label": "Template",
+          "help": "A Markdown file with {{content}} where the page goes. Empty is the default layout.",
+          "type": "text",
+          "suggestions": [
+            "default"
+          ],
+          "advanced": true
+        }
+      ]
+    }
+  ],
+  "outputFields": [
+    {
+      "key": "name",
+      "label": "Name",
+      "help": "What this output is called in the tree, the sync and the settings, so two of the same platform are told apart. Empty shows a name made from the platform and where it goes.",
+      "type": "text"
+    },
+    {
+      "key": "include",
+      "label": "Include",
+      "help": "Gitignore-style patterns this output reads even though an ignore or exclude list leaves them out.",
+      "type": "list",
+      "advanced": true
+    },
+    {
+      "key": "exclude",
+      "label": "Exclude",
+      "help": "Gitignore-style patterns this output leaves out, on top of the workspace's ignore list.",
+      "type": "list",
+      "advanced": true
+    }
+  ],
+  "contentFields": [
+    {
+      "key": "roots",
+      "label": "Folders to sync",
+      "help": "Folders relative to the workspace. \".\" is the whole workspace.",
+      "type": "list",
+      "default": "."
+    },
+    {
+      "key": "excludes",
+      "label": "Excluded paths",
+      "help": "Gitignore-style patterns this storage leaves out.",
+      "type": "list"
+    }
+  ],
+  "generators": [
+    {
+      "id": "test-results",
+      "label": "Test results",
+      "description": "JUnit XML test reports."
+    },
+    {
+      "id": "coverage",
+      "label": "Coverage",
+      "description": "Code coverage reports."
+    },
+    {
+      "id": "markdown-docs",
+      "label": "Markdown documents",
+      "description": "Existing documents brought in as pages."
+    },
+    {
+      "id": "go-docs",
+      "label": "Go documentation",
+      "description": "Go package documentation."
+    },
+    {
+      "id": "openapi-docs",
+      "label": "OpenAPI",
+      "description": "OpenAPI 3 descriptions."
+    },
+    {
+      "id": "ts-docs",
+      "label": "TypeScript documentation",
+      "description": "TypeScript and JavaScript source documentation, through TypeDoc."
+    },
+    {
+      "id": "python-docs",
+      "label": "Python documentation",
+      "description": "Python source documentation."
+    },
+    {
+      "id": "csharp-docs",
+      "label": "C# documentation",
+      "description": "C# source documentation."
+    },
+    {
+      "id": "dart-docs",
+      "label": "Dart documentation",
+      "description": "Dart source documentation."
+    },
+    {
+      "id": "storybook-docs",
+      "label": "Storybook",
+      "description": "The components of a Storybook.",
+      "fields": [
+        {
+          "key": "source",
+          "label": "Storybook",
+          "help": "The URL of a Storybook, or the workspace folder of its build. Input then filters the stories by title (Components/, !Internal/).",
+          "type": "text",
+          "placeholder": "storybook-static",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "generatorFields": [
+    {
+      "key": "type",
+      "label": "Type",
+      "help": "What the generator reads. Empty recognises the type from input.",
+      "type": "choice",
+      "choices": [
+        {
+          "value": "test-results",
+          "label": "Test results",
+          "help": "JUnit XML test reports."
+        },
+        {
+          "value": "coverage",
+          "label": "Coverage",
+          "help": "Code coverage reports."
+        },
+        {
+          "value": "markdown-docs",
+          "label": "Markdown documents",
+          "help": "Existing documents brought in as pages."
+        },
+        {
+          "value": "go-docs",
+          "label": "Go documentation",
+          "help": "Go package documentation."
+        },
+        {
+          "value": "openapi-docs",
+          "label": "OpenAPI",
+          "help": "OpenAPI 3 descriptions."
+        },
+        {
+          "value": "ts-docs",
+          "label": "TypeScript documentation",
+          "help": "TypeScript and JavaScript source documentation, through TypeDoc."
+        },
+        {
+          "value": "python-docs",
+          "label": "Python documentation",
+          "help": "Python source documentation."
+        },
+        {
+          "value": "csharp-docs",
+          "label": "C# documentation",
+          "help": "C# source documentation."
+        },
+        {
+          "value": "dart-docs",
+          "label": "Dart documentation",
+          "help": "Dart source documentation."
+        },
+        {
+          "value": "storybook-docs",
+          "label": "Storybook",
+          "help": "The components of a Storybook."
+        }
+      ]
+    },
+    {
+      "key": "output",
+      "label": "Output folder",
+      "help": "The folder, inside the workspace, the pages are written to. Include it in an output's content roots for the pages to sync.",
+      "type": "path",
+      "required": true,
+      "pathKind": "folder"
+    },
+    {
+      "key": "input",
+      "label": "Input",
+      "help": "Gitignore-style patterns selecting what to read. Empty means the type's own default.",
+      "type": "list"
+    },
+    {
+      "key": "title",
+      "label": "Index page title",
+      "help": "Heads the generated index page. Empty means the type's own default.",
+      "type": "text",
+      "advanced": true
+    },
+    {
+      "key": "prepare",
+      "label": "Prepare command",
+      "help": "A shell command that produces what the generator reads (a build, a test run). It runs only when a run asks for it, never on its own.",
+      "type": "text",
+      "advanced": true
+    }
+  ],
+  "sections": [
+    {
+      "id": "project",
+      "label": "Project",
+      "scope": "project",
+      "settings": [
+        {
+          "key": "ignore",
+          "label": "Ignore",
+          "help": "Gitignore-style patterns every output leaves out of the scan, for example CLAUDE.md or internal/.",
+          "type": "list"
+        },
+        {
+          "key": "skipGitignored",
+          "label": "Skip git-ignored files",
+          "help": "Leave out Markdown that the workspace's .gitignore files ignore.",
+          "type": "bool",
+          "default": "true"
+        },
+        {
+          "key": "confluence.baseUrl",
+          "label": "Confluence address",
+          "help": "The Confluence address every output uses unless it sets its own. Set it once in the user's settings; a project overrides it. The token is never a setting.",
+          "type": "text",
+          "placeholder": "https://example.atlassian.net/wiki"
+        },
+        {
+          "key": "defaults.direction",
+          "label": "Default direction",
+          "help": "The direction of an output that does not set one. Empty means files to platform.",
+          "type": "choice",
+          "choices": [
+            {
+              "value": "to-platform",
+              "label": "to-platform"
+            },
+            {
+              "value": "two-way",
+              "label": "two-way"
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "defaults.mermaidMode",
+          "label": "Default Mermaid mode",
+          "help": "How Mermaid diagrams are stored in an output that does not set it. Empty means image.",
+          "type": "choice",
+          "choices": [
+            {
+              "value": "image",
+              "label": "image"
+            },
+            {
+              "value": "code",
+              "label": "code"
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "defaults.linkMode",
+          "label": "Default link mode",
+          "help": "How links between pages are written in an output that does not set it. Empty means title.",
+          "type": "choice",
+          "choices": [
+            {
+              "value": "title",
+              "label": "title"
+            },
+            {
+              "value": "id",
+              "label": "id"
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "defaults.titleCollision",
+          "label": "Default title collision",
+          "help": "What to do when an unsynced file's title already exists, in an output that does not set it. Empty means fail.",
+          "type": "choice",
+          "choices": [
+            {
+              "value": "fail",
+              "label": "fail"
+            },
+            {
+              "value": "adopt",
+              "label": "adopt"
+            }
+          ],
+          "advanced": true
+        },
+        {
+          "key": "defaults.titlePrefix",
+          "label": "Default title prefix",
+          "help": "The title prefix of an output that does not set one. Empty means the first sync asks for one.",
+          "type": "text",
+          "advanced": true
+        }
+      ]
+    },
+    {
+      "id": "sync",
+      "label": "Sync and watch",
+      "scope": "user",
+      "settings": [
+        {
+          "key": "generateBeforeSync",
+          "label": "Generate before every sync",
+          "help": "Run the generators (test results, API documentation) before every sync, so the pages they write are as fresh as the code.",
+          "type": "bool",
+          "default": "false"
+        },
+        {
+          "key": "runPrepareSteps",
+          "label": "Run prepare commands",
+          "help": "Whether a generator's prepare command runs when you generate. Ask shows the exact commands first.",
+          "type": "choice",
+          "default": "ask",
+          "choices": [
+            {
+              "value": "ask",
+              "label": "Ask first"
+            },
+            {
+              "value": "always",
+              "label": "Always"
+            },
+            {
+              "value": "never",
+              "label": "Never"
+            }
+          ]
+        },
+        {
+          "key": "watchDebounceSeconds",
+          "label": "Watch mode wait",
+          "help": "In watch mode, how many seconds nothing may change before the changes are synced, so a burst of saves is one sync.",
+          "type": "number",
+          "default": "2",
+          "min": 1,
+          "max": 300
+        },
+        {
+          "key": "credentials.useKeychain",
+          "label": "Use the system keychain",
+          "help": "Remember connections in the operating system's keychain, so every editor and the command line share them and a token is entered once.",
+          "type": "bool",
+          "default": "false"
+        }
+      ]
+    },
+    {
+      "id": "export",
+      "label": "Export",
+      "scope": "user",
+      "settings": [
+        {
+          "key": "export.formats",
+          "label": "Default formats",
+          "help": "The formats ticked by default when you export a Markdown file.",
+          "type": "list",
+          "suggestions": [
+            "html",
+            "pdf",
+            "png",
+            "docx",
+            "odt",
+            "txt",
+            "jira-wiki",
+            "jira-adf",
+            "mediawiki"
+          ]
+        },
+        {
+          "key": "export.folder",
+          "label": "Export folder",
+          "help": "Where exported files go. Empty writes each next to its Markdown file. A folder receives the exports with the document's own folders mirrored below it.",
+          "type": "path",
+          "pathKind": "folder"
+        },
+        {
+          "key": "export.pageSize",
+          "label": "PDF page size",
+          "help": "The paper a PDF export is printed on.",
+          "type": "choice",
+          "default": "A4",
+          "choices": [
+            {
+              "value": "A4",
+              "label": "A4"
+            },
+            {
+              "value": "A3",
+              "label": "A3"
+            },
+            {
+              "value": "A5",
+              "label": "A5"
+            },
+            {
+              "value": "Letter",
+              "label": "Letter"
+            },
+            {
+              "value": "Legal",
+              "label": "Legal"
+            }
+          ]
+        },
+        {
+          "key": "export.pngWidth",
+          "label": "PNG width",
+          "help": "The width in pixels of a PNG export. The image is as tall as the page.",
+          "type": "number",
+          "default": "1000",
+          "min": 320,
+          "max": 4000
+        },
+        {
+          "key": "export.docxTemplate",
+          "label": "Word template",
+          "help": "A Word file used as the company template for DOCX exports: styles, numbering, headers, footers and page setup are taken from it. Relative to the project, or absolute.",
+          "type": "path",
+          "pathKind": "file",
+          "advanced": true
+        },
+        {
+          "key": "export.odtTemplate",
+          "label": "OpenDocument template",
+          "help": "An OpenDocument file used as the company template for ODT exports. Relative to the project, or absolute.",
+          "type": "path",
+          "pathKind": "file",
+          "advanced": true
+        },
+        {
+          "key": "export.browserPath",
+          "label": "Browser for PDF and PNG",
+          "help": "The Chrome, Edge or Chromium that prints PDF and PNG exports. Empty uses the one installed in the usual place.",
+          "type": "path",
+          "pathKind": "file",
+          "advanced": true
+        }
+      ]
+    }
+  ]
+}

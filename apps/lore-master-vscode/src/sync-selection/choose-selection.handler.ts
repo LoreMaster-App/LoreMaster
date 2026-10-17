@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
-import type { Output } from '../engine-protocol'
-import { storageLabel } from '../sidebar'
+import type { ConfiguredOutput } from '../sidebar'
 import type { SelectionScope } from './selection-lists.algorithm'
 
 /** The command ids contributed in package.json. */
@@ -33,7 +32,7 @@ function isChosenIn (targets: SelectionTarget[], index: number): boolean {
  * Asks which storages an exclusion is for; undefined when the user cancels. With one storage
  * there is nothing to choose, so it is not asked.
  */
-export async function askExcludeScope (targets: SelectionTarget[], outputs: { index: number; output: Output }[]): Promise<SelectionScope | undefined> {
+export async function askExcludeScope (targets: SelectionTarget[], outputs: ConfiguredOutput[]): Promise<SelectionScope | undefined> {
   const [only] = outputs
   if (only && outputs.length === 1) {
     return { kind: 'storages', indexes: [only.index] }
@@ -41,7 +40,7 @@ export async function askExcludeScope (targets: SelectionTarget[], outputs: { in
   const items: Choice[] = [
     { label: 'All storages', description: 'never synced anywhere', all: true },
     ...outputs.map(each => ({
-      label: storageLabel(each.output), indexes: [each.index], picked: isChosenIn(targets, each.index),
+      label: each.label, indexes: [each.index], picked: isChosenIn(targets, each.index),
     })),
   ]
   const picked = await vscode.window.showQuickPick<Choice>(items, {
@@ -60,13 +59,13 @@ export async function askExcludeScope (targets: SelectionTarget[], outputs: { in
 }
 
 /** Asks which storages files are brought into; undefined when the user cancels. Not asked with one storage. */
-export async function askIncludeIndexes (targets: SelectionTarget[], outputs: { index: number; output: Output }[]): Promise<number[] | undefined> {
+export async function askIncludeIndexes (targets: SelectionTarget[], outputs: ConfiguredOutput[]): Promise<number[] | undefined> {
   const [only] = outputs
   if (only && outputs.length === 1) {
     return [only.index]
   }
   const items: Choice[] = outputs.map(each => ({
-    label: storageLabel(each.output), indexes: [each.index], picked: isChosenIn(targets, each.index),
+    label: each.label, indexes: [each.index], picked: isChosenIn(targets, each.index),
   }))
   const picked = await vscode.window.showQuickPick<Choice>(items, {
     title:       `LoreMaster: sync ${describe(targets)}`,

@@ -1,8 +1,7 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
-import { isGitHubOutput } from '../engine-protocol'
+import { isSiteOutput } from '../config-description'
 import type { ConnectionStore } from '../secret-storage'
-import { storageDescription, storageLabel } from '../sidebar'
 import { checkRemote } from './check-remote.use-case'
 import { checkPages } from './check-pages.use-case'
 import type { PagesViewProvider } from './pages-view.client'
@@ -22,9 +21,9 @@ export interface CheckRemoteCommandDeps {
  * which.
  */
 export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider: PagesViewProvider): Promise<void> {
-  const { folder, outputs } = await provider.configuredOutputs()
-  const checkable = outputs.filter(each => each.output.platform === 'confluence' || isGitHubOutput(each.output))
-  if (checkable.length === 0) {
+  const { folder, outputs, description } = await provider.configuredOutputs()
+  const checkable = description ? outputs.filter(each => description.platforms.some(platform => platform.id === each.output.platform)) : []
+  if (!description || checkable.length === 0) {
     await vscode.window.showInformationMessage('LoreMaster: there is no storage to check. Add one with "Add sync storage".')
 
     return
@@ -33,11 +32,7 @@ export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider
   let chosen = checkable[0]
   if (checkable.length > 1) {
     const picked = await vscode.window.showQuickPick(
-      checkable.map(each => ({
-        label:       isGitHubOutput(each.output) || (each.output.name ?? '') !== '' ? storageLabel(each.output) : `Confluence · ${each.output.space}`,
-        description: isGitHubOutput(each.output) ? storageDescription(each.output) : each.output.baseUrl,
-        each,
-      })),
+      checkable.map(each => ({ label: each.label, description: each.detail, each })),
       { title: 'LoreMaster: check which storage?' },
     ) as { each: typeof chosen } | undefined
     if (!picked) {
@@ -46,7 +41,7 @@ export async function checkRemoteCommand (deps: CheckRemoteCommandDeps, provider
     chosen = picked.each
   }
 
-  if (isGitHubOutput(chosen.output)) {
+  if (isSiteOutput(description, chosen.output)) {
     const site = await vscode.window.withProgress(
       { location: vscode.ProgressLocation.Window, title: 'LoreMaster: comparing the site with the published branch' },
       () => checkPages(deps.engine, folder, chosen.index),

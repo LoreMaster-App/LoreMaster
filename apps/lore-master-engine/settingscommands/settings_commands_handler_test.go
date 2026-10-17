@@ -282,6 +282,9 @@ func TestSettingsComeBackWithTheNamesTheEngineMakesUp(t *testing.T) {
 	}
 
 	saved := read(t, conn, root)
+	if len(saved.Summaries) != 2 || saved.Summaries[0] != "https://acme.atlassian.net/wiki" || saved.Summaries[1] != "acme/docs" {
+		t.Fatalf("summaries: %v", saved.Summaries)
+	}
 	if len(saved.DisplayNames) != 2 || saved.DisplayNames[0] != "Confluence · ENG" || saved.DisplayNames[1] != "GitHub Pages · acme/docs" {
 		t.Fatalf("names: %v", saved.DisplayNames)
 	}

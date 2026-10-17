@@ -6,7 +6,7 @@ func confluencePlatform() Platform {
 	return Platform{
 		ID: "confluence", Label: "Confluence", Icon: "confluence", Delivery: DeliveryPages,
 		Description:  "Atlassian Confluence: Cloud, Data Center or Server.",
-		NameTemplate: "Confluence · {space|no space yet}",
+		NameTemplate: "Confluence · {space|no space yet}", SummaryTemplate: "{baseUrl}",
 		Connection: &Connection{
 			Field:        "baseUrl",
 			DetectMethod: "edition/detect",

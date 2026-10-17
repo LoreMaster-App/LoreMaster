@@ -1,5 +1,7 @@
 import * as vscode from 'vscode'
-import { type Output, SETTINGS_READ_METHOD, type TreeNode, WORKSPACE_TREE_METHOD, type WorkspaceTreeResult } from '../engine-protocol'
+import { describedConfig } from '../../test/config-description/config-description.fixture'
+import { readResultOf } from '../../test/config-description/engine-answers.fixture'
+import { CONFIG_DESCRIBE_METHOD, type Output, SETTINGS_READ_METHOD, type TreeNode, WORKSPACE_TREE_METHOD, type WorkspaceTreeResult } from '../engine-protocol'
 import type { LabelMode } from './page-tree.contract'
 import { type DisplayOptions, type PagesEngine, type PagesNode, PagesViewProvider } from './pages-view.client'
 
@@ -32,8 +34,11 @@ function engine (outputs: Output[], trees: Record<number, WorkspaceTreeResult>, 
   return {
     request (method: string, params?: unknown) {
       requests.push({ method, params })
+      if (method === CONFIG_DESCRIBE_METHOD) {
+        return Promise.resolve(describedConfig() as never)
+      }
       if (method === SETTINGS_READ_METHOD) {
-        return Promise.resolve({ exists: true, firstSync: false, settings: { version: 1, outputs } } as never)
+        return Promise.resolve(readResultOf({ version: 1, outputs }) as never)
       }
       if (method === WORKSPACE_TREE_METHOD) {
         const asked = params as { output: number; scope?: string }
@@ -231,7 +236,7 @@ describe('PagesViewProvider', () => {
       const [localNode] = await view.getChildren()
       const rows = await view.getChildren(localNode)
 
-      expect(requests.find(request => (request.params as { scope?: string }).scope === 'local')?.params).toEqual({ workspaceRoot: '/w', output: 0, scope: 'local' })
+      expect(requests.find(request => (request.params as { scope?: string } | undefined)?.scope === 'local')?.params).toEqual({ workspaceRoot: '/w', output: 0, scope: 'local' })
       expect(rows.map(row => view.getTreeItem(row).description)).toEqual([
         'README.md · → Confluence · ENG, Confluence · OPS',
         'guide.md · → Confluence · ENG',

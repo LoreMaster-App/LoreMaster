@@ -75,6 +75,8 @@ type Platform struct {
 	// NameTemplate makes up a name for an output that has none. {key} is the value of that
 	// field; {key|fallback} uses the fallback when it is empty.
 	NameTemplate string `json:"nameTemplate"`
+	// SummaryTemplate says where an output goes, in the same syntax, for the second line of a row.
+	SummaryTemplate string `json:"summaryTemplate"`
 	// Connection says how a user signs in to the platform; absent when it needs no sign-in here
 	// (the site platforms use the user's own git).
 	Connection *Connection `json:"connection,omitempty"`

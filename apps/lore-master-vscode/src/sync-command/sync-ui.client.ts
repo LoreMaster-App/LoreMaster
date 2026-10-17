@@ -1,7 +1,6 @@
 import * as vscode from 'vscode'
-import { isGitHubOutput, type Output } from '../engine-protocol'
+import type { FieldDescriptor, PlatformDescriptor } from '../engine-protocol'
 import type { ConnectionMeta } from '../secret-storage'
-import type { StorageType } from '../storage-setup'
 import { ROLLBACK_SYNC_COMMAND } from '../sync-rollback'
 import { createSyncTargetUI } from '../sync-target'
 import type { OutputChoice, SyncUI } from './sync-run.use-case'
@@ -25,13 +24,9 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
       await vscode.window.showInformationMessage('LoreMaster: no connection yet — run "LoreMaster: Add Connection" first.')
     },
 
-    async pickStorageTypes () {
-      const picked = await vscode.window.showQuickPick<{ label: string, description: string, value: StorageType }>(
-        [
-          { label: 'Confluence', description: 'Sync Markdown to a Confluence space', value: 'confluence' },
-          { label: 'GitHub Pages', description: 'Publish Markdown as a static site on a gh-pages branch', value: 'github-pages' },
-          { label: 'GitHub Wiki', description: "Publish Markdown as the repository's wiki pages", value: 'github-wiki' },
-        ],
+    async pickStorageTypes (platforms: PlatformDescriptor[]) {
+      const picked = await vscode.window.showQuickPick(
+        platforms.map(platform => ({ label: platform.label, description: platform.description, value: platform.id })),
         { title: 'LoreMaster: where to sync', placeHolder: 'Choose one or more storages', canPickMany: true },
       )
 
@@ -40,23 +35,31 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
 
     async pickOutputs (choices: OutputChoice[]) {
       const picked = await vscode.window.showQuickPick(
-        choices.map(choice => ({ label: outputLabel(choice.output), description: outputDescription(choice.output), index: choice.index, picked: true })),
+        choices.map(choice => ({ label: choice.label, description: choice.detail, index: choice.index, picked: true })),
         { title: 'LoreMaster: sync to', placeHolder: 'Choose the storages to sync', canPickMany: true },
       )
 
       return picked?.map(item => item.index)
     },
 
-    promptRepo () {
-      return Promise.resolve(vscode.window.showInputBox({
-        title:       'LoreMaster: GitHub Pages repository',
-        prompt:      "owner/name or a clone URL — leave blank to use this repository's origin",
-        placeHolder: "(this repository's origin)",
-      }))
-    },
+    async promptField (field: FieldDescriptor, initial?: string) {
+      if (field.type === 'choice') {
+        const picked = await vscode.window.showQuickPick(
+          (field.choices ?? []).map(choice => ({ label: choice.label, description: choice.help, value: choice.value })),
+          { title: `LoreMaster: ${field.label}`, placeHolder: field.help },
+        )
 
-    promptBranch () {
-      return Promise.resolve(vscode.window.showInputBox({ title: 'LoreMaster: GitHub Pages branch', prompt: 'Branch to publish to', value: 'gh-pages' }))
+        return picked?.value
+      }
+      const pattern = field.pattern === undefined ? undefined : new RegExp(field.pattern)
+
+      return vscode.window.showInputBox({
+        title:         `LoreMaster: ${field.label}`,
+        prompt:        field.help,
+        placeHolder:   field.placeholder ?? field.default,
+        value:         initial ?? '',
+        validateInput: value => field.required === true && value.trim() === '' ? `${field.label} is required.` : (pattern && value.trim() !== '' && !pattern.test(value.trim()) ? field.patternHelp : undefined),
+      })
     },
 
     async choose (summary: string) {
@@ -119,25 +122,4 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
       })
     },
   }
-}
-
-/** A short, human label for an output in the "sync to…" picker. */
-function outputLabel (output: Output): string {
-  if (output.name !== undefined && output.name.trim() !== '') {
-    return output.name
-  }
-  if (output.platform === 'github-wiki') {
-    return 'GitHub Wiki'
-  }
-
-  return output.platform === 'github-pages' ? `GitHub Pages — ${output.branch || 'gh-pages'}` : `Confluence — ${output.space}`
-}
-
-/** The second line in the "sync to…" picker: where the output goes. */
-function outputDescription (output: Output): string {
-  if (isGitHubOutput(output)) {
-    return output.repo || "this repository's origin"
-  }
-
-  return output.baseUrl
 }

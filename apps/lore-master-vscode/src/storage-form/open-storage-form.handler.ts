@@ -1,14 +1,15 @@
 import * as vscode from 'vscode'
+import { describeConfig } from '../config-description'
 import { connectConfluence } from '../connection-setup'
 import type { EngineClient } from '../engine-process'
-import { type Output, SETTINGS_READ_METHOD, type Settings, type SettingsReadResult } from '../engine-protocol'
+import { type ConfigDescription, SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
 import type { ConnectionStore } from '../secret-storage'
-import { isConfiguredOutput, REFRESH_STORAGES_COMMAND, storageDescription, storageLabel, type StorageNode } from '../sidebar'
+import { type ConfiguredOutput, configuredOutputsOf, REFRESH_STORAGES_COMMAND, type StorageNode } from '../sidebar'
 import { pickWorkspaceFolder } from '../workspace-files'
 import { saveStorage } from './save-storage.use-case'
-import type { ConnectionChoice, FormReply, FormRequest, StorageFormInit } from './storage-form.contract'
+import type { ConnectionChoice, FormReply, FormRequest, StorageFormInit, StorageFormValues } from './storage-form.contract'
 import { renderStorageFormPage } from './storage-form-page.mapper'
-import { emptyValues, outputToValues } from './storage-form-values.mapper'
+import { emptyValues, formDescription, outputToValues } from './storage-form-values.mapper'
 import { createStorageLookup } from './storage-lookup.client'
 
 export interface StorageFormDeps {
@@ -43,19 +44,22 @@ export async function addStorageForm (deps: StorageFormDeps): Promise<void> {
     return
   }
   let read: SettingsReadResult
+  let description: ConfigDescription
   try {
     read = await deps.engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })
+    description = await describeConfig(deps.engine)
   } catch (error) {
     await vscode.window.showErrorMessage(`LoreMaster: ${messageOf(error)}`)
 
     return
   }
-  const values = { ...emptyValues(), ignore: (read.settings.ignore ?? []).join(', ') }
+  const values: StorageFormValues = { ...emptyValues(description), ignore: (read.settings.ignore ?? []).join(', ') }
   const metas = deps.connections.list()
-  if (metas.length === 1) {
-    values.connection = metas[0].baseUrl
+  const connectionKey = description.platforms.find(platform => platform.connection)?.connection?.field
+  if (connectionKey !== undefined && metas.length === 1) {
+    values[connectionKey] = metas[0].baseUrl
   }
-  open(deps, folder, { mode: 'create', values, connections: choices(deps.connections) }, undefined)
+  open(deps, folder, { mode: 'create', values, connections: choices(deps.connections), description: formDescription(description) }, undefined)
 }
 
 /** Opens the form on a storage: the row it was invoked on, or the one the user picks. */
@@ -66,24 +70,25 @@ export async function editStorageForm (deps: StorageFormDeps, node: StorageNode 
 
     return
   }
-  let settings: Settings
+  let read: SettingsReadResult
+  let description: ConfigDescription
   try {
-    const read = await deps.engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })
-    settings = read.settings
+    read = await deps.engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })
+    description = await describeConfig(deps.engine)
   } catch (error) {
     await vscode.window.showErrorMessage(`LoreMaster: ${messageOf(error)}`)
 
     return
   }
-  const target = node ?? await pickStorage(settings)
+  const settings = read.settings
+  const target = node ?? await pickStorage(configuredOutputsOf(read, description))
   if (!target) {
     return
   }
-  open(deps, folder, { mode: 'edit', values: outputToValues(target.output, settings), connections: choices(deps.connections) }, target.index)
+  open(deps, folder, { mode: 'edit', values: outputToValues(description, target.output, settings), connections: choices(deps.connections), description: formDescription(description) }, target.index)
 }
 
-async function pickStorage (settings: Settings): Promise<{ index: number, output: Output } | undefined> {
-  const options = settings.outputs.map((output, index) => ({ index, output })).filter(each => isConfiguredOutput(each.output))
+async function pickStorage (options: ConfiguredOutput[]): Promise<ConfiguredOutput | undefined> {
   if (options.length === 0) {
     await vscode.window.showInformationMessage('LoreMaster: no storage to edit yet. Add one with "Add sync storage".')
 
@@ -93,7 +98,7 @@ async function pickStorage (settings: Settings): Promise<{ index: number, output
     return options[0]
   }
   const picked = await vscode.window.showQuickPick(
-    options.map(each => ({ label: storageLabel(each.output), description: storageDescription(each.output), each })),
+    options.map(each => ({ label: each.label, description: each.detail, each })),
     { title: 'LoreMaster: which storage?' },
   )
 

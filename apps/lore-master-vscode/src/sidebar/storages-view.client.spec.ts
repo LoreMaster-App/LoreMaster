@@ -1,5 +1,7 @@
 import * as vscode from 'vscode'
-import { type Output, SETTINGS_READ_METHOD } from '../engine-protocol'
+import { describedConfig } from '../../test/config-description/config-description.fixture'
+import { readResultOf } from '../../test/config-description/engine-answers.fixture'
+import { CONFIG_DESCRIBE_METHOD, type Output, SETTINGS_READ_METHOD } from '../engine-protocol'
 import { type StoragesEngine, StoragesViewProvider } from './storages-view.client'
 
 const confluence: Output = {
@@ -35,7 +37,11 @@ const scaffold: Output = { ...confluence, baseUrl: '', space: '', parentPageId: 
 function engine (outputs: Output[]): StoragesEngine {
   return {
     request (method: string) {
-      return Promise.resolve((method === SETTINGS_READ_METHOD ? { exists: true, firstSync: false, settings: { version: 1, outputs } } : null) as never)
+      if (method === CONFIG_DESCRIBE_METHOD) {
+        return Promise.resolve(describedConfig() as never)
+      }
+
+      return Promise.resolve((method === SETTINGS_READ_METHOD ? readResultOf({ version: 1, outputs }) : null) as never)
     },
   }
 }
@@ -59,7 +65,9 @@ describe('StoragesViewProvider', () => {
     const [node] = await new StoragesViewProvider(engine([pages])).getChildren()
     const item = new StoragesViewProvider(engine([pages])).getTreeItem(node)
 
-    expect(item.label).toContain('GitHub Pages')
+    expect(item.label).toContain('github-pages')
+    expect(item.description).toBe('owner/name')
+    expect((item.iconPath as { id: string }).id).toBe('globe')
     expect(item.contextValue).toBe('loreMasterStorage')
   })
 
