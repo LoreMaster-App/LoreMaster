@@ -1,7 +1,7 @@
 import { SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
 import type { FileStore } from '../agent-creation'
 import type { CiProvider } from './ci-provider.config'
-import { renderAzurePipelines, renderGitHubActions, type CiNeeds, type CiPipelineFile } from '../ci-pipeline-rendering'
+import { renderCiPipeline, type CiNeeds, type CiPipelineFile } from '../ci-pipeline-rendering'
 import { planCiNeeds } from './plan-ci-needs.policy'
 import { renderCiGuide } from './render-ci-guide.mapper'
 
@@ -47,7 +47,7 @@ export interface CiSetupGuide {
 
 /** The pipeline file and the guide for one CI. */
 export function buildCiSetupGuide (provider: CiProvider, needs: CiNeeds): CiSetupGuide {
-  const content = provider.id === 'github-actions' ? renderGitHubActions(needs) : renderAzurePipelines(needs)
+  const content = renderCiPipeline(provider.id, needs)
   const pipeline: CiPipelineFile = { path: provider.path, content }
 
   return { guide: renderCiGuide(provider, needs, pipeline), pipeline }

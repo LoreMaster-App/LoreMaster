@@ -1,5 +1,5 @@
 /** The CI systems the session writes instructions and a pipeline file for. */
-export type CiProviderId = 'github-actions' | 'azure-pipelines'
+export type CiProviderId = 'github-actions' | 'azure-pipelines' | 'gitlab-ci' | 'bitbucket-pipelines' | 'jenkins' | 'circleci'
 
 /** One credential the pipeline needs, named the way the engine reads it from the environment. */
 export interface CiSecret {
