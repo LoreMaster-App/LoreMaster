@@ -15,7 +15,7 @@ export interface CheckRemoteCommandDeps {
 }
 
 /**
- * Asks where the Pages view's pages stand, read-only. For a Confluence storage the answer
+ * Asks where a storage's pages stand, read-only. For a Confluence storage the answer
  * lands in the view; for a GitHub Pages output it is a message saying whether a publish would
  * change anything, because a site has no per-page remote state. With several storages it asks
  * which.

@@ -3,6 +3,17 @@ package clicommands
 import (
 	"strings"
 	"testing"
+
+	"lore-master/libs/documentation-sync/configcatalog"
+)
+
+// The variables the description names for Confluence sign-in.
+const (
+	envEmail    = "LORE_MASTER_EMAIL"
+	envToken    = "LORE_MASTER_TOKEN"
+	envPAT      = "LORE_MASTER_PAT"
+	envUser     = "LORE_MASTER_USER"
+	envPassword = "LORE_MASTER_PASSWORD"
 )
 
 func environment(values map[string]string) func(string) string {
@@ -52,6 +63,36 @@ func TestCredentialFromTheEnvironmentNamesTheVariablesWhenThereIsNone(t *testing
 			if !strings.Contains(err.Error(), name) {
 				t.Fatalf("the message does not name %s: %v", name, err)
 			}
+		}
+	}
+}
+
+func TestTheCommandLineHelpNamesEveryVariableTheDescriptionDoes(t *testing.T) {
+	_, connection := signIn()
+	for _, kind := range connection.Kinds {
+		for _, field := range kind.Fields {
+			if !strings.Contains(usage, field.Env) {
+				t.Errorf("the help does not mention %s (%s)", field.Env, kind.ID)
+			}
+		}
+	}
+}
+
+func TestTheConstantsAboveAreTheDescriptionsVariables(t *testing.T) {
+	names := map[string]bool{}
+	for _, platform := range configcatalog.Platforms() {
+		if platform.Connection == nil {
+			continue
+		}
+		for _, kind := range platform.Connection.Kinds {
+			for _, field := range kind.Fields {
+				names[field.Env] = true
+			}
+		}
+	}
+	for _, name := range []string{envEmail, envToken, envPAT, envUser, envPassword} {
+		if !names[name] {
+			t.Errorf("%s is not a variable the description names", name)
 		}
 	}
 }

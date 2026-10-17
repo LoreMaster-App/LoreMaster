@@ -1,4 +1,4 @@
-/** How the Pages view arranges a storage's files. */
+/** How the Sync view arranges a storage's files. */
 export type ViewMode = 'storage' | 'flat' | 'repo'
 
 /** What the view does with files a storage leaves out. */

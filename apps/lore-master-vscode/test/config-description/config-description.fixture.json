@@ -11,6 +11,12 @@
       "connection": {
         "field": "baseUrl",
         "detectMethod": "edition/detect",
+        "editionHints": [
+          {
+            "edition": "cloud",
+            "hostSuffix": ".atlassian.net"
+          }
+        ],
         "kinds": [
           {
             "id": "apitoken",
@@ -22,11 +28,15 @@
             "fields": [
               {
                 "key": "email",
-                "label": "Email"
+                "label": "Email",
+                "help": "The Atlassian account email of the API token.",
+                "env": "LORE_MASTER_EMAIL"
               },
               {
                 "key": "token",
                 "label": "API token",
+                "help": "An Atlassian API token for that account.",
+                "env": "LORE_MASTER_TOKEN",
                 "secret": true
               }
             ]
@@ -43,6 +53,8 @@
               {
                 "key": "token",
                 "label": "Token",
+                "help": "A personal access token.",
+                "env": "LORE_MASTER_PAT",
                 "secret": true
               }
             ]
@@ -57,11 +69,15 @@
             "fields": [
               {
                 "key": "user",
-                "label": "User"
+                "label": "User",
+                "help": "The user name.",
+                "env": "LORE_MASTER_USER"
               },
               {
                 "key": "password",
                 "label": "Password",
+                "help": "The password.",
+                "env": "LORE_MASTER_PASSWORD",
                 "secret": true
               }
             ]

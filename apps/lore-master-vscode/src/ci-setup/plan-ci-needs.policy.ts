@@ -1,5 +1,6 @@
 import { isSiteOutput, platformOf } from '../config-description'
-import type { ConfigDescription, Output, Settings } from '../engine-protocol'
+import { authMethodsFor } from '../connection-setup'
+import type { ConfigDescription, ConnectionDescriptor, CredentialKindDescriptor, Output, Settings } from '../engine-protocol'
 import type { CiNeeds, CiSecret } from '../ci-pipeline-rendering'
 
 export interface PlanCiNeedsInput {
@@ -9,15 +10,6 @@ export interface PlanCiNeedsInput {
   version:        string
   settingsInRepo: boolean
 }
-
-const CLOUD_SECRETS: CiSecret[] = [
-  { name: 'LORE_MASTER_EMAIL', purpose: 'The Atlassian account email of the API token (Confluence Cloud).' },
-  { name: 'LORE_MASTER_TOKEN', purpose: 'An Atlassian API token for that account (Confluence Cloud).' },
-]
-
-const SELF_HOSTED_SECRETS: CiSecret[] = [
-  { name: 'LORE_MASTER_PAT', purpose: 'A personal access token (Confluence Data Center, or Server 7.9 and later).' },
-]
 
 /**
  * Decides what the pipeline must do for these settings: the one sync command, the credentials
@@ -39,7 +31,7 @@ export function planCiNeeds ({ settings, description, version, settingsInRepo }:
   return {
     version,
     command:            `sync ${flags.join(' ')}`,
-    secrets:            secretsFor(confluence),
+    secrets:            secretsFor(confluence, description),
     pushesToGit:        outputs.some(output => isSiteOutput(description, output)),
     commitsAnnotations: confluence.length > 0,
     prepareCommands,
@@ -48,18 +40,41 @@ export function planCiNeeds ({ settings, description, version, settingsInRepo }:
   }
 }
 
-/** Cloud sites sit on atlassian.net and use an email with a token; anything else, a token alone. */
-function secretsFor (confluence: readonly Output[]): CiSecret[] {
-  const wanted = confluence.flatMap(output => isCloudSite(output.baseUrl) ? CLOUD_SECRETS : SELF_HOSTED_SECRETS)
+/**
+ * The credentials the outputs that sign in need, named by the environment variables the engine's description gives each field of
+ * the sign-in method. The method is the first one the output's edition accepts; the edition comes from the description's hints
+ * about the address (a site of no hinted edition takes the first method meant for the others).
+ */
+function secretsFor (outputs: readonly Output[], description: ConfigDescription): CiSecret[] {
+  const wanted = outputs.flatMap(output => {
+    const platform = platformOf(description, output)
+    const connection = platform?.connection
+    const method = connection ? preferredMethod(connection, output.baseUrl) : undefined
+
+    return platform && method ? method.fields.map(field => ({ name: field.env, purpose: `${field.help ?? field.label} (${platform.label})` })) : []
+  })
 
   return wanted.filter((secret, index) => wanted.findIndex(other => other.name === secret.name) === index)
 }
 
-function isCloudSite (baseUrl: string): boolean {
+/** The sign-in method a pipeline uses for a site: the first one its edition accepts. */
+function preferredMethod (connection: ConnectionDescriptor, baseUrl: string): CredentialKindDescriptor | undefined {
+  const hints = connection.editionHints ?? []
+  const host = hostOf(baseUrl)
+  const hinted = hints.find(hint => host.endsWith(hint.hostSuffix))
+  if (hinted) {
+    return authMethodsFor(connection, hinted.edition)[0]
+  }
+  const hintedEditions = new Set(hints.map(hint => hint.edition))
+
+  return connection.kinds.find(kind => kind.editions === undefined || kind.editions.length === 0 || kind.editions.some(edition => !hintedEditions.has(edition)))
+}
+
+function hostOf (baseUrl: string): string {
   try {
-    return new URL(baseUrl).hostname.endsWith('.atlassian.net')
+    return new URL(baseUrl).hostname
   } catch {
-    return false
+    return ''
   }
 }
 

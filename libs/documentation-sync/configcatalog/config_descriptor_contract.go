@@ -92,8 +92,17 @@ type Connection struct {
 	// DetectMethod is the engine method that finds the platform's edition from the address
 	// (edition/detect), so only the credential kinds that edition takes are offered.
 	DetectMethod string `json:"detectMethod,omitempty"`
+	// EditionHints tell the edition of a site from its address without asking the site, for a pipeline set up
+	// offline. An address that matches none is of an edition without a hint.
+	EditionHints []EditionHint `json:"editionHints,omitempty"`
 	// Kinds are the ways to sign in.
 	Kinds []CredentialKind `json:"kinds"`
+}
+
+// EditionHint says that a site whose host ends in HostSuffix is of this edition.
+type EditionHint struct {
+	Edition    string `json:"edition"`
+	HostSuffix string `json:"hostSuffix"`
 }
 
 // CredentialKind is one way to sign in.
@@ -112,6 +121,10 @@ type CredentialKind struct {
 type CredentialField struct {
 	Key   string `json:"key"`
 	Label string `json:"label"`
+	// Help says what to enter and where to find it.
+	Help string `json:"help,omitempty"`
+	// Env is the environment variable the command line and a pipeline read this from; secrets never go in a file.
+	Env string `json:"env"`
 	// Secret fields are masked and kept in the editor's secret store, never in a file.
 	Secret bool `json:"secret,omitempty"`
 }

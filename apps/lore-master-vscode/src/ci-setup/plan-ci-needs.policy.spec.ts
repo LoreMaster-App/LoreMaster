@@ -43,6 +43,31 @@ describe('planCiNeeds', () => {
     expect(needs.secrets).toHaveLength(2)
   })
 
+  it('names each variable with what to put in it, from the description', () => {
+    const needs = plan({ outputs: [output({ baseUrl: 'https://acme.atlassian.net/wiki' })] })
+
+    expect(needs.secrets[0]).toEqual({ name: 'LORE_MASTER_EMAIL', purpose: 'The Atlassian account email of the API token. (Confluence)' })
+  })
+
+  it('plans the secrets of a platform it was never taught from its own sign-in', () => {
+    const description = describedConfig()
+    description.platforms.push({
+      id:              'notion',
+      label:           'Notion',
+      description:     '',
+      icon:            'book',
+      delivery:        'pages',
+      nameTemplate:    '',
+      summaryTemplate: '',
+      connection:      { field: 'baseUrl', kinds: [{ id: 'apitoken', label: 'Integration token', fields: [{ key: 'token', label: 'Token', env: 'LORE_MASTER_NOTION_TOKEN', secret: true }] }] },
+      fields:          [{ key: 'baseUrl', label: 'Address', type: 'text' }],
+    })
+
+    const needs = planCiNeeds({ settings: { version: 1, outputs: [output({ platform: 'notion', baseUrl: 'https://notion.example' })] }, description, version: '1', settingsInRepo: true })
+
+    expect(needs.secrets).toEqual([{ name: 'LORE_MASTER_NOTION_TOKEN', purpose: 'Token (Notion)' }])
+  })
+
   it('needs no secret for a GitHub Pages output, but write access to the repository', () => {
     const needs = plan({ outputs: [output({ platform: 'github-pages' })] })
 

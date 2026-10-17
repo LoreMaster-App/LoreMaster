@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { describeConfig } from '../config-description'
-import { connectConfluence } from '../connection-setup'
+import { connectPlatform } from '../connection-setup'
 import type { EngineClient } from '../engine-process'
 import { type ConfigDescription, SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
 import type { ConnectionStore } from '../secret-storage'
@@ -145,7 +145,7 @@ function open (deps: StorageFormDeps, folder: string, init: StorageFormInit, ind
         break
       }
       case 'addConnection': {
-        const meta = await connectConfluence({ engine: deps.engine, store: deps.connections })
+        const meta = await connectPlatform({ engine: deps.engine, store: deps.connections })
         reply({ type: 'connections', connections: choices(deps.connections), selected: meta?.baseUrl ?? '' })
         break
       }

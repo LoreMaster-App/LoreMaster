@@ -628,6 +628,8 @@ export interface ConnectionDescriptor {
   /** The key of the output field holding the site address. */
   field:         string
   detectMethod?: string
+  /** A site whose host ends in `hostSuffix` is of this edition, known without asking it. */
+  editionHints?: Array<{ edition: string, hostSuffix: string }>
   kinds:         CredentialKindDescriptor[]
 }
 
@@ -636,7 +638,7 @@ export interface CredentialKindDescriptor {
   label:     string
   help?:     string
   editions?: string[]
-  fields:    Array<{ key: string, label: string, secret?: boolean }>
+  fields:    Array<{ key: string, label: string, help?: string, /** The environment variable the command line and a pipeline read it from. */ env: string, secret?: boolean }>
 }
 
 export interface FieldDescriptor {

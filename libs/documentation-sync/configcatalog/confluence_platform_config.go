@@ -10,26 +10,27 @@ func confluencePlatform() Platform {
 		Connection: &Connection{
 			Field:        "baseUrl",
 			DetectMethod: "edition/detect",
+			EditionHints: []EditionHint{{Edition: "cloud", HostSuffix: ".atlassian.net"}},
 			Kinds: []CredentialKind{
 				{
 					ID: "apitoken", Label: "Email and API token", Editions: []string{"cloud"},
 					Help: "Atlassian Cloud: create the token at id.atlassian.com under Security > API tokens.",
 					Fields: []CredentialField{
-						{Key: "email", Label: "Email"},
-						{Key: "token", Label: "API token", Secret: true},
+						{Key: "email", Label: "Email", Env: "LORE_MASTER_EMAIL", Help: "The Atlassian account email of the API token."},
+						{Key: "token", Label: "API token", Env: "LORE_MASTER_TOKEN", Secret: true, Help: "An Atlassian API token for that account."},
 					},
 				},
 				{
 					ID: "pat", Label: "Personal access token", Editions: []string{"datacenter", "server"},
 					Help:   "Data Center, and Server 7.9 or later: create it in your profile under Personal Access Tokens.",
-					Fields: []CredentialField{{Key: "token", Label: "Token", Secret: true}},
+					Fields: []CredentialField{{Key: "token", Label: "Token", Env: "LORE_MASTER_PAT", Secret: true, Help: "A personal access token."}},
 				},
 				{
 					ID: "basic", Label: "User and password", Editions: []string{"server"},
 					Help: "Server before 7.9, which has no personal access tokens.",
 					Fields: []CredentialField{
-						{Key: "user", Label: "User"},
-						{Key: "password", Label: "Password", Secret: true},
+						{Key: "user", Label: "User", Env: "LORE_MASTER_USER", Help: "The user name."},
+						{Key: "password", Label: "Password", Env: "LORE_MASTER_PASSWORD", Secret: true, Help: "The password."},
 					},
 				},
 			},

@@ -112,6 +112,46 @@ func TestOnlyKnownEditorsAreNamedAsHonouringASetting(t *testing.T) {
 	}
 }
 
+func TestEverySignInFieldNamesItsOwnEnvironmentVariable(t *testing.T) {
+	seen := map[string]string{}
+	for _, platform := range configcatalog.Describe().Platforms {
+		if platform.Connection == nil {
+			continue
+		}
+		for _, kind := range platform.Connection.Kinds {
+			for _, field := range kind.Fields {
+				where := platform.ID + "/" + kind.ID + "/" + field.Key
+				if field.Env == "" {
+					t.Errorf("%s names no environment variable", where)
+				}
+				if first, taken := seen[field.Env]; taken {
+					t.Errorf("%s and %s both read %s", where, first, field.Env)
+				}
+				seen[field.Env] = where
+			}
+		}
+	}
+}
+
+func TestEditionHintsNameAnEditionASignInKindKnows(t *testing.T) {
+	for _, platform := range configcatalog.Describe().Platforms {
+		if platform.Connection == nil {
+			continue
+		}
+		known := map[string]bool{}
+		for _, kind := range platform.Connection.Kinds {
+			for _, edition := range kind.Editions {
+				known[edition] = true
+			}
+		}
+		for _, hint := range platform.Connection.EditionHints {
+			if !known[hint.Edition] || hint.HostSuffix == "" {
+				t.Errorf("%s: the hint %+v names no edition of its sign-in kinds", platform.ID, hint)
+			}
+		}
+	}
+}
+
 func TestEveryGeneratorFieldIsASettingOfAGenerator(t *testing.T) {
 	known := yamlKeys(t, workspacesettings.Generator{})
 	description := configcatalog.Describe()

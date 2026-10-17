@@ -1,29 +1,32 @@
 import * as vscode from 'vscode'
-import type { Credential } from '../engine-protocol'
+import type { Credential, CredentialKindDescriptor } from '../engine-protocol'
 import type { ConnectionMeta } from '../secret-storage'
-import type { AuthMethod, ConnectionUI } from './connection-setup.handler'
+import type { ConnectionUI } from './connection-setup.handler'
 
-const AUTH_METHOD_LABELS: Record<AuthMethod, string> = {
-  apitoken: 'Email and API token (Cloud)',
-  pat:      'Personal access token (Data Center / Server)',
-  basic:    'Username and password (Server)',
-}
-
-/** The {@link ConnectionUI} backed by VS Code's input boxes and QuickPick. */
+/** The {@link ConnectionUI} backed by VS Code's input boxes and QuickPick. What it says comes from the engine's description. */
 export function createConnectionUI (): ConnectionUI {
   return {
-    promptBaseUrl () {
+    async pickPlatform (platforms) {
+      const picked = await vscode.window.showQuickPick(
+        platforms.map(platform => ({ label: platform.label, description: platform.description, platform })),
+        { title: 'LoreMaster: add a connection', placeHolder: 'Which platform?' },
+      )
+
+      return picked?.platform
+    },
+
+    promptBaseUrl (site) {
       return Promise.resolve(vscode.window.showInputBox({
-        title:          'LoreMaster: add a connection',
-        prompt:         'Confluence site URL',
-        placeHolder:    'https://your-site.atlassian.net/wiki',
+        title:          `LoreMaster: add a connection to ${site.platform}`,
+        prompt:         site.help ?? site.label,
+        placeHolder:    site.placeholder,
         ignoreFocusOut: true,
       }))
     },
 
     async pickAuthMethod (methods) {
       const picked = await vscode.window.showQuickPick(
-        methods.map(method => ({ label: AUTH_METHOD_LABELS[method], method })),
+        methods.map(method => ({ label: method.label, description: method.help, method })),
         { title: 'LoreMaster: sign-in method', placeHolder: 'How do you sign in?' },
       )
 
@@ -31,27 +34,7 @@ export function createConnectionUI (): ConnectionUI {
     },
 
     async promptCredential (method) {
-      if (method === 'apitoken') {
-        const email = await ask('Atlassian account email')
-        if (email === undefined) {
-          return
-        }
-        const token = await ask('API token', true)
-
-        return token === undefined ? undefined : { kind: 'apitoken', email, token }
-      }
-      if (method === 'pat') {
-        const token = await ask('Personal access token', true)
-
-        return token === undefined ? undefined : { kind: 'pat', token }
-      }
-      const user = await ask('Username')
-      if (user === undefined) {
-        return
-      }
-      const password = await ask('Password', true)
-
-      return password === undefined ? undefined : { kind: 'basic', user, password } satisfies Credential
+      return askFields(method)
     },
 
     async showError (message) {
@@ -64,6 +47,16 @@ export function createConnectionUI (): ConnectionUI {
   }
 }
 
-function ask (prompt: string, password = false): Thenable<string | undefined> {
-  return vscode.window.showInputBox({ prompt, password, ignoreFocusOut: true })
+/** Asks for each thing the sign-in method wants (a secret is masked); undefined when the user backs out of any. */
+async function askFields (method: CredentialKindDescriptor): Promise<Credential | undefined> {
+  const answers: Record<string, string> = {}
+  for (const field of method.fields) {
+    const answer = await vscode.window.showInputBox({ title: method.label, prompt: field.label, password: field.secret === true, ignoreFocusOut: true })
+    if (answer === undefined) {
+      return undefined
+    }
+    answers[field.key] = answer
+  }
+
+  return { kind: method.id, ...answers } as Credential
 }

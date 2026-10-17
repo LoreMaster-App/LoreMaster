@@ -30,7 +30,7 @@ describe('activate', () => {
     // The commands plus the engine client, output channel, diagram renderer, its
     // host/renderDiagram subscription, the Confluence authentication provider, the MCP
     // server provider, the file-move handler and the two sidebar views (Sync, Storages) — all
-    // disposed on deactivate. The Pages view and its four commands are one disposable, and so are the
+    // disposed on deactivate. The Sync view and its commands are one disposable, and so are the
     // Generators view and its six commands (the five it contributes and Run generators).
     const pagesViewCommands = 15
     const generatorsViewCommands = 6
