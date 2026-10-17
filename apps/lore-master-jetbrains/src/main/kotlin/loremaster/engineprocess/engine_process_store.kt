@@ -4,6 +4,7 @@ import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.PluginId
+import loremaster.pluginsettings.PluginSettingsStore
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -55,6 +56,6 @@ class EngineProcessStore : Disposable {
         val pluginPath = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.pluginPath
             ?: error("the LoreMaster plugin is not installed")
 
-        return resolveEngineBinary(enginePlatform(System.getProperty("os.name"), System.getProperty("os.arch")), pluginPath, System.getenv(ENGINE_PATH_VARIABLE))
+        return resolveEngineBinary(enginePlatform(System.getProperty("os.name"), System.getProperty("os.arch")), pluginPath, PluginSettingsStore.current().enginePath.ifBlank { System.getenv(ENGINE_PATH_VARIABLE) })
     }
 }

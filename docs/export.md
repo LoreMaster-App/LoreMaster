@@ -97,8 +97,8 @@ lore-master-engine export --format png --width 1400 --browser /usr/bin/chromium 
 - **Word and OpenDocument** embed PNG, JPEG and GIF images that sit beside the file; SVG, web images and missing
   files are written as their alt text. Links to other Markdown files point at the matching `.docx` or `.odt`.
 - **PDF and PNG** have no page headers or footers. From the editor they draw Mermaid diagrams (with the Mermaid library the
-  extension ships); a diagram with an error stays as code. On the command line give `--mermaid PATH` (or set
-  `LORE_MASTER_MERMAID`) to the library's `mermaid.min.js`, or diagrams stay as code, as they do in every other format.
+  extension ships); a diagram with an error stays as code. On the command line, and from the JetBrains plugin, the engine uses the
+  copy built into it (written once to the temporary folder); `--mermaid PATH` or `LORE_MASTER_MERMAID` (a file) name another.
 - **Mermaid** diagrams are drawn in PDF, PNG and HTML when there is a Mermaid library and a browser (see above for PDF and
   PNG). The HTML export then holds each diagram as an inline SVG, so the file still needs no script and can be opened
   anywhere; a diagram that cannot be drawn, or an export with no library or browser, keeps the diagram as a code block

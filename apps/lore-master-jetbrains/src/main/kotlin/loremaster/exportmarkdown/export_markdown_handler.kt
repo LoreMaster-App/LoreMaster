@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.vfs.VirtualFile
 import loremaster.engineprocess.EngineProcessStore
+import loremaster.pluginsettings.PluginSettingsStore
 import java.nio.file.Path
 
 /** "LoreMaster: Export Markdown As...": pick a format, the engine writes the file next to the document. */
@@ -64,7 +65,7 @@ class ExportMarkdownHandler : AnAction() {
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Exporting ${file.name} as ${format.label}", false) {
             override fun run(indicator: ProgressIndicator) {
                 val outcome = runCatching {
-                    exportMarkdown(engine(), ExportRunParams(path = file.path, format = format.id, content = unsaved))
+                    exportMarkdown(engine(), exportParameters(project, file, format, unsaved))
                 }
                 outcome.fold(
                     onSuccess = { done(project, it) },
@@ -72,6 +73,27 @@ class ExportMarkdownHandler : AnAction() {
                 )
             }
         })
+    }
+
+    private fun exportParameters(project: Project, file: VirtualFile, format: ExportFormat, unsaved: String?): ExportRunParams {
+        val settings = PluginSettingsStore.current()
+        val document = Path.of(file.path)
+        val template = when (format.id) {
+            "docx" -> settings.docxTemplate
+            "odt" -> settings.odtTemplate
+            else -> ""
+        }
+
+        return ExportRunParams(
+            path = file.path,
+            format = format.id,
+            content = unsaved,
+            outDir = exportDestination(document, project.basePath?.let(Path::of), settings.exportFolder)?.toString(),
+            browserPath = settings.browserPath.ifBlank { null },
+            referencePath = template.ifBlank { null },
+            pageSize = settings.pageSize.ifBlank { null },
+            imageWidth = settings.pngWidth.takeIf { it > 0 },
+        )
     }
 
     private fun done(project: Project, result: ExportRunResult) {
