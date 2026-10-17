@@ -481,15 +481,18 @@ export interface PagesChange {
 }
 
 export interface PagesCheckResult {
-  branch?:      string
-  remote?:      string
+  branch?:       string
+  remote?:       string
   /** True when a publish would change nothing. */
-  upToDate:     boolean
-  changes?:     PagesChange[]
-  changesTotal: number
-  files:        number
-  warnings?:    string[]
-  errors?:      string[]
+  upToDate:      boolean
+  changes?:      PagesChange[]
+  changesTotal:  number
+  /** Pages a publish would make public for the first time, and the first few of them. */
+  newPages?:     number
+  newPagePaths?: string[]
+  files:         number
+  warnings?:     string[]
+  errors?:       string[]
 }
 
 // ---- pages/publish -------------------------------------------------------------------

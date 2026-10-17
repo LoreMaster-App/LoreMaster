@@ -66,8 +66,10 @@ repeated. Names are what the tree, the sync and the settings form show, so with 
 - `pages publish` pushes the same site to the output's branch (default `gh-pages`).
 - `pages check` says whether a publish would change anything, and lists the files it would add,
   modify or remove, without publishing. `--exit-code` exits 2 when the published site is out of
-  date, so a pipeline can fail on stale docs. The VS Code **Check remote status** button does the
-  same for a GitHub Pages output.
+  date, so a pipeline can fail on stale docs. It also warns about the pages that are **new to the public
+  output** (`3 pages are new to this public output and become visible to everyone when you publish: ...`), because a
+  file added to a published folder is public on the next publish. The VS Code **Check remote status**
+  button does the same for a GitHub Pages output.
 - `watch` keeps the storage up to date as files change, regenerating and syncing only what changed. See [watch mode](watch.md).
 
 Outputs and generators are numbered by position in the settings.

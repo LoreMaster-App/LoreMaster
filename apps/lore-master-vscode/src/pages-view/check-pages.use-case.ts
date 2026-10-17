@@ -31,5 +31,9 @@ export async function checkPages (engine: EngineClient, workspaceRoot: string, o
   const named = changes.slice(0, SHOWN_CHANGES).map(change => `${change.kind} ${change.path}`).join(', ')
   const more = result.changesTotal > SHOWN_CHANGES ? `, and ${result.changesTotal - SHOWN_CHANGES} more` : ''
 
-  return { ok: true, upToDate: false, message: `${branch} is out of date: ${result.changesTotal} files would change (${named}${more}).` }
+  // What a publish would make public for the first time comes first: it is the part of a change that cannot be taken back.
+  const added = result.newPages ?? 0
+  const fresh = added > 0 ? ` ${added} ${added === 1 ? 'page is' : 'pages are'} new to this public output: ${(result.newPagePaths ?? []).join(', ')}${added > (result.newPagePaths ?? []).length ? ', and more' : ''}.` : ''
+
+  return { ok: true, upToDate: false, message: `${branch} is out of date: ${result.changesTotal} files would change (${named}${more}).${fresh}` }
 }
