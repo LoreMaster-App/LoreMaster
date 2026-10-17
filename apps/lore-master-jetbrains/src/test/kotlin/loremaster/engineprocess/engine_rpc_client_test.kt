@@ -48,10 +48,36 @@ class EngineRpcClientTest {
     fun `a notification reaches the listener`() {
         val wire = Wire()
         val seen = LinkedBlockingQueue<String>()
-        EngineRpcClient(wire.clientIn, wire.clientOut) { method, _ -> seen.add(method) }.use {
+        EngineRpcClient(wire.clientIn, wire.clientOut, onNotification = { method, _ -> seen.add(method) }).use {
             writeFrame(wire.toClient, """{"jsonrpc":"2.0","method":"host/progress","params":{}}""")
 
             assertEquals("host/progress", seen.poll(5, TimeUnit.SECONDS))
+        }
+    }
+
+    @Test
+    fun `a request from the engine is refused when there is no handler, so the engine can fall back`() {
+        val wire = Wire()
+        EngineRpcClient(wire.clientIn, wire.clientOut).use {
+            writeFrame(wire.toClient, """{"jsonrpc":"2.0","id":7,"method":"host/renderDiagram","params":{}}""")
+
+            val answer = JsonParser.parseString(readFrame(wire.fromClient)!!).asJsonObject
+            assertEquals(7, answer.get("id").asInt)
+            assertEquals(-32601, answer.getAsJsonObject("error").get("code").asInt)
+        }
+    }
+
+    @Test
+    fun `a request from the engine is answered by the handler, and a failure becomes an error`() {
+        val wire = Wire()
+        val handler: EngineRequestHandler = { method, _ -> if (method == "host/ok") mapOf("svg" to "<svg/>") else error("boom") }
+        EngineRpcClient(wire.clientIn, wire.clientOut, onRequest = handler).use {
+            writeFrame(wire.toClient, """{"jsonrpc":"2.0","id":1,"method":"host/ok"}""")
+            writeFrame(wire.toClient, """{"jsonrpc":"2.0","id":2,"method":"host/bad"}""")
+
+            val answers = (1..2).map { JsonParser.parseString(readFrame(wire.fromClient)!!).asJsonObject }.associateBy { it.get("id").asInt }
+            assertEquals("<svg/>", answers.getValue(1).getAsJsonObject("result").get("svg").asString)
+            assertEquals("boom", answers.getValue(2).getAsJsonObject("error").get("message").asString)
         }
     }
 

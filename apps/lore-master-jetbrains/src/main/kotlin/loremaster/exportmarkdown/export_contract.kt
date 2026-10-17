@@ -22,6 +22,10 @@ data class ExportRunParams(
     val format: String,
     val content: String? = null,
     val outDir: String? = null,
+    val browserPath: String? = null,
+    val referencePath: String? = null,
+    val pageSize: String? = null,
+    val imageWidth: Int? = null,
 )
 
 /** What `export/run` answers: the file's name and where it was written. */

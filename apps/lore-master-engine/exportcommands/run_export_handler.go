@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"lore-master/apps/lore-master-engine/mermaidrendering"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/markdown-export/documentexport"
@@ -36,7 +37,7 @@ func RunExport() rpcserver.Method {
 		if err != nil {
 			return nil, err
 		}
-		file, err := documentexport.Export(params.Path, source, params.Format, documentexport.Options{BaseDir: filepath.Dir(params.Path), BrowserPath: params.BrowserPath, MermaidPath: params.MermaidPath, ReferencePath: params.ReferencePath, PageSize: params.PageSize, Width: params.ImageWidth, Preview: params.Preview})
+		file, err := documentexport.Export(params.Path, source, params.Format, documentexport.Options{BaseDir: filepath.Dir(params.Path), BrowserPath: params.BrowserPath, MermaidPath: mermaidrendering.LibraryPath(params.MermaidPath), ReferencePath: params.ReferencePath, PageSize: params.PageSize, Width: params.ImageWidth, Preview: params.Preview})
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "export %s: %s", filepath.Base(params.Path), err.Error())
 		}
