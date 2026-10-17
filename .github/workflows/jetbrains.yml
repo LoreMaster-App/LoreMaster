@@ -101,7 +101,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "lore-master-jetbrains@$VERSION" "apps/lore-master-jetbrains/build/distributions/lore-master-jetbrains-$VERSION.zip"             --target "$GITHUB_SHA" --title "LoreMaster for JetBrains $VERSION"             --notes "Install from disk: Settings > Plugins > the gear > Install Plugin from Disk, then pick the zip."
+          gh release create "lore-master-jetbrains@$VERSION" "apps/lore-master-jetbrains/build/distributions/lore-master-jetbrains-$VERSION.zip"             --latest=false --target "$GITHUB_SHA" --title "LoreMaster for JetBrains $VERSION"             --notes "Install from disk: Settings > Plugins > the gear > Install Plugin from Disk, then pick the zip."
 
       - if: steps.version.outputs.released == 'false' && env.JETBRAINS_MARKETPLACE_TOKEN != ''
         run: ./gradlew publishPlugin --console=plain
