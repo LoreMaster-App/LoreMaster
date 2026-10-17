@@ -4,7 +4,6 @@ import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.extensions.PluginId
-import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -34,6 +33,8 @@ class EngineProcessStore : Disposable {
 
         val binary = locateBinary()
         check(Files.isRegularFile(binary)) { "the engine was not found at $binary" }
+        // A zip written on Windows carries no execute bit.
+        binary.toFile().setExecutable(true)
         val started = ProcessBuilder(binary.toString()).redirectError(ProcessBuilder.Redirect.DISCARD).start()
         process = started
 
@@ -54,6 +55,6 @@ class EngineProcessStore : Disposable {
         val pluginPath = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID))?.pluginPath
             ?: error("the LoreMaster plugin is not installed")
 
-        return resolveEngineBinary(SystemInfo.isWindows, pluginPath, System.getenv(ENGINE_PATH_VARIABLE))
+        return resolveEngineBinary(enginePlatform(System.getProperty("os.name"), System.getProperty("os.arch")), pluginPath, System.getenv(ENGINE_PATH_VARIABLE))
     }
 }
