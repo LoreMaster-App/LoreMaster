@@ -1,0 +1,39 @@
+/* The Mermaid and D2 diagrams LoreMaster draws in VS Code's built-in Markdown preview. */
+.loremaster-diagram {
+  display: block;
+  margin: 1em 0;
+  padding: 0;
+  overflow: auto;
+  white-space: normal;
+  background: transparent;
+  border: none;
+  text-align: center;
+}
+
+.loremaster-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* D2 draws for a light page; a light card keeps it readable on a dark theme. */
+.loremaster-d2 {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.loremaster-mermaid:not([data-source]) {
+  text-align: left;
+  white-space: pre-wrap;
+  font-family: var(--vscode-editor-font-family, monospace);
+  opacity: 0.6;
+}
+
+.loremaster-diagram-error {
+  color: var(--vscode-errorForeground, #c0392b);
+  white-space: pre-wrap;
+}
+
+.loremaster-diagram-pending {
+  color: #666666;
+}

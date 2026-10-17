@@ -19,6 +19,7 @@ import (
 	"lore-master/apps/lore-master-engine/clicommands"
 	"lore-master/apps/lore-master-engine/credentialcommands"
 	"lore-master/apps/lore-master-engine/credentialvault"
+	"lore-master/apps/lore-master-engine/diagramcommands"
 	"lore-master/apps/lore-master-engine/editiondetect"
 	"lore-master/apps/lore-master-engine/exportcommands"
 	"lore-master/apps/lore-master-engine/generatorcommands"
@@ -128,6 +129,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodFilesPlanMove:     movecommands.PlanMove(),
 		rpcprotocol.MethodExportFormats:     exportcommands.ListFormats(),
 		rpcprotocol.MethodExportRun:         exportcommands.RunExport(),
+		rpcprotocol.MethodDiagramRender:     diagramcommands.RenderDiagram(),
 	}
 }
 

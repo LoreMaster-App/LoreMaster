@@ -73,20 +73,18 @@ A pipe written `\|` is text, as on GitHub; a pipe inside a code span still divid
 
 ## Preview
 
-**Open Preview to the Side** (the preview button on a Markdown file's title bar, or the palette) opens LoreMaster's own preview.
-It shows the page the way LoreMaster's HTML export writes it, so what you see is what you export:
+LoreMaster has no preview of its own: it adds to VS Code's built-in one (**Open Preview to the Side**, `Ctrl+Shift+V`), so
+scrolling, links and themes are VS Code's own.
 
-- It updates as you type, unsaved changes included, and follows the file you switch to (`preview.followActiveEditor`).
-- It scrolls with the editor and the editor scrolls with it (`preview.scrollSync`). The two are matched by how far down the
-  document each is, so they stay close but not line for line.
-- A link to another Markdown file opens that file in the editor; a web link opens in your browser; a link to a heading scrolls
-  to it. Nothing else opens, so a preview cannot be used to open arbitrary files, and scripts in the page do not run.
-- **Preview As...** shows the same file as the text of another format (Jira wiki, MediaWiki, plain text...) exactly as it would
-  be pasted, so you can see how a page converts before syncing or copying it.
+- **D2.** A ` ```d2 ` fence is drawn by the LoreMaster engine, the same renderer a sync uses, so the preview matches the page
+  you publish. The first time a diagram is seen the preview says it is being drawn and refreshes itself when it is ready; a
+  diagram D2 rejects shows D2's message where it would be. D2 is drawn on a light card so it reads on a dark theme too.
+- **Mermaid.** A ` ```mermaid ` fence is drawn by VS Code itself where it can (recent versions bundle Mermaid support). On a
+  VS Code that does not, LoreMaster draws it in the preview, with the same Mermaid library it uses for Confluence; a diagram
+  with an error shows the error where it would be.
 
-Mermaid diagrams are drawn in the preview (with the same Mermaid library LoreMaster uses to draw them for Confluence); one that
-has an error shows the error where the diagram would be. Math is not drawn yet. The page follows the system's light or dark
-setting and not VS Code's own theme, so a light page may show in a dark editor.
+Math is not drawn. To see a file as another format (Jira wiki, MediaWiki, plain text...) as it would be pasted, use
+**LoreMaster: Copy Markdown As...** or export it.
 
 ## Settings
 
@@ -99,5 +97,3 @@ setting and not VS Code's own theme, so a light page may show in a dark editor.
 | `loreMaster.markdown.toc.minLevel`, `maxLevel` | 2, 4 | The levels a table of contents lists and sections are numbered |
 | `loreMaster.markdown.toc.ordered` | off | Numbered items instead of bullets |
 | `loreMaster.markdown.toc.updateOnSave` | on | Keep a file's table of contents current on save |
-| `loreMaster.markdown.preview.followActiveEditor` | on | The preview follows the file you switch to |
-| `loreMaster.markdown.preview.scrollSync` | on | Scroll the preview and the editor together |

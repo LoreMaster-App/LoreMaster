@@ -33,6 +33,7 @@ export const WATCH_ROUTE_METHOD = 'watch/route'
 export const FILES_PLAN_MOVE_METHOD = 'files/planMove'
 export const EXPORT_FORMATS_METHOD = 'export/formats'
 export const EXPORT_RUN_METHOD = 'export/run'
+export const DIAGRAM_RENDER_METHOD = 'diagram/render'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -591,6 +592,17 @@ export interface ExportFormat {
   extension: string
   /** Not text: it can be written to a file but not copied. */
   binary?:   boolean
+}
+
+/** A diagram for the engine to draw: only D2 (Mermaid is drawn by the editor). */
+export interface DiagramRenderParams {
+  language: string
+  source:   string
+}
+
+export interface DiagramRenderResult {
+  /** The complete SVG document. */
+  svg: string
 }
 
 export interface ExportFormatsResult {
