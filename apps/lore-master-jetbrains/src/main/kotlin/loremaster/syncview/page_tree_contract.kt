@@ -19,8 +19,14 @@ data class TreeNode(
     val warnings: List<String>? = null,
 )
 
+/** A Markdown file the scan did not read: [rule] is ignore, excludes, gitignore or outside-roots. */
+data class LeftOutFile(val path: String = "", val rule: String = "", val pattern: String? = null, val source: String? = null)
+
 data class WorkspaceTreeResult(
     val nodes: List<TreeNode> = emptyList(),
     val warnings: List<String>? = null,
     val problems: List<String>? = null,
+    /** The Markdown files left out, each with its rule; [leftOutTotal] counts them all when the list was capped. */
+    val leftOut: List<LeftOutFile>? = null,
+    val leftOutTotal: Int? = null,
 )

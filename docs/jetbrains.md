@@ -38,7 +38,7 @@ All of it is under **Tools**; the sync and export are also on the project view's
 | Action | What it does |
 |---|---|
 | **LoreMaster: Connect to Confluence...** | Asks for the address and a way to sign in (Cloud email and API token, Data Center personal access token, or user and password), has the engine verify it, and keeps the credential in the IDE's **password safe**, one entry per site. Never in a file. |
-| **LoreMaster: Sync to Confluence...** | Plans the sync of an output, shows the plan (what is created, updated, moved, in conflict, orphaned), and on your yes runs it with the engine's progress in the IDE's progress bar. Select Markdown files or folders in the project view to sync only those. Asks for the credential once if there is none. |
+| **LoreMaster: Sync...** | Plans the sync of an output, shows the plan (what is created, updated, moved, in conflict, orphaned), and on your yes runs it with the engine's progress in the IDE's progress bar. Select Markdown files or folders in the project view to sync only those. Asks for the credential once if there is none. |
 | **LoreMaster: Add Output...** | Offers the storages the engine knows (Confluence, GitHub Pages, GitHub Wiki, and any it learns later), draws the fields of the one you choose, and adds the output to `loreMaster.outputs`. For Confluence it signs in, lists the spaces you can see and lets you browse or search for the parent page (double-click goes deeper); the title prefix starts as the parent page's title, so there are no page ids to find by hand. Less common settings are under *Show advanced settings*. |
 | **LoreMaster: Roll Back a Sync...** | Lists the syncs that can still be undone, shows a dry run of what undoing the chosen one would do (pages to trash, pages to put back, local files to restore), and on your yes does it. If a page was edited since the sync it is left alone, unless you also choose to discard those edits. |
 | **LoreMaster: Watch Mode** | A checked item. While on, saving a Markdown file, the settings or a file a generator reads syncs just what changed to your Confluence outputs after a quiet moment (Settings > Tools > LoreMaster > Watch mode), and runs only the generators that read it. It asks nothing: it never overwrites a page edited on the platform and never trashes, and it needs a saved sign-in (use Connect first). A failed sync is retried with a growing pause. |
@@ -48,8 +48,20 @@ All of it is under **Tools**; the sync and export are also on the project view's
 | **LoreMaster: Check Engine** | Starts the engine and shows its version. |
 | **LoreMaster: Forget Confluence Connection...** | Removes a site's credential from the password safe. |
 
-The **LoreMaster tool window** (right side) shows the page tree of an output as the files describe it, with new and changed
-pages marked. Double-click a page to open its file.
+## The Sync tool window
+
+The **LoreMaster tool window** (right side) is the one place for your storages, laid out like the Sync view of the VS Code
+extension. **Local** (every Markdown file in the repository) and each storage you have set up are rows, with their pages under
+them as the tree the sync would make, new and changed pages marked. Double-click a page to open its file.
+
+- **The toolbar on top** has what applies to every storage: **Add Sync Storage**, **LoreMaster Config**, **Refresh All Storages**,
+  **Sync All Storages** and **Generate and Sync All**.
+- **The toolbar under it, and a right-click on a row,** have the actions of the selected row (a tree cannot show icons on the
+  row itself the way VS Code does). A storage: **Check Remote Status**, **Show File Names** (instead of page titles),
+  **Flat View** (instead of a tree), **Hide Ignored** (the files it leaves out are listed under *Left out*), **Refresh Storage**,
+  **Sync Storage**, **Generate and Sync**, **Edit Storage** and **Remove Storage**. Local has the display ones and Refresh,
+  since it is not a place pages are sent to. The choices are shown as checked, and each row remembers its own.
+- The view reads the files again when Markdown, the settings or the sync state change, so it follows your edits.
 
 ## Mermaid, PDF and PNG
 

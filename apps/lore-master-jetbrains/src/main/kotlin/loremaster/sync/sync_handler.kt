@@ -16,13 +16,18 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import loremaster.configdescription.ConfigDescription
+import loremaster.configdescription.describeConfig
+import loremaster.configdescription.isPages
+import loremaster.configdescription.isSite
 import loremaster.connection.Credential
 import loremaster.connection.signInCredential
 import loremaster.engineprocess.EngineProcessStore
 import loremaster.engineprocess.EngineRpcError
 import loremaster.engineprogress.chooseOne
-import loremaster.configdescription.describeConfig
-import loremaster.configdescription.isPages
+import loremaster.engineprogress.notify
+import loremaster.pages.publishPages
+import loremaster.pages.publishReport
 import loremaster.projectsettings.OutputSettings
 import loremaster.projectsettings.readProjectSettings
 import java.nio.file.Path
@@ -30,41 +35,52 @@ import java.util.concurrent.ExecutionException
 
 private const val UNAUTHORIZED = -32001
 
-/** "LoreMaster: Sync to Confluence": the selected Markdown files, or the whole project, to a Confluence output. */
-class SyncHandler : AnAction() {
+/**
+ * A sync of the project's outputs, started from the IDE: the outputs [SyncTarget] names are synced one after the other, a plan
+ * reviewed for each that syncs page by page and a site or wiki published, each ending in its own balloon.
+ */
+class StorageSync(private val project: Project) {
     private val gson = Gson()
 
-    override fun getActionUpdateThread() = ActionUpdateThread.BGT
-
-    override fun update(event: AnActionEvent) {
-        event.presentation.isEnabledAndVisible = event.project?.basePath != null
-    }
-
-    override fun actionPerformed(event: AnActionEvent) {
-        val project = event.project ?: return
+    /** Starts the sync under a progress bar; [scope] limits it to files (workspace-relative), null is everything. */
+    fun run(scope: List<String>?, target: SyncTarget, onFinished: () -> Unit = {}) {
         val root = project.basePath ?: return
-        val selected = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY).orEmpty().flatMap(::markdownBelow).map { Path.of(it.path) }
-        val scope = syncScope(Path.of(root), selected)
-
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Syncing to Confluence", false) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Syncing", false) {
             override fun run(indicator: ProgressIndicator) {
                 val store = ApplicationManager.getApplication().getService(EngineProcessStore::class.java)
-                val outcome = runCatching { sync(project, root, scope, store, indicator) }
-                tell(project, root, outcome)
+                runCatching { syncOutputs(root, scope, target, store, indicator) }.onFailure { tell(root, Result.failure<SyncOutcome?>(it)) }
             }
+
+            override fun onFinished() = onFinished()
         })
     }
 
-    private fun sync(project: Project, root: String, scope: List<String>?, store: EngineProcessStore, indicator: ProgressIndicator): SyncOutcome? {
+    private fun syncOutputs(root: String, scope: List<String>?, target: SyncTarget, store: EngineProcessStore, indicator: ProgressIndicator) {
         val engine = store.connection()
         val outputs = readProjectSettings(engine, root).settings.outputs
         val description = describeConfig(engine)
-        val syncable = outputs.withIndex().filter { description.isPages(it.value.platform) }
-        if (syncable.isEmpty()) {
-            error("No output that syncs page by page is configured. Add one (LoreMaster: Add Output) or edit loreMaster.outputs (LoreMaster: Open Project Settings).")
+        val syncable = outputs.withIndex().filter { canSync(description, it.value, target) }
+        val chosen = when (val selection = selectOutputs(target, syncable)) {
+            is SyncSelection.Nothing -> error(selection.reason)
+            is SyncSelection.Run -> selection.outputs
+            is SyncSelection.AskWhich -> listOfNotNull(chooseOutput(selection.outputs))
         }
-        val chosen = if (syncable.size == 1) syncable.single() else chooseOutput(project, syncable) ?: return null
 
+        for (output in chosen) {
+            if (description.isSite(output.value.platform)) {
+                indicator.text = "Publishing ${output.value.label()}"
+                notify(project, publishReport(output.value, publishPages(engine, root, output.index)))
+            } else {
+                tell(root, runCatching { syncOne(engine, store, root, output, scope, indicator) })
+            }
+        }
+    }
+
+    /** Sites and wikis publish as a whole, so they are left out of a sync that asks which output (the Tools menu's Sync). */
+    private fun canSync(description: ConfigDescription, output: OutputSettings, target: SyncTarget): Boolean =
+        description.isPages(output.platform) || (target !is SyncTarget.Choose && description.isSite(output.platform))
+
+    private fun syncOne(engine: loremaster.engineprocess.EngineRpcClient, store: EngineProcessStore, root: String, output: IndexedValue<OutputSettings>, scope: List<String>?, indicator: ProgressIndicator): SyncOutcome? {
         val stopListening = store.listen { method, params ->
             if (method == METHOD_HOST_PROGRESS && params != null) {
                 val step = gson.fromJson(params, ProgressParams::class.java)
@@ -73,21 +89,20 @@ class SyncHandler : AnAction() {
             }
         }
         try {
-            val flow = RunSync(engine, { askCredential(project, it) }, { review(project, it, chosen.value) })
+            val flow = RunSync(engine, { askCredential(it) }, { review(it, output.value) })
 
-            return flow.run(root, chosen.value, chosen.index, scope)
+            return flow.run(root, output.value, output.index, scope)
         } finally {
             stopListening()
         }
     }
 
-    private fun chooseOutput(project: Project, outputs: List<IndexedValue<OutputSettings>>): IndexedValue<OutputSettings>? {
-        return chooseOne(project, "LoreMaster: Sync", "Which output?", outputs.map { it.value.label() })?.let(outputs::getOrNull)
-    }
+    private fun chooseOutput(outputs: List<IndexedValue<OutputSettings>>): IndexedValue<OutputSettings>? =
+        onUiThread { chooseOne(project, "LoreMaster: Sync", "Which output?", outputs.map { it.value.label() })?.let(outputs::getOrNull) }
 
-    private fun askCredential(project: Project, baseUrl: String): Credential? = signInCredential(project, baseUrl)
+    private fun askCredential(baseUrl: String): Credential? = signInCredential(project, baseUrl)
 
-    private fun review(project: Project, plan: SyncPlanResult, output: OutputSettings): SyncChoice? {
+    private fun review(plan: SyncPlanResult, output: OutputSettings): SyncChoice? {
         if (changeCount(plan) == 0 && (plan.counts["conflict"] ?: 0) == 0 && (plan.counts["orphan"] ?: 0) == 0) {
             return SyncChoice()
         }
@@ -100,7 +115,7 @@ class SyncHandler : AnAction() {
         return choice
     }
 
-    private fun tell(project: Project, root: String, outcome: Result<SyncOutcome?>) {
+    private fun tell(root: String, outcome: Result<SyncOutcome?>) {
         val group = NotificationGroupManager.getInstance().getNotificationGroup("LoreMaster")
         val result = outcome.getOrNull()
         val failure = outcome.exceptionOrNull()
@@ -131,10 +146,35 @@ class SyncHandler : AnAction() {
     private fun describeFailure(failure: Throwable): String {
         val cause = (failure as? ExecutionException)?.cause ?: failure
         if (cause is EngineRpcError && cause.code == UNAUTHORIZED) {
-            return "Confluence refused the sign-in. Run LoreMaster: Connect to Confluence to enter it again."
+            return "The platform refused the sign-in. Run LoreMaster: Connect to Confluence to enter it again."
         }
 
         return "The sync failed: ${cause.message ?: cause.javaClass.simpleName}"
+    }
+
+    private fun <T> onUiThread(body: () -> T): T {
+        var result: T? = null
+        ApplicationManager.getApplication().invokeAndWait({ result = body() }, ModalityState.any())
+
+        @Suppress("UNCHECKED_CAST")
+        return result as T
+    }
+}
+
+/** "LoreMaster: Sync": the selected Markdown files, or the whole project, to an output that syncs page by page. */
+class SyncHandler : AnAction() {
+    override fun getActionUpdateThread() = ActionUpdateThread.BGT
+
+    override fun update(event: AnActionEvent) {
+        event.presentation.isEnabledAndVisible = event.project?.basePath != null
+    }
+
+    override fun actionPerformed(event: AnActionEvent) {
+        val project = event.project ?: return
+        val root = project.basePath ?: return
+        val selected = event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY).orEmpty().flatMap(::markdownBelow).map { Path.of(it.path) }
+
+        StorageSync(project).run(syncScope(Path.of(root), selected), SyncTarget.Choose)
     }
 
     private fun markdownBelow(file: VirtualFile): List<VirtualFile> {
@@ -149,6 +189,4 @@ class SyncHandler : AnAction() {
 
         return found
     }
-
-    private fun onUiThread(body: () -> Unit) = ApplicationManager.getApplication().invokeAndWait(body, ModalityState.any())
 }

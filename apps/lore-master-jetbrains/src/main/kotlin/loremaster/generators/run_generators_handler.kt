@@ -3,7 +3,6 @@ package loremaster.generators
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.ui.Messages
 import loremaster.engineprogress.TaskReport
 import loremaster.engineprogress.runEngineTask
 
@@ -15,20 +14,9 @@ class RunGeneratorsHandler : AnAction() {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val root = project.basePath ?: return
-        val answer = Messages.showYesNoCancelDialog(
-            project,
-            "Run each generator's prepare command first (a shell command from loreMaster.generators)?",
-            "LoreMaster: Run Generators",
-            "Run prepare commands",
-            "Only generate",
-            "Cancel",
-            Messages.getQuestionIcon(),
-        )
-        if (answer == Messages.CANCEL) {
-            return
-        }
+        val prepare = askToPrepare(project, "LoreMaster: Run Generators") ?: return
         runEngineTask(project, "Running the generators") { engine, _ ->
-            val result = runGenerators(engine, root, prepare = answer == Messages.YES)
+            val result = runGenerators(engine, root, prepare = prepare)
             val failed = result.runs.any { it.error != null }
 
             TaskReport(describeRuns(result), if (failed) NotificationType.WARNING else NotificationType.INFORMATION)

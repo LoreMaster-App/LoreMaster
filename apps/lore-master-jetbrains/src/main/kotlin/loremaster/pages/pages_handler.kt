@@ -20,8 +20,6 @@ import loremaster.projectsettings.readProjectSettings
 /** What a Pages action does once its output is chosen. */
 typealias PagesStep = (engine: EngineRpcClient, root: String, index: Int, output: OutputSettings) -> TaskReport
 
-private fun withWarnings(text: String, warnings: List<String>?): String = text + warnings.orEmpty().joinToString("") { "\nWarning: $it" }
-
 /** Common to the Pages actions: find the output that publishes a site or wiki (asking when there are several), then do the step. */
 abstract class PagesAction(private val title: String) : AnAction() {
     /** Asks what the step needs from the user (on the UI thread, before the work starts), and returns the step. */
@@ -51,18 +49,7 @@ abstract class PagesAction(private val title: String) : AnAction() {
 
 /** "LoreMaster: Check GitHub Pages": what a publish would add, change or remove. */
 class CheckPagesHandler : PagesAction("Checking GitHub Pages") {
-    override fun prepare(project: Project): PagesStep = { engine, root, index, output ->
-        val result = checkPages(engine, root, index)
-        when {
-            !result.errors.isNullOrEmpty() ->
-                TaskReport("${output.label()} cannot be checked:\n${result.errors.joinToString("\n")}", NotificationType.ERROR)
-            result.upToDate -> TaskReport(withWarnings("${output.label()} is up to date (${result.files} files).", result.warnings))
-            else -> {
-                val newPages = if (result.newPages > 0) ", ${result.newPages} page(s) new to the public site" else ""
-                TaskReport(withWarnings("${output.label()}: a publish would change ${result.changesTotal} file(s)$newPages.", result.warnings), NotificationType.WARNING)
-            }
-        }
-    }
+    override fun prepare(project: Project): PagesStep = { engine, root, index, output -> checkReport(output, checkPages(engine, root, index)) }
 }
 
 /** "LoreMaster: Build GitHub Pages Site...": the static site into a folder you pick; no git, no network. */
@@ -91,16 +78,7 @@ class PublishPagesHandler : PagesAction("Publishing GitHub Pages") {
         }
 
         return { engine, root, index, output ->
-            val result = publishPages(engine, root, index)
-            when {
-                !result.errors.isNullOrEmpty() ->
-                    TaskReport("${output.label()} was not published:\n${result.errors.joinToString("\n")}", NotificationType.ERROR)
-                !result.changed -> TaskReport(withWarnings("${output.label()} already matches ${result.branch}.", result.warnings))
-                else -> {
-                    val where = result.url?.let { ": $it" }.orEmpty()
-                    TaskReport(withWarnings("Published ${output.label()} to ${result.branch} (${result.commit}, ${result.files} files)$where.", result.warnings))
-                }
-            }
+            publishReport(output, publishPages(engine, root, index))
         }
     }
 }
