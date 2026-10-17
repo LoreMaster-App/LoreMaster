@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import { describedConfig } from '../../test/config-description/config-description.fixture'
 import { readResultOf } from '../../test/config-description/engine-answers.fixture'
-import { CONFIG_DESCRIBE_METHOD, PAGES_PUBLISH_METHOD, SETTINGS_READ_METHOD, WATCH_ROUTE_METHOD } from '../engine-protocol'
+import { CONFIG_DESCRIBE_METHOD, type Output, PAGES_PUBLISH_METHOD, SETTINGS_READ_METHOD, WATCH_ROUTE_METHOD } from '../engine-protocol'
 import type { SyncCommandDeps } from '../sync-command'
 import { TOGGLE_WATCH_COMMAND, WATCH_DEBOUNCE_SETTING, WatchMode } from './watch-mode.handler'
 
@@ -21,7 +21,7 @@ function deps (engine: Engine, lines: string[]): SyncCommandDeps {
           return Promise.resolve(describedConfig() as never)
         }
         if (method === SETTINGS_READ_METHOD) {
-          return Promise.resolve(readResultOf({ version: 1, outputs: engine.outputs }) as never)
+          return Promise.resolve(readResultOf({ version: 1, outputs: engine.outputs as unknown as Output[] }) as never)
         }
         if (method === WATCH_ROUTE_METHOD) {
           return Promise.resolve({ everything: false, generators: [], markdown: (params as { changed: string[] }).changed } as never)
