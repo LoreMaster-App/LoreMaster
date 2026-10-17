@@ -22,6 +22,7 @@ import loremaster.connection.Credential
 import loremaster.connection.CredentialVaultClient
 import loremaster.engineprocess.EngineProcessStore
 import loremaster.engineprocess.EngineRpcError
+import loremaster.engineprogress.chooseOne
 import loremaster.projectsettings.OutputSettings
 import loremaster.projectsettings.readProjectSettings
 import java.nio.file.Path
@@ -80,14 +81,7 @@ class SyncHandler : AnAction() {
     }
 
     private fun chooseOutput(project: Project, outputs: List<IndexedValue<OutputSettings>>): IndexedValue<OutputSettings>? {
-        var picked: IndexedValue<OutputSettings>? = null
-        onUiThread {
-            val labels = outputs.map { it.value.label() }.toTypedArray()
-            val index = com.intellij.openapi.ui.Messages.showChooseDialog(project, "Which output?", "LoreMaster: Sync", null, labels, labels.first())
-            picked = outputs.getOrNull(index)
-        }
-
-        return picked
+        return chooseOne(project, "LoreMaster: Sync", "Which output?", outputs.map { it.value.label() })?.let(outputs::getOrNull)
     }
 
     private fun askCredential(project: Project, baseUrl: String): Credential? {

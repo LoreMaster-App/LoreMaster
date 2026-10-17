@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import loremaster.engineprocess.EngineRpcClient
 import loremaster.engineprogress.TaskReport
-import loremaster.engineprogress.onUiThread
+import loremaster.engineprogress.chooseOne
 import loremaster.engineprogress.runEngineTask
 import loremaster.projectsettings.OutputSettings
 import loremaster.projectsettings.readProjectSettings
@@ -42,9 +42,7 @@ abstract class PagesAction(private val title: String) : AnAction() {
     }
 
     private fun choose(project: Project, outputs: List<IndexedValue<OutputSettings>>): IndexedValue<OutputSettings>? {
-        val labels = outputs.map { it.value.label() }.toTypedArray()
-
-        return onUiThread { outputs.getOrNull(Messages.showChooseDialog(project, "Which output?", title, null, labels, labels.first())) }
+        return chooseOne(project, title, "Which output?", outputs.map { it.value.label() })?.let(outputs::getOrNull)
     }
 }
 
