@@ -99,6 +99,19 @@ func TestEveryPatternCompilesAndAcceptsItsOwnExample(t *testing.T) {
 	}
 }
 
+func TestOnlyKnownEditorsAreNamedAsHonouringASetting(t *testing.T) {
+	known := []string{"vscode", "jetbrains"}
+	for _, section := range configcatalog.Describe().Sections {
+		for _, field := range section.Settings {
+			for _, shell := range field.Shells {
+				if !slices.Contains(known, shell) {
+					t.Errorf("%s names the editor %q, which is not one of %v", field.Key, shell, known)
+				}
+			}
+		}
+	}
+}
+
 func TestEveryGeneratorFieldIsASettingOfAGenerator(t *testing.T) {
 	known := yamlKeys(t, workspacesettings.Generator{})
 	description := configcatalog.Describe()

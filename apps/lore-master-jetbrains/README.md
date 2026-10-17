@@ -11,13 +11,14 @@ package per slice under `src/main/kotlin/loremaster/`, tests beside them under `
 | `engineprocess` | Finds the engine binary for this platform, frames JSON-RPC over its stdio, matches responses to requests, answers the engine's own requests, owns the one engine process |
 | `enginecheck` | Tools > LoreMaster: Check Engine |
 | `engineprogress` | Runs engine work under a progress bar and reports in a balloon |
-| `pluginsettings` | Settings > Tools > LoreMaster (engine path, export folder, page size, PNG width, browser, templates) |
+| `pluginsettings` | Settings > Tools > LoreMaster: the engine path, then the user settings the engine describes |
 | `projectsettings` | Reads the project's outputs through the engine; opens `.vscode/settings.json` |
 | `connection` | Connect to Confluence, credentials in the IDE's password safe, session open/close |
 | `sync` | Sync to Confluence: plan, review dialog, execute with progress |
 | `rollback` | Roll back a sync: journals, dry run, undo |
 | `watch` | Watch mode: debouncing batcher, routing by the engine, silent sync |
-| `outputs` | Add a Confluence output: sign in, spaces, parent page browser, write `loreMaster.outputs` |
+| `configdescription` | Asks the engine what can be configured (`config/describe`): platforms, fields, sign-in, settings |
+| `outputs` | Add an output for any platform the engine describes: its fields, sign-in, spaces and parent page browser, write `loreMaster.outputs` |
 | `pages` | Check, build and publish GitHub Pages / wiki outputs |
 | `generators` | Run generators |
 | `pagestree` | The LoreMaster tool window: the page tree of an output |

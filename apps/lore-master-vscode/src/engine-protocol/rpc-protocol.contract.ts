@@ -656,6 +656,8 @@ export interface FieldDescriptor {
   pattern?:     string
   patternHelp?: string
   advanced?:    boolean
+  /** The editors that honour the setting; absent means every editor. */
+  shells?:      string[]
   lookup?:      { kind: string, needs?: string[], fills?: Array<{ field: string, from: string }> }
 }
 

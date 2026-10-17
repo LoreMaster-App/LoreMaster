@@ -587,7 +587,10 @@
           "label": "Generate before every sync",
           "help": "Run the generators (test results, API documentation) before every sync, so the pages they write are as fresh as the code.",
           "type": "bool",
-          "default": "false"
+          "default": "false",
+          "shells": [
+            "vscode"
+          ]
         },
         {
           "key": "runPrepareSteps",
@@ -608,6 +611,9 @@
               "value": "never",
               "label": "Never"
             }
+          ],
+          "shells": [
+            "vscode"
           ]
         },
         {
@@ -624,7 +630,10 @@
           "label": "Use the system keychain",
           "help": "Remember connections in the operating system's keychain, so every editor and the command line share them and a token is entered once.",
           "type": "bool",
-          "default": "false"
+          "default": "false",
+          "shells": [
+            "vscode"
+          ]
         }
       ]
     },
@@ -648,6 +657,9 @@
             "jira-wiki",
             "jira-adf",
             "mediawiki"
+          ],
+          "shells": [
+            "vscode"
           ]
         },
         {

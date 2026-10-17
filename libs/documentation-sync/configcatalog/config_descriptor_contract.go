@@ -145,6 +145,9 @@ type Field struct {
 	PatternHelp string `json:"patternHelp,omitempty"`
 	// Advanced fields are folded away until asked for.
 	Advanced bool `json:"advanced,omitempty"`
+	// Shells are the editors that honour the setting ("vscode", "jetbrains"); empty means every editor.
+	// A shell does not show a setting it does not act on.
+	Shells []string `json:"shells,omitempty"`
 	// Lookup, when present, lets the user pick the value from the platform.
 	Lookup *Lookup `json:"lookup,omitempty"`
 }

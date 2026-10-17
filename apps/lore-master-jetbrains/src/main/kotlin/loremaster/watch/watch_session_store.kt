@@ -12,7 +12,9 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import loremaster.engineprocess.EngineProcessStore
 import loremaster.engineprogress.TaskReport
 import loremaster.engineprogress.notify
+import loremaster.configdescription.describeConfig
 import loremaster.pluginsettings.PluginSettingsStore
+import loremaster.pluginsettings.effectiveNumber
 import loremaster.projectsettings.readProjectSettings
 import java.nio.file.Files
 import java.nio.file.Path
@@ -42,10 +44,11 @@ class WatchSessionStore(private val project: Project) : Disposable {
         if (batcher != null) return null
         val root = project.basePath ?: return "Open a project to watch it."
         val engineStore = ApplicationManager.getApplication().getService(EngineProcessStore::class.java)
-        if (readProjectSettings(engineStore.connection(), root).settings.outputs.isEmpty()) {
+        val engine = engineStore.connection()
+        if (readProjectSettings(engine, root).settings.outputs.isEmpty()) {
             return "Set up an output first (LoreMaster: Open Project Settings); watching needs somewhere to send the pages."
         }
-        val quietMs = PluginSettingsStore.current().watchDebounceSeconds.coerceIn(1, 300) * 1000L
+        val quietMs = (effectiveNumber(describeConfig(engine), PluginSettingsStore.current(), "watchDebounceSeconds") ?: 2) * 1000L
         val folder = Path.of(root)
         val created = ChangeBatcher(
             quietMs = quietMs,

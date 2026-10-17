@@ -26,8 +26,10 @@ Settings** opens the file, and creates it when it is missing:
 }
 ```
 
-The plugin's own preferences are in **Settings > Tools > LoreMaster**: the engine path (for a locally built engine), the browser
-that prints PDF and PNG, the export folder, the PDF page size, the PNG width and the Word and OpenDocument templates.
+The plugin's own preferences are in **Settings > Tools > LoreMaster**: the engine path (for a locally built engine), then the
+settings the engine describes for the user (export folder, PDF page size, PNG width, browser, Word and OpenDocument templates,
+watch mode's quiet time). That page, and the Add Output dialog, are drawn from the engine's `config/describe`, so a storage or a
+setting the engine adds shows up without a new plugin version (see [Configuration](configuration.md#what-can-be-configured)).
 
 ## What it does
 
@@ -37,7 +39,7 @@ All of it is under **Tools**; the sync and export are also on the project view's
 |---|---|
 | **LoreMaster: Connect to Confluence...** | Asks for the address and a way to sign in (Cloud email and API token, Data Center personal access token, or user and password), has the engine verify it, and keeps the credential in the IDE's **password safe**, one entry per site. Never in a file. |
 | **LoreMaster: Sync to Confluence...** | Plans the sync of an output, shows the plan (what is created, updated, moved, in conflict, orphaned), and on your yes runs it with the engine's progress in the IDE's progress bar. Select Markdown files or folders in the project view to sync only those. Asks for the credential once if there is none. |
-| **LoreMaster: Add Confluence Output...** | Signs in, lists the spaces you can see, lets you browse or search for the parent page (double-click goes deeper), and adds the output to `loreMaster.outputs`. The title prefix starts as the parent page's title. No need to find page ids by hand. |
+| **LoreMaster: Add Output...** | Offers the storages the engine knows (Confluence, GitHub Pages, GitHub Wiki, and any it learns later), draws the fields of the one you choose, and adds the output to `loreMaster.outputs`. For Confluence it signs in, lists the spaces you can see and lets you browse or search for the parent page (double-click goes deeper); the title prefix starts as the parent page's title, so there are no page ids to find by hand. Less common settings are under *Show advanced settings*. |
 | **LoreMaster: Roll Back a Sync...** | Lists the syncs that can still be undone, shows a dry run of what undoing the chosen one would do (pages to trash, pages to put back, local files to restore), and on your yes does it. If a page was edited since the sync it is left alone, unless you also choose to discard those edits. |
 | **LoreMaster: Watch Mode** | A checked item. While on, saving a Markdown file, the settings or a file a generator reads syncs just what changed to your Confluence outputs after a quiet moment (Settings > Tools > LoreMaster > Watch mode), and runs only the generators that read it. It asks nothing: it never overwrites a page edited on the platform and never trashes, and it needs a saved sign-in (use Connect first). A failed sync is retried with a growing pause. |
 | **LoreMaster: Check GitHub Pages** / **Build GitHub Pages Site...** / **Publish GitHub Pages** | What a publish would change, the static site into a folder you pick, or the site pushed to its branch with your own git. Works for `github-pages` and `github-wiki` outputs. |

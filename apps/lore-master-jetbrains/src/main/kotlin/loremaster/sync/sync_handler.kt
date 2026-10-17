@@ -21,6 +21,8 @@ import loremaster.connection.signInCredential
 import loremaster.engineprocess.EngineProcessStore
 import loremaster.engineprocess.EngineRpcError
 import loremaster.engineprogress.chooseOne
+import loremaster.configdescription.describeConfig
+import loremaster.configdescription.isPages
 import loremaster.projectsettings.OutputSettings
 import loremaster.projectsettings.readProjectSettings
 import java.nio.file.Path
@@ -56,11 +58,12 @@ class SyncHandler : AnAction() {
     private fun sync(project: Project, root: String, scope: List<String>?, store: EngineProcessStore, indicator: ProgressIndicator): SyncOutcome? {
         val engine = store.connection()
         val outputs = readProjectSettings(engine, root).settings.outputs
-        val confluence = outputs.withIndex().filter { it.value.platform == "confluence" }
-        if (confluence.isEmpty()) {
-            error("No Confluence output is configured. Add one to loreMaster.outputs (LoreMaster: Open Project Settings).")
+        val description = describeConfig(engine)
+        val syncable = outputs.withIndex().filter { description.isPages(it.value.platform) }
+        if (syncable.isEmpty()) {
+            error("No output that syncs page by page is configured. Add one (LoreMaster: Add Output) or edit loreMaster.outputs (LoreMaster: Open Project Settings).")
         }
-        val chosen = if (confluence.size == 1) confluence.single() else chooseOutput(project, confluence) ?: return null
+        val chosen = if (syncable.size == 1) syncable.single() else chooseOutput(project, syncable) ?: return null
 
         val stopListening = store.listen { method, params ->
             if (method == METHOD_HOST_PROGRESS && params != null) {

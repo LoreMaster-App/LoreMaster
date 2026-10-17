@@ -5,6 +5,9 @@ var exportFormatIDs = []string{"html", "pdf", "png", "docx", "odt", "txt", "jira
 
 func intPointer(value int) *int { return &value }
 
+// vscodeOnly marks a setting only the VS Code extension acts on.
+var vscodeOnly = []string{"vscode"}
+
 func choicesOf(values ...string) []Choice {
 	choices := make([]Choice, len(values))
 	for i, value := range values {
@@ -63,11 +66,11 @@ func sections() []Section {
 			ID: "sync", Label: "Sync and watch", Scope: ScopeUser,
 			Settings: []Field{
 				{
-					Key: "generateBeforeSync", Label: "Generate before every sync", Type: FieldBool, Default: "false",
+					Key: "generateBeforeSync", Shells: vscodeOnly, Label: "Generate before every sync", Type: FieldBool, Default: "false",
 					Help: "Run the generators (test results, API documentation) before every sync, so the pages they write are as fresh as the code.",
 				},
 				{
-					Key: "runPrepareSteps", Label: "Run prepare commands", Type: FieldChoice, Default: "ask",
+					Key: "runPrepareSteps", Shells: vscodeOnly, Label: "Run prepare commands", Type: FieldChoice, Default: "ask",
 					Help: "Whether a generator's prepare command runs when you generate. Ask shows the exact commands first.",
 					Choices: []Choice{
 						{Value: "ask", Label: "Ask first"},
@@ -80,7 +83,7 @@ func sections() []Section {
 					Help: "In watch mode, how many seconds nothing may change before the changes are synced, so a burst of saves is one sync.",
 				},
 				{
-					Key: "credentials.useKeychain", Label: "Use the system keychain", Type: FieldBool, Default: "false",
+					Key: "credentials.useKeychain", Shells: vscodeOnly, Label: "Use the system keychain", Type: FieldBool, Default: "false",
 					Help: "Remember connections in the operating system's keychain, so every editor and the command line share them and a token is entered once.",
 				},
 			},
@@ -89,7 +92,7 @@ func sections() []Section {
 			ID: "export", Label: "Export", Scope: ScopeUser,
 			Settings: []Field{
 				{
-					Key: "export.formats", Label: "Default formats", Type: FieldList,
+					Key: "export.formats", Shells: vscodeOnly, Label: "Default formats", Type: FieldList,
 					Help:        "The formats ticked by default when you export a Markdown file.",
 					Suggestions: exportFormatIDs,
 				},
