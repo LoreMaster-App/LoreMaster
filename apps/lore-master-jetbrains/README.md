@@ -8,7 +8,9 @@ Kotlin, Gradle (IntelliJ Platform Gradle Plugin 2.x), JDK 21. Files are `<snake>
 
 | Slice | What it does |
 |---|---|
-| `engineprocess` | Finds the engine binary, frames JSON-RPC over its stdio, matches responses to requests |
+| `engineprocess` | Finds the engine binary for this platform, frames JSON-RPC over its stdio, matches responses to requests, owns the one engine process |
+| `enginecheck` | Tools > LoreMaster: Check Engine |
+| `exportmarkdown` | Tools / editor / project view > LoreMaster: Export Markdown As... (every format of `lore-master-engine export`) |
 
 ```bash
 cd apps/lore-master-jetbrains

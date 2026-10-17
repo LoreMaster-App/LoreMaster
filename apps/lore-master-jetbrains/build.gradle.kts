@@ -30,3 +30,14 @@ intellijPlatform {
         ideaVersion { sinceBuild = "251" }
     }
 }
+
+// One plugin zip serves every platform, so it carries the engine built for each (dist/platforms/lore-master-engine/<os>-<arch>/).
+// Build them with `VERSION=<v> npx nx run lore-master-engine:build-all`, or point -PengineDir somewhere else.
+val engineDir = providers.gradleProperty("engineDir")
+    .orElse(layout.projectDirectory.dir("../../dist/platforms/lore-master-engine").asFile.path)
+
+tasks.prepareSandbox {
+    from(engineDir) {
+        into("${pluginName.get()}/bin")
+    }
+}

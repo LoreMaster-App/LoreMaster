@@ -2,7 +2,15 @@
     <id>app.loremaster.jetbrains</id>
     <name>LoreMaster</name>
     <vendor>LoreMaster</vendor>
-    <description>Gather a project's lore: sync Markdown to Confluence, GitHub Pages and the GitHub wiki. A thin shell over the lore-master-engine sidecar.</description>
+    <description><![CDATA[
+        <p>LoreMaster gathers a project's lore. This first preview brings its Markdown export to JetBrains IDEs.</p>
+        <ul>
+            <li>Export a Markdown file to HTML, Word (.docx), OpenDocument (.odt), PDF, PNG, plain text, Jira wiki, Jira Cloud JSON and MediaWiki.</li>
+            <li>From the editor, the project view or the Tools menu: <b>LoreMaster: Export Markdown As...</b></li>
+            <li>PDF and PNG need Chrome, Edge or Chromium installed; the other formats need nothing.</li>
+        </ul>
+        <p>Everything runs in the bundled lore-master-engine; nothing is sent anywhere. Syncing to Confluence and GitHub Pages is coming.</p>
+    ]]></description>
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -15,6 +23,14 @@
                 text="LoreMaster: Check Engine"
                 description="Start the LoreMaster engine and check that it answers">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="loremaster.exportMarkdown"
+                class="loremaster.exportmarkdown.ExportMarkdownHandler"
+                text="LoreMaster: Export Markdown As..."
+                description="Export this Markdown file to HTML, Word, OpenDocument, PDF, PNG, plain text, Jira or MediaWiki">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

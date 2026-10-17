@@ -19,6 +19,17 @@ class CheckEngineHandlerTest : BasePlatformTestCase() {
         assertEquals("LoreMaster: Check Engine", action.templatePresentation.text)
     }
 
+    fun `test the export action is on the editor, project and tools menus`() {
+        val action = ActionManager.getInstance().getAction("loremaster.exportMarkdown")
+
+        assertTrue(action is loremaster.exportmarkdown.ExportMarkdownHandler)
+        for (group in listOf("ToolsMenu", "EditorPopupMenu", "ProjectViewPopupMenu")) {
+            val children = (ActionManager.getInstance().getAction(group) as com.intellij.openapi.actionSystem.ActionGroup)
+                .getChildren(null)
+            assertTrue("not in $group", children.contains(action))
+        }
+    }
+
     fun `test the store starts the real engine and it answers ping`() {
         val binary = System.getenv("LORE_MASTER_ENGINE")?.takeIf { it.isNotBlank() }?.let(Path::of)
         if (binary == null || !Files.exists(binary)) {
