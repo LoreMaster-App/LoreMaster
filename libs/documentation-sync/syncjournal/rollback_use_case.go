@@ -74,14 +74,9 @@ func (outcome Outcome) Complete() bool {
 // reason, unless Force is set.
 func Rollback(ctx context.Context, platform platformport.DocumentationPlatform, workspaceRoot string, journal Journal, options Options) Outcome {
 	var outcome Outcome
-	// Pages this sync created are trashed newest first, so one that is a child of another is gone before its parent is looked at.
-	// A dry run trashes nothing, so it has to know them to not count them as other people's pages.
-	created := map[string]bool{}
-	for _, change := range journal.Pages {
-		if change.Kind == Created {
-			created[change.PageID] = true
-		}
-	}
+	// Created pages go newest first, so a child is dealt with before its parent. A dry run trashes nothing, so a parent has to
+	// be told which of its children this rollback has already trashed (or would): those are not left standing below it.
+	gone := map[string]bool{}
 	for index := len(journal.Pages) - 1; index >= 0; index-- {
 		change := journal.Pages[index]
 		if ctx.Err() != nil {
@@ -89,7 +84,11 @@ func Rollback(ctx context.Context, platform platformport.DocumentationPlatform, 
 
 			continue
 		}
-		outcome.Pages = append(outcome.Pages, rollBackPage(ctx, platform, change, options, created))
+		page := rollBackPage(ctx, platform, change, options, gone)
+		if page.Result == ResultTrashed || page.Result == ResultWouldTrash || page.Result == ResultGone {
+			gone[change.PageID] = true
+		}
+		outcome.Pages = append(outcome.Pages, page)
 	}
 	for _, change := range journal.Files {
 		outcome.Files = append(outcome.Files, rollBackFile(workspaceRoot, change, options))
@@ -98,7 +97,7 @@ func Rollback(ctx context.Context, platform platformport.DocumentationPlatform, 
 	return outcome
 }
 
-func rollBackPage(ctx context.Context, platform platformport.DocumentationPlatform, change PageChange, options Options, created map[string]bool) PageOutcome {
+func rollBackPage(ctx context.Context, platform platformport.DocumentationPlatform, change PageChange, options Options, gone map[string]bool) PageOutcome {
 	result := PageOutcome{PageID: change.PageID, Title: change.Title, Kind: change.Kind}
 	if change.Kind == Trashed {
 		result.Result = ResultIrreversible
@@ -129,7 +128,7 @@ func rollBackPage(ctx context.Context, platform platformport.DocumentationPlatfo
 	}
 
 	if change.Kind == Created {
-		return trashCreated(ctx, platform, change, options, result, created)
+		return trashCreated(ctx, platform, change, options, result, gone)
 	}
 
 	if change.Before == nil {
@@ -154,7 +153,7 @@ func rollBackPage(ctx context.Context, platform platformport.DocumentationPlatfo
 	return result
 }
 
-func trashCreated(ctx context.Context, platform platformport.DocumentationPlatform, change PageChange, options Options, result PageOutcome, created map[string]bool) PageOutcome {
+func trashCreated(ctx context.Context, platform platformport.DocumentationPlatform, change PageChange, options Options, result PageOutcome, gone map[string]bool) PageOutcome {
 	listed, err := platform.ListChildren(ctx, change.PageID)
 	if err != nil {
 		result.Result = ResultFailed
@@ -164,7 +163,7 @@ func trashCreated(ctx context.Context, platform platformport.DocumentationPlatfo
 	}
 	var children []platformport.RemotePage
 	for _, child := range listed {
-		if !created[child.ID] {
+		if !gone[child.ID] {
 			children = append(children, child)
 		}
 	}
