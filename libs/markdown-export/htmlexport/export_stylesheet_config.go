@@ -18,6 +18,8 @@ table{border-collapse:collapse;margin:1em 0}
 th,td{border:1px solid var(--rule);padding:6px 13px}
 th{background:var(--code)}
 img{max-width:100%}
+.diagram{margin:1em 0;overflow:auto;background:#fff;padding:.75em;border-radius:6px}
+.diagram svg{max-width:100%;height:auto}
 hr{border:0;border-top:1px solid var(--rule)}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}pre{white-space:pre-wrap}}
 `
