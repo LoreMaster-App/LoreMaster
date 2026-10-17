@@ -38,6 +38,8 @@ type SettingsReadResult struct {
 	// DisplayNames is what each output is called, in the order of Settings.Outputs: its name, or one
 	// the platform's descriptor makes up. A shell shows these and builds no names of its own.
 	DisplayNames []string `json:"displayNames"`
+	// Summaries say where each output goes, in the same order: the site address, the repository.
+	Summaries []string `json:"summaries"`
 }
 
 // SettingsSaveParams is the whole file's content.

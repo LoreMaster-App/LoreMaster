@@ -1,5 +1,6 @@
-import type { Output, Settings } from '../engine-protocol'
-import { SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD } from '../engine-protocol'
+import { describedConfig } from '../../test/config-description/config-description.fixture'
+import { describeRoutes, readResultOf } from '../../test/config-description/engine-answers.fixture'
+import { CONFIG_DESCRIBE_METHOD, type Output, type Settings, SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD } from '../engine-protocol'
 import { saveStorage, type SaveStorageEngine } from './save-storage.use-case'
 import { emptyValues } from './storage-form-values.mapper'
 
@@ -20,8 +21,11 @@ function engine (settings: Settings, firstSync = false, refuse?: string) {
   const saves: Settings[] = []
   const requests: SaveStorageEngine = {
     request (method: string, params?: unknown) {
+      if (method === CONFIG_DESCRIBE_METHOD) {
+        return Promise.resolve(describeRoutes()[method]() as never)
+      }
       if (method === SETTINGS_READ_METHOD) {
-        return Promise.resolve({ exists: true, firstSync, settings } as never)
+        return Promise.resolve(readResultOf(settings, { firstSync }) as never)
       }
       if (method === SETTINGS_SAVE_METHOD) {
         if (refuse) {
@@ -37,7 +41,8 @@ function engine (settings: Settings, firstSync = false, refuse?: string) {
   return { requests, saves }
 }
 
-const confluenceValues = { ...emptyValues(), platform: 'confluence' as const, connection: 'https://x.atlassian.net/wiki', space: 'OPS', parentPageId: '99' }
+const description = describedConfig()
+const confluenceValues = { ...emptyValues(description), platform: 'confluence', baseUrl: 'https://x.atlassian.net/wiki', space: 'OPS', parentPageId: '99', titlePrefix: 'OPS' }
 
 describe('saveStorage', () => {
   it('appends a new storage beside the existing ones', async () => {
@@ -62,7 +67,7 @@ describe('saveStorage', () => {
     const other = { ...existing, space: 'DOC' }
     const { requests, saves } = engine({ version: 1, outputs: [existing, other] })
 
-    await saveStorage({ engine: requests, workspaceRoot: '/w', index: 0, connectionCount: 1 }, { ...confluenceValues, titlePrefix: 'ENG', ignore: 'internal/' })
+    await saveStorage({ engine: requests, workspaceRoot: '/w', index: 0, connectionCount: 1 }, { ...confluenceValues, ignore: 'internal/' })
 
     expect(saves[0].outputs[0]).toMatchObject({ space: 'OPS', parentPageId: '99' })
     expect(saves[0].outputs[1]).toEqual(other)
@@ -96,30 +101,27 @@ describe('saveStorage', () => {
 })
 
 describe('saveStorage names', () => {
-  it('gives an unnamed new storage a name made from where it goes', async () => {
+  it('leaves an unnamed storage unnamed: the engine makes a name up from where it goes', async () => {
     const { requests, saves } = engine({ version: 1, outputs: [existing] })
 
     await saveStorage({ engine: requests, workspaceRoot: '/w', connectionCount: 1 }, confluenceValues)
 
-    expect(saves[0].outputs[1].name).toBe('Confluence · OPS')
+    expect(saves[0].outputs[1].name).toBeUndefined()
   })
 
-  it('refuses a name another storage already has, without saving', async () => {
-    const { requests, saves } = engine({ version: 1, outputs: [{ ...existing, name: 'Technical docs' }] })
+  it('saves the name the user gave', async () => {
+    const { requests, saves } = engine({ version: 1, outputs: [] })
+
+    await saveStorage({ engine: requests, workspaceRoot: '/w', connectionCount: 1 }, { ...confluenceValues, name: ' Technical docs ' })
+
+    expect(saves[0].outputs[0].name).toBe('Technical docs')
+  })
+
+  it("shows the engine's refusal of a name another storage already has", async () => {
+    const { requests } = engine({ version: 1, outputs: [{ ...existing, name: 'Technical docs' }] }, false, 'outputs[1].name "technical DOCS" is already the name of outputs[0]; names must be different')
 
     const result = await saveStorage({ engine: requests, workspaceRoot: '/w', connectionCount: 1 }, { ...confluenceValues, name: 'technical DOCS' })
 
-    expect(result).toMatchObject({ saved: false, errors: { name: expect.stringContaining('already called') } })
-    expect(saves).toHaveLength(0)
-  })
-
-  it('lets a storage keep its own name when it is edited', async () => {
-    const { requests, saves } = engine({ version: 1, outputs: [{ ...existing, name: 'Technical docs' }] })
-    const values = { ...confluenceValues, name: 'Technical docs', space: 'ENG' }
-
-    const result = await saveStorage({ engine: requests, workspaceRoot: '/w', index: 0, connectionCount: 1 }, values)
-
-    expect(result).toEqual({ saved: true })
-    expect(saves[0].outputs[0].name).toBe('Technical docs')
+    expect(result).toMatchObject({ saved: false, message: expect.stringContaining('already the name') })
   })
 })

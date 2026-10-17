@@ -1,5 +1,8 @@
+import { describedConfig } from '../../test/config-description/config-description.fixture'
+import { readResultOf } from '../../test/config-description/engine-answers.fixture'
 import type { EngineClient } from '../engine-process'
 import {
+  CONFIG_DESCRIBE_METHOD,
   type Edition,
   type Output,
   PAGES_PUBLISH_METHOD,
@@ -69,8 +72,7 @@ function buildUI (over: Partial<SyncUI> = {}): SyncUI & { errors: string[] } {
     noConnections:     () => Promise.resolve(),
     pickStorageTypes:  () => Promise.resolve(undefined),
     pickOutputs:       () => Promise.resolve(undefined),
-    promptRepo:        () => Promise.resolve(undefined),
-    promptBranch:      () => Promise.resolve(undefined),
+    promptField:       () => Promise.resolve(undefined),
     withProgress:      (_title, task) => task(() => {}),
     report:            () => {},
     status:            () => {},
@@ -120,11 +122,13 @@ function deps (engine: EngineClient, ui: SyncUI, options = {}): Parameters<typeo
   return { engine, connections: connectionStore(), targets: createTargetStore(), workspaceRoot: '/w', ui, ...options }
 }
 
-const bothConfigured = { exists: true, firstSync: false, settings: { version: 1, outputs: [confluenceOutput, pagesOutput] } }
+const bothConfigured = readResultOf({ version: 1, outputs: [confluenceOutput, pagesOutput] })
+const described = { [CONFIG_DESCRIBE_METHOD]: () => describedConfig() }
 
 describe('syncOutputs', () => {
   it('fans out over every configured output: Confluence is planned, GitHub Pages is published', async () => {
     const engine = fakeEngine({
+      ...described,
       [SETTINGS_READ_METHOD]: () => bothConfigured,
       [SESSION_OPEN_METHOD]:  () => session,
       [SYNC_PLAN_METHOD]:     () => ({ planId: 'p', actions: [], counts: {} }),
@@ -141,7 +145,8 @@ describe('syncOutputs', () => {
   it('runs the first-run setup and saves the chosen outputs when none are configured', async () => {
     let saved: unknown
     const engine = fakeEngine({
-      [SETTINGS_READ_METHOD]: () => ({ exists: false, firstSync: true, settings: { version: 1, outputs: [blankConfluenceScaffold] } }),
+      ...described,
+      [SETTINGS_READ_METHOD]: () => readResultOf({ version: 1, outputs: [blankConfluenceScaffold] }, { exists: false, firstSync: true }),
       [SETTINGS_SAVE_METHOD]: params => {
         saved = params
 
@@ -149,7 +154,7 @@ describe('syncOutputs', () => {
       },
       [PAGES_PUBLISH_METHOD]: () => ({ changed: true, files: 1, branch: 'gh-pages' }),
     })
-    const ui = buildUI({ pickStorageTypes: () => Promise.resolve(['github-pages']), promptRepo: () => Promise.resolve(''), promptBranch: () => Promise.resolve('gh-pages') })
+    const ui = buildUI({ pickStorageTypes: () => Promise.resolve(['github-pages']), promptField: () => Promise.resolve('') })
 
     await syncOutputs(deps(engine, ui))
 
@@ -161,6 +166,7 @@ describe('syncOutputs', () => {
 
   it('syncs only the chosen subset for "sync to…"', async () => {
     const engine = fakeEngine({
+      ...described,
       [SETTINGS_READ_METHOD]: () => bothConfigured,
       [PAGES_PUBLISH_METHOD]: () => ({ changed: true, files: 1, branch: 'gh-pages' }),
     })
@@ -172,15 +178,16 @@ describe('syncOutputs', () => {
     expect((engine.calls.find(call => call.method === PAGES_PUBLISH_METHOD)?.params as { output: number }).output).toBe(1)
   })
 
-  it('syncs only Confluence outputs for the current-file sync', async () => {
+  it('syncs only the outputs that sync page by page for the current-file sync', async () => {
     const engine = fakeEngine({
+      ...described,
       [SETTINGS_READ_METHOD]: () => bothConfigured,
       [SESSION_OPEN_METHOD]:  () => session,
       [SYNC_PLAN_METHOD]:     () => ({ planId: 'p', actions: [], counts: {} }),
       [SYNC_EXECUTE_METHOD]:  () => ({ pages: [] }),
     })
 
-    await syncOutputs(deps(engine, buildUI()), { confluenceOnly: true })
+    await syncOutputs(deps(engine, buildUI()), { pagesOnly: true })
 
     expect(engine.calls.some(call => call.method === SYNC_PLAN_METHOD)).toBe(true)
     expect(engine.calls.some(call => call.method === PAGES_PUBLISH_METHOD)).toBe(false)

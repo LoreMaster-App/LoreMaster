@@ -1,15 +1,13 @@
 import { join } from 'node:path'
 import * as vscode from 'vscode'
 import {
+  type ConfigDescription,
   type LeftOutFile,
-  type Output,
-  SETTINGS_READ_METHOD,
-  type SettingsReadResult,
   WORKSPACE_TREE_METHOD,
   type WorkspaceTreeResult,
 } from '../engine-protocol'
 import { type ExcludedMode, flatten, repoTree, type RepoFolder, type ViewMode } from '../pages-display'
-import { isConfiguredOutput, storageDescription, storageIcon, storageLabel } from '../sidebar'
+import { type ConfiguredOutput, readConfiguredOutputs } from '../sidebar'
 import { buildPageEntries } from './build-page-entries.algorithm'
 import { leftOutReason } from './left-out-reason.policy'
 import { pageDescription, pageLabel } from './page-label.policy'
@@ -27,12 +25,6 @@ export interface PagesEngine {
   request<R> (method: string, params?: unknown): Promise<R>
 }
 
-/** One configured output, with its index in the settings' outputs list. */
-export interface ConfiguredOutput {
-  index:  number
-  output: Output
-}
-
 /** How the view is arranged, read from the settings each time it is drawn. */
 export interface DisplayOptions {
   label:    LabelMode
@@ -48,7 +40,7 @@ export type RepoItem =
 /** A row in the Pages view. */
 export type PagesNode =
   | { kind: 'local' } |
-  { kind: 'storage'; index: number; output: Output } |
+  ({ kind: 'storage' } & ConfiguredOutput) |
   { kind: 'folder'; index: number; folder: RepoFolder<RepoItem> } |
   { kind: 'page'; index: number; entry: PageEntry } |
   { kind: 'orphan'; index: number; title: string; url?: string } |
@@ -147,12 +139,11 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
     return item
   }
 
-  private storageItem (node: { index: number; output: Output }): vscode.TreeItem {
-    const { output } = node
-    const item = new vscode.TreeItem(storageLabel(output), vscode.TreeItemCollapsibleState.Expanded)
+  private storageItem (node: ConfiguredOutput): vscode.TreeItem {
+    const item = new vscode.TreeItem(node.label, vscode.TreeItemCollapsibleState.Expanded)
     item.id = `storage:${node.index}`
-    item.description = storageDescription(output)
-    item.iconPath = new vscode.ThemeIcon(storageIcon(output))
+    item.description = node.detail
+    item.iconPath = new vscode.ThemeIcon(node.icon)
     item.contextValue = 'loreMasterPagesStorage'
 
     return item
@@ -174,7 +165,7 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
       return 'ignored by git, never synced'
     }
     const names = (indexes ?? []).map(index => this.outputs.find(each => each.index === index)).filter(each => each !== undefined)
-      .map(each => storageLabel(each.output))
+      .map(each => each.label)
 
     return names.length > 0 ? `→ ${names.join(', ')}` : 'not synced'
   }
@@ -270,18 +261,13 @@ ${reason.detail}`
   }
 
   /** The configured outputs of the first workspace folder, and the folder itself. */
-  async configuredOutputs (): Promise<{ folder: string; outputs: ConfiguredOutput[] }> {
+  async configuredOutputs (): Promise<{ folder: string; outputs: ConfiguredOutput[]; description?: ConfigDescription }> {
     const folder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
     if (!folder) {
       return { folder: '', outputs: [] }
     }
     try {
-      const read = await this.engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })
-
-      return {
-        folder,
-        outputs: read.settings.outputs.map((output, index) => ({ index, output })).filter(each => isConfiguredOutput(each.output)),
-      }
+      return { folder, ...await readConfiguredOutputs(this.engine, folder) }
     } catch {
       return { folder, outputs: [] }
     }
@@ -319,7 +305,7 @@ ${reason.detail}`
       return []
     }
 
-    return [{ kind: 'local' }, ...outputs.map((each): PagesNode => ({ kind: 'storage', index: each.index, output: each.output }))]
+    return [{ kind: 'local' }, ...outputs.map((each): PagesNode => ({ kind: 'storage', ...each }))]
   }
 
   getTreeItem (node: PagesNode): vscode.TreeItem {

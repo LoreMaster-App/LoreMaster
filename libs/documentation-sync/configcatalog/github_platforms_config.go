@@ -11,7 +11,7 @@ func githubPagesPlatform() Platform {
 	return Platform{
 		ID: "github-pages", Label: "GitHub Pages", Icon: "site", Delivery: DeliverySite,
 		Description:  "A static site published to a branch of a GitHub repository.",
-		NameTemplate: "GitHub Pages · {repo|this repository}",
+		NameTemplate: "GitHub Pages · {repo|this repository}", SummaryTemplate: "{repo|this repository's origin}",
 		Fields: []Field{
 			{
 				Key: "repo", Label: "Repository", Type: FieldText, Placeholder: "owner/name",
@@ -39,7 +39,7 @@ func githubWikiPlatform() Platform {
 	return Platform{
 		ID: "github-wiki", Label: "GitHub Wiki", Icon: "wiki", Delivery: DeliverySite,
 		Description:  "The repository's GitHub wiki.",
-		NameTemplate: "GitHub Wiki · {repo|this repository}",
+		NameTemplate: "GitHub Wiki · {repo|this repository}", SummaryTemplate: "{repo|this repository's origin}",
 		Fields: []Field{
 			{
 				Key: "repo", Label: "Repository", Type: FieldText, Placeholder: "owner/name",

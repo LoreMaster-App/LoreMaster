@@ -1,6 +1,7 @@
 export { registerSyncView, SYNC_VIEW_ID } from './sync-view.client'
 export { ADD_STORAGE_COMMAND } from './add-storage-command.config'
 export { OPEN_CONFIG_COMMAND, openConfig } from './open-config.handler'
-export { isConfiguredOutput, storageDescription, storageIcon, storageLabel, StoragesViewProvider, STORAGES_VIEW_ID, type StorageNode, type StoragesEngine } from './storages-view.client'
+export { StoragesViewProvider, STORAGES_VIEW_ID, type StorageNode, type StoragesEngine } from './storages-view.client'
+export { type ConfiguredOutput, configuredOutputsOf, isConfiguredOutput, type OutputsEngine, readConfiguredOutputs } from './configured-outputs.use-case'
 export { REMOVE_STORAGE_COMMAND, REFRESH_STORAGES_COMMAND, removeStorageCommand } from './remove-storage.handler'
 export { removeStorage, type RemoveResult } from './remove-storage.use-case'

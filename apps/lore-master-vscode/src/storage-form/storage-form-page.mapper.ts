@@ -1,4 +1,8 @@
-/** The webview page of the storage form: markup, styles and script, under one nonce. */
+/**
+ * The webview page of the storage form: styles and one script, under one nonce. The page knows no
+ * platform: the script builds every section and field from the description the extension sends
+ * with `init` (the engine's `config/describe`), so a platform the engine adds appears here without a change.
+ */
 export function renderStorageFormPage (nonce: string, title: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -13,9 +17,12 @@ export function renderStorageFormPage (nonce: string, title: string): string {
   p.lead { margin: 0 0 16px; color: var(--vscode-descriptionForeground); }
   section { border: 1px solid var(--vscode-panel-border); border-radius: 6px; padding: 12px 16px; margin: 0 0 16px; }
   section h2 { font-size: 1em; margin: 0 0 8px; text-transform: uppercase; letter-spacing: .04em; color: var(--vscode-descriptionForeground); }
+  details { margin: 12px 0 0; }
+  summary { cursor: pointer; color: var(--vscode-descriptionForeground); }
   label { display: block; margin: 10px 0 2px; font-weight: 600; }
   .hint { color: var(--vscode-descriptionForeground); font-size: .9em; margin: 2px 0 0; }
   input, select { width: 100%; box-sizing: border-box; padding: 5px 8px; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); border-radius: 2px; font: inherit; }
+  input[type=checkbox] { width: auto; }
   input:focus, select:focus, button:focus { outline: 1px solid var(--vscode-focusBorder); }
   .row { display: flex; gap: 8px; align-items: stretch; }
   .row > :first-child { flex: 1; }
@@ -39,86 +46,9 @@ export function renderStorageFormPage (nonce: string, title: string): string {
 <p class="lead" id="lead"></p>
 <div class="banner" id="banner" hidden></div>
 <form id="form" novalidate>
-  <section id="sec-platform">
-    <h2>Where to sync</h2>
-    <label for="name">Name</label>
-    <input id="name" autocomplete="off" placeholder="e.g. Technical documentation" />
-    <p class="hint">What this storage is called in the tree and when you sync. Leave empty for a name made from where it goes.</p>
-    <div class="error" data-error="name"></div>
-    <label for="platform">Storage</label>
-    <select id="platform">
-      <option value="">Choose a storage…</option>
-      <option value="confluence">Confluence: Markdown to a Confluence space</option>
-      <option value="github-pages">GitHub Pages: a static site on a branch</option>
-      <option value="github-wiki">GitHub Wiki: the repository's wiki pages</option>
-    </select>
-    <div class="error" data-error="platform"></div>
-  </section>
-
-  <section id="sec-confluence" hidden>
-    <h2>Confluence</h2>
-    <label for="connection">Connection</label>
-    <div class="row"><select id="connection"></select><button type="button" id="addConnection">Add connection…</button></div>
-    <div class="error" data-error="connection"></div>
-
-    <label for="space">Space</label>
-    <div class="row"><input id="space" autocomplete="off" placeholder="Space key, e.g. ENG" /><button type="button" id="loadSpaces">Browse spaces</button></div>
-    <select id="spaceList" hidden size="6"></select>
-    <div class="error" data-error="space"></div>
-
-    <label for="parentPageId">Parent page</label>
-    <input id="parentPageId" autocomplete="off" placeholder="Page id, e.g. 98306" />
-    <p class="hint" id="parentTitle">Every synced page goes under this page. Changing it moves the pages already synced.</p>
-    <div class="row tight"><input id="pageQuery" autocomplete="off" placeholder="Find the parent page by title" /><button type="button" id="searchPages">Search</button></div>
-    <ul class="results" id="pageResults" hidden></ul>
-    <div class="error" data-error="parentPageId"></div>
-
-    <label for="titlePrefix">Title prefix</label>
-    <input id="titlePrefix" autocomplete="off" placeholder="Pages are titled “&lt;prefix&gt;: &lt;first heading&gt;”" />
-    <p class="hint">Leave empty to ask on the first sync.</p>
-
-    <label for="direction">Direction</label>
-    <select id="direction"><option value="to-platform">to-platform: Markdown is the source</option><option value="two-way">two-way: pull edits back</option></select>
-    <label for="mermaidMode">Mermaid diagrams</label>
-    <select id="mermaidMode"><option value="image">image</option><option value="code">code</option></select>
-    <label for="linkMode">Links between pages</label>
-    <select id="linkMode"><option value="title">title</option><option value="id">id</option></select>
-    <label for="titleCollision">When a page title already exists</label>
-    <select id="titleCollision"><option value="fail">fail</option><option value="adopt">adopt</option></select>
-  </section>
-
-  <section id="sec-github" hidden>
-    <h2 id="githubHeading">GitHub</h2>
-    <label for="repo">Repository</label>
-    <input id="repo" autocomplete="off" placeholder="owner/name or a clone URL" />
-    <p class="hint">Leave empty for this workspace's own origin.</p>
-    <div class="error" data-error="repo"></div>
-    <label for="branch">Branch</label>
-    <input id="branch" autocomplete="off" placeholder="gh-pages" />
-    <div id="pathRow">
-      <label for="path">Folder in the branch</label>
-      <input id="path" autocomplete="off" placeholder="(the whole branch)" />
-      <p class="hint">Publish into this folder and leave the rest of the branch alone.</p>
-    </div>
-  </section>
-
-  <section id="sec-common" hidden>
-    <h2>What to sync</h2>
-    <label for="roots">Folders to sync</label>
-    <input id="roots" autocomplete="off" placeholder="." />
-    <p class="hint">Folders relative to the workspace, separated by commas. “.” is the whole workspace.</p>
-    <label for="excludes">Excluded paths</label>
-    <input id="excludes" autocomplete="off" placeholder="drafts/, CHANGELOG.md" />
-    <p class="hint">Gitignore-style patterns this storage leaves out.</p>
-    <label for="template">Page template</label>
-    <input id="template" autocomplete="off" placeholder="default" />
-    <p class="hint">Empty is the default layout. GitHub Pages: default, minimal, handbook or headless, or a folder holding template.html. Wiki: a Markdown file with {{content}}. Confluence: a page id or address, or a file, with {{content}} where the page goes. Write ./name for a folder named like a built-in.</p>
-    <div class="error" data-error="template"></div>
-    <label for="ignore">Ignored paths (all storages)</label>
-    <input id="ignore" autocomplete="off" placeholder="internal/, CLAUDE.md" />
-    <p class="hint">Patterns every storage of this workspace leaves out.</p>
-  </section>
-
+  <section id="sec-platform"><h2>Where to sync</h2></section>
+  <section id="sec-fields" hidden><h2 id="platformHeading"></h2></section>
+  <section id="sec-common" hidden><h2>What to sync</h2></section>
   <div class="actions">
     <button type="button" id="cancel">Cancel</button>
     <button type="submit" class="primary" id="save">Save</button>
@@ -129,20 +59,153 @@ export function renderStorageFormPage (nonce: string, title: string): string {
 (function () {
   const api = acquireVsCodeApi();
   const $ = id => document.getElementById(id);
-  const FIELDS = ['name','platform','connection','space','parentPageId','titlePrefix','direction','mermaidMode','linkMode','titleCollision','repo','branch','path','template','roots','excludes','ignore'];
+  let description = null;
+  let connections = [];
   let mode = 'create';
+  // The values of every field, kept across a change of platform; the inputs are read into it before a redraw.
+  let values = {};
+  let current = [];
 
-  function read () {
-    const values = {};
-    for (const name of FIELDS) { values[name] = $(name).value; }
-    return values;
+  function el (tag, props, children) {
+    const node = document.createElement(tag);
+    Object.assign(node, props || {});
+    for (const child of children || []) { node.append(child); }
+    return node;
   }
-  function write (values) {
-    for (const name of FIELDS) {
-      if (values[name] === undefined || (name === 'connection' && values[name] === '')) { continue; }
-      $(name).value = values[name];
+  function hint (text) { return el('p', { className: 'hint', textContent: text }); }
+
+  function platformOf (id) { return description.platforms.find(platform => platform.id === id); }
+
+  function remember () {
+    for (const entry of current) { values[entry.key] = entry.read(); }
+  }
+
+  // A field is drawn as its type says; a lookup kind this page does not know is a plain input.
+  function drawField (field, platform) {
+    const wrap = el('div', {});
+    const id = 'f-' + field.key;
+    wrap.append(el('label', { htmlFor: id, textContent: field.label + (field.required ? ' *' : '') }));
+    const isConnection = platform && platform.connection && platform.connection.field === field.key;
+    let control;
+    if (isConnection) {
+      control = el('select', { id });
+      const add = el('button', { type: 'button', textContent: 'Add connection…' });
+      add.addEventListener('click', () => api.postMessage({ type: 'addConnection' }));
+      wrap.append(el('div', { className: 'row' }, [control, add]));
+      fillConnections(control, values[field.key]);
+    } else if (field.type === 'choice') {
+      control = el('select', { id });
+      for (const choice of field.choices || []) {
+        control.append(el('option', { value: choice.value, textContent: choice.label, title: choice.help || '' }));
+      }
+      wrap.append(control);
+    } else if (field.type === 'bool') {
+      control = el('input', { id, type: 'checkbox', checked: values[field.key] === 'true' });
+      wrap.append(control);
+    } else {
+      control = el('input', { id, autocomplete: 'off', placeholder: field.placeholder || field.default || '' });
+      if (field.type === 'number') { control.type = 'number'; }
+      if (field.suggestions && field.suggestions.length > 0) {
+        const list = el('datalist', { id: id + '-list' });
+        for (const suggestion of field.suggestions) { list.append(el('option', { value: suggestion })); }
+        control.setAttribute('list', id + '-list');
+        wrap.append(control, list);
+      } else if (!field.lookup || !drawLookup(wrap, field, control)) {
+        wrap.append(control);
+      }
+    }
+    if (control.tagName === 'INPUT' && control.type === 'checkbox') {
+      control.checked = values[field.key] === 'true';
+    } else if (!isConnection) {
+      control.value = values[field.key] || '';
+    }
+    if (field.help) { wrap.append(hint(field.help)); }
+    wrap.append(el('div', { className: 'error' }));
+    wrap.lastChild.setAttribute('data-error', field.key);
+    current.push({
+      key: field.key,
+      read: () => control.type === 'checkbox' ? String(control.checked) : control.value,
+      set: value => { control.value = value; },
+    });
+    return wrap;
+  }
+
+  // A lookup the page knows how to offer: a space is browsed, a page is searched in a space chosen first.
+  function drawLookup (wrap, field, control) {
+    if (field.lookup.kind === 'space') {
+      const list = el('select', { size: 6, hidden: true });
+      const browse = el('button', { type: 'button', textContent: 'Browse spaces' });
+      browse.addEventListener('click', () => { browse.disabled = true; api.postMessage({ type: 'listSpaces', connection: connectionValue() }); });
+      list.addEventListener('change', () => { control.value = list.value; });
+      wrap.append(el('div', { className: 'row' }, [control, browse]), list);
+      lookups.spaces = { list, browse };
+      return true;
+    }
+    if (field.lookup.kind === 'page') {
+      const query = el('input', { autocomplete: 'off', placeholder: 'Find it by title' });
+      const search = el('button', { type: 'button', textContent: 'Search' });
+      const results = el('ul', { className: 'results', hidden: true });
+      const needs = (field.lookup.needs || [])[0];
+      search.addEventListener('click', () => {
+        search.disabled = true;
+        remember();
+        api.postMessage({ type: 'searchPages', connection: connectionValue(), space: needs ? (values[needs] || '') : '', query: query.value });
+      });
+      query.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); search.click(); } });
+      wrap.append(control, el('div', { className: 'row tight' }, [query, search]), results);
+      lookups.pages = { results, search, control, fills: field.lookup.fills || [] };
+      return true;
+    }
+    return false;
+  }
+  const lookups = {};
+
+  function connectionValue () {
+    const platform = platformOf($('platform').value);
+    const key = platform && platform.connection ? platform.connection.field : '';
+    const entry = current.find(each => each.key === key);
+    return entry ? entry.read() : '';
+  }
+
+  function fillConnections (select, selected) {
+    select.textContent = '';
+    if (connections.length === 0) { select.append(el('option', { value: '', textContent: 'No connection yet: add one' })); }
+    for (const connection of connections) { select.append(el('option', { value: connection.baseUrl, textContent: connection.label })); }
+    if (selected) { select.value = selected; } else if (connections.length > 0) { select.value = connections[0].baseUrl; }
+  }
+
+  function drawFields (container, fields, platform) {
+    const basic = fields.filter(field => !field.advanced);
+    const advanced = fields.filter(field => field.advanced);
+    for (const field of basic) { container.append(drawField(field, platform)); }
+    if (advanced.length > 0) {
+      const more = el('details', {}, [el('summary', { textContent: 'More options' })]);
+      for (const field of advanced) { more.append(drawField(field, platform)); }
+      container.append(more);
     }
   }
+
+  function redraw () {
+    const platform = platformOf($('platform').value);
+    const secField = $('sec-fields');
+    const secCommon = $('sec-common');
+    current = current.filter(entry => entry.fixed);
+    for (const key of Object.keys(lookups)) { delete lookups[key]; }
+    secField.querySelectorAll('div, details').forEach(node => node.remove());
+    secCommon.querySelectorAll('div, details').forEach(node => node.remove());
+    secField.hidden = !platform;
+    secCommon.hidden = !platform;
+    if (!platform) { return; }
+    $('platformHeading').textContent = platform.label;
+    const own = el('div', {});
+    drawFields(own, platform.fields, platform);
+    secField.append(own);
+    const common = el('div', {});
+    const shared = description.contentFields.concat(description.ignoreField ? [Object.assign({}, description.ignoreField, { help: 'Patterns every storage of this workspace leaves out.' })] : []);
+    drawFields(common, shared.concat(description.outputFields.filter(field => field.key !== 'name')), null);
+    secCommon.append(common);
+  }
+
   function clearErrors () {
     document.querySelectorAll('[data-error]').forEach(node => { node.textContent = ''; });
     $('banner').hidden = true;
@@ -155,103 +218,98 @@ export function renderStorageFormPage (nonce: string, title: string): string {
     }
     if (message) { $('banner').textContent = message; $('banner').hidden = false; }
   }
-  function layout () {
-    const platform = $('platform').value;
-    $('sec-confluence').hidden = platform !== 'confluence';
-    $('sec-github').hidden = platform !== 'github-pages' && platform !== 'github-wiki';
-    $('sec-common').hidden = platform === '';
-    $('pathRow').hidden = platform !== 'github-pages';
-    $('githubHeading').textContent = platform === 'github-wiki' ? 'GitHub Wiki' : 'GitHub Pages';
-    $('branch').placeholder = platform === 'github-wiki' ? "(the wiki's default branch)" : 'gh-pages';
-  }
-  function fillConnections (connections, selected) {
-    const select = $('connection');
-    select.textContent = '';
-    if (connections.length === 0) {
-      const none = document.createElement('option'); none.value = ''; none.textContent = 'No connection yet: add one'; select.appendChild(none);
+
+  // The parts that do not depend on the platform: the name and the platform choice.
+  function drawStatic () {
+    const section = $('sec-platform');
+    const nameField = description.outputFields.find(field => field.key === 'name');
+    if (nameField) { section.append(drawField(nameField, null)); current[current.length - 1].fixed = true; }
+    const select = el('select', { id: 'platform' }, [el('option', { value: '', textContent: 'Choose a storage…' })]);
+    for (const platform of description.platforms) {
+      select.append(el('option', { value: platform.id, textContent: platform.label + ': ' + platform.description }));
     }
-    for (const connection of connections) {
-      const option = document.createElement('option'); option.value = connection.baseUrl; option.textContent = connection.label; select.appendChild(option);
-    }
-    if (selected) { select.value = selected; } else if (connections.length > 0) { select.value = connections[0].baseUrl; }
-  }
-  function fillList (list, items, label, choose) {
-    list.textContent = '';
-    list.hidden = items.length === 0;
-    for (const item of items) {
-      const entry = document.createElement('li'); entry.tabIndex = 0;
-      const name = document.createElement('span'); name.textContent = label(item.title);
-      const id = document.createElement('span'); id.className = 'id'; id.textContent = item.id;
-      entry.append(name, id);
-      const pick = () => choose(item);
-      entry.addEventListener('click', pick);
-      entry.addEventListener('keydown', event => { if (event.key === 'Enter') { pick(); } });
-      list.appendChild(entry);
-    }
+    select.value = values.platform || '';
+    select.addEventListener('change', () => { remember(); redraw(); });
+    section.append(el('label', { htmlFor: 'platform', textContent: 'Storage' }), select, el('div', { className: 'error' }));
+    section.lastChild.setAttribute('data-error', 'platform');
+    current.push({ key: 'platform', fixed: true, read: () => select.value, set: value => { select.value = value; } });
   }
 
-  $('platform').addEventListener('change', layout);
-  $('addConnection').addEventListener('click', () => api.postMessage({ type: 'addConnection' }));
-  $('loadSpaces').addEventListener('click', () => { $('loadSpaces').disabled = true; api.postMessage({ type: 'listSpaces', connection: $('connection').value }); });
-  $('spaceList').addEventListener('change', () => { $('space').value = $('spaceList').value; });
-  $('searchPages').addEventListener('click', () => {
-    $('searchPages').disabled = true;
-    api.postMessage({ type: 'searchPages', connection: $('connection').value, space: $('space').value, query: $('pageQuery').value });
-  });
-  $('pageQuery').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('searchPages').click(); } });
   $('cancel').addEventListener('click', () => api.postMessage({ type: 'cancel' }));
   $('form').addEventListener('submit', event => {
     event.preventDefault();
     clearErrors();
+    remember();
     $('save').disabled = true;
-    api.postMessage({ type: 'save', values: read() });
+    api.postMessage({ type: 'save', values });
   });
 
   window.addEventListener('message', event => {
     const message = event.data;
     switch (message.type) {
       case 'init': {
+        description = message.init.description;
+        connections = message.init.connections;
         mode = message.init.mode;
+        values = Object.assign({}, message.init.values);
         $('heading').textContent = mode === 'edit' ? 'Edit storage' : 'Add a storage';
         $('lead').textContent = mode === 'edit' ? 'Change anything and save: the changes apply at the next sync.' : 'Fill the form and save: nothing is synced until you run a sync.';
-        fillConnections(message.init.connections, message.init.values.connection);
-        write(message.init.values);
+        drawStatic();
         if (mode === 'edit') { $('platform').disabled = true; }
-        layout();
+        redraw();
         break;
       }
-      case 'connections':
-        fillConnections(message.connections, message.selected);
+      case 'connections': {
+        connections = message.connections;
+        const platform = platformOf($('platform').value);
+        const entry = platform && platform.connection ? current.find(each => each.key === platform.connection.field) : null;
+        const select = entry ? $('f-' + entry.key) : null;
+        if (select) { fillConnections(select, message.selected); }
         break;
+      }
       case 'spaces': {
-        $('loadSpaces').disabled = false;
-        const list = $('spaceList');
-        list.textContent = '';
-        for (const space of message.spaces) {
-          const option = document.createElement('option'); option.value = space.key; option.textContent = space.key + ': ' + space.name; list.appendChild(option);
-        }
-        list.hidden = message.spaces.length === 0;
+        const spaces = lookups.spaces;
+        if (!spaces) { break; }
+        spaces.browse.disabled = false;
+        spaces.list.textContent = '';
+        for (const space of message.spaces) { spaces.list.append(el('option', { value: space.key, textContent: space.key + ': ' + space.name })); }
+        spaces.list.hidden = message.spaces.length === 0;
         break;
       }
-      case 'pages':
-        $('searchPages').disabled = false;
-        fillList($('pageResults'), message.pages, title => title, page => {
-          $('parentPageId').value = page.id;
-          $('parentTitle').textContent = 'Parent: ' + page.title + ' (' + page.id + ')';
-          if ($('titlePrefix').value === '') { $('titlePrefix').value = page.title; }
-          $('pageResults').hidden = true;
-        });
+      case 'pages': {
+        const pages = lookups.pages;
+        if (!pages) { break; }
+        pages.search.disabled = false;
+        pages.results.textContent = '';
+        pages.results.hidden = message.pages.length === 0;
+        for (const page of message.pages) {
+          const entry = el('li', { tabIndex: 0 }, [el('span', { textContent: page.title }), el('span', { className: 'id', textContent: page.id })]);
+          const pick = () => {
+            pages.control.value = page.id;
+            for (const fill of pages.fills) {
+              const target = current.find(each => each.key === fill.field);
+              if (target && target.read() === '') { target.set(fill.from === 'id' ? page.id : page.title); }
+            }
+            pages.results.hidden = true;
+          };
+          entry.addEventListener('click', pick);
+          entry.addEventListener('keydown', key => { if (key.key === 'Enter') { pick(); } });
+          pages.results.append(entry);
+        }
         break;
-      case 'lookupError':
-        $('loadSpaces').disabled = false;
-        $('searchPages').disabled = false;
+      }
+      case 'lookupError': {
+        if (lookups.spaces) { lookups.spaces.browse.disabled = false; }
+        if (lookups.pages) { lookups.pages.search.disabled = false; }
         $('banner').textContent = message.message;
         $('banner').hidden = false;
         break;
-      case 'invalid':
+      }
+      case 'invalid': {
         $('save').disabled = false;
         showErrors(message.errors, message.message);
         break;
+      }
       default:
         break;
     }

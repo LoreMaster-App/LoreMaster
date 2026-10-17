@@ -1,14 +1,11 @@
 import * as vscode from 'vscode'
-import { isGitHubOutput, type Output, SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
+import { type ConfiguredOutput, readConfiguredOutputs } from './configured-outputs.use-case'
 
 /** The view id contributed in package.json (inside the LoreMaster view container). */
 export const STORAGES_VIEW_ID = 'loreMaster.storages'
 
 /** One configured output, with its index in the settings' outputs list. */
-export interface StorageNode {
-  index:  number
-  output: Output
-}
+export type StorageNode = ConfiguredOutput
 
 /** The minimal engine surface the view needs. */
 export interface StoragesEngine {
@@ -16,8 +13,9 @@ export interface StoragesEngine {
 }
 
 /**
- * The LoreMaster "Storages" sidebar view: one row per configured output, read live from
- * .lore-master.yaml. It is how you see where a workspace syncs without opening the YAML.
+ * The LoreMaster "Storages" sidebar view: one row per configured output, read live from the
+ * settings. It is how you see where a workspace syncs without opening them. Names, icons and
+ * the second line come from the engine.
  */
 export class StoragesViewProvider implements vscode.TreeDataProvider<StorageNode> {
   private readonly changed = new vscode.EventEmitter<void>()
@@ -38,55 +36,21 @@ export class StoragesViewProvider implements vscode.TreeDataProvider<StorageNode
     if (!folder) {
       return []
     }
-    let read: SettingsReadResult
     try {
-      read = await this.engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot: folder })
+      const read = await readConfiguredOutputs(this.engine, folder)
+
+      return read.outputs
     } catch {
       return []
     }
-
-    return read.settings.outputs
-      .map((output, index) => ({ index, output }))
-      .filter(node => isConfiguredOutput(node.output))
   }
 
   getTreeItem (node: StorageNode): vscode.TreeItem {
-    const item = new vscode.TreeItem(storageLabel(node.output), vscode.TreeItemCollapsibleState.None)
-    item.description = storageDescription(node.output)
-    item.iconPath = new vscode.ThemeIcon(storageIcon(node.output))
+    const item = new vscode.TreeItem(node.label, vscode.TreeItemCollapsibleState.None)
+    item.description = node.detail
+    item.iconPath = new vscode.ThemeIcon(node.icon)
     item.contextValue = 'loreMasterStorage'
 
     return item
   }
-}
-
-/** An output shows in the list once it is actually configured (the blank scaffold is hidden). */
-export function isConfiguredOutput (output: Output): boolean {
-  if (isGitHubOutput(output)) {
-    return true
-  }
-
-  return output.platform === 'confluence' && output.baseUrl !== '' && output.space !== ''
-}
-
-const STORAGE_ICONS: Record<string, string> = { 'github-pages': 'globe', 'github-wiki': 'notebook' }
-
-/** The codicon a storage row shows: a globe for a site, a notebook for a wiki, a book otherwise. */
-export function storageIcon (output: Output): string {
-  return STORAGE_ICONS[output.platform] ?? 'book'
-}
-
-export function storageLabel (output: Output): string {
-  if (output.name !== undefined && output.name.trim() !== '') {
-    return output.name
-  }
-  if (output.platform === 'github-wiki') {
-    return 'GitHub Wiki'
-  }
-
-  return output.platform === 'github-pages' ? `GitHub Pages · ${output.branch || 'gh-pages'}` : `Confluence · ${output.space}`
-}
-
-export function storageDescription (output: Output): string {
-  return isGitHubOutput(output) ? (output.repo || "this repo's origin") : output.baseUrl
 }

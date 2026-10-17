@@ -10,11 +10,14 @@ describe('renderStorageFormPage', () => {
     expect(page).not.toContain('onclick=')
   })
 
-  it('has a field for every setting of a storage, and starts with no platform chosen', () => {
-    for (const id of ['platform', 'connection', 'space', 'parentPageId', 'titlePrefix', 'direction', 'mermaidMode', 'linkMode', 'titleCollision', 'repo', 'branch', 'path', 'roots', 'excludes', 'ignore']) {
-      expect(page).toContain(`id="${id}"`)
+  it('knows no platform or setting: it builds the form from the description it is sent', () => {
+    for (const word of ['confluence', 'github-pages', 'github-wiki', 'parentPageId', 'mermaidMode', 'titlePrefix', 'branch']) {
+      expect(page).not.toContain(word)
     }
-    expect(page).toContain('<option value="">Choose a storage…</option>')
-    expect(page).not.toMatch(/<option[^>]*selected/)
+    expect(page).toContain('message.init.description')
+  })
+
+  it('starts with no platform chosen', () => {
+    expect(page).toContain('Choose a storage…')
   })
 })

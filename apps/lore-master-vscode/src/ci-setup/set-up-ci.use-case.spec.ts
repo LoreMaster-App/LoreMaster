@@ -1,3 +1,6 @@
+import { describedConfig } from '../../test/config-description/config-description.fixture'
+import { readResultOf } from '../../test/config-description/engine-answers.fixture'
+import { CONFIG_DESCRIBE_METHOD } from '../engine-protocol'
 import type { FileStore } from '../agent-creation'
 import type { Settings } from '../engine-protocol'
 import { CI_PROVIDERS } from './ci-provider.config'
@@ -18,7 +21,7 @@ function memoryFiles (initial: Record<string, string> = {}): FileStore & { files
 }
 
 function engineWith (settings: Settings) {
-  return { request: () => Promise.resolve({ exists: true, firstSync: false, settings } as never) }
+  return { request: (method: string) => Promise.resolve((method === CONFIG_DESCRIBE_METHOD ? describedConfig() : readResultOf(settings)) as never) }
 }
 
 const cloud: Settings = {

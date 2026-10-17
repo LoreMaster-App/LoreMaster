@@ -1,3 +1,4 @@
+import { describedConfig } from '../../test/config-description/config-description.fixture'
 import type { Output, Settings } from '../engine-protocol'
 import { planCiNeeds } from './plan-ci-needs.policy'
 
@@ -18,7 +19,7 @@ function output (overrides: Partial<Output>): Output {
 }
 
 function plan (settings: Partial<Settings>, settingsInRepo = true) {
-  return planCiNeeds({ settings: { version: 1, outputs: [], ...settings }, version: '0.15.7', settingsInRepo })
+  return planCiNeeds({ settings: { version: 1, outputs: [], ...settings }, description: describedConfig(), version: '0.15.7', settingsInRepo })
 }
 
 describe('planCiNeeds', () => {

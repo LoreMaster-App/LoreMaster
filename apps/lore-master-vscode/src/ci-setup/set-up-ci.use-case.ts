@@ -1,3 +1,4 @@
+import { describeConfig } from '../config-description'
 import { SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
 import type { FileStore } from '../agent-creation'
 import type { CiProvider } from './ci-provider.config'
@@ -37,7 +38,7 @@ export async function planCiSetup (deps: CiSetupDeps): Promise<CiSetupPlan> {
   const folderSettings = await deps.files.read(FOLDER_SETTINGS)
   const settingsInRepo = folderSettings?.includes('"loreMaster.outputs"') ?? false
 
-  return { kind: 'ready', needs: planCiNeeds({ settings: read.settings, version: deps.version, settingsInRepo }) }
+  return { kind: 'ready', needs: planCiNeeds({ settings: read.settings, description: await describeConfig(deps.engine), version: deps.version, settingsInRepo }) }
 }
 
 export interface CiSetupGuide {

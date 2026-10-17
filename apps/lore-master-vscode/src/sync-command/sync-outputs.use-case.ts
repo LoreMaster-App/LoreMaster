@@ -1,5 +1,6 @@
+import { describeConfig, isPagesOutput, isSiteOutput } from '../config-description'
 import {
-  isGitHubOutput,
+  type ConfigDescription,
   type Output,
   SETTINGS_READ_METHOD,
   SETTINGS_SAVE_METHOD,
@@ -12,9 +13,9 @@ import { type SyncDeps, syncConfluenceOutput } from './sync-run.use-case'
 /** How a sync run chooses its outputs. */
 export interface SyncOutputsOptions {
   /** Ask the user to pick a subset of the configured outputs, rather than syncing all. */
-  choose?:         boolean
-  /** Sync only Confluence outputs (the current-file sync, which GitHub Pages cannot scope). */
-  confluenceOnly?: boolean
+  choose?:    boolean
+  /** Sync only outputs that sync page by page (the current-file sync, which a published site cannot scope). */
+  pagesOnly?: boolean
 }
 
 /**
@@ -28,11 +29,12 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
   const { engine, connections, workspaceRoot, ui } = deps
 
   const read = await engine.request<SettingsReadResult>(SETTINGS_READ_METHOD, { workspaceRoot })
+  const description = await describeConfig(engine)
   let outputs = read.settings.outputs
-  let indices = outputs.map((_, index) => index).filter(index => isSyncable(outputs[index]))
+  let indices = outputs.map((_, index) => index).filter(index => isSyncable(description, outputs[index]))
 
   if (indices.length === 0) {
-    const created = await setUpStorages({ engine, connections, ui, addConnection: deps.addConnection })
+    const created = await setUpStorages({ engine, connections, ui, description, addConnection: deps.addConnection })
     if (!created || created.length === 0) {
       return
     }
@@ -47,17 +49,17 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
     indices = created.map((_, index) => index)
   }
 
-  if (options.confluenceOnly) {
-    indices = indices.filter(index => outputs[index].platform === 'confluence')
+  if (options.pagesOnly) {
+    indices = indices.filter(index => isPagesOutput(description, outputs[index]))
     if (indices.length === 0) {
-      await ui.error('No Confluence output is configured, so there is nothing to sync the current file to.')
+      await ui.error('No output that syncs page by page is configured, so there is nothing to sync the current file to.')
 
       return
     }
   }
 
   if (options.choose) {
-    const chosen = await ui.pickOutputs(indices.map(index => ({ index, output: outputs[index] })))
+    const chosen = await ui.pickOutputs(indices.map(index => ({ index, output: outputs[index], label: read.displayNames?.[index] ?? outputs[index].platform, detail: read.summaries?.[index] ?? '' })))
     if (!chosen || chosen.length === 0) {
       return
     }
@@ -66,7 +68,7 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
 
   for (const index of indices) {
     const output = outputs[index]
-    if (isGitHubOutput(output)) {
+    if (isSiteOutput(description, output)) {
       await publishPagesOutput({ engine, workspaceRoot, output: index, ui })
     } else {
       await syncConfluenceOutput(deps, { output, index })
@@ -74,18 +76,12 @@ export async function syncOutputs (deps: SyncDeps, options: SyncOutputsOptions =
   }
 }
 
-/** An output can be synced when it is a GitHub Pages output, or a Confluence output whose
- *  first-sync answers are all filled in. */
-function isSyncable (output: Output): boolean {
-  if (isGitHubOutput(output)) {
-    return true
-  }
+/** An output can be synced when its platform's description knows it and every setting it requires is filled in. */
+function isSyncable (description: ConfigDescription, output: Output): boolean {
+  const platform = description.platforms.find(each => each.id === output.platform)
+  const held = output as unknown as Record<string, unknown>
 
-  return output.platform === 'confluence' &&
-    output.baseUrl !== '' &&
-    output.space !== '' &&
-    output.parentPageId !== '' &&
-    output.titlePrefix !== ''
+  return platform !== undefined && platform.fields.every(field => field.required !== true || (typeof held[field.key] === 'string' && held[field.key] !== ''))
 }
 
 function messageOf (error: unknown): string {
