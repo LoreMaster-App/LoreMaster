@@ -1,4 +1,4 @@
-import { ENGINE_BINARY } from './ci-provider.config'
+import { ENGINE_BINARY } from './engine-download.config'
 import type { CiNeeds } from './ci-pipeline.contract'
 
 const RELEASES = 'https://github.com/LoreMaster-App/LoreMaster/releases/download'

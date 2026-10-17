@@ -70,8 +70,9 @@ Step by step, with Confluence connection screens: [`docs/getting-started.md`](do
 - **Undo a sync.** *Roll back a sync* deletes the pages a sync created, puts the pages it updated back as
   they were and restores the files, so a sync to the wrong place is one click to undo
   ([`docs/getting-started.md`](docs/getting-started.md#undo-a-sync)).
-- **CI in one command.** *Add to your CI pipeline* reads your settings, detects GitHub Actions or
-  Azure Pipelines, and opens a guide with the pipeline file and the secrets to create
+- **CI in one command.** *Add to your CI pipeline* reads your settings, detects GitHub Actions,
+  Azure Pipelines, GitLab CI/CD, Bitbucket Pipelines, Jenkins or CircleCI, and opens a guide with the
+  pipeline file and the secrets to create
   ([`docs/cli.md`](docs/cli.md#the-ci-session)).
 - **No YAML to hand-edit.** Storages and generators are added, edited and removed from their views;
   your comments in the settings file survive.

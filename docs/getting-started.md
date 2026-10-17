@@ -164,7 +164,8 @@ platform's own trash restores them. The command line has the same: `lore-master-
   your workspace and the next sync publishes them. See [generators](generators.md).
 - **Keep it fresh while you type.** Run **LoreMaster: Toggle watch mode**; see [watch mode](watch.md).
 - **Run it on CI.** Run **LoreMaster: Add to your CI pipeline**: it reads your settings, finds
-  whether the repository uses GitHub Actions or Azure Pipelines (and asks when it cannot tell) and
+  whether the repository uses GitHub Actions, Azure Pipelines, GitLab CI/CD, Bitbucket Pipelines,
+  Jenkins or CircleCI (and asks when it cannot tell) and
   opens a guide with the pipeline and the secrets to create; see [CI session](cli.md#the-ci-session).
   The engine is also a command line with a [GitHub Action](github-action.md); see
   [the command line](cli.md).

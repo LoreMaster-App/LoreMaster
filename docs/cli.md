@@ -90,14 +90,28 @@ use locally, so you do not have to write it from this page:
 
 1. It reads the effective settings: outputs, generators and their `prepare` commands.
 2. It looks for the CI the repository already uses (`.github/workflows`, `azure-pipelines.yml`,
-   `.azure-pipelines/`) and asks which one when it finds none or several. GitHub Actions and Azure
-   Pipelines are covered; for another CI, use the [shell recipe above](#getting-the-binary-in-ci).
+   `.gitlab-ci.yml`, `bitbucket-pipelines.yml`, `Jenkinsfile`, `.circleci/config.yml`) and asks which
+   one when it finds none or several. GitHub Actions, Azure Pipelines, GitLab CI/CD, Bitbucket
+   Pipelines, Jenkins and CircleCI are covered; for another CI, use the
+   [shell recipe above](#getting-the-binary-in-ci).
 3. It opens a guide with the secrets to create (named from your Confluence edition: Cloud sites on
    `atlassian.net` get an email and a token, others a personal access token), the settings to commit
    when they live only in your user settings, and the pipeline itself.
-4. It offers **Copy pipeline** or **Add** the file (`.github/workflows/lore-master.yml` or
-   `.azure-pipelines/lore-master.yml`). It writes its own file and never edits a pipeline of yours; a
-   file already there with other content is replaced only when you say so.
+4. It offers **Copy pipeline** or **Add** the file. It writes its own file and never edits a pipeline
+   of yours; a file already there with other content is replaced only when you say so:
+
+   | CI | File | How it is picked up |
+   |---|---|---|
+   | GitHub Actions | `.github/workflows/lore-master.yml` | By its name |
+   | Azure Pipelines | `.azure-pipelines/lore-master.yml` | Register it as an existing YAML file |
+   | GitLab CI/CD | `.gitlab/lore-master.yml` | Your `.gitlab-ci.yml` includes it (the guide shows the two lines) |
+   | Bitbucket Pipelines | `bitbucket-pipelines.yml` | Bitbucket reads only this one file: if you have pipelines, copy the step into yours |
+   | Jenkins | `Jenkinsfile.lore-master` | Set a Pipeline job's Script Path to it |
+   | CircleCI | `.circleci/config.yml` | CircleCI reads only this one file: if you have one, copy the job and workflow into it |
+
+   Pushing the sync state back (and a Pages or wiki output) needs write access, which each CI grants
+   differently; the guide says how for yours. On GitLab that is a project access token in
+   `LORE_MASTER_GIT_TOKEN`.
 
 The pipeline downloads the engine of your extension's version and checks its checksum, runs
 `sync --generate --yes` (with `--prepare` when a generator has a `prepare` command) and, for
