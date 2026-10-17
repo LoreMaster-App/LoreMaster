@@ -16,10 +16,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import loremaster.connection.ConnectionDialogComponent
-import loremaster.connection.ConnectionForm
 import loremaster.connection.Credential
-import loremaster.connection.CredentialVaultClient
+import loremaster.connection.signInCredential
 import loremaster.engineprocess.EngineProcessStore
 import loremaster.engineprocess.EngineRpcError
 import loremaster.engineprogress.chooseOne
@@ -84,18 +82,7 @@ class SyncHandler : AnAction() {
         return chooseOne(project, "LoreMaster: Sync", "Which output?", outputs.map { it.value.label() })?.let(outputs::getOrNull)
     }
 
-    private fun askCredential(project: Project, baseUrl: String): Credential? {
-        CredentialVaultClient.load(baseUrl)?.let { return it }
-        var credential: Credential? = null
-        onUiThread {
-            val form = ConnectionForm(baseUrl = baseUrl)
-            if (ConnectionDialogComponent(project, form).showAndGet()) {
-                credential = form.credential().also { CredentialVaultClient.save(baseUrl, it) }
-            }
-        }
-
-        return credential
-    }
+    private fun askCredential(project: Project, baseUrl: String): Credential? = signInCredential(project, baseUrl)
 
     private fun review(project: Project, plan: SyncPlanResult, output: OutputSettings): SyncChoice? {
         if (changeCount(plan) == 0 && (plan.counts["conflict"] ?: 0) == 0 && (plan.counts["orphan"] ?: 0) == 0) {
