@@ -31,6 +31,10 @@ class FakeConfluenceFixture : AutoCloseable {
 
     private fun store(space: String, parent: String, title: String): Page = Page("p${pages.size + 1}", title, space, parent).also(pages::add)
 
+    /** Seeds another page, for tests that browse. */
+    @Synchronized
+    fun addPage(space: String, parentId: String, title: String): Page = store(space, parentId, title)
+
     private fun find(id: String) = pages.firstOrNull { it.id == id }
 
     private fun taken(space: String, title: String) = pages.any { it.spaceKey == space && it.title.equals(title, ignoreCase = true) }
@@ -111,7 +115,17 @@ class FakeConfluenceFixture : AutoCloseable {
                 } else {
                     val space = cqlValue(cql, "space = ")
                     val title = cqlValue(cql, "title = ")
-                    list(exchange, pages.filter { it.spaceKey == space && it.title.equals(title, ignoreCase = true) }.map(::wire))
+                    val words = cqlValue(cql, "title ~ ").trimEnd('*')
+                    list(
+                        exchange,
+                        pages.filter {
+                            it.spaceKey == space && when {
+                                cql.contains("title ~ ") -> it.title.contains(words, ignoreCase = true)
+                                cql.contains("title = ") -> it.title.equals(title, ignoreCase = true)
+                                else -> true
+                            }
+                        }.map(::wire),
+                    )
                 }
             }
             Regex("^/rest/api/content/[^/]+/child/page$").matches(path) && method == "GET" ->
