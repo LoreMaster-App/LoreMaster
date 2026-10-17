@@ -1,0 +1,7 @@
+<idea-plugin>
+    <id>app.loremaster.jetbrains</id>
+    <name>LoreMaster</name>
+    <vendor>LoreMaster</vendor>
+    <description>Gather a project's lore: sync Markdown to Confluence, GitHub Pages and the GitHub wiki. A thin shell over the lore-master-engine sidecar.</description>
+    <depends>com.intellij.modules.platform</depends>
+</idea-plugin>
