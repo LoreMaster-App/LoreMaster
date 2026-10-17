@@ -9,6 +9,7 @@ Start here, then dive into the architecture decisions.
 **Start here**
 
 - [Getting started](getting-started.md): install, connect, and run your first sync.
+- [JetBrains IDEs](jetbrains.md): the same engine in IntelliJ IDEA, WebStorm, PyCharm and the rest.
 - [Configuration](configuration.md): every `loreMaster.*` setting and how the layers combine.
 - [Choosing what goes where](choosing-what-goes-where.md): send some pages to Pages, some to
   Confluence and some to the wiki, with exclude and include lists.

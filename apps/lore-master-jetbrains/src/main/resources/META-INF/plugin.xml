@@ -3,13 +3,17 @@
     <name>LoreMaster</name>
     <vendor>LoreMaster</vendor>
     <description><![CDATA[
-        <p>LoreMaster gathers a project's lore. This first preview brings its Markdown export to JetBrains IDEs.</p>
+        <p>LoreMaster gathers a project's lore: it syncs your Markdown to Confluence, GitHub Pages and the GitHub wiki, and exports it
+        to other formats. The same engine as the VS Code extension, so a team can use both.</p>
         <ul>
-            <li>Export a Markdown file to HTML, Word (.docx), OpenDocument (.odt), PDF, PNG, plain text, Jira wiki, Jira Cloud JSON and MediaWiki.</li>
-            <li>From the editor, the project view or the Tools menu: <b>LoreMaster: Export Markdown As...</b></li>
-            <li>PDF and PNG need Chrome, Edge or Chromium installed; the other formats need nothing.</li>
+            <li><b>Sync to Confluence</b> (Cloud, Data Center, Server): review the plan, then sync. Credentials stay in the IDE's password safe.</li>
+            <li><b>GitHub Pages and wiki</b>: check, build and publish the site with your own git.</li>
+            <li><b>Generators</b>: Markdown from test reports and source documentation.</li>
+            <li><b>Export</b> a Markdown file to HTML, Word, OpenDocument, PDF, PNG, plain text, Jira and MediaWiki. Mermaid diagrams are drawn.</li>
+            <li>A <b>LoreMaster tool window</b> with the page tree of an output.</li>
         </ul>
-        <p>Everything runs in the bundled lore-master-engine; nothing is sent anywhere. Syncing to Confluence and GitHub Pages is coming.</p>
+        <p>Configure outputs in <code>.vscode/settings.json</code> (<code>loreMaster.outputs</code>): Tools &gt; LoreMaster: Open Project Settings.
+        PDF and PNG need Chrome, Edge or Chromium installed.</p>
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
 

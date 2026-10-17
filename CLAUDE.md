@@ -38,7 +38,8 @@ Markdown.
 LoreMaster/                         one root go.mod, module lore-master (mnci derives it; MoNecromanCi#236)
 ├── apps/
 │   ├── lore-master-engine/         go-app: JSON-RPC sidecar (main.go + slice packages)      E4 #5
-│   └── lore-master-vscode/         VS Code extension, TypeScript (mnci vscode-extension)    E5 #6
+│   ├── lore-master-vscode/         VS Code extension, TypeScript (mnci vscode-extension)    E5 #6
+│   └── lore-master-jetbrains/      JetBrains plugin, Kotlin + Gradle (own workflow, not Nx)  #433
 ├── libs/                           go-internal-lib each; import <module>/libs/<name>/<slice>
 │   ├── markdown-workspace/         understand a folder of .md files                          E1 #2
 │   ├── confluence-client/          talk to any Confluence edition                            E2 #3
