@@ -33,6 +33,9 @@ type Options struct {
 	Preview bool
 	// MermaidPath is the Mermaid library PDF and PNG draw diagrams with; they are printed as code without one.
 	MermaidPath string
+	// ReferencePath is a template (a .docx for docx, an .odt for odt) whose styles, headers, footers and page setup the
+	// document takes; its own text is not used. Other formats ignore it.
+	ReferencePath string
 }
 
 // Export converts one Markdown file's content to the format with the given id. path is the file's
@@ -67,9 +70,9 @@ func render(id string, document exportmodel.Document, options Options) ([]byte, 
 	case "png":
 		return browserexport.RenderPNG(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir}), browserexport.Options{BrowserPath: options.BrowserPath, Width: options.Width, MermaidPath: options.MermaidPath})
 	case "docx":
-		return docxexport.Render(document, docxexport.Options{BaseDir: options.BaseDir})
+		return docxexport.Render(document, docxexport.Options{BaseDir: options.BaseDir, ReferencePath: options.ReferencePath})
 	case "odt":
-		return odtexport.Render(document, odtexport.Options{BaseDir: options.BaseDir})
+		return odtexport.Render(document, odtexport.Options{BaseDir: options.BaseDir, ReferencePath: options.ReferencePath})
 	case "jira-wiki":
 		return []byte(jirawikiexport.Render(document)), nil
 	case "jira-adf":

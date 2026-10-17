@@ -92,7 +92,7 @@ Usage:
   lore-master-engine sync     [--workspace DIR] [--output N]... [--scope PATH]... [--generate]
                               [--yes] [--dry-run] [--force] [--prune] [--json]
   lore-master-engine auth     login|logout|status [--base-url URL]
-  lore-master-engine export   --format ID [--out DIR | --stdout] [--browser PATH] [--page-size A4] [--width 1000] FILE...
+  lore-master-engine export   --format ID [--out DIR | --stdout] [--browser PATH] [--page-size A4] [--width 1000] [--reference FILE] FILE...
                               (--list shows the formats)
   lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
   lore-master-engine watch    [--workspace DIR] [--output N]... [--yes] [--force]

@@ -43,6 +43,9 @@ type ExportRunParams struct {
 	BrowserPath string `json:"browserPath,omitempty"`
 	// MermaidPath is the Mermaid library (mermaid.min.js) pdf and png draw diagrams with; they are printed as code without one.
 	MermaidPath string `json:"mermaidPath,omitempty"`
+	// ReferencePath is a template (a Word file for docx, an OpenDocument file for odt), as an absolute path: the document takes
+	// its styles, headers, footers and page setup, and its own text is not used.
+	ReferencePath string `json:"referencePath,omitempty"`
 	// PageSize is the paper of a pdf (A4, A3, A5, Letter, Legal); A4 when empty.
 	PageSize string `json:"pageSize,omitempty"`
 	// ImageWidth is the width of a png in pixels; 1000 when zero.

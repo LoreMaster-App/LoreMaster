@@ -26,6 +26,8 @@ lore-master-engine export --format mediawiki --stdout docs/guide.md # print it
 | `loreMaster.export.pageSize` | The paper of a PDF: `A4`, `A3`, `A5`, `Letter` or `Legal`. |
 | `loreMaster.export.pngWidth` | The width of a PNG in pixels. |
 | `loreMaster.export.browserPath` | The Chrome, Edge or Chromium to print with, when the one installed in the usual place is not the one you want. |
+| `loreMaster.export.docxTemplate` | A Word file used as the [company template](#company-templates) for DOCX exports. Relative to the workspace folder, or absolute. |
+| `loreMaster.export.odtTemplate` | An OpenDocument file used as the company template for ODT exports. |
 | `loreMaster.export.folder` | Where exports go. Blank writes each next to its Markdown file. A folder, relative to the workspace or absolute, receives them with the document's own folders mirrored below it, so `docs/guide.md` exported to `dist` becomes `dist/docs/guide.html`. |
 
 Behind both commands are the engine's `export/formats` and `export/run` calls, which any editor shell can use.
@@ -45,6 +47,32 @@ Behind both commands are the engine's `export/formats` and `export/run` calls, w
 | `mediawiki` | Wikipedia / MediaWiki wikitext (`== Heading ==`, `'''bold'''`, `{\| class="wikitable"`, `<syntaxhighlight>`). | `.wiki` |
 
 Front matter and the sync annotation are never part of an export.
+
+## Company templates
+
+A Word or OpenDocument export can take the look of your company's template: its styles, headers and footers, page size and
+margins, and its theme, with the template's own text left out. Point `loreMaster.export.docxTemplate` or
+`loreMaster.export.odtTemplate` at the file, or on the command line:
+
+```bash
+lore-master-engine export --format docx --reference templates/acme.docx docs/guide.md
+lore-master-engine export --format odt  --reference templates/acme.odt  docs/guide.md
+```
+
+How the template and the document meet:
+
+- **Styles are matched by name.** A heading takes the template's "Heading 1" whatever the template calls it internally or
+  which language it is in; the same goes for Heading 2 to 6, Quote, List Paragraph, Hyperlink and Table Grid. A style the
+  template does not have (the code styles, usually) is added to it, based on the template's own default text style, so the
+  document still reads as part of the template.
+- **Headers, footers and page setup come from the template**: logo, page numbers, a confidential line, A4 or Letter, margins.
+  In an OpenDocument template, the pictures its header uses travel with it.
+- **A Word template's numbering is kept**, so a template whose headings are numbered still numbers them; the document's lists
+  are added beside it and never take the template's list ids.
+- The template's own text and tables are not used. Make the template a file with the styles and the page the way you want
+  them, plus whatever sits in the header and footer.
+- Only the format the template is for takes it: a `.docx` is the template of `docx`, an `.odt` of `odt`. A file that is not
+  the right kind is refused with the reason.
 
 ## PDF and PNG need a browser
 
@@ -77,5 +105,5 @@ lore-master-engine export --format png --width 1400 --browser /usr/bin/chromium 
 
 ## Still to come
 
-Applying a company Word template, the GitHub wiki format, Mermaid drawn in the HTML export, page headers and footers, and more formats
+The GitHub wiki format, Mermaid drawn in the HTML export, page headers and footers, and more formats
 are tracked in the epic [#405](https://github.com/LoreMaster-App/LoreMaster/issues/405).

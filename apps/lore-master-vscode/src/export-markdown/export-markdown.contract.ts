@@ -21,6 +21,8 @@ export interface ExportRequest {
 export interface PrintOptions {
   browserPath?: string
   mermaidPath?: string
+  /** Absolute template file by format id: docx takes a Word file, odt an OpenDocument one. */
+  templates?:   Record<string, string>
   pageSize?:    string
   imageWidth?:  number
 }

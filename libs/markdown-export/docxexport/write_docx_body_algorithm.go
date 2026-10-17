@@ -301,7 +301,7 @@ func (b *body) link(inline exportmodel.Inline, current format) string {
 
 // relate records a relationship and returns the id the document part refers to it by.
 func (b *body) relate(kind, target string, external bool) string {
-	id := "rId" + strconv.Itoa(len(b.relationships)+10)
+	id := "rIdLoreMaster" + strconv.Itoa(len(b.relationships)+1)
 	b.relationships = append(b.relationships, relationship{id: id, kind: kind, target: target, external: external})
 
 	return id
@@ -318,7 +318,7 @@ func (b *body) image(inline exportmodel.Inline, current format) string {
 
 		return run(label, current)
 	}
-	name := fmt.Sprintf("image%d.%s", len(b.media)+1, loaded.Extension)
+	name := fmt.Sprintf("lore-master-image%d.%s", len(b.media)+1, loaded.Extension)
 	b.media = append(b.media, media{name: name, data: loaded.Data})
 	id := b.relate("http://schemas.openxmlformats.org/officeDocument/2006/relationships/image", "media/"+name, false)
 

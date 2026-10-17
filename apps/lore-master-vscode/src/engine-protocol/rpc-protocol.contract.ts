@@ -599,24 +599,26 @@ export interface ExportFormatsResult {
 
 export interface ExportRunParams {
   /** The Markdown file, absolute; its folder is where relative images are read from. */
-  path:         string
+  path:           string
   /** The editor's unsaved text; the file on disk is read when absent. */
-  content?:     string
-  format:       string
+  content?:       string
+  format:         string
   /** An absolute folder; created when missing. Defaults to the document's own folder. */
-  outDir?:      string
+  outDir?:        string
   /** Return the result as text instead of writing a file. Text formats only. */
-  inline?:      boolean
+  inline?:        boolean
+  /** A template for docx or odt, absolute: the document takes its styles, headers, footers and page setup. */
+  referencePath?: string
   /** The Mermaid library (mermaid.min.js) pdf and png draw diagrams with; they are printed as code without one. */
-  mermaidPath?: string
+  mermaidPath?:   string
   /** Make html for a preview pane: links to other Markdown files are left as they are. */
-  preview?:     boolean
+  preview?:       boolean
   /** The Chrome, Edge or Chromium that prints pdf and png; the engine looks for one when absent. */
-  browserPath?: string
+  browserPath?:   string
   /** The paper of a pdf: A4, A3, A5, Letter or Legal. */
-  pageSize?:    string
+  pageSize?:      string
   /** The width of a png in pixels. */
-  imageWidth?:  number
+  imageWidth?:    number
 }
 
 export interface ExportRunResult {

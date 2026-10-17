@@ -31,9 +31,23 @@ function setting<T> (key: string, fallback: T): T {
   return vscode.workspace.getConfiguration('loreMaster.export').get<T>(key, fallback)
 }
 
+/** The company templates the settings name, as absolute paths: a relative one is looked for in the workspace folder. */
+function templatesIn (workspaceRoot: string | undefined): Record<string, string> {
+  const templates: Record<string, string> = {}
+  for (const [format, key] of [['docx', 'docxTemplate'], ['odt', 'odtTemplate']] as const) {
+    const configured = setting<string>(key, '').trim()
+    if (configured !== '') {
+      templates[format] = path.isAbsolute(configured) ? configured : path.resolve(workspaceRoot ?? '.', configured)
+    }
+  }
+
+  return templates
+}
+
 /** The settings that shape a PDF or a PNG; blank or unset ones are left to the engine's defaults. */
-function printOptions (extensionPath: string | undefined): PrintOptions {
+function printOptions (extensionPath: string | undefined, workspaceRoot: string | undefined): PrintOptions {
   return {
+    templates:   templatesIn(workspaceRoot),
     mermaidPath: extensionPath ? path.join(extensionPath, 'dist', 'assets', 'webview', 'mermaid.min.js') : undefined,
     browserPath: setting<string>('browserPath', '').trim() || undefined,
     pageSize:    setting<string>('pageSize', '') || undefined,
@@ -84,7 +98,7 @@ async function exportAll (deps: ExportCommandDeps, targets: readonly vscode.Uri[
       content: unsavedText(target),
       formats: formatIds,
       outDir:  exportDestination(target.fsPath, root, folder),
-      print:   printOptions(deps.extensionPath),
+      print:   printOptions(deps.extensionPath, root),
     })
     total.written.push(...outcome.written)
     total.failed.push(...outcome.failed.map(failure => ({ ...failure, message: `${vscode.workspace.asRelativePath(target)} (${failure.format}): ${failure.message}` })))
