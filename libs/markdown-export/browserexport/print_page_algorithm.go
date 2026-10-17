@@ -31,10 +31,11 @@ func withHeadBefore(page, markup string) string {
 // heightProbe records the height of the page's content in a meta tag once it has loaded, so a screenshot
 // can be taken of the whole page and not only of what fits the window. The window is no guide: it is never
 // shorter than the one the page was opened in. The browser prints the page's markup when asked to dump it,
-// and the tag is read back from there.
+// and the tag is read back from there. A page that draws diagrams records it when they are drawn.
 const heightProbe = `<script>
-function record(){var m=document.createElement('meta');m.name='lore-master-height';m.content=String(Math.ceil(document.body.getBoundingClientRect().bottom));document.head.appendChild(m)}
-if(document.readyState==='complete'){record()}else{window.addEventListener('load',record)}
+window.recordHeight=function(){if(document.querySelector('meta[name="lore-master-height"]')){return}var m=document.createElement('meta');m.name='lore-master-height';m.content=String(Math.ceil(document.body.getBoundingClientRect().bottom));document.head.appendChild(m)}
+function loaded(){if(!window.lmWaitForDiagrams){window.recordHeight()}}
+if(document.readyState==='complete'){loaded()}else{window.addEventListener('load',loaded)}
 </script>`
 
 var recordedHeight = regexp.MustCompile(`name="lore-master-height"\s+content="(\d+)"|content="(\d+)"\s+name="lore-master-height"`)

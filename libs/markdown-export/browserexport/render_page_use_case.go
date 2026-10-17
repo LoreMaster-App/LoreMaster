@@ -20,6 +20,9 @@ type Options struct {
 	PageSize string
 	// Width is the PNG's width in pixels; 1000 when zero.
 	Width int
+	// MermaidPath is the Mermaid library (mermaid.min.js) diagrams are drawn with; without one, or one that cannot be
+	// found, diagrams are printed as code.
+	MermaidPath string
 }
 
 // DefaultWidth is how wide a PNG is when nothing says otherwise.
@@ -31,12 +34,13 @@ const limit = 90 * time.Second
 // RenderPDF prints a complete HTML page to PDF.
 func RenderPDF(page string, options Options) ([]byte, error) {
 	return withBrowser(options, func(run runner) ([]byte, error) {
-		file, err := run.writePage(withHeadBefore(page, lightTheme+pageStyle(validPageSize(options.PageSize))))
+		mermaid := LocateMermaid(options.MermaidPath)
+		file, err := run.writePage(withDiagrams(withHeadBefore(page, lightTheme+pageStyle(validPageSize(options.PageSize))), mermaid))
 		if err != nil {
 			return nil, err
 		}
 		output := filepath.Join(run.folder, "page.pdf")
-		if _, err := run.browse("--no-pdf-header-footer", "--print-to-pdf="+output, file); err != nil {
+		if _, err := run.browse(append(waitForDiagrams(page, mermaid), "--no-pdf-header-footer", "--print-to-pdf="+output, file)...); err != nil {
 			return nil, err
 		}
 
@@ -52,12 +56,13 @@ func RenderPNG(page string, options Options) ([]byte, error) {
 	}
 
 	return withBrowser(options, func(run runner) ([]byte, error) {
-		file, err := run.writePage(withHeadBefore(page, lightTheme+heightProbe))
+		mermaid := LocateMermaid(options.MermaidPath)
+		file, err := run.writePage(withDiagrams(withHeadBefore(page, lightTheme+heightProbe), mermaid))
 		if err != nil {
 			return nil, err
 		}
 		size := fmt.Sprintf("--window-size=%d,%d", width, 800)
-		dump, err := run.browse(size, "--virtual-time-budget=5000", "--dump-dom", file)
+		dump, err := run.browse(size, "--virtual-time-budget=15000", "--dump-dom", file)
 		if err != nil {
 			return nil, err
 		}
@@ -67,12 +72,23 @@ func RenderPNG(page string, options Options) ([]byte, error) {
 		}
 
 		output := filepath.Join(run.folder, "page.png")
-		if _, err := run.browse(fmt.Sprintf("--window-size=%d,%d", width, height), "--hide-scrollbars", "--screenshot="+output, file); err != nil {
+		shot := append(waitForDiagrams(page, mermaid), fmt.Sprintf("--window-size=%d,%d", width, height), "--hide-scrollbars", "--screenshot="+output, file)
+		if _, err := run.browse(shot...); err != nil {
 			return nil, err
 		}
 
 		return run.result(output)
 	})
+}
+
+// waitForDiagrams is what the browser is told so that a page that draws diagrams is not printed before they are drawn: it
+// lets the page's timers and promises run on a virtual clock first.
+func waitForDiagrams(page, mermaidPath string) []string {
+	if mermaidPath == "" || !hasDiagrams(page) {
+		return nil
+	}
+
+	return []string{"--virtual-time-budget=15000"}
 }
 
 // runner is one browser run: the browser, and a folder of its own for the page, the browser's profile

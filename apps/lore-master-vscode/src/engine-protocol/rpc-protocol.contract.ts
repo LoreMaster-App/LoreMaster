@@ -604,6 +604,8 @@ export interface ExportRunParams {
   outDir?:      string
   /** Return the result as text instead of writing a file. Text formats only. */
   inline?:      boolean
+  /** The Mermaid library (mermaid.min.js) pdf and png draw diagrams with; they are printed as code without one. */
+  mermaidPath?: string
   /** Make html for a preview pane: links to other Markdown files are left as they are. */
   preview?:     boolean
   /** The Chrome, Edge or Chromium that prints pdf and png; the engine looks for one when absent. */

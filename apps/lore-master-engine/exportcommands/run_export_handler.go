@@ -36,7 +36,7 @@ func RunExport() rpcserver.Method {
 		if err != nil {
 			return nil, err
 		}
-		file, err := documentexport.Export(params.Path, source, params.Format, documentexport.Options{BaseDir: filepath.Dir(params.Path), BrowserPath: params.BrowserPath, PageSize: params.PageSize, Width: params.ImageWidth, Preview: params.Preview})
+		file, err := documentexport.Export(params.Path, source, params.Format, documentexport.Options{BaseDir: filepath.Dir(params.Path), BrowserPath: params.BrowserPath, MermaidPath: params.MermaidPath, PageSize: params.PageSize, Width: params.ImageWidth, Preview: params.Preview})
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "export %s: %s", filepath.Base(params.Path), err.Error())
 		}

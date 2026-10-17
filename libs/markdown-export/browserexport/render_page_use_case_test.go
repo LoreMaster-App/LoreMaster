@@ -3,6 +3,8 @@ package browserexport
 import (
 	"bytes"
 	"image/png"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -74,5 +76,66 @@ func TestPNGCapturesTheWholePageAtTheWidthAsked(t *testing.T) {
 func TestWithoutABrowserTheErrorSaysWhatToDo(t *testing.T) {
 	if _, err := RenderPDF(page, Options{BrowserPath: "/no/such/browser"}); err == nil || !strings.Contains(err.Error(), "browser") {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// bundledMermaid is the library the editor extension ships, which exists once the extension has been built.
+func bundledMermaid(t *testing.T) string {
+	t.Helper()
+	path, err := filepath.Abs(filepath.Join("..", "..", "..", "apps", "lore-master-vscode", "dist", "assets", "webview", "mermaid.min.js"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(path); err != nil {
+		t.Skip("the Mermaid library is not built: " + path)
+	}
+
+	return path
+}
+
+const diagramPage = "<!doctype html><html><head><meta charset=\"utf-8\"></head><body><h1>D</h1>" +
+	"<pre><code class=\"language-mermaid\">graph TD\n  A[Start] --&gt; B[Done]</code></pre>" +
+	"<pre><code class=\"language-mermaid\">not a diagram</code></pre><p>After.</p></body></html>"
+
+func TestDiagramsAreOnlyAddedWhenThereAreAnyAndALibraryIsGiven(t *testing.T) {
+	if withDiagrams(diagramPage, "") != diagramPage || withDiagrams(page, "/m.js") != page {
+		t.Fatal("a page was changed without a reason")
+	}
+	drawn := withDiagrams(diagramPage, "/lib/mermaid.min.js")
+	if !strings.Contains(drawn, `src="file:///lib/mermaid.min.js"`) || strings.Index(drawn, "mermaid.min.js") > strings.LastIndex(drawn, "</body>") {
+		t.Fatalf("library not placed: %s", drawn)
+	}
+	if got := waitForDiagrams(diagramPage, "/m.js"); len(got) != 1 || waitForDiagrams(page, "/m.js") != nil {
+		t.Fatalf("waiting is wrong: %v", got)
+	}
+}
+
+func TestPNGDrawsDiagramsAndTheTallerPageIsCaptured(t *testing.T) {
+	browser := browserOrSkip(t)
+	library := bundledMermaid(t)
+
+	without, err := RenderPNG(diagramPage, Options{BrowserPath: browser, Width: 700})
+	if err != nil {
+		t.Fatal(err)
+	}
+	drawn, err := RenderPNG(diagramPage, Options{BrowserPath: browser, Width: 700, MermaidPath: library})
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, _ := png.DecodeConfig(bytes.NewReader(without))
+	after, _ := png.DecodeConfig(bytes.NewReader(drawn))
+
+	if after.Height <= before.Height {
+		t.Errorf("a drawn diagram should make the page taller: %d without, %d with", before.Height, after.Height)
+	}
+}
+
+func TestPDFWithDiagramsIsStillAPDF(t *testing.T) {
+	browser := browserOrSkip(t)
+	library := bundledMermaid(t)
+
+	data, err := RenderPDF(diagramPage, Options{BrowserPath: browser, MermaidPath: library})
+	if err != nil || !bytes.HasPrefix(data, []byte("%PDF-")) {
+		t.Fatalf("%v", err)
 	}
 }
