@@ -41,6 +41,8 @@ type ExportRunParams struct {
 	Preview bool `json:"preview,omitempty"`
 	// BrowserPath is the Chrome, Edge or Chromium that prints pdf and png; one is looked for when empty.
 	BrowserPath string `json:"browserPath,omitempty"`
+	// MermaidPath is the Mermaid library (mermaid.min.js) pdf and png draw diagrams with; they are printed as code without one.
+	MermaidPath string `json:"mermaidPath,omitempty"`
 	// PageSize is the paper of a pdf (A4, A3, A5, Letter, Legal); A4 when empty.
 	PageSize string `json:"pageSize,omitempty"`
 	// ImageWidth is the width of a png in pixels; 1000 when zero.

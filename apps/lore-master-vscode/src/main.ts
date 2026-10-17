@@ -91,7 +91,7 @@ export function activate (context: vscode.ExtensionContext): void {
     registerPagesView(syncDeps),
     registerFileMoves({ engine }),
     registerGeneratorsView({ engine, output }, registerGeneratorForm),
-    registerExportMarkdown({ engine, output }),
+    registerExportMarkdown({ engine, output, extensionPath: context.extensionPath }),
     registerMarkdownFormatting(),
     registerMarkdownLists(),
     registerMarkdownTables(),

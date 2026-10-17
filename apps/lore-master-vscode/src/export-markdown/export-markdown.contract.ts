@@ -20,6 +20,7 @@ export interface ExportRequest {
 /** The settings that shape a PDF or a PNG. */
 export interface PrintOptions {
   browserPath?: string
+  mermaidPath?: string
   pageSize?:    string
   imageWidth?:  number
 }

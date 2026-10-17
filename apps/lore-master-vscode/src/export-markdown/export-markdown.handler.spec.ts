@@ -1,3 +1,4 @@
+import * as path from 'node:path'
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import { EXPORT_FORMATS_METHOD, EXPORT_RUN_METHOD, type ExportRunParams } from '../engine-protocol'
@@ -109,9 +110,9 @@ describe('exportMarkdownCommand', () => {
     stub.settings.set('loreMaster.export.pngWidth', 800)
     stub.settings.set('loreMaster.export.browserPath', '  ')
 
-    await exportMarkdownCommand({ engine, output }, vscode.Uri.file('/w/a.md'))
+    await exportMarkdownCommand({ engine, output, extensionPath: '/ext' }, vscode.Uri.file('/w/a.md'))
 
-    expect(runs[0]).toMatchObject({ pageSize: 'Letter', imageWidth: 800 })
+    expect(runs[0]).toMatchObject({ pageSize: 'Letter', imageWidth: 800, mermaidPath: path.join('/ext', 'dist', 'assets', 'webview', 'mermaid.min.js') })
     expect(runs[0].browserPath).toBeUndefined()
   })
 

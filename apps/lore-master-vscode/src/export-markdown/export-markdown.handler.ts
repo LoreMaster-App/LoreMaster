@@ -1,3 +1,4 @@
+import * as path from 'node:path'
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import type { ExportFormat } from '../engine-protocol'
@@ -13,8 +14,10 @@ export const COPY_MARKDOWN_AS_COMMAND = 'loreMaster.copyMarkdownAs'
 
 /** What the export commands are given at registration. */
 export interface ExportCommandDeps {
-  engine: EngineClient
-  output: vscode.OutputChannel
+  engine:         EngineClient
+  output:         vscode.OutputChannel
+  /** Where the extension is installed, which is where the Mermaid library it ships is found. */
+  extensionPath?: string
 }
 
 const OPEN = 'Open'
@@ -29,8 +32,9 @@ function setting<T> (key: string, fallback: T): T {
 }
 
 /** The settings that shape a PDF or a PNG; blank or unset ones are left to the engine's defaults. */
-function printOptions (): PrintOptions {
+function printOptions (extensionPath: string | undefined): PrintOptions {
   return {
+    mermaidPath: extensionPath ? path.join(extensionPath, 'dist', 'assets', 'webview', 'mermaid.min.js') : undefined,
     browserPath: setting<string>('browserPath', '').trim() || undefined,
     pageSize:    setting<string>('pageSize', '') || undefined,
     imageWidth:  setting<number>('pngWidth', 0) || undefined,
@@ -80,7 +84,7 @@ async function exportAll (deps: ExportCommandDeps, targets: readonly vscode.Uri[
       content: unsavedText(target),
       formats: formatIds,
       outDir:  exportDestination(target.fsPath, root, folder),
-      print:   printOptions(),
+      print:   printOptions(deps.extensionPath),
     })
     total.written.push(...outcome.written)
     total.failed.push(...outcome.failed.map(failure => ({ ...failure, message: `${vscode.workspace.asRelativePath(target)} (${failure.format}): ${failure.message}` })))

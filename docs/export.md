@@ -68,12 +68,14 @@ lore-master-engine export --format png --width 1400 --browser /usr/bin/chromium 
   paragraphs of their text, so the document stays valid.
 - **Word and OpenDocument** embed PNG, JPEG and GIF images that sit beside the file; SVG, web images and missing
   files are written as their alt text. Links to other Markdown files point at the matching `.docx` or `.odt`.
-- **PDF and PNG** have no page headers or footers, and Mermaid blocks are printed as code.
-- **Mermaid** blocks stay code blocks in every format for now.
+- **PDF and PNG** have no page headers or footers. From the editor they draw Mermaid diagrams (with the Mermaid library the
+  extension ships); a diagram with an error stays as code. On the command line give `--mermaid PATH` (or set
+  `LORE_MASTER_MERMAID`) to the library's `mermaid.min.js`, or diagrams stay as code, as they do in every other format.
+- **Mermaid** blocks stay code blocks in HTML, plain text, Word, OpenDocument and the wiki formats; PDF and PNG draw them (above).
 - **Links to other Markdown files** become `[[Page]]` links in MediaWiki and `.html` links in HTML. Elsewhere
   they keep the path.
 
 ## Still to come
 
-Applying a company Word template, the GitHub wiki format, Mermaid drawn in HTML, PDF and PNG, page headers and footers, and more formats
+Applying a company Word template, the GitHub wiki format, Mermaid drawn in the HTML export, page headers and footers, and more formats
 are tracked in the epic [#405](https://github.com/LoreMaster-App/LoreMaster/issues/405).
