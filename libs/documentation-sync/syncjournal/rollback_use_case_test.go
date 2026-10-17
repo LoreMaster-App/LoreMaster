@@ -163,6 +163,43 @@ func TestADryRunChangesNothing(t *testing.T) {
 	}
 }
 
+func TestADryRunDoesNotCountPagesThisSyncCreatedAsOtherPeoplesChildren(t *testing.T) {
+	ctx := context.Background()
+	inner := newPlatform()
+	root := inner.SeedPage("ENG", "", "Root")
+	recorder := NewRecorder(inner)
+	parent, err := recorder.CreatePage(ctx, platformport.NewPage{Space: space, ParentID: root, Title: "Guide"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := recorder.CreatePage(ctx, platformport.NewPage{Space: space, ParentID: parent.ID, Title: "Guide: Install"}); err != nil {
+		t.Fatal(err)
+	}
+
+	outcome := Rollback(ctx, inner, "", Journal{Pages: recorder.Changes()}, Options{DryRun: true})
+
+	if got := resultsOf(outcome); got["Guide"] != ResultWouldTrash || got["Guide: Install"] != ResultWouldTrash {
+		t.Fatalf("a dry run must say what a real run does: %v", got)
+	}
+}
+
+func TestADryRunStillSkipsAPageWithSomeoneElsesChild(t *testing.T) {
+	ctx := context.Background()
+	inner := newPlatform()
+	recorder := NewRecorder(inner)
+	parent, err := recorder.CreatePage(ctx, platformport.NewPage{Space: space, Title: "Guide"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inner.SeedPage("ENG", parent.ID, "Written by hand")
+
+	outcome := Rollback(ctx, inner, "", Journal{Pages: recorder.Changes()}, Options{DryRun: true})
+
+	if got := resultsOf(outcome); got["Guide"] != ResultSkipped {
+		t.Fatalf("results = %v", got)
+	}
+}
+
 func TestATrashedPageIsReportedAsIrreversible(t *testing.T) {
 	ctx := context.Background()
 	inner := newPlatform()
