@@ -4,7 +4,7 @@ import type { PagesNode, PagesViewProvider } from './pages-view.client'
 /** The command id contributed in package.json. */
 export const SYNC_PAGE_COMMAND = 'loreMaster.syncPage'
 
-/** Syncs the page a Pages view row stands for (and the ancestors it needs). */
+/** Syncs the page a Sync view row stands for (and the ancestors it needs). */
 export async function syncPage (deps: SyncCommandDeps, provider: PagesViewProvider, node: PagesNode | undefined): Promise<void> {
   if (node?.kind !== 'page') {
     return

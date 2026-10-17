@@ -31,7 +31,7 @@ export type RepoItem =
   | { kind: 'page'; index: number; entry: PageEntry } |
   { kind: 'left-out-file'; index: number; file: LeftOutFile }
 
-/** A row in the Pages view. */
+/** A row in the Sync view. */
 export type PagesNode =
   | { kind: 'local' } |
   ({ kind: 'storage' } & ConfiguredOutput) |

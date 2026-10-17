@@ -24,7 +24,7 @@ export type CheckRemoteOutcome = { ok: true; check: RemoteCheck } | { ok: false;
  * Asks the platform where an output's pages stand, writing nothing: finds the connection
  * for its site, opens a session, plans the sync (a plan changes nothing until it is
  * executed) and closes the session. The plan's per-file action is the remote half of the
- * Pages view's status.
+ * Sync view's status.
  */
 export async function checkRemote (deps: CheckRemoteDeps, output: Output, index: number): Promise<CheckRemoteOutcome> {
   const { engine, connections, workspaceRoot } = deps
