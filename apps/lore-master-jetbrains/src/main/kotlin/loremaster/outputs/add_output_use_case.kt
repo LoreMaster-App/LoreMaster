@@ -42,3 +42,27 @@ fun addOutput(engine: EngineRpcClient, workspaceRoot: String, description: Confi
 
     return outputs.size() - 1
 }
+
+/** Reads the project's settings through the engine, lets [change] edit the outputs, and has the engine validate and save them. */
+private fun changeOutputs(engine: EngineRpcClient, workspaceRoot: String, change: (JsonArray) -> Unit) {
+    val read = engine.request(METHOD_SETTINGS_READ, mapOf("workspaceRoot" to workspaceRoot), JsonObject::class.java).get(30, TimeUnit.SECONDS)
+    val settings = read.getAsJsonObject("settings")
+    val outputs = settings.getAsJsonArray("outputs") ?: JsonArray().also { settings.add("outputs", it) }
+    change(outputs)
+    engine.request(METHOD_SETTINGS_SAVE, mapOf("workspaceRoot" to workspaceRoot, "settings" to gson.toJsonTree(settings)), Any::class.java)
+        .get(30, TimeUnit.SECONDS)
+}
+
+/** Puts [output] in place of the output at [index], keeping the rest of the settings. */
+fun replaceOutput(engine: EngineRpcClient, workspaceRoot: String, index: Int, output: JsonObject) =
+    changeOutputs(engine, workspaceRoot) { outputs ->
+        require(index in 0 until outputs.size()) { "That storage is no longer in the project's settings." }
+        outputs.set(index, output)
+    }
+
+/** Removes the output at [index]. Removing the last one is allowed: the project is then configured with no storage. */
+fun removeOutput(engine: EngineRpcClient, workspaceRoot: String, index: Int) =
+    changeOutputs(engine, workspaceRoot) { outputs ->
+        require(index in 0 until outputs.size()) { "That storage is no longer in the project's settings." }
+        outputs.remove(index)
+    }

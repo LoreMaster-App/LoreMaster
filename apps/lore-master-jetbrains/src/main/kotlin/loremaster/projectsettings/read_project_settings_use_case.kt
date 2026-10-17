@@ -1,5 +1,6 @@
 package loremaster.projectsettings
 
+import com.google.gson.JsonObject
 import loremaster.engineprocess.EngineRpcClient
 import java.util.concurrent.TimeUnit
 
@@ -13,3 +14,12 @@ fun readProjectSettings(engine: EngineRpcClient, workspaceRoot: String): Setting
 
     return read.copy(settings = read.settings.copy(outputs = named))
 }
+
+/**
+ * The outputs exactly as the engine sends them, every setting by its key. The typed [OutputSettings] holds only what this plugin
+ * shows; a platform the plugin was never taught has settings only the raw form carries.
+ */
+fun readRawOutputs(engine: EngineRpcClient, workspaceRoot: String): List<JsonObject> =
+    engine.request(METHOD_SETTINGS_READ, SettingsReadParams(workspaceRoot), JsonObject::class.java)
+        .get(30, TimeUnit.SECONDS)
+        .getAsJsonObject("settings")?.getAsJsonArray("outputs")?.map { it.asJsonObject }.orEmpty()

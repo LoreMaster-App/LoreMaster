@@ -11,7 +11,7 @@
             <li><b>Generators</b>: Markdown from test reports and source documentation.</li>
             <li><b>Export</b> a Markdown file to HTML, Word, OpenDocument, PDF, PNG, plain text, Jira and MediaWiki. Mermaid diagrams are drawn.</li>
             <li><b>Add an output</b> for any platform the engine describes (browsing for a Confluence parent page), <b>roll back</b> a sync, and <b>watch mode</b> that syncs only what you save.</li>
-            <li>A <b>LoreMaster tool window</b> with the page tree of an output.</li>
+            <li>A <b>Sync tool window</b> like the VS Code extension's: Local and each storage with their pages, the actions for every storage on top and for the selected storage under it.</li>
         </ul>
         <p>Configure outputs in <code>.vscode/settings.json</code> (<code>loreMaster.outputs</code>): Tools &gt; LoreMaster: Open Project Settings.
         PDF and PNG need Chrome, Edge or Chromium installed.</p>
@@ -21,7 +21,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="LoreMaster" displayType="BALLOON"/>
         <toolWindow id="LoreMaster" anchor="right" secondary="true" icon="AllIcons.Nodes.Folder"
-                    factoryClass="loremaster.pagestree.PagesToolWindowFactory"/>
+                    factoryClass="loremaster.syncview.SyncToolWindowFactory"/>
         <applicationService serviceImplementation="loremaster.pluginsettings.PluginSettingsStore"/>
         <applicationConfigurable parentId="tools" instanceId="loremaster.settings" displayName="LoreMaster"
                                  id="loremaster.settings" instance="loremaster.pluginsettings.PluginSettingsHandler"/>
@@ -50,7 +50,7 @@
         </action>
         <action id="loremaster.sync"
                 class="loremaster.sync.SyncHandler"
-                text="LoreMaster: Sync to Confluence..."
+                text="LoreMaster: Sync..."
                 description="Sync the selected Markdown files, or the whole project, to a Confluence output after reviewing the plan">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>

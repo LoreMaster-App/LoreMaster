@@ -34,12 +34,14 @@ import javax.swing.SwingUtilities
  * Adds an output, as the engine describes it: the dialog offers the engine's platforms and draws the chosen one's fields, so a
  * platform the engine learns appears here without a change. A field with a space or page lookup is picked from the platform (after
  * signing in at the platform's connection field), and a lookup can fill another field (the parent page's title becomes the title
- * prefix); every other field is typed or chosen.
+ * prefix); every other field is typed or chosen. Given [existing] it edits that output instead: its platform stays, its settings fill the
+ * form, and whatever the form does not show is kept.
  */
 class AddOutputDialogComponent(
     private val project: Project?,
     private val engine: EngineRpcClient,
     private val description: ConfigDescription,
+    private val existing: JsonObject? = null,
 ) : DialogWrapper(project) {
     private val platforms = JComboBox(DefaultComboBoxModel(description.platforms.toTypedArray()))
     private val fieldsPanel = JPanel(BorderLayout())
@@ -52,6 +54,9 @@ class AddOutputDialogComponent(
     private var onConnected: (List<Space>) -> Unit = {}
     private var chosenPage: RemotePage? = null
 
+    /** What a lookup field held before it could be picked from the platform (an output being edited, not yet signed in). */
+    private val pending = mutableMapOf<String, String>()
+
     /** The platform whose fields are shown. */
     val platform: PlatformDescriptor get() = platforms.selectedItem as PlatformDescriptor
 
@@ -59,12 +64,27 @@ class AddOutputDialogComponent(
     val fieldKeys: List<String> get() = readers.keys.toList()
 
     init {
-        title = "LoreMaster: Add an Output"
-        setOKButtonText("Add output")
+        title = if (existing == null) "LoreMaster: Add an Output" else "LoreMaster: Edit an Output"
+        setOKButtonText(if (existing == null) "Add output" else "Save")
         platforms.renderer = SimpleListCellRenderer.create("") { it.label }
+        existing?.get("platform")?.asString?.let { id -> description.platforms.firstOrNull { it.id == id }?.let { platforms.selectedItem = it } }
+        platforms.isEnabled = existing == null
         platforms.addActionListener { drawFields() }
         init()
         drawFields()
+        existing?.let { fillFrom(it) }
+    }
+
+    /** Shows what an output being edited holds: its settings by key, and the Markdown content's folders and excluded paths. */
+    private fun fillFrom(output: JsonObject) {
+        for (key in readers.keys.toList()) {
+            val value = output.get(key) ?: continue
+            setValue(key, if (value.isJsonArray) value.asJsonArray.joinToString(", ") { it.asString } else value.asString)
+        }
+        val markdown = output.getAsJsonArray("content")?.map { it.asJsonObject }?.firstOrNull { it.get("type")?.asString == "markdown" }
+        for (key in listOf("roots", "excludes")) {
+            markdown?.getAsJsonArray(key)?.let { setValue(key, it.joinToString(", ") { item -> item.asString }) }
+        }
     }
 
     /** Sets what a field shows, as the user typing it would; for tests and for a lookup that fills it. */
@@ -78,7 +98,7 @@ class AddOutputDialogComponent(
     }
 
     /** The output the form describes; call after the dialog closed with OK. */
-    fun output(): JsonObject = outputFrom(description, platform, values())
+    fun output(): JsonObject = outputFrom(description, platform, values(), existing)
 
     private fun values(): Map<String, String> = readers.mapValues { it.value() }
 
@@ -108,6 +128,7 @@ class AddOutputDialogComponent(
         spaceBox = null
         onConnected = {}
         chosenPage = null
+        pending.clear()
         status.text = " "
 
         val chosen = platform
@@ -182,15 +203,17 @@ class AddOutputDialogComponent(
     private fun spaceControl(field: FieldDescriptor): JComponent {
         val box = JComboBox<Space>().apply { isEnabled = false }
         spaceBox = box
-        readers[field.key] = { (box.selectedItem as? Space)?.key.orEmpty() }
+        readers[field.key] = { (box.selectedItem as? Space)?.key ?: pending[field.key].orEmpty() }
         setters[field.key] = { value ->
-            (0 until box.itemCount).map { box.getItemAt(it) }.firstOrNull { it.key == value }?.let { box.selectedItem = it }
+            val found = (0 until box.itemCount).map { box.getItemAt(it) }.firstOrNull { it.key == value }
+            if (found != null) box.selectedItem = found else pending[field.key] = value
         }
         box.addActionListener { chosenPage = null }
         onConnected = { found ->
             box.removeAllItems()
             found.forEach(box::addItem)
             box.isEnabled = found.isNotEmpty()
+            pending[field.key]?.let { kept -> found.firstOrNull { it.key == kept }?.let { box.selectedItem = it } }
         }
 
         return box
@@ -199,8 +222,11 @@ class AddOutputDialogComponent(
     private fun pageControl(field: FieldDescriptor): JComponent {
         val label = JBLabel("(the space's home page)")
         val choose = JButton("Choose parent page...").apply { addActionListener { chooseParent(field, label) } }
-        readers[field.key] = { chosenPage?.id ?: (spaceBox?.selectedItem as? Space)?.homepageId.orEmpty() }
-        setters[field.key] = { }
+        readers[field.key] = { chosenPage?.id ?: pending[field.key]?.takeIf { it.isNotBlank() } ?: (spaceBox?.selectedItem as? Space)?.homepageId.orEmpty() }
+        setters[field.key] = { value ->
+            pending[field.key] = value
+            if (value.isNotBlank()) label.text = "(page $value)"
+        }
 
         return JPanel(BorderLayout(JBUI.scale(6), 0)).apply {
             add(label, BorderLayout.CENTER)

@@ -8,16 +8,28 @@ import loremaster.configdescription.FIELD_LIST
 import loremaster.configdescription.FieldDescriptor
 import loremaster.configdescription.PlatformDescriptor
 
+private fun textArray(items: List<String>): JsonArray = JsonArray().also { array -> items.forEach(array::add) }
+
 /** The Markdown content every new output starts with: the whole workspace. */
 private fun defaultContent(roots: List<String>, excludes: List<String>): JsonArray = JsonArray().apply {
     add(
         JsonObject().apply {
             addProperty("type", "markdown")
-            add("roots", JsonArray().also { array -> roots.forEach(array::add) })
-            add("excludes", JsonArray().also { array -> excludes.forEach(array::add) })
+            add("roots", textArray(roots))
+            add("excludes", textArray(excludes))
             addProperty("template", "default")
         },
     )
+}
+
+/** The content of an output being edited with its Markdown entry's folders and excluded paths set and the rest kept. */
+private fun contentWith(existing: JsonArray?, roots: List<String>, excludes: List<String>): JsonArray {
+    val entries = existing?.deepCopy() ?: return defaultContent(roots, excludes)
+    val markdown = entries.map { it.asJsonObject }.firstOrNull { it.get("type")?.asString == "markdown" } ?: return defaultContent(roots, excludes)
+    markdown.add("roots", textArray(roots))
+    markdown.add("excludes", textArray(excludes))
+
+    return entries
 }
 
 /** Every setting an output of any platform can hold: the platforms' own fields and the ones every output has. */
@@ -48,10 +60,11 @@ fun splitList(text: String): List<String> = text.split(',').map { it.trim() }.fi
 
 /**
  * The output the [values] of a form describe, by field key: the platform's settings and the shared ones as written (trimmed), the
- * content's folders and excluded paths from `roots` and `excludes`. A blank name is left out so the engine makes one up.
+ * content's folders and excluded paths from `roots` and `excludes`. A blank name is left out so the engine makes one up. When
+ * [base] is given (an output being edited) everything the form does not show is kept as it was.
  */
-fun outputFrom(description: ConfigDescription, platform: PlatformDescriptor, values: Map<String, String>): JsonObject {
-    val output = blankOutput(description, platform)
+fun outputFrom(description: ConfigDescription, platform: PlatformDescriptor, values: Map<String, String>, base: JsonObject? = null): JsonObject {
+    val output = base?.deepCopy() ?: blankOutput(description, platform)
     for (field in formFields(description, platform)) {
         // A choice left blank, or not given, takes its default, as in a new output.
         val text = values[field.key].orEmpty().trim().ifEmpty { if (field.type == FIELD_CHOICE) field.default else "" }
@@ -66,7 +79,7 @@ fun outputFrom(description: ConfigDescription, platform: PlatformDescriptor, val
         }
     }
     val roots = splitList(values["roots"].orEmpty()).ifEmpty { listOf(".") }
-    output.add("content", defaultContent(roots, splitList(values["excludes"].orEmpty())))
+    output.add("content", contentWith(output.getAsJsonArray("content"), roots, splitList(values["excludes"].orEmpty())))
 
     return output
 }

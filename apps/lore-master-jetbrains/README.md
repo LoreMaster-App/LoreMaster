@@ -21,7 +21,7 @@ package per slice under `src/main/kotlin/loremaster/`, tests beside them under `
 | `outputs` | Add an output for any platform the engine describes: its fields, sign-in, spaces and parent page browser, write `loreMaster.outputs` |
 | `pages` | Check, build and publish GitHub Pages / wiki outputs |
 | `generators` | Run generators |
-| `pagestree` | The LoreMaster tool window: the page tree of an output |
+| `syncview` | The Sync tool window: Local and each storage, with their pages and actions |
 | `exportmarkdown` | Export Markdown As... (every format of `lore-master-engine export`) |
 
 ## Test

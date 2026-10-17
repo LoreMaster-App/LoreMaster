@@ -1,4 +1,4 @@
-package loremaster.pagestree
+package loremaster.syncview
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
