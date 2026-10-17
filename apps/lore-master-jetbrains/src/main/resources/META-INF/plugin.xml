@@ -70,6 +70,10 @@
                 description="Write Markdown from test reports and source documentation">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action id="loremaster.toggleWatch" class="loremaster.watch.ToggleWatchHandler" text="LoreMaster: Watch Mode"
+                description="Regenerate and sync only what changed, as files are saved">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
         <action id="loremaster.connect"
                 class="loremaster.connection.ConnectHandler"
                 text="LoreMaster: Connect to Confluence..."
