@@ -62,7 +62,7 @@ func Export(path string, content []byte, formatID string, options Options) (File
 func render(id string, document exportmodel.Document, options Options) ([]byte, error) {
 	switch id {
 	case "html":
-		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir, KeepMarkdownLinks: options.Preview})), nil
+		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir, KeepMarkdownLinks: options.Preview, Diagrams: drawDocumentDiagrams(document, options)})), nil
 	case "txt":
 		return []byte(plaintextexport.Render(document)), nil
 	case "pdf":
