@@ -4,4 +4,17 @@
     <vendor>LoreMaster</vendor>
     <description>Gather a project's lore: sync Markdown to Confluence, GitHub Pages and the GitHub wiki. A thin shell over the lore-master-engine sidecar.</description>
     <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="LoreMaster" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <action id="loremaster.checkEngine"
+                class="loremaster.enginecheck.CheckEngineHandler"
+                text="LoreMaster: Check Engine"
+                description="Start the LoreMaster engine and check that it answers">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

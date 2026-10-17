@@ -1,0 +1,41 @@
+name: JetBrains plugin
+
+# The JetBrains shell is a Gradle project that mnci does not build, so it has its own workflow. It builds the engine, then
+# runs the plugin's tests against it (including a ping of the real engine).
+
+on:
+  push:
+    branches: [main]
+    paths: ['apps/lore-master-jetbrains/**', 'apps/lore-master-engine/**', '.github/workflows/jetbrains.yml']
+  pull_request:
+    branches: [main]
+    paths: ['apps/lore-master-jetbrains/**', 'apps/lore-master-engine/**', '.github/workflows/jetbrains.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  jetbrains:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v5
+
+      - run: go build -o "$RUNNER_TEMP/lore-master-engine" ./apps/lore-master-engine
+        name: Build the engine
+
+      - run: ./gradlew test --console=plain
+        name: Test the plugin
+        working-directory: apps/lore-master-jetbrains
+        env:
+          LORE_MASTER_ENGINE: ${{ runner.temp }}/lore-master-engine
