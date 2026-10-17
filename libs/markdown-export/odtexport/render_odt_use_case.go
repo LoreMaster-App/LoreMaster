@@ -13,12 +13,26 @@ import (
 type Options struct {
 	// BaseDir is the folder the document's relative image paths are read from.
 	BaseDir string
+	// ReferencePath is an OpenDocument file whose page, headers, footers and styles the document takes, as a company template;
+	// its own text is not used. Empty writes the document with the styles this package ships with.
+	ReferencePath string
 }
 
 // Render writes the document as the bytes of an .odt file.
 func Render(document exportmodel.Document, options Options) ([]byte, error) {
 	writer := &content{baseDir: options.BaseDir}
 	writer.blocks(document.Blocks)
+
+	named := `<office:document-styles ` + namespaces + `>` + namedStyles() + `</office:document-styles>`
+	stylesPart := xmlHeader + named
+	var templatePictures []picture
+	if options.ReferencePath != "" {
+		reference, err := readTemplate(options.ReferencePath)
+		if err != nil {
+			return nil, err
+		}
+		stylesPart, templatePictures = templateStyles(reference.styles), reference.pictures
+	}
 
 	var buffer bytes.Buffer
 	archive := zip.NewWriter(&buffer)
@@ -28,9 +42,9 @@ func Render(document exportmodel.Document, options Options) ([]byte, error) {
 	}
 
 	parts := []struct{ name, content string }{
-		{"META-INF/manifest.xml", manifest(writer.pictures)},
+		{"META-INF/manifest.xml", manifest(append(append([]picture{}, templatePictures...), writer.pictures...))},
 		{"meta.xml", xmlHeader + `<office:document-meta ` + namespaces + `><office:meta><dc:title>` + escape(document.Title) + `</dc:title></office:meta></office:document-meta>`},
-		{"styles.xml", xmlHeader + `<office:document-styles ` + namespaces + `>` + namedStyles() + `</office:document-styles>`},
+		{"styles.xml", stylesPart},
 		{"content.xml", xmlHeader + `<office:document-content ` + namespaces + `>` + automaticStyles() + `<office:body><office:text>` + writer.out.String() + `</office:text></office:body></office:document-content>`},
 	}
 	for _, part := range parts {
@@ -38,7 +52,7 @@ func Render(document exportmodel.Document, options Options) ([]byte, error) {
 			return nil, err
 		}
 	}
-	for _, each := range writer.pictures {
+	for _, each := range append(templatePictures, writer.pictures...) {
 		if err := addFile(archive, "Pictures/"+each.name, each.data); err != nil {
 			return nil, err
 		}

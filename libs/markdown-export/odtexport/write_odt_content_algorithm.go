@@ -233,7 +233,7 @@ func (c *content) image(inline exportmodel.Inline) string {
 
 		return escape(label)
 	}
-	name := fmt.Sprintf("image%d.%s", len(c.pictures)+1, loaded.Extension)
+	name := fmt.Sprintf("lore-master-image%d.%s", len(c.pictures)+1, loaded.Extension)
 	c.pictures = append(c.pictures, picture{name: name, mime: loaded.MIME, data: loaded.Data})
 
 	width := float64(loaded.Width) / pixelsPerCentimetre

@@ -88,11 +88,11 @@ func TestDocxIsAWellFormedPackage(t *testing.T) {
 	if strings.Contains(document, "owner: team") {
 		t.Error("front matter leaked")
 	}
-	if _, found := parts["word/media/image1.png"]; !found {
+	if _, found := parts["word/media/lore-master-image1.png"]; !found {
 		t.Error("the picture is not in the package")
 	}
 	rels := parts["word/_rels/document.xml.rels"]
-	for _, want := range []string{`Target="https://example.com/a" TargetMode="External"`, `Target="other.docx#part"`, `Target="media/image1.png"`} {
+	for _, want := range []string{`Target="https://example.com/a" TargetMode="External"`, `Target="other.docx#part"`, `Target="media/lore-master-image1.png"`} {
 		if !strings.Contains(rels, want) {
 			t.Errorf("relationships lack %s:\n%s", want, rels)
 		}
@@ -133,13 +133,13 @@ func TestOdtIsAWellFormedPackageWithMimetypeFirst(t *testing.T) {
 	for _, want := range []string{
 		`<text:h text:style-name="Heading_20_1" text:outline-level="1">`, `<text:bookmark text:name="guide"/>`, `Strong_20_Emphasis`, `Strikethrough`, `Source_20_Text`,
 		`xlink:href="https://example.com/a"`, `xlink:href="other.odt#part"`, `<text:list text:style-name="L_bullet">`, `text:start-value="3"`,
-		`<table:table `, `<table:table-header-rows>`, `Cell_20_Right`, `<draw:image xlink:href="Pictures/image1.png"`, "\u2612 done", "Missing", `Quotations`,
+		`<table:table `, `<table:table-header-rows>`, `Cell_20_Right`, `<draw:image xlink:href="Pictures/lore-master-image1.png"`, "\u2612 done", "Missing", `Quotations`,
 	} {
 		if !strings.Contains(content, want) {
 			t.Errorf("content.xml lacks %s", want)
 		}
 	}
-	if !strings.Contains(parts["META-INF/manifest.xml"], `Pictures/image1.png" manifest:media-type="image/png"`) {
+	if !strings.Contains(parts["META-INF/manifest.xml"], `Pictures/lore-master-image1.png" manifest:media-type="image/png"`) {
 		t.Error("the picture is not in the manifest")
 	}
 }

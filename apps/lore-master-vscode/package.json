@@ -844,6 +844,16 @@
           "maximum": 4000,
           "markdownDescription": "The width in pixels of a PNG export. The image is as tall as the page."
         },
+        "loreMaster.export.docxTemplate": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "A Word file used as the company template for DOCX exports: the document takes its styles, numbering, headers, footers and page setup, and the template's own text is not used. Relative to the workspace folder, or absolute."
+        },
+        "loreMaster.export.odtTemplate": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "An OpenDocument file used as the company template for ODT exports: the document takes its page, headers, footers and styles, and the template's own text is not used. Relative to the workspace folder, or absolute."
+        },
         "loreMaster.export.browserPath": {
           "type": "string",
           "default": "",

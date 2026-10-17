@@ -36,7 +36,7 @@ lore-master-engine pages build   --out DIR [--workspace DIR] [--output N|NAME] [
 lore-master-engine pages publish [--workspace DIR] [--output N|NAME] [--json]
 lore-master-engine pages check   [--workspace DIR] [--output N|NAME] [--exit-code] [--json]
 lore-master-engine rollback [--workspace DIR] [--journal ID] [--list] [--yes] [--force] [--json]
-lore-master-engine export   --format ID [--out DIR | --stdout] [--browser PATH] [--page-size A4] [--width 1000] FILE...
+lore-master-engine export   --format ID [--out DIR | --stdout] [--browser PATH] [--page-size A4] [--width 1000] [--reference FILE] FILE...
                             (--list shows the formats)
 lore-master-engine version
 ```

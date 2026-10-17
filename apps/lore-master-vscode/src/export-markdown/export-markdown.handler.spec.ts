@@ -15,7 +15,7 @@ const output = { appendLine () {}, show () {} } as unknown as vscode.OutputChann
 const engine = {
   request (method: string, params?: unknown) {
     if (method === EXPORT_FORMATS_METHOD) {
-      return Promise.resolve({ formats: [{ id: 'html', label: 'HTML', extension: '.html' }, { id: 'jira-wiki', label: 'Jira wiki', extension: '.jira.txt' }, { id: 'docx', label: 'Word', extension: '.docx', binary: true }] } as never)
+      return Promise.resolve({ formats: [{ id: 'html', label: 'HTML', extension: '.html' }, { id: 'jira-wiki', label: 'Jira wiki', extension: '.jira.txt' }, { id: 'docx', label: 'Word', extension: '.docx', binary: true }, { id: 'odt', label: 'OpenDocument', extension: '.odt', binary: true }] } as never)
     }
     expect(method).toBe(EXPORT_RUN_METHOD)
     const run = params as ExportRunParams
@@ -95,7 +95,7 @@ describe('exportMarkdownCommand', () => {
 
   it('exports the clicked file to every ticked format', async () => {
     virtualFiles.set('/w/a.md', new Uint8Array())
-    window.showQuickPick = (items: { id: string }[]) => Promise.resolve(items.filter(item => item.id !== 'jira-wiki'))
+    window.showQuickPick = (items: { id: string }[]) => Promise.resolve(items.filter(item => item.id === 'html' || item.id === 'docx'))
 
     await exportMarkdownCommand({ engine, output }, vscode.Uri.file('/w/a.md'))
 
@@ -114,6 +114,19 @@ describe('exportMarkdownCommand', () => {
 
     expect(runs[0]).toMatchObject({ pageSize: 'Letter', imageWidth: 800, mermaidPath: path.join('/ext', 'dist', 'assets', 'webview', 'mermaid.min.js') })
     expect(runs[0].browserPath).toBeUndefined()
+  })
+
+  it('passes the template of each format, resolving a relative one in the workspace folder', async () => {
+    virtualFiles.set('/w/a.md', new Uint8Array())
+    window.showQuickPick = (items: { id: string }[]) => Promise.resolve(items.filter(item => item.id === 'docx' || item.id === 'odt'))
+    stub.settings.set('loreMaster.export.docxTemplate', 'templates/acme.docx')
+    stub.settings.set('loreMaster.export.odtTemplate', path.resolve('/company/acme.odt'))
+
+    await exportMarkdownCommand({ engine, output }, vscode.Uri.file('/w/a.md'))
+
+    const byFormat = Object.fromEntries(runs.map(run => [run.format, run.referencePath]))
+    expect(byFormat.docx).toBe(path.resolve('.', 'templates/acme.docx'))
+    expect(byFormat.odt).toBe(path.resolve('/company/acme.odt'))
   })
 
   it('does nothing when the picker is dismissed', async () => {

@@ -25,6 +25,7 @@ func exportCommand(_ context.Context, env Environment, _ rpcserver.Methods, args
 	flags.BoolVar(&list, "list", false, "list the formats and stop")
 	flags.StringVar(&options.BrowserPath, "browser", "", "the Chrome, Edge or Chromium that prints pdf and png (default: look for one; or set LORE_MASTER_BROWSER)")
 	flags.StringVar(&options.MermaidPath, "mermaid", "", "the Mermaid library (mermaid.min.js) pdf and png draw diagrams with (default: the LORE_MASTER_MERMAID variable; without one diagrams are printed as code)")
+	flags.StringVar(&options.ReferencePath, "reference", "", "a template for docx or odt: the document takes its styles, headers, footers and page setup (its own text is not used)")
 	flags.StringVar(&options.PageSize, "page-size", "", "the paper of a pdf: A4, A3, A5, Letter or Legal (default A4)")
 	flags.IntVar(&options.Width, "width", 0, "the width of a png in pixels (default 1000)")
 	if err := flags.Parse(args); err != nil {

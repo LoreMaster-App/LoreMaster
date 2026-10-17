@@ -16,7 +16,8 @@ export async function listExportFormats (engine: ExportEngine): Promise<ExportFo
 export async function exportDocument (engine: ExportEngine, request: ExportRequest): Promise<ExportOutcome> {
   const outcome: ExportOutcome = { written: [], failed: [] }
   for (const format of request.formats) {
-    const params: ExportRunParams = { path: request.path, format, content: request.content, outDir: request.outDir, ...request.print }
+    const { templates, ...print } = request.print ?? {}
+    const params: ExportRunParams = { path: request.path, format, content: request.content, outDir: request.outDir, ...print, referencePath: templates?.[format] }
     try {
       const result = await engine.request<ExportRunResult>(EXPORT_RUN_METHOD, params)
       outcome.written.push({ format, name: result.name, path: result.path ?? '' })
