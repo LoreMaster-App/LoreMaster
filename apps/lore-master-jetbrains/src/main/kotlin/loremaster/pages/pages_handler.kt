@@ -11,17 +11,18 @@ import loremaster.engineprocess.EngineRpcClient
 import loremaster.engineprogress.TaskReport
 import loremaster.engineprogress.chooseOne
 import loremaster.engineprogress.runEngineTask
+import loremaster.configdescription.DELIVERY_SITE
+import loremaster.configdescription.describeConfig
+import loremaster.configdescription.isSite
 import loremaster.projectsettings.OutputSettings
 import loremaster.projectsettings.readProjectSettings
-
-private val SITE_PLATFORMS = setOf("github-pages", "github-wiki")
 
 /** What a Pages action does once its output is chosen. */
 typealias PagesStep = (engine: EngineRpcClient, root: String, index: Int, output: OutputSettings) -> TaskReport
 
 private fun withWarnings(text: String, warnings: List<String>?): String = text + warnings.orEmpty().joinToString("") { "\nWarning: $it" }
 
-/** Common to the Pages actions: find the github-pages / github-wiki output (asking when there are several), then do the step. */
+/** Common to the Pages actions: find the output that publishes a site or wiki (asking when there are several), then do the step. */
 abstract class PagesAction(private val title: String) : AnAction() {
     /** Asks what the step needs from the user (on the UI thread, before the work starts), and returns the step. */
     protected abstract fun prepare(project: Project): PagesStep?
@@ -31,9 +32,11 @@ abstract class PagesAction(private val title: String) : AnAction() {
         val root = project.basePath ?: return
         val step = prepare(project) ?: return
         runEngineTask(project, title) { engine, _ ->
-            val outputs = readProjectSettings(engine, root).settings.outputs.withIndex().filter { it.value.platform in SITE_PLATFORMS }
+            val description = describeConfig(engine)
+            val outputs = readProjectSettings(engine, root).settings.outputs.withIndex().filter { description.isSite(it.value.platform) }
             if (outputs.isEmpty()) {
-                return@runEngineTask TaskReport("No github-pages or github-wiki output is configured in loreMaster.outputs.", NotificationType.WARNING)
+                val sites = description.platforms.filter { it.delivery == DELIVERY_SITE }.joinToString(" or ") { it.id }
+                return@runEngineTask TaskReport("No $sites output is configured in loreMaster.outputs.", NotificationType.WARNING)
             }
             val chosen = if (outputs.size == 1) outputs.single() else choose(project, outputs)
 

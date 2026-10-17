@@ -1,5 +1,7 @@
 package loremaster.watch
 
+import loremaster.configdescription.describeConfig
+import loremaster.configdescription.isPages
 import loremaster.connection.CredentialVaultClient
 import loremaster.engineprocess.EngineRpcClient
 import loremaster.projectsettings.readProjectSettings
@@ -13,7 +15,8 @@ import loremaster.sync.SyncOutcome
  * stopped it, so the watcher keeps the batch and tries again.
  */
 fun syncConfluenceOutputs(engine: EngineRpcClient, workspaceRoot: String, scope: List<String>?) {
-    val outputs = readProjectSettings(engine, workspaceRoot).settings.outputs.withIndex().filter { it.value.platform == "confluence" }
+    val description = describeConfig(engine)
+    val outputs = readProjectSettings(engine, workspaceRoot).settings.outputs.withIndex().filter { description.isPages(it.value.platform) }
     for ((index, output) in outputs) {
         val flow = RunSync(
             engine,

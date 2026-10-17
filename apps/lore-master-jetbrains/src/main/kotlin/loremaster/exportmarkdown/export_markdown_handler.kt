@@ -79,8 +79,8 @@ class ExportMarkdownHandler : AnAction() {
         val settings = PluginSettingsStore.current()
         val document = Path.of(file.path)
         val template = when (format.id) {
-            "docx" -> settings.docxTemplate
-            "odt" -> settings.odtTemplate
+            "docx" -> settings.value("export.docxTemplate")
+            "odt" -> settings.value("export.odtTemplate")
             else -> ""
         }
 
@@ -88,11 +88,11 @@ class ExportMarkdownHandler : AnAction() {
             path = file.path,
             format = format.id,
             content = unsaved,
-            outDir = exportDestination(document, project.basePath?.let(Path::of), settings.exportFolder)?.toString(),
-            browserPath = settings.browserPath.ifBlank { null },
+            outDir = exportDestination(document, project.basePath?.let(Path::of), settings.value("export.folder"))?.toString(),
+            browserPath = settings.value("export.browserPath").ifBlank { null },
             referencePath = template.ifBlank { null },
-            pageSize = settings.pageSize.ifBlank { null },
-            imageWidth = settings.pngWidth.takeIf { it > 0 },
+            pageSize = settings.value("export.pageSize").ifBlank { null },
+            imageWidth = settings.value("export.pngWidth").toIntOrNull()?.takeIf { it > 0 },
         )
     }
 

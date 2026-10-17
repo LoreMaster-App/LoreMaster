@@ -28,7 +28,7 @@ intellijPlatform {
     pluginConfiguration {
         name = "LoreMaster"
         ideaVersion { sinceBuild = "251" }
-        changeNotes = "Add a Confluence output by browsing for the parent page, roll back a sync, and watch mode that syncs only what you save."
+        changeNotes = "The add-output dialog and the settings page are drawn from what the engine describes, so a new storage or setting appears without a plugin update. Add Output now covers GitHub Pages and the wiki too."
     }
     pluginVerification {
         ides { create(org.jetbrains.intellij.platform.gradle.IntelliJPlatformType.IntellijIdeaCommunity, "2025.1") }

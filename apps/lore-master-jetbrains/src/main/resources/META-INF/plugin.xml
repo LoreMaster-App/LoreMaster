@@ -10,7 +10,7 @@
             <li><b>GitHub Pages and wiki</b>: check, build and publish the site with your own git.</li>
             <li><b>Generators</b>: Markdown from test reports and source documentation.</li>
             <li><b>Export</b> a Markdown file to HTML, Word, OpenDocument, PDF, PNG, plain text, Jira and MediaWiki. Mermaid diagrams are drawn.</li>
-            <li><b>Add a Confluence output</b> by browsing for the parent page, <b>roll back</b> a sync, and <b>watch mode</b> that syncs only what you save.</li>
+            <li><b>Add an output</b> for any platform the engine describes (browsing for a Confluence parent page), <b>roll back</b> a sync, and <b>watch mode</b> that syncs only what you save.</li>
             <li>A <b>LoreMaster tool window</b> with the page tree of an output.</li>
         </ul>
         <p>Configure outputs in <code>.vscode/settings.json</code> (<code>loreMaster.outputs</code>): Tools &gt; LoreMaster: Open Project Settings.
@@ -79,8 +79,8 @@
                 description="Undo an earlier sync: trash the pages it created, restore the pages it updated and the local files">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
-        <action id="loremaster.addOutput" class="loremaster.outputs.AddOutputHandler" text="LoreMaster: Add Confluence Output..."
-                description="Pick the Confluence space and parent page the project's pages go under, and add the output to the settings">
+        <action id="loremaster.addOutput" class="loremaster.outputs.AddOutputHandler" text="LoreMaster: Add Output..."
+                description="Choose where the project's pages go (Confluence, a GitHub site or wiki, ...) and add the output to the settings">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="loremaster.connect"

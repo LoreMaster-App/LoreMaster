@@ -3,6 +3,8 @@ package loremaster.outputs
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import loremaster.configdescription.ConfigDescription
+import loremaster.configdescription.PlatformDescriptor
 import loremaster.connection.Credential
 import loremaster.connection.CredentialKind
 import loremaster.connection.openSession
@@ -17,9 +19,11 @@ class OutputDialogsTest : BasePlatformTestCase() {
         assertTrue(ActionManager.getInstance().getAction("loremaster.addOutput") is AddOutputHandler)
 
         val engine = EngineRpcClient(java.io.ByteArrayInputStream(ByteArray(0)), java.io.ByteArrayOutputStream())
-        val dialog = OutputPickerDialogComponent(project, engine)
+        val description = ConfigDescription(platforms = listOf(PlatformDescriptor(id = "site", label = "Site")))
+        val dialog = AddOutputDialogComponent(project, engine, description)
         try {
             assertFalse(dialog.isDisposed)
+            assertEquals("site", dialog.platform.id)
         } finally {
             dialog.close(0)
             engine.close()
@@ -54,6 +58,38 @@ class OutputDialogsTest : BasePlatformTestCase() {
             } finally {
                 process.destroy()
             }
+        }
+    }
+
+    fun `test the dialog draws the fields of whichever platform the engine describes`() {
+        val binary = System.getenv("LORE_MASTER_ENGINE")?.takeIf { it.isNotBlank() }?.let(Path::of)
+        if (binary == null || !Files.exists(binary)) return
+        val process = ProcessBuilder(binary.toString()).redirectError(ProcessBuilder.Redirect.DISCARD).start()
+        try {
+            EngineRpcClient(process.inputStream, process.outputStream).use { engine ->
+                val dialog = AddOutputDialogComponent(project, engine, loremaster.configdescription.describeConfig(engine))
+                try {
+                    dialog.choosePlatform("confluence")
+                    assertTrue(dialog.fieldKeys.containsAll(listOf("name", "baseUrl", "space", "parentPageId", "titlePrefix", "direction", "roots")))
+                    assertFalse("repo" in dialog.fieldKeys)
+
+                    dialog.choosePlatform("github-pages")
+                    assertTrue(dialog.fieldKeys.containsAll(listOf("name", "repo", "branch", "path", "template")))
+                    assertFalse("baseUrl" in dialog.fieldKeys)
+
+                    dialog.setValue("repo", "acme/docs")
+                    dialog.setValue("name", "Docs site")
+                    val output = dialog.output()
+                    assertEquals("github-pages", output.get("platform").asString)
+                    assertEquals("acme/docs", output.get("repo").asString)
+                    assertEquals("Docs site", output.get("name").asString)
+                    assertEquals("", output.get("baseUrl").asString)
+                } finally {
+                    dialog.close(0)
+                }
+            }
+        } finally {
+            process.destroy()
         }
     }
 }

@@ -1,5 +1,11 @@
 package loremaster.outputs
 
+import com.google.gson.JsonObject
+import loremaster.configdescription.ConfigDescription
+import loremaster.configdescription.describeConfig
+import loremaster.configdescription.isPages
+import loremaster.configdescription.isSite
+import loremaster.configdescription.platformOf
 import loremaster.connection.Credential
 import loremaster.connection.CredentialKind
 import loremaster.connection.closeSession
@@ -35,6 +41,23 @@ class OutputsUseCaseTest {
         }
     }
 
+    private fun confluence(engine: EngineRpcClient, address: String, space: String, parent: String, prefix: String): Pair<ConfigDescription, JsonObject> {
+        val description = describeConfig(engine)
+        val platform = description.platformOf("confluence")!!
+
+        return description to outputFrom(description, platform, mapOf("baseUrl" to address, "space" to space, "parentPageId" to parent, "titlePrefix" to prefix))
+    }
+
+    @Test
+    fun `the engine describes the platforms, and a site needs no sign in`() = withWorld { engine, _, _ ->
+        val description = describeConfig(engine)
+
+        assertEquals(listOf("confluence", "github-pages", "github-wiki"), description.platforms.map { it.id })
+        assertEquals("apitoken", description.platformOf("confluence")!!.connection!!.kinds.first().id)
+        assertEquals(null, description.platformOf("github-pages")!!.connection)
+        assertTrue(description.isSite("github-pages") && description.isPages("confluence"))
+    }
+
     @Test
     fun `spaces, a page search and a page's children are listed through a session`() = withWorld { engine, _, site ->
         site.addPage("ENG", site.root.id, "Guides")
@@ -54,7 +77,8 @@ class OutputsUseCaseTest {
 
     @Test
     fun `a saved output is read back and a sync can use it`() = withWorld { engine, root, site ->
-        val index = addConfluenceOutput(engine, root.toString(), ConfluenceOutputChoice(site.address, "ENG", site.root.id, "ENG"))
+        val (description, created) = confluence(engine, site.address, "ENG", site.root.id, "ENG")
+        val index = addOutput(engine, root.toString(), description, created)
 
         assertEquals(0, index)
         val output = readProjectSettings(engine, root.toString()).settings.outputs.single()
@@ -69,12 +93,37 @@ class OutputsUseCaseTest {
 
     @Test
     fun `a second output is added to the first, not instead of it`() = withWorld { engine, root, site ->
-        addConfluenceOutput(engine, root.toString(), ConfluenceOutputChoice(site.address, "ENG", site.root.id, "ENG"))
+        val (description, first) = confluence(engine, site.address, "ENG", site.root.id, "ENG")
+        addOutput(engine, root.toString(), description, first)
 
         val guides = site.addPage("ENG", site.root.id, "Guides")
-        val index = addConfluenceOutput(engine, root.toString(), ConfluenceOutputChoice(site.address, "ENG", guides.id, "OPS"))
+        val index = addOutput(engine, root.toString(), description, confluence(engine, site.address, "ENG", guides.id, "OPS").second)
 
         assertEquals(1, index)
         assertEquals(listOf("ENG", "OPS"), readProjectSettings(engine, root.toString()).settings.outputs.map { it.titlePrefix })
+    }
+
+    @Test
+    fun `a GitHub Pages output is added the same way, with no sign in, and read back with the engine's name`() = withWorld { engine, root, _ ->
+        val description = describeConfig(engine)
+        val output = outputFrom(description, description.platformOf("github-pages")!!, mapOf("repo" to "acme/docs"))
+
+        val index = addOutput(engine, root.toString(), description, output)
+
+        assertEquals(0, index)
+        val read = readProjectSettings(engine, root.toString())
+        assertEquals("github-pages", read.settings.outputs.single().platform)
+        assertEquals("GitHub Pages \u00b7 acme/docs", read.settings.outputs.single().label())
+    }
+
+    @Test
+    fun `a site is added beside a configured Confluence output`() = withWorld { engine, root, site ->
+        val (description, confluenceOutput) = confluence(engine, site.address, "ENG", site.root.id, "ENG")
+        addOutput(engine, root.toString(), description, confluenceOutput)
+
+        val index = addOutput(engine, root.toString(), description, outputFrom(description, description.platformOf("github-wiki")!!, mapOf("repo" to "acme/docs")))
+
+        assertEquals(1, index)
+        assertEquals(listOf("confluence", "github-wiki"), readProjectSettings(engine, root.toString()).settings.outputs.map { it.platform })
     }
 }
