@@ -3,7 +3,7 @@ package loremaster.pages
 import loremaster.engineprocess.EngineRpcClient
 import loremaster.generators.describeRuns
 import loremaster.generators.runGenerators
-import loremaster.pagestree.readPageTree
+import loremaster.syncview.readPageTree
 import loremaster.projectsettings.readProjectSettings
 import java.nio.file.Files
 import java.nio.file.Path

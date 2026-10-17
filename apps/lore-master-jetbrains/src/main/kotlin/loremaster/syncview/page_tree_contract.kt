@@ -1,4 +1,4 @@
-package loremaster.pagestree
+package loremaster.syncview
 
 /** The engine's `workspace/tree`: the page tree one output would sync, from the files alone. No connection, nothing written. */
 const val METHOD_WORKSPACE_TREE = "workspace/tree"

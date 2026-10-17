@@ -1,4 +1,4 @@
-package loremaster.pagestree
+package loremaster.syncview
 
 /** A page with the pages that nest under it. */
 data class PageBranch(val node: TreeNode, val children: List<PageBranch>)

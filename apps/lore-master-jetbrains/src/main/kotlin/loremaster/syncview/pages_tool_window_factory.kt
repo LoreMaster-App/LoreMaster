@@ -1,4 +1,4 @@
-package loremaster.pagestree
+package loremaster.syncview
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor

@@ -21,7 +21,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="LoreMaster" displayType="BALLOON"/>
         <toolWindow id="LoreMaster" anchor="right" secondary="true" icon="AllIcons.Nodes.Folder"
-                    factoryClass="loremaster.pagestree.PagesToolWindowFactory"/>
+                    factoryClass="loremaster.syncview.PagesToolWindowFactory"/>
         <applicationService serviceImplementation="loremaster.pluginsettings.PluginSettingsStore"/>
         <applicationConfigurable parentId="tools" instanceId="loremaster.settings" displayName="LoreMaster"
                                  id="loremaster.settings" instance="loremaster.pluginsettings.PluginSettingsHandler"/>

@@ -1,4 +1,4 @@
-package loremaster.pagestree
+package loremaster.syncview
 
 import loremaster.engineprocess.EngineRpcClient
 import java.util.concurrent.TimeUnit
