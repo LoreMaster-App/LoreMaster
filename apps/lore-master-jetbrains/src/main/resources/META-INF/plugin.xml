@@ -74,6 +74,10 @@
                 description="Regenerate and sync only what changed, as files are saved">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action id="loremaster.rollback" class="loremaster.rollback.RollbackHandler" text="LoreMaster: Roll Back a Sync..."
+                description="Undo an earlier sync: trash the pages it created, restore the pages it updated and the local files">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
         <action id="loremaster.connect"
                 class="loremaster.connection.ConnectHandler"
                 text="LoreMaster: Connect to Confluence..."

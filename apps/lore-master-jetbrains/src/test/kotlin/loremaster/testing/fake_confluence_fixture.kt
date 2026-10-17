@@ -144,6 +144,12 @@ class FakeConfluenceFixture : AutoCloseable {
                 page.version = number
                 send(exchange, 200, wire(page))
             }
+            Regex("^/rest/api/content/[^/]+$").matches(path) && method == "DELETE" -> {
+                // Confluence moves the page to the trash; for the fake it is gone from every listing.
+                val page = find(id) ?: return send(exchange, 404, mapOf("message" to "No content found"))
+                pages.remove(page)
+                exchange.sendResponseHeaders(204, -1)
+            }
             Regex("^/rest/api/content/[^/]+$").matches(path) && method == "GET" ->
                 find(id)?.let { send(exchange, 200, wire(it)) } ?: send(exchange, 404, mapOf("message" to "No content found"))
             path == "/rest/api/space" && method == "GET" ->
