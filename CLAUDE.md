@@ -23,6 +23,7 @@ Markdown.
 |---|---|---|
 | Name | LoreMaster; extension id `<publisher>.lore-master` | #43, #44 |
 | Engine language | **Go**, one sidecar binary spoken to over JSON-RPC on stdio by every editor shell | `docs/architecture/engine-and-shells.md` |
+| Shells | Editor plugins are **interfaces, not owners of knowledge**: what can be configured (storages and their fields, sign-in kinds, generators, settings) is described by the engine's `config/describe`, and shells build their UI from it instead of listing platforms themselves. A new storage is an engine change | #457, `docs/architecture/engine-and-shells.md` |
 | Distribution | No npm packages. The engine binary doubles as a small CLI (`generate`, `sync`, `tree`; `docs/cli.md`, #273) for CI and hooks, distributed by #201. The extension goes to the VS Code Marketplace (later the Visual Studio Marketplace). The binary ships inside each extension | E5 #6, #65 |
 | Layout | Vertical feature slices in Go **and** TypeScript, even where no lint enforces it | `docs/architecture/vertical-feature-slices.md`, #47 |
 | Page titles | `<titlePrefix>: <H1>`; prefix asked once at first sync, default = selected parent page's title | E3 #4 |

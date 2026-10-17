@@ -34,6 +34,7 @@ export const FILES_PLAN_MOVE_METHOD = 'files/planMove'
 export const EXPORT_FORMATS_METHOD = 'export/formats'
 export const EXPORT_RUN_METHOD = 'export/run'
 export const DIAGRAM_RENDER_METHOD = 'diagram/render'
+export const CONFIG_DESCRIBE_METHOD = 'config/describe'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
 export const CANCEL_REQUEST_METHOD = '$/cancelRequest'
@@ -218,9 +219,11 @@ export interface SettingsReadParams {
 }
 
 export interface SettingsReadResult {
-  exists:    boolean
-  firstSync: boolean
-  settings:  Settings
+  exists:       boolean
+  firstSync:    boolean
+  settings:     Settings
+  /** What each output is called, in the order of `settings.outputs`: its name or one the engine made up. */
+  displayNames: string[]
 }
 
 export interface SettingsSaveParams {
@@ -592,6 +595,73 @@ export interface ExportFormat {
   extension: string
   /** Not text: it can be written to a file but not copied. */
   binary?:   boolean
+}
+
+/** Everything that can be configured, as `config/describe` returns it (the engine's configcatalog.Description). */
+export interface ConfigDescription {
+  platforms:       PlatformDescriptor[]
+  outputFields:    FieldDescriptor[]
+  generators:      GeneratorTypeDescriptor[]
+  generatorFields: FieldDescriptor[]
+  sections:        SectionDescriptor[]
+}
+
+export interface PlatformDescriptor {
+  id:           string
+  label:        string
+  description:  string
+  icon:         string
+  /** `pages` syncs page by page (plan, execute, rollback, page tree); `site` publishes as one unit. */
+  delivery:     'pages' | 'site'
+  nameTemplate: string
+  connection?:  ConnectionDescriptor
+  fields:       FieldDescriptor[]
+}
+
+export interface ConnectionDescriptor {
+  /** The key of the output field holding the site address. */
+  field:         string
+  detectMethod?: string
+  kinds:         CredentialKindDescriptor[]
+}
+
+export interface CredentialKindDescriptor {
+  id:        string
+  label:     string
+  help?:     string
+  editions?: string[]
+  fields:    Array<{ key: string, label: string, secret?: boolean }>
+}
+
+export interface FieldDescriptor {
+  key:          string
+  label:        string
+  help?:        string
+  type:         'text' | 'choice' | 'list' | 'bool' | 'number' | 'path'
+  placeholder?: string
+  required?:    boolean
+  default?:     string
+  choices?:     Array<{ value: string, label: string, help?: string }>
+  suggestions?: string[]
+  min?:         number
+  max?:         number
+  pathKind?:    'file' | 'folder'
+  advanced?:    boolean
+  lookup?:      { kind: string, needs?: string[], fills?: Array<{ field: string, from: string }> }
+}
+
+export interface GeneratorTypeDescriptor {
+  id:          string
+  label:       string
+  description: string
+  fields?:     FieldDescriptor[]
+}
+
+export interface SectionDescriptor {
+  id:       string
+  label:    string
+  scope:    'project' | 'user'
+  settings: FieldDescriptor[]
 }
 
 /** A diagram for the engine to draw: only D2 (Mermaid is drawn by the editor). */

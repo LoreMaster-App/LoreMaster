@@ -7,6 +7,7 @@ import (
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
 	"lore-master/libs/documentation-sync/editorsettings"
+	"lore-master/libs/documentation-sync/workspacesettings"
 )
 
 // ReadSettings handles settings/read. A file that is not valid settings (bad YAML, an
@@ -25,7 +26,12 @@ func ReadSettings() rpcserver.Method {
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
-		return rpcprotocol.SettingsReadResult{Exists: loaded.Exists, FirstSync: loaded.FirstSync, Settings: toWire(loaded.Settings)}, nil
+		names := make([]string, len(loaded.Settings.Outputs))
+		for i := range names {
+			names[i] = workspacesettings.DisplayName(loaded.Settings.Outputs, i)
+		}
+
+		return rpcprotocol.SettingsReadResult{Exists: loaded.Exists, FirstSync: loaded.FirstSync, Settings: toWire(loaded.Settings), DisplayNames: names}, nil
 	}
 }
 

@@ -23,8 +23,19 @@ behind a running sync. When the editor closes stdin, running requests are cancel
 waited for, so a sync stops between pages and still writes back what it did.
 
 Editor → engine: `ping`, `session/open`, `session/close`, `space/list`, `page/children`,
-`page/search`, `settings/read`, `settings/save`, `sync/plan`, `sync/execute`,
-`$/cancelRequest`.
+`page/search`, `settings/read`, `settings/save`, `config/describe`, `sync/plan`,
+`sync/execute`, `$/cancelRequest`.
+
+**The shells are interfaces, not owners of knowledge.** What a user can configure (the storages and
+their fields, how to sign in to each, the kinds of generator, every project and user setting) is
+described by the engine in `config/describe`, and each output's display name comes back with
+`settings/read`. A shell builds its forms, pickers, labels and settings pages from that description
+and keeps no list of platforms of its own, so a new storage is an engine change and every shell
+shows it. Two things stay in a shell because they cannot come from the engine: where the engine
+binary is (the shell must find it to ask anything), and what only the editor can do (its widgets,
+its secret store, its tree and editing features). VS Code reads its settings schema from
+`package.json`, which cannot be built at run time, so that file keeps a copy that a test in the
+engine checks against the description.
 
 Engine → editor: `host/renderDiagram { language, source } → { svg }`,
 `host/progress { message, done, total }`.

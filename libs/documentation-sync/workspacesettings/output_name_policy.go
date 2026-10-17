@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"unicode"
+
+	"lore-master/libs/documentation-sync/configcatalog"
 )
 
 // maxNameLength keeps an output's name short enough for a tree row and a picker.
@@ -58,21 +60,39 @@ func DisplayName(outputs []Output, index int) string {
 	return fmt.Sprintf("%s (%d)", base, earlier+1)
 }
 
+// madeUpName is the name the platform's descriptor makes for an output without one; an output of
+// a platform the catalog does not know is named as a Confluence one, as it always was.
 func madeUpName(output Output) string {
-	switch output.Platform {
-	case "github-pages":
-		return "GitHub Pages · " + orDefault(output.Repo, "this repository")
-	case "github-wiki":
-		return "GitHub Wiki · " + orDefault(output.Repo, "this repository")
+	platform, known := configcatalog.FindPlatform(output.Platform)
+	if !known {
+		platform, _ = configcatalog.FindPlatform("confluence")
 	}
 
-	return "Confluence · " + orDefault(output.Space, "no space yet")
+	return platform.MakeUpName(func(key string) string { return outputValue(output, key) })
 }
 
-func orDefault(value string, fallback string) string {
-	if value == "" {
-		return fallback
+// outputValue is an output's setting by the key the catalog's fields use.
+func outputValue(output Output, key string) string {
+	switch key {
+	case "baseUrl":
+		return output.BaseURL
+	case "space":
+		return output.Space
+	case "parentPageId":
+		return output.ParentPageID
+	case "titlePrefix":
+		return output.TitlePrefix
+	case "repo":
+		return output.Repo
+	case "branch":
+		return output.Branch
+	case "path":
+		return output.Path
+	case "template":
+		return output.Template
+	case "name":
+		return output.Name
 	}
 
-	return value
+	return ""
 }
