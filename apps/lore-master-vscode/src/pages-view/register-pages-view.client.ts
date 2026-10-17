@@ -92,7 +92,7 @@ export function registerPagesView (deps: SyncCommandDeps, memento: DisplayMement
     clearTimeout(timer)
     timer = setTimeout(() => provider.refresh(), REFRESH_DEBOUNCE_MS)
   }
-  const watchers = ['**/*.md', '**/.lore-master.yaml', '**/lore-master.json', '**/.gitignore'].map(pattern => {
+  const watchers = ['**/*.md', '**/.vscode/settings.json', '**/lore-master.json', '**/.gitignore'].map(pattern => {
     const watcher = vscode.workspace.createFileSystemWatcher(pattern)
 
     return vscode.Disposable.from(watcher.onDidCreate(refreshSoon), watcher.onDidChange(refreshSoon), watcher.onDidDelete(refreshSoon), watcher)

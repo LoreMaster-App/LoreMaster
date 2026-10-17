@@ -10,8 +10,8 @@ const WATCHED_EXTENSIONS = new Set([
   '.py', '.toml', '.cfg', '.cs', '.csproj', '.props', '.dart',
 ])
 
-/** The configuration: the editor's settings, and the deprecated yaml until it is gone. */
-const SETTINGS_FILES = new Set(['.lore-master.yaml', '.vscode/settings.json'])
+/** The configuration: the editor's settings. */
+const SETTINGS_FILES = new Set(['.vscode/settings.json'])
 
 /** The workspace-relative, '/'-separated path of a file, or undefined when it is outside the folder. */
 export function workspacePath (folder: string, fsPath: string): string | undefined {

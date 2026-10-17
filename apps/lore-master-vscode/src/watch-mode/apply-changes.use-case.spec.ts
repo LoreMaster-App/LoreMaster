@@ -84,7 +84,7 @@ describe('applyChanges', () => {
   it('syncs everything when the settings changed', async () => {
     const run = scenario({ everything: true, generators: [0] }, { runs: [{ index: 0, type: 'go-docs', output: 'docs/api', written: ['docs/api/a.md'] }] })
 
-    await applyChanges(deps(run), ['.lore-master.yaml'])
+    await applyChanges(deps(run), ['.vscode/settings.json'])
 
     expect(run.syncs).toEqual([undefined])
     expect(run.log).toContain('settings changed: syncing everything')

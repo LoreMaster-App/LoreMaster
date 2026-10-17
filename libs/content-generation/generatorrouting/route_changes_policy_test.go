@@ -72,7 +72,7 @@ func TestSeveralChangesGiveEachAffectedGeneratorOnceAndTheMarkdownSorted(t *test
 }
 
 func TestAChangedSettingsFileCallsForEverything(t *testing.T) {
-	plan := Route([]string{".lore-master.yaml"}, specs)
+	plan := Route([]string{".vscode/settings.json"}, specs)
 
 	if !plan.Everything || len(plan.Generators) != len(specs) {
 		t.Fatalf("plan %+v", plan)

@@ -8,7 +8,7 @@ import { removeGenerator } from './generators.use-case'
 /** The command id contributed in package.json. */
 export const REMOVE_GENERATOR_COMMAND = 'loreMaster.removeGenerator'
 
-/** Removes a generator from .lore-master.yaml after confirming. The pages it already wrote are
+/** Removes a generator from the settings after confirming. The pages it already wrote are
  *  left where they are: they are ordinary files now, and deleting the folder is the user's call. */
 export async function removeGeneratorCommand (deps: GeneratorsViewDeps, node: GeneratorNode | undefined): Promise<void> {
   if (!node) {

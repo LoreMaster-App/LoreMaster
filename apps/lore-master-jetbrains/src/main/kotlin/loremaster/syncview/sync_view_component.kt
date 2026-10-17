@@ -42,7 +42,7 @@ private const val RELOAD_AFTER_MS = 400
 /** Files whose change can change what the view shows: Markdown, the settings, the sync state and the .gitignore files. */
 private fun mattersToView(path: String): Boolean =
     path.endsWith(".md") || path.endsWith(".markdown") || path.endsWith("/.vscode/settings.json") || path.endsWith("/lore-master.json") ||
-        path.endsWith("/.lore-master.yaml") || path.endsWith("/.gitignore")
+        path.endsWith("/.gitignore")
 
 /**
  * The Sync view: Local and each storage as rows, with their pages under them. The view's own toolbar holds what applies to every

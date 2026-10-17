@@ -65,7 +65,7 @@ func selected(requested []int, count int) ([]int, error) {
 	indexes = slices.Compact(indexes)
 	for _, index := range indexes {
 		if index < 0 || index >= count {
-			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "generator %d does not exist; %s has %d", index, workspacesettings.FileName, count)
+			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "generator %d does not exist; %s has %d", index, workspacesettings.GeneratorsSetting, count)
 		}
 	}
 

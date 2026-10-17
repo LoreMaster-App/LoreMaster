@@ -24,8 +24,8 @@ const OverridesVariable = "LORE_MASTER_SETTINGS"
 // LoadEditorSettings resolves the configuration from the user's settings, the
 // .code-workspace file's, the workspace folder's and finally the overrides, each more
 // specific one winning (#308, #313, #314). userSettingsPath may be empty. When no layer sets loreMaster.outputs the result is not Configured and holds
-// no settings, so the caller can fall back to .lore-master.yaml. Otherwise the settings
-// are completed and validated as a file's are, and an error names the file and key.
+// no settings, so the caller reads the defaults of a workspace not set up. Otherwise the settings
+// are completed and validated, and an error names the file and key.
 func LoadEditorSettings(workspaceRoot, userSettingsPath string) (Result, error) {
 	var layers []Layer
 	add := func(layer Layer, err error) error {

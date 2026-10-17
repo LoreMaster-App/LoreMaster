@@ -3,13 +3,12 @@ package watchcommands
 import (
 	"context"
 	"encoding/json"
-	"os"
-	"path/filepath"
 	"slices"
 	"testing"
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 const settings = `version: 1
@@ -37,9 +36,7 @@ func route(t *testing.T, root string, changed ...string) (rpcprotocol.WatchRoute
 func workspace(t *testing.T, yaml string) string {
 	t.Helper()
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, ".lore-master.yaml"), []byte(yaml), 0o644); err != nil {
-		t.Fatal(err)
-	}
+	settingsfixture.Write(t, root, yaml)
 
 	return root
 }
@@ -70,7 +67,7 @@ func TestRouteAnswersEmptyListsNotNulls(t *testing.T) {
 }
 
 func TestRouteOfTheSettingsFileIsEverything(t *testing.T) {
-	result, err := route(t, workspace(t, settings), ".lore-master.yaml")
+	result, err := route(t, workspace(t, settings), ".vscode/settings.json")
 
 	if err != nil || !result.Everything || !slices.Equal(result.Generators, []int{0, 1}) {
 		t.Fatalf("result %+v err %v", result, err)

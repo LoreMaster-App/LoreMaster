@@ -22,7 +22,6 @@ export const CREDENTIAL_DELETE_METHOD = 'credential/delete'
 export const CREDENTIAL_LIST_METHOD = 'credential/list'
 export const SETTINGS_READ_METHOD = 'settings/read'
 export const SETTINGS_SAVE_METHOD = 'settings/save'
-export const SETTINGS_MIGRATE_METHOD = 'settings/migrate'
 export const PAGES_PUBLISH_METHOD = 'pages/publish'
 export const PAGES_BUILD_METHOD = 'pages/build'
 export const PAGES_CHECK_METHOD = 'pages/check'
@@ -141,14 +140,7 @@ export interface PageSearchParams {
   limit?:    number
 }
 
-// ---- settings/read, settings/save, settings/migrate ----------------------------------
-
-/** What `settings/migrate` did: `migrated` is true when .lore-master.yaml was imported into
- *  the folder's .vscode/settings.json on this call; `path` is the file written. */
-export interface SettingsMigrateResult {
-  migrated: boolean
-  path?:    string
-}
+// ---- settings/read, settings/save ----------------------------------------------------
 
 export interface Content {
   type:      string
@@ -186,7 +178,7 @@ export interface Output {
   template?:      string
 }
 
-/** One generator of .lore-master.yaml: what it reads and the folder it writes its pages to. */
+/** One generator of the loreMaster.generators setting: what it reads and the folder it writes its pages to. */
 export interface Generator {
   /** test-results (JUnit XML); other types are reserved. */
   type:     string
@@ -324,7 +316,7 @@ export interface AgentInstructionsParams {
 export interface AgentInstructionsResult {
   /** Markdown without a top-level heading, composed from the live rules and the workspace. */
   instructions: string
-  /** False when the workspace has no .lore-master.yaml yet. */
+  /** False when the workspace has no LoreMaster configuration yet. */
   hasConfig:    boolean
 }
 

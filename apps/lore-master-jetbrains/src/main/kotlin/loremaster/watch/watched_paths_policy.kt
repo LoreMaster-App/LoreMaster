@@ -11,8 +11,8 @@ private val WATCHED_EXTENSIONS = setOf(
     ".py", ".toml", ".cfg", ".cs", ".csproj", ".props", ".dart",
 )
 
-/** The configuration: the editor's settings, and the deprecated yaml until it is gone. */
-private val SETTINGS_FILES = setOf(".lore-master.yaml", ".vscode/settings.json")
+/** The configuration: the editor's settings. */
+private val SETTINGS_FILES = setOf(".vscode/settings.json")
 
 /** The workspace-relative, '/'-separated path of a file, or null when it is outside the folder. */
 fun workspacePath(folder: Path, file: Path): String? {

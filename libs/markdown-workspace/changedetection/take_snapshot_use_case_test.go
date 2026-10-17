@@ -43,7 +43,7 @@ func paths(snapshot Snapshot) []string {
 func TestOnlyFilesThatCanMatterAreLookedAt(t *testing.T) {
 	root := t.TempDir()
 	for _, file := range []string{
-		"README.md", "docs/a.md", ".lore-master.yaml", "src/app.ts", "svc/main.py", "reports/junit.xml",
+		"README.md", "docs/a.md", ".vscode/settings.json", "src/app.ts", "svc/main.py", "reports/junit.xml",
 		"node_modules/x/index.js", ".git/config", "bin/Debug/a.json", "assets/logo.png", ".hidden/a.md", "obj/b.cs", "testdata/c.md", ".eslintrc.json",
 	} {
 		put(t, root, file, "x")
@@ -51,7 +51,7 @@ func TestOnlyFilesThatCanMatterAreLookedAt(t *testing.T) {
 
 	got := paths(take(t, root, Snapshot{}))
 
-	want := []string{".lore-master.yaml", "README.md", "docs/a.md", "reports/junit.xml", "src/app.ts", "svc/main.py"}
+	want := []string{".vscode/settings.json", "README.md", "docs/a.md", "reports/junit.xml", "src/app.ts", "svc/main.py"}
 	if !slices.Equal(got, want) {
 		t.Fatalf("looked at %v, want %v", got, want)
 	}
@@ -125,7 +125,7 @@ func TestACancelledLookStops(t *testing.T) {
 func TestWatchedFileNames(t *testing.T) {
 	cases := map[string]bool{
 		"a.md": true, "A.MD": true, "dir/x.dart": true, "pubspec.yaml": true, "src/Shop.csproj": true,
-		".lore-master.yaml": true, "pic.png": false, ".env": false, "dir/.hidden.md": false, "Makefile": false,
+		".vscode/settings.json": true, "pic.png": false, ".env": false, "dir/.hidden.md": false, "Makefile": false,
 	}
 	for name, want := range cases {
 		if got := IsWatchedFile(name); got != want {
@@ -139,7 +139,6 @@ func TestOnlyTheFolderOwnSettingsInsideDotVscodeAreWatched(t *testing.T) {
 		".vscode/settings.json":     true,
 		".vscode/launch.json":       false,
 		"pkg/.vscode/settings.json": false,
-		".lore-master.yaml":         true,
 		"docs/readme.md":            true,
 	} {
 		if got := IsWatchedFile(path); got != want {

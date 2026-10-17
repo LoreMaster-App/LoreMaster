@@ -37,9 +37,6 @@ func IsSkippedFolder(name string) bool {
 // '/'-separated.
 func IsWatchedFile(rel string) bool {
 	name := path.Base(rel)
-	if name == ".lore-master.yaml" {
-		return true
-	}
 	if strings.Contains("/"+rel, "/.vscode/") {
 		return rel == ".vscode/settings.json"
 	}

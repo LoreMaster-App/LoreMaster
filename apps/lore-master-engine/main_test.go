@@ -77,7 +77,7 @@ func TestEveryEditorMethodIsRouted(t *testing.T) {
 		rpcprotocol.MethodSpaceList, rpcprotocol.MethodPageChildren, rpcprotocol.MethodPageSearch,
 		rpcprotocol.MethodSyncPlan, rpcprotocol.MethodSyncExecute, rpcprotocol.MethodSyncJournals, rpcprotocol.MethodSyncRollback,
 		rpcprotocol.MethodCredentialStore, rpcprotocol.MethodCredentialGet, rpcprotocol.MethodCredentialDelete, rpcprotocol.MethodCredentialList,
-		rpcprotocol.MethodSettingsRead, rpcprotocol.MethodSettingsSave, rpcprotocol.MethodSettingsMigrate,
+		rpcprotocol.MethodSettingsRead, rpcprotocol.MethodSettingsSave,
 		rpcprotocol.MethodPagesPublish, rpcprotocol.MethodPagesBuild, rpcprotocol.MethodPagesCheck, rpcprotocol.MethodWorkspaceTree, rpcprotocol.MethodGeneratorsRun, rpcprotocol.MethodAgentInstructions,
 		rpcprotocol.MethodWatchRoute, rpcprotocol.MethodFilesPlanMove,
 		rpcprotocol.MethodExportFormats, rpcprotocol.MethodExportRun, rpcprotocol.MethodDiagramRender, rpcprotocol.MethodConfigDescribe,
@@ -86,7 +86,7 @@ func TestEveryEditorMethodIsRouted(t *testing.T) {
 			t.Errorf("%s has no handler", method)
 		}
 	}
-	if len(methods) != 30 {
+	if len(methods) != 29 {
 		t.Errorf("%d methods routed; update this list when the protocol grows", len(methods))
 	}
 }

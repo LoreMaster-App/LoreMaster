@@ -25,7 +25,6 @@ func connect(t *testing.T) *jsonrpc2.Conn {
 		_ = rpcserver.Serve(context.Background(), engineEnd, rpcserver.Methods{
 			rpcprotocol.MethodSettingsRead:    ReadSettings(),
 			rpcprotocol.MethodSettingsSave:    SaveSettings(),
-			rpcprotocol.MethodSettingsMigrate: MigrateSettings(),
 		}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	}()
 	conn := jsonrpc2.NewConn(context.Background(), jsonrpc2.NewBufferedStream(editorEnd, jsonrpc2.VSCodeObjectCodec{}), jsonrpc2.AsyncHandler(jsonrpc2.HandlerWithError(func(context.Context, *jsonrpc2.Conn, *jsonrpc2.Request) (any, error) { return nil, nil })))
@@ -33,6 +32,22 @@ func connect(t *testing.T) *jsonrpc2.Conn {
 
 	return conn
 }
+
+// settingsFile writes the project's settings.json, which is where the configuration lives.
+func settingsFile(t *testing.T, root string, content string) string {
+	t.Helper()
+	file := filepath.Join(root, ".vscode", "settings.json")
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	return file
+}
+
+const confluenceOutputJSON = `{ "platform": "confluence", "baseUrl": "https://acme.atlassian.net/wiki", "space": "ENG", "parentPageId": "98306", "titlePrefix": "ENG" }`
 
 func code(err error) int64 {
 	var wire *jsonrpc2.Error
@@ -82,25 +97,28 @@ func TestTheFirstSyncWizardRoundTrip(t *testing.T) {
 		t.Fatalf("a new workspace is configured in the editor's settings:\n%s", content)
 	}
 	if _, err := os.Stat(filepath.Join(root, ".lore-master.yaml")); err == nil {
-		t.Fatal("a new workspace got the deprecated yaml")
+		t.Fatal("a new workspace got the retired yaml file")
 	}
 }
 
 func TestSavingKeepsTheAuthorsComments(t *testing.T) {
 	conn, root := connect(t), t.TempDir()
-	file := filepath.Join(root, ".lore-master.yaml")
-	authored := "version: 1\n# Our handbook goes to the ENG space.\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG # the team space\n    parentPageId: \"98306\"\n    titlePrefix: ENG\n"
-	if err := os.WriteFile(file, []byte(authored), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	file := settingsFile(t, root, `{
+  // Our handbook goes to the ENG space.
+  "editor.tabSize": 2,
+  "loreMaster.outputs": [
+    { "platform": "confluence", "baseUrl": "https://acme.atlassian.net/wiki", "space": "ENG", /* the team space */ "parentPageId": "98306", "titlePrefix": "ENG" }
+  ]
+}
+`)
 	settings := read(t, conn, root).Settings
 	settings.Outputs[0].Space = "DOCS"
 	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsSave, rpcprotocol.SettingsSaveParams{WorkspaceRoot: root, Settings: settings}, nil); err != nil {
 		t.Fatal(err)
 	}
 	content, _ := os.ReadFile(file)
-	if !strings.Contains(string(content), "# Our handbook goes to the ENG space.") || !strings.Contains(string(content), "space: DOCS # the team space") {
-		t.Fatalf("comments survive:\n%s", content)
+	if !strings.Contains(string(content), "// Our handbook goes to the ENG space.") || !strings.Contains(string(content), `"editor.tabSize": 2`) || !strings.Contains(string(content), `"DOCS"`) {
+		t.Fatalf("comments and other settings survive:\n%s", content)
 	}
 }
 
@@ -112,17 +130,16 @@ func TestBadSettingsAreRefusedWithTheReason(t *testing.T) {
 	if code(err) != rpcprotocol.CodeInvalidSettings || !strings.Contains(err.Error(), "crayon") {
 		t.Fatalf("%v", err)
 	}
-	if _, statErr := os.Stat(filepath.Join(root, ".lore-master.yaml")); !os.IsNotExist(statErr) {
+	if _, statErr := os.Stat(filepath.Join(root, ".vscode", "settings.json")); !os.IsNotExist(statErr) {
 		t.Fatal("nothing is written when refused")
 	}
 
-	file := filepath.Join(root, ".lore-master.yaml")
-	_ = os.WriteFile(file, []byte("version: 1\noutputs:\n  - platform: confluence\n    apiToken: abc\n"), 0o600)
+	settingsFile(t, root, `{ "loreMaster.outputs": [ { "platform": "confluence", "apiToken": "abc" } ] }`)
 	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsRead, rpcprotocol.SettingsReadParams{WorkspaceRoot: root}, nil); code(err) != rpcprotocol.CodeInvalidSettings {
 		t.Fatalf("a secret in the file: %v", err)
 	}
 
-	_ = os.WriteFile(file, []byte("version: 1\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"1\"\n    titlePrefix: ENG\n    linkMode: rainbow\n"), 0o600)
+	settingsFile(t, root, `{ "loreMaster.outputs": [ { "platform": "confluence", "baseUrl": "https://acme.atlassian.net/wiki", "space": "ENG", "parentPageId": "1", "titlePrefix": "ENG", "linkMode": "rainbow" } ] }`)
 	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsRead, rpcprotocol.SettingsReadParams{WorkspaceRoot: root}, nil); code(err) != rpcprotocol.CodeInvalidSettings || !strings.Contains(err.Error(), `linkMode "rainbow" is not one of title, id`) {
 		t.Fatalf("a bad value names itself: %v", err)
 	}
@@ -155,11 +172,11 @@ func TestAGitHubPagesOutputKeepsItsRepoAndBranchThroughASave(t *testing.T) {
 
 func TestTheDiscoveryScopeSurvivesAReadAndSave(t *testing.T) {
 	conn, root := connect(t), t.TempDir()
-	file := filepath.Join(root, ".lore-master.yaml")
-	authored := "version: 1\nskipGitignored: false\nignore:\n  - drafts/**\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"98306\"\n    titlePrefix: ENG\n"
-	if err := os.WriteFile(file, []byte(authored), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	settingsFile(t, root, `{
+  "loreMaster.skipGitignored": false,
+  "loreMaster.ignore": ["drafts/**"],
+  "loreMaster.outputs": [ `+confluenceOutputJSON+` ]
+}`)
 
 	loaded := read(t, conn, root).Settings
 	if loaded.SkipGitignored == nil || *loaded.SkipGitignored || len(loaded.Ignore) != 1 || loaded.Ignore[0] != "drafts/**" {
@@ -178,11 +195,10 @@ func TestTheDiscoveryScopeSurvivesAReadAndSave(t *testing.T) {
 
 func TestGeneratorsSurviveAReadAndSave(t *testing.T) {
 	conn, root := connect(t), t.TempDir()
-	file := filepath.Join(root, ".lore-master.yaml")
-	authored := "version: 1\ngenerators:\n  - type: test-results\n    input: [ci/]\n    output: docs/tests\n    title: CI results\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"98306\"\n    titlePrefix: ENG\n"
-	if err := os.WriteFile(file, []byte(authored), 0o600); err != nil {
-		t.Fatal(err)
-	}
+	settingsFile(t, root, `{
+  "loreMaster.generators": [ { "type": "test-results", "input": ["ci/"], "output": "docs/tests", "title": "CI results" } ],
+  "loreMaster.outputs": [ `+confluenceOutputJSON+` ]
+}`)
 
 	loaded := read(t, conn, root).Settings
 	if len(loaded.Generators) != 1 || loaded.Generators[0].Type != "test-results" || loaded.Generators[0].Output != "docs/tests" || loaded.Generators[0].Title != "CI results" || loaded.Generators[0].Input[0] != "ci/" {
@@ -201,11 +217,7 @@ func TestGeneratorsSurviveAReadAndSave(t *testing.T) {
 
 func TestAnOutputsIncludeAndExcludeListsSurviveReadAndSave(t *testing.T) {
 	root := t.TempDir()
-	file := filepath.Join(root, ".lore-master.yaml")
-	body := "version: 1\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"1\"\n    titlePrefix: ENG\n    include:\n      - docs/keep.md\n    exclude:\n      - drafts/\n"
-	if err := os.WriteFile(file, []byte(body), 0o644); err != nil {
-		t.Fatal(err)
-	}
+	file := settingsFile(t, root, `{ "loreMaster.outputs": [ { "platform": "confluence", "baseUrl": "https://acme.atlassian.net/wiki", "space": "ENG", "parentPageId": "1", "titlePrefix": "ENG", "include": ["docs/keep.md"], "exclude": ["drafts/"] } ] }`)
 	conn := connect(t)
 
 	result := read(t, conn, root)
@@ -222,49 +234,6 @@ func TestAnOutputsIncludeAndExcludeListsSurviveReadAndSave(t *testing.T) {
 	}
 	if !strings.Contains(string(saved), "docs/keep.md") || !strings.Contains(string(saved), "drafts/") {
 		t.Fatalf("a save dropped the lists:\n%s", saved)
-	}
-}
-
-func TestMigrateImportsTheYamlOnceAndLeavesIt(t *testing.T) {
-	conn, root := connect(t), t.TempDir()
-	file := filepath.Join(root, ".lore-master.yaml")
-	authored := "version: 1\nignore:\n  - drafts/\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"98306\"\n    titlePrefix: ENG\n    exclude:\n      - internal/\n"
-	if err := os.WriteFile(file, []byte(authored), 0o600); err != nil {
-		t.Fatal(err)
-	}
-
-	var first rpcprotocol.SettingsMigrateResult
-	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsMigrate, rpcprotocol.SettingsReadParams{WorkspaceRoot: root}, &first); err != nil {
-		t.Fatal(err)
-	}
-	if !first.Migrated || !strings.HasSuffix(filepath.ToSlash(first.Path), ".vscode/settings.json") {
-		t.Fatalf("first: %+v", first)
-	}
-	if _, err := os.Stat(file); err != nil {
-		t.Fatal("the yaml was removed")
-	}
-	settings := read(t, conn, root).Settings
-	if settings.Outputs[0].Space != "ENG" || len(settings.Ignore) != 1 || len(settings.Outputs[0].Exclude) != 1 {
-		t.Fatalf("not imported: %+v", settings)
-	}
-
-	var second rpcprotocol.SettingsMigrateResult
-	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsMigrate, rpcprotocol.SettingsReadParams{WorkspaceRoot: root}, &second); err != nil {
-		t.Fatal(err)
-	}
-	if second.Migrated {
-		t.Fatal("migrated twice")
-	}
-}
-
-func TestMigrateDoesNothingWithoutAYaml(t *testing.T) {
-	conn, root := connect(t), t.TempDir()
-	var result rpcprotocol.SettingsMigrateResult
-	if err := conn.Call(context.Background(), rpcprotocol.MethodSettingsMigrate, rpcprotocol.SettingsReadParams{WorkspaceRoot: root}, &result); err != nil {
-		t.Fatal(err)
-	}
-	if result.Migrated {
-		t.Fatalf("%+v", result)
 	}
 }
 

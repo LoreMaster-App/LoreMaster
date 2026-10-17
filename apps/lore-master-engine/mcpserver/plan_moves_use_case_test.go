@@ -9,7 +9,7 @@ const docsSettings = "version: 1\noutputs:\n  - platform: github-pages\n    dire
 
 func TestPlanMovesSaysWhereAMovedPageWillNest(t *testing.T) {
 	root := workspace(t, map[string]string{
-		".lore-master.yaml":     docsSettings,
+		settingsFixture:     docsSettings,
 		"guide/README.md":       "# Guide\n",
 		"misc/setup.md":         "# Setup\n",
 		"misc/setup.windows.md": "# Setup on Windows\n",
@@ -33,7 +33,7 @@ func TestPlanMovesSaysWhereAMovedPageWillNest(t *testing.T) {
 
 func TestPlanMovesKeepsAnExplicitParentNamingTheSameDocument(t *testing.T) {
 	root := workspace(t, map[string]string{
-		".lore-master.yaml": docsSettings,
+		settingsFixture: docsSettings,
 		"a/index.md":        "# Index\n",
 		"a/page.md":         "<!-- lore-master\nparent: index.md\n-->\n# Page\n",
 	})
@@ -46,7 +46,7 @@ func TestPlanMovesKeepsAnExplicitParentNamingTheSameDocument(t *testing.T) {
 }
 
 func TestPlanMovesRefusesPathsOutsideTheWorkspaceAndEmptyInput(t *testing.T) {
-	root := workspace(t, map[string]string{".lore-master.yaml": docsSettings, "a.md": "# A\n"})
+	root := workspace(t, map[string]string{settingsFixture: docsSettings, "a.md": "# A\n"})
 
 	for _, arguments := range []string{`{}`, `{"moves":[{"from":"a.md","to":"../outside.md"}]}`} {
 		if result := toolCall(t, root, planMovesToolName, arguments); !result.IsError {

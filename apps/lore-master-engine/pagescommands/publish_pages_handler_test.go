@@ -16,6 +16,7 @@ import (
 
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/libs/documentation-sync/settingsfixture"
 )
 
 func connect(t *testing.T) *jsonrpc2.Conn {
@@ -53,7 +54,7 @@ func runGit(t *testing.T, dir string, args ...string) {
 }
 
 // pagesWorkspace builds a bare "remote" and a work repo whose origin points at it, with a
-// Markdown file and a github-pages .lore-master.yaml. It returns the work repo path.
+// Markdown file and a github-pages configuration. It returns the work repo path.
 func pagesWorkspace(t *testing.T, config string) string {
 	t.Helper()
 	if _, err := exec.LookPath("git"); err != nil {
@@ -68,7 +69,7 @@ func pagesWorkspace(t *testing.T, config string) string {
 	runGit(t, work, "config", "user.name", "Test")
 	runGit(t, work, "config", "user.email", "test@example.com")
 	write(t, work, "readme.md", "# Home\n\nWelcome.")
-	write(t, work, ".lore-master.yaml", config)
+	settingsfixture.Write(t, work, config)
 	runGit(t, work, "add", "-A")
 	runGit(t, work, "commit", "-m", "initial")
 	runGit(t, work, "remote", "add", "origin", remote)
@@ -124,7 +125,7 @@ func TestPublishPagesGeneratesAndPushesTheSite(t *testing.T) {
 func TestPublishPagesRejectsANonPagesOutput(t *testing.T) {
 	conn, root := connect(t), t.TempDir()
 	confluence := "version: 1\noutputs:\n  - platform: confluence\n    baseUrl: https://acme.atlassian.net/wiki\n    space: ENG\n    parentPageId: \"1\"\n    titlePrefix: ENG\n"
-	write(t, root, ".lore-master.yaml", confluence)
+	settingsfixture.Write(t, root, confluence)
 
 	_, err := publish(t, conn, root, 0)
 	if code(err) != rpcprotocol.CodeInvalidParams || !strings.Contains(err.Error(), "not github-pages") {

@@ -90,13 +90,13 @@ func outputToSync(params rpcprotocol.SyncPlanParams, sessionURL string) (workspa
 		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, "", rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if loaded.FirstSync {
-		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, "", rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s has no site, space, parent page or title prefix yet; run the first sync to choose them", workspacesettings.FileName)
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, "", rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "an output of %s has no site, space, parent page or title prefix yet; run the first sync to choose them", workspacesettings.OutputsSetting)
 	}
 	if err := workspacesettings.Validate(loaded.Settings); err != nil {
 		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, "", rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 	}
 	if params.Output < 0 || params.Output >= len(loaded.Settings.Outputs) {
-		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, "", rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.FileName, len(loaded.Settings.Outputs))
+		return workspacesettings.Output{}, workspacesettings.DiscoveryScope{}, "", rpcprotocol.Errorf(rpcprotocol.CodeInvalidParams, "output %d does not exist; %s has %d", params.Output, workspacesettings.OutputsSetting, len(loaded.Settings.Outputs))
 	}
 	output := loaded.Settings.Outputs[params.Output]
 	if !confluenceplatform.SameSite(output.BaseURL, sessionURL) {

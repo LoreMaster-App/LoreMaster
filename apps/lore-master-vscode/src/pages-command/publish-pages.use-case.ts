@@ -31,7 +31,7 @@ export interface PagesDeps {
 /**
  * Publishes the workspace's Markdown as a static site to its github-pages output. If the
  * workspace has no such output yet, one is added (publishing to the repo's own origin, the
- * gh-pages branch) and saved to .lore-master.yaml. The engine does the rest — generate and
+ * gh-pages branch) and saved to the settings. The engine does the rest — generate and
  * push — through the user's own git.
  */
 export async function publishPages (deps: PagesDeps): Promise<void> {

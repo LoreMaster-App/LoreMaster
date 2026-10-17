@@ -7,7 +7,7 @@ export interface SyncTarget {
 }
 
 /** The chosen target for each folder, for this editor session. The durable copy lives in
- *  the folder's `.lore-master.yaml` (the engine writes it); this spares re-asking within
+ *  the folder's settings (the engine writes them); this spares re-asking within
  *  a session and answers "has this folder been set up yet?". */
 export interface TargetStore {
   get (folder: string): SyncTarget | undefined

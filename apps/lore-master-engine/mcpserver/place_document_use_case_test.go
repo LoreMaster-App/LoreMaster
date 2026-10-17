@@ -66,7 +66,7 @@ func TestPlaceDocumentTopLevelWhenNoParent(t *testing.T) {
 
 func TestPlaceDocumentAppliesTheTitlePrefix(t *testing.T) {
 	root := workspace(t, map[string]string{
-		".lore-master.yaml": "version: 1\noutputs:\n  - platform: confluence\n    titlePrefix: ACME\n    content:\n      - type: markdown\n        roots: ['.']\n",
+		settingsFixture: "version: 1\noutputs:\n  - platform: confluence\n    titlePrefix: ACME\n    content:\n      - type: markdown\n        roots: ['.']\n",
 		"README.md":         "# Home\n",
 	})
 	view := placementViewOf(t, toolCall(t, root, placeDocumentToolName, `{"h1":"Glossary","parent":"README.md"}`))
