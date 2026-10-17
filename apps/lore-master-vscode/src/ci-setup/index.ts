@@ -1,6 +1,6 @@
 export { SET_UP_CI_COMMAND, setUpCiCommand, type SetUpCiCommandDeps } from './set-up-ci.handler'
 export { buildCiSetupGuide, planCiSetup, writePipeline, type CiSetupDeps, type CiSetupGuide, type CiSetupPlan, type WritePipelineOutcome } from './set-up-ci.use-case'
 export { CI_PROVIDERS, type CiProvider } from './ci-provider.config'
-export type { CiNeeds, CiPipelineFile, CiProviderId, CiSecret } from './ci-pipeline.contract'
+export type { CiNeeds, CiPipelineFile, CiProviderId, CiSecret } from '../ci-pipeline-rendering'
 export { detectCiProviders } from './detect-ci-providers.policy'
 export { planCiNeeds, type PlanCiNeedsInput } from './plan-ci-needs.policy'

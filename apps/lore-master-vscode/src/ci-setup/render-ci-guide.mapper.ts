@@ -1,5 +1,5 @@
 import type { CiProvider } from './ci-provider.config'
-import type { CiNeeds, CiPipelineFile } from './ci-pipeline.contract'
+import type { CiNeeds, CiPipelineFile } from '../ci-pipeline-rendering'
 
 const WHERE_TO_ADD_SECRETS: Record<CiProvider['id'], string> = {
   'github-actions':  'On GitHub: **Settings > Secrets and variables > Actions > New repository secret**.',

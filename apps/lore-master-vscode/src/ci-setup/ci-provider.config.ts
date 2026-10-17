@@ -1,4 +1,4 @@
-import type { CiProviderId } from './ci-pipeline.contract'
+import type { CiProviderId } from '../ci-pipeline-rendering'
 
 export interface CiProvider {
   id:          CiProviderId
@@ -23,6 +23,3 @@ export const CI_PROVIDERS: readonly CiProvider[] = [
     detectGlobs: ['azure-pipelines.yml', 'azure-pipelines.yaml', '.azure-pipelines/*.yml', '.azure-pipelines/*.yaml'],
   },
 ]
-
-/** The engine binary inside a release's zip. */
-export const ENGINE_BINARY = 'lore-master-engine'

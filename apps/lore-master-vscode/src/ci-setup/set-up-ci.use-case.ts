@@ -1,11 +1,9 @@
 import { SETTINGS_READ_METHOD, type SettingsReadResult } from '../engine-protocol'
 import type { FileStore } from '../agent-creation'
 import type { CiProvider } from './ci-provider.config'
-import type { CiNeeds, CiPipelineFile } from './ci-pipeline.contract'
+import { renderAzurePipelines, renderGitHubActions, type CiNeeds, type CiPipelineFile } from '../ci-pipeline-rendering'
 import { planCiNeeds } from './plan-ci-needs.policy'
-import { renderAzurePipelines } from './render-azure-pipelines.mapper'
 import { renderCiGuide } from './render-ci-guide.mapper'
-import { renderGitHubActions } from './render-github-actions.mapper'
 
 /** The minimal engine surface the session needs. */
 export interface CiSetupEngine {

@@ -1,5 +1,5 @@
 import { isGitHubOutput, type Output, type Settings } from '../engine-protocol'
-import type { CiNeeds, CiSecret } from './ci-pipeline.contract'
+import type { CiNeeds, CiSecret } from '../ci-pipeline-rendering'
 
 export interface PlanCiNeedsInput {
   settings:       Settings
