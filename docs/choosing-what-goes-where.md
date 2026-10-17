@@ -96,6 +96,10 @@ leaves out is reported as a warning by `pages build`, `pages check` and `pages p
 (`README.md: links to internal/plan.md, which this output leaves out`), and a wiki turns it
 into plain text, so a public page never points at, or names, an internal document.
 
+A page that is new to a public output is flagged the same way: `pages check` (and the editor's **Check remote
+status**) names the pages a publish would make public for the first time, so a file dropped into a published
+folder is noticed before it is visible to everyone.
+
 ## Public repositories and private ones
 
 GitHub decides who can see what a storage writes, whatever the lists say:

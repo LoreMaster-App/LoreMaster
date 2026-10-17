@@ -34,6 +34,19 @@ describe('checkPages', () => {
     expect(outcome.ok && outcome.message).toBe('gh-pages is out of date: 7 files would change (modified p0.html, modified p1.html, modified p2.html, modified p3.html, modified p4.html, and 2 more).')
   })
 
+  it('says which pages a publish would make public for the first time', async () => {
+    const changes = [{ path: 'secret-plans.html', kind: 'added' }]
+    const outcome = await checkPages(engine({ upToDate: false, changesTotal: 1, files: 9, branch: 'gh-pages', changes, newPages: 1, newPagePaths: ['secret-plans.html'] }), '/w', 0)
+
+    expect(outcome.ok && outcome.message).toBe('gh-pages is out of date: 1 files would change (added secret-plans.html). 1 page is new to this public output: secret-plans.html.')
+  })
+
+  it('says there are more new pages than it names', async () => {
+    const outcome = await checkPages(engine({ upToDate: false, changesTotal: 9, files: 9, branch: 'gh-pages', newPages: 8, newPagePaths: ['a.html', 'b.html'] }), '/w', 0)
+
+    expect(outcome.ok && outcome.message).toContain('8 pages are new to this public output: a.html, b.html, and more.')
+  })
+
   it('reports Markdown errors as the reason it could not compare', async () => {
     const outcome = await checkPages(engine({ upToDate: false, changesTotal: 0, files: 0, errors: ['a.md: no H1', 'b.md: no H1'] }), '/w', 0)
 

@@ -39,6 +39,10 @@ type PagesCheckResult struct {
 	// Changes lists the files, capped; ChangesTotal counts them all.
 	Changes      []PagesChange `json:"changes,omitempty"`
 	ChangesTotal int           `json:"changesTotal"`
+	// NewPages counts the pages that are new to the public output: ones a publish would make public for the first time.
+	// NewPagePaths names the first few, as the site or wiki spells them.
+	NewPages     int      `json:"newPages,omitempty"`
+	NewPagePaths []string `json:"newPagePaths,omitempty"`
 	// Files is how many site files were generated.
 	Files    int      `json:"files"`
 	Warnings []string `json:"warnings,omitempty"`
