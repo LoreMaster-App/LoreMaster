@@ -1,5 +1,6 @@
 package loremaster.engineprocess
 
+import com.google.gson.JsonElement
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
@@ -7,6 +8,7 @@ import com.intellij.openapi.extensions.PluginId
 import loremaster.pluginsettings.PluginSettingsStore
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CopyOnWriteArrayList
 
 /** The id in plugin.xml. */
 const val PLUGIN_ID = "app.loremaster.jetbrains"
@@ -22,6 +24,14 @@ const val ENGINE_PATH_VARIABLE = "LORE_MASTER_ENGINE"
 class EngineProcessStore : Disposable {
     private var process: Process? = null
     private var client: EngineRpcClient? = null
+    private val listeners = CopyOnWriteArrayList<(String, JsonElement?) -> Unit>()
+
+    /** Hears the engine's notifications (`host/progress`, ...) until the returned function is called. */
+    fun listen(listener: (method: String, params: JsonElement?) -> Unit): () -> Unit {
+        listeners.add(listener)
+
+        return { listeners.remove(listener) }
+    }
 
     /** The connection to a running engine, starting one if there is none. */
     @Synchronized
@@ -39,7 +49,9 @@ class EngineProcessStore : Disposable {
         val started = ProcessBuilder(binary.toString()).redirectError(ProcessBuilder.Redirect.DISCARD).start()
         process = started
 
-        return EngineRpcClient(started.inputStream, started.outputStream).also { client = it }
+        val notify: (String, JsonElement?) -> Unit = { method, params -> listeners.forEach { it(method, params) } }
+
+        return EngineRpcClient(started.inputStream, started.outputStream, onNotification = notify).also { client = it }
     }
 
     override fun dispose() = stop()
