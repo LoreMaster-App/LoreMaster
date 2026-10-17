@@ -1,6 +1,6 @@
 import { type Output, SETTINGS_READ_METHOD, SETTINGS_SAVE_METHOD } from '../engine-protocol'
 import { removeStorage } from './remove-storage.use-case'
-import type { StoragesEngine } from './storages-view.client'
+import type { OutputsEngine } from './configured-outputs.use-case'
 
 const confluence: Output = {
   platform:       'confluence',
@@ -30,7 +30,7 @@ const pages: Output = {
   branch:         'gh-pages',
 }
 
-function engine (outputs: Output[], onSave: (params: unknown) => void): StoragesEngine {
+function engine (outputs: Output[], onSave: (params: unknown) => void): OutputsEngine {
   return {
     request (method: string, params?: unknown) {
       if (method === SETTINGS_READ_METHOD) {

@@ -18,9 +18,9 @@ export interface SyncCommandDeps {
   output:      vscode.OutputChannel
 }
 
-/** Syncs every configured output of the chosen workspace folder (first run sets them up). The
+/** Syncs every configured output of the chosen workspace folder (first run sets them up), or only the ones in `only`. The
  *  folder is asked for unless the caller already has it. */
-export async function sync (deps: SyncCommandDeps, chosenFolder?: string): Promise<void> {
+export async function sync (deps: SyncCommandDeps, chosenFolder?: string, only?: number[]): Promise<void> {
   const folder = chosenFolder ?? await pickWorkspaceFolder()
   if (!folder) {
     await vscode.window.showInformationMessage('LoreMaster: open a folder to sync.')
@@ -35,5 +35,5 @@ export async function sync (deps: SyncCommandDeps, chosenFolder?: string): Promi
     workspaceRoot: folder,
     ui:            createSyncUI(deps.output),
     addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
-  })
+  }, only ? { only } : {})
 }

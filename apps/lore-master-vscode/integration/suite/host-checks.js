@@ -29,8 +29,8 @@ suite('LoreMaster in a real VS Code host', () => {
     }
   })
 
-  test('contributes its sidebar views, including the Pages view', async () => {
-    assert.ok(VIEWS.includes('loreMaster.pages'), 'the manifest contributes the Pages view')
+  test('contributes its sidebar views: one Sync view of every location, and Generators', async () => {
+    assert.deepStrictEqual(VIEWS, ['loreMaster.sync', 'loreMaster.generators'])
     // VS Code adds a "<view id>.focus" command for every view it knows.
     const registered = await vscode.commands.getCommands(true)
     for (const id of VIEWS) {
@@ -51,18 +51,28 @@ suite('LoreMaster in a real VS Code host', () => {
     assert.strictEqual(session, undefined, 'the provider answered (no session yet)')
   })
 
-  test('contributes the page label setting and the toggle flips it', async () => {
-    const configuration = () => vscode.workspace.getConfiguration('loreMaster')
-    assert.strictEqual(configuration().inspect('pages.label')?.defaultValue, 'title', 'the setting is contributed, defaulting to the content title')
-
-    await vscode.commands.executeCommand('loreMaster.togglePageLabel')
-    assert.strictEqual(configuration().get('pages.label'), 'fileName')
-    await vscode.commands.executeCommand('loreMaster.togglePageLabel')
-    assert.strictEqual(configuration().get('pages.label'), 'title')
-    await configuration().update('pages.label', undefined, vscode.ConfigurationTarget.Global)
+  test('contributes the display settings a row follows until it is given a choice', () => {
+    const configuration = vscode.workspace.getConfiguration('loreMaster')
+    assert.strictEqual(configuration.inspect('pages.label')?.defaultValue, 'title')
+    assert.strictEqual(configuration.inspect('pages.view')?.defaultValue, 'storage')
+    assert.strictEqual(configuration.inspect('pages.excluded')?.defaultValue, 'faded')
   })
 
-  test('refreshing the Pages view with no workspace does not fail', async () => {
+  test('a row command changes how that row is shown and leaves the settings alone', async () => {
+    const configuration = vscode.workspace.getConfiguration('loreMaster')
+    const local = { kind: 'local' }
+
+    await vscode.commands.executeCommand('loreMaster.showFileNames', local)
+    await vscode.commands.executeCommand('loreMaster.viewFlat', local)
+    await vscode.commands.executeCommand('loreMaster.refreshStorage', local)
+
+    assert.strictEqual(configuration.get('pages.label'), 'title', 'the setting is only the default; a row keeps its own choice')
+    // Row commands with no row to act on do nothing rather than fail.
+    await vscode.commands.executeCommand('loreMaster.hideIgnored')
+    await vscode.commands.executeCommand('loreMaster.syncStorage')
+  })
+
+  test('refreshing the Sync view with no workspace does not fail', async () => {
     await vscode.commands.executeCommand('loreMaster.refreshPages')
   })
 })

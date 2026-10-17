@@ -3,7 +3,8 @@ import { describedConfig } from '../../test/config-description/config-descriptio
 import { readResultOf } from '../../test/config-description/engine-answers.fixture'
 import { CONFIG_DESCRIBE_METHOD, type Output, SETTINGS_READ_METHOD, type TreeNode, WORKSPACE_TREE_METHOD, type WorkspaceTreeResult } from '../engine-protocol'
 import type { LabelMode } from './page-tree.contract'
-import { type DisplayOptions, type PagesEngine, type PagesNode, PagesViewProvider } from './pages-view.client'
+import type { DisplayOptions } from './page-tree.contract'
+import { type PagesEngine, type PagesNode, PagesViewProvider } from './pages-view.client'
 
 const confluence: Output = {
   platform:       'confluence',

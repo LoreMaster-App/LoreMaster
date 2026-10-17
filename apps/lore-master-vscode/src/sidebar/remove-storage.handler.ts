@@ -1,11 +1,12 @@
 import * as vscode from 'vscode'
 import type { EngineClient } from '../engine-process'
 import { removeStorage } from './remove-storage.use-case'
-import type { StorageNode } from './storages-view.client'
+import type { StorageNode } from './configured-outputs.use-case'
 
 /** The command ids contributed in package.json. */
 export const REMOVE_STORAGE_COMMAND = 'loreMaster.removeStorage'
-export const REFRESH_STORAGES_COMMAND = 'loreMaster.refreshStorages'
+/** Re-reads the Sync view, which lists the storages: after one is added, edited or removed. */
+export const REFRESH_STORAGES_COMMAND = 'loreMaster.refreshPages'
 
 /** Removes the storage the context menu was invoked on, after confirming. The node is the
  *  tree element VS Code passes from the view/item/context menu. */

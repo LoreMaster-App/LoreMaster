@@ -1,15 +1,13 @@
 import * as vscode from 'vscode'
+import { generateAndSyncCommand } from '../generate-and-sync'
 import {
-  CHOOSE_VIEW_MODE_COMMAND,
-  chooseViewMode,
   excludedModeFrom,
+  PAGE_LABEL_SETTING,
   PAGES_EXCLUDED_SETTING,
   PAGES_VIEW_SETTING,
-  toggleExcluded,
-  TOGGLE_EXCLUDED_COMMAND,
   viewModeFrom,
 } from '../pages-display'
-import type { SyncCommandDeps } from '../sync-command'
+import { type SyncCommandDeps, sync } from '../sync-command'
 import {
   EXCLUDE_FROM_SYNC_COMMAND,
   excludeFromSyncCommand,
@@ -18,10 +16,11 @@ import {
   type SelectionTarget,
 } from '../sync-selection'
 import { CHECK_REMOTE_COMMAND, checkRemoteCommand } from './check-remote.handler'
+import { DISPLAY_COMMANDS, GENERATE_AND_SYNC_STORAGE_COMMAND, REFRESH_STORAGE_COMMAND, SYNC_STORAGE_COMMAND } from './location-commands.config'
+import { type DisplayMemento, LocationDisplayStore } from './location-display.store'
 import { labelModeFrom } from './page-label.policy'
-import { PAGES_VIEW_ID, type PagesNode, PagesViewProvider } from './pages-view.client'
+import { LOCAL_INDEX, PAGES_VIEW_ID, type PagesNode, PagesViewProvider } from './pages-view.client'
 import { SYNC_PAGE_COMMAND, syncPage } from './sync-page.handler'
-import { PAGE_LABEL_SETTING, TOGGLE_PAGE_LABEL_COMMAND, togglePageLabel } from './toggle-page-label.handler'
 
 /** The command id contributed in package.json. */
 export const REFRESH_PAGES_COMMAND = 'loreMaster.refreshPages'
@@ -29,7 +28,7 @@ export const REFRESH_PAGES_COMMAND = 'loreMaster.refreshPages'
 /** How long to wait for a burst of file changes to settle before re-reading the tree. */
 const REFRESH_DEBOUNCE_MS = 300
 
-/** The file or folder a Pages view row stands for, or undefined for rows that are neither. */
+/** The file or folder a Sync view row stands for, or undefined for rows that are neither. */
 function targetOf (node: PagesNode | undefined, kinds: PagesNode['kind'][]): SelectionTarget | undefined {
   if (!node || !kinds.includes(node.kind)) {
     return undefined
@@ -56,18 +55,28 @@ function targetsOf (clicked: PagesNode | undefined, selected: PagesNode[] | unde
   return rows.flatMap(row => targetOf(row, kinds) ?? [])
 }
 
+/** The location a row of the view belongs to: Local, or the storage's place in the settings. */
+function locationOf (node: PagesNode | undefined): number | undefined {
+  if (!node) {
+    return undefined
+  }
+
+  return node.kind === 'local' ? LOCAL_INDEX : ('index' in node ? node.index : undefined)
+}
+
 /**
- * Registers the Pages view, its commands, and what keeps it current: a watcher on the
- * Markdown files, the settings file, the sync state (lore-master.json) and the .gitignore files
- * (a sync writes the state back, so it refreshes the view too), and the display settings.
+ * Registers the Sync view (Local and every storage, with their pages), its commands, and what keeps it current: a watcher on the
+ * Markdown files, the settings file, the sync state (lore-master.json) and the .gitignore files (a sync writes the state back, so
+ * it refreshes the view too), and the display settings. How each location is shown is kept in `memento`.
  */
-export function registerPagesView (deps: SyncCommandDeps): vscode.Disposable {
+export function registerPagesView (deps: SyncCommandDeps, memento: DisplayMemento): vscode.Disposable {
   const configuration = (): vscode.WorkspaceConfiguration => vscode.workspace.getConfiguration('loreMaster')
-  const provider = new PagesViewProvider(deps.engine, () => ({
+  const display = new LocationDisplayStore(memento, () => ({
     label:    labelModeFrom(configuration().get(PAGE_LABEL_SETTING)),
     view:     viewModeFrom(configuration().get(PAGES_VIEW_SETTING)),
     excluded: excludedModeFrom(configuration().get(PAGES_EXCLUDED_SETTING)),
   }))
+  const provider = new PagesViewProvider(deps.engine, index => display.optionsOf(index))
 
   const selectionDeps = async (): Promise<Parameters<typeof excludeFromSyncCommand>[0] | undefined> => {
     const { folder, outputs } = await provider.configuredOutputs()
@@ -89,13 +98,45 @@ export function registerPagesView (deps: SyncCommandDeps): vscode.Disposable {
     return vscode.Disposable.from(watcher.onDidCreate(refreshSoon), watcher.onDidChange(refreshSoon), watcher.onDidDelete(refreshSoon), watcher)
   })
 
+  const displayCommands = Object.entries(DISPLAY_COMMANDS).map(([command, change]) =>
+    vscode.commands.registerCommand(command, async (node: PagesNode | undefined) => {
+      const index = locationOf(node)
+      if (index !== undefined) {
+        await display.set(index, change)
+        provider.redraw()
+      }
+    }))
+
   return vscode.Disposable.from(
     vscode.window.createTreeView(PAGES_VIEW_ID, { treeDataProvider: provider, canSelectMany: true }),
     vscode.commands.registerCommand(REFRESH_PAGES_COMMAND, () => provider.refresh()),
-    vscode.commands.registerCommand(TOGGLE_PAGE_LABEL_COMMAND, () => togglePageLabel()),
-    vscode.commands.registerCommand(CHOOSE_VIEW_MODE_COMMAND, () => chooseViewMode()),
-    vscode.commands.registerCommand(TOGGLE_EXCLUDED_COMMAND, () => toggleExcluded()),
-    vscode.commands.registerCommand(CHECK_REMOTE_COMMAND, () => checkRemoteCommand(deps, provider)),
+    vscode.commands.registerCommand(REFRESH_STORAGE_COMMAND, (node: PagesNode | undefined) => {
+      const index = locationOf(node)
+      if (index === undefined) {
+        provider.refresh()
+      } else {
+        provider.refreshLocation(index)
+      }
+    }),
+    ...displayCommands,
+    vscode.commands.registerCommand(CHECK_REMOTE_COMMAND, (node: PagesNode | undefined) => checkRemoteCommand(deps, provider, node)),
+    vscode.commands.registerCommand(SYNC_STORAGE_COMMAND, async (node: PagesNode | undefined) => {
+      if (node?.kind !== 'storage') {
+        return
+      }
+
+      const { folder } = await provider.configuredOutputs()
+      await sync(deps, folder === '' ? undefined : folder, [node.index])
+      provider.refresh()
+    }),
+    vscode.commands.registerCommand(GENERATE_AND_SYNC_STORAGE_COMMAND, async (node: PagesNode | undefined) => {
+      if (node?.kind !== 'storage') {
+        return
+      }
+
+      await generateAndSyncCommand(deps, [node.index])
+      provider.refresh()
+    }),
     vscode.commands.registerCommand(SYNC_PAGE_COMMAND, (node: PagesNode | undefined) => syncPage(deps, provider, node)),
     vscode.commands.registerCommand(EXCLUDE_FROM_SYNC_COMMAND, async (node: PagesNode | undefined, selected: PagesNode[] | undefined) => {
       const selection = await selectionDeps()

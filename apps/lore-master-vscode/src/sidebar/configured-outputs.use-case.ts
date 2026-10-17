@@ -13,6 +13,9 @@ export interface ConfiguredOutput {
   icon:   string
 }
 
+/** A storage row of the Sync view, as a menu command is handed it. */
+export type StorageNode = ConfiguredOutput
+
 /** The minimal engine surface reading the outputs needs. */
 export interface OutputsEngine {
   request<R> (method: string, params?: unknown): Promise<R>
