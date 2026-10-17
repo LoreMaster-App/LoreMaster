@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { connectConfluence } from '../connection-setup'
+import { connectPlatform } from '../connection-setup'
 import type { EngineClient } from '../engine-process'
 import type { ConnectionStore } from '../secret-storage'
 import type { TargetStore } from '../sync-target'
@@ -34,6 +34,6 @@ export async function sync (deps: SyncCommandDeps, chosenFolder?: string, only?:
     targets:       deps.targets,
     workspaceRoot: folder,
     ui:            createSyncUI(deps.output),
-    addConnection: () => connectConfluence({ engine: deps.engine, store: deps.connections }),
+    addConnection: () => connectPlatform({ engine: deps.engine, store: deps.connections }),
   }, only ? { only } : {})
 }

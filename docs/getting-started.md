@@ -46,6 +46,8 @@ other by title.
 
 ## 5. See where everything stands: the Sync view
 
+![The Sync view: the view's actions on top, the row of a storage with its own actions](images/sync-view.png)
+
 Open the LoreMaster icon in the activity bar and expand **Sync**. It has a **Local** row and a row for each
 storage, and under each the Markdown files as the tree they are, or will be, on the storage — the same nesting the sync
 applies — each with an icon:
