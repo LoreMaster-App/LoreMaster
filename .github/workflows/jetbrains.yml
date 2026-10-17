@@ -106,4 +106,6 @@ jobs:
       - if: steps.version.outputs.released == 'false' && env.JETBRAINS_MARKETPLACE_TOKEN != ''
         run: ./gradlew publishPlugin --console=plain
         name: Publish to the JetBrains Marketplace
+        # A rejection by the Marketplace (for one, while the first upload is in review) must not hide the GitHub Release.
+        continue-on-error: true
         working-directory: apps/lore-master-jetbrains

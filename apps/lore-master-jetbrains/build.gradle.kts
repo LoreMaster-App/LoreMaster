@@ -28,6 +28,10 @@ intellijPlatform {
     pluginConfiguration {
         name = "LoreMaster"
         ideaVersion { sinceBuild = "251" }
+        changeNotes = "First preview: export a Markdown file to HTML, Word, OpenDocument, PDF, PNG, plain text, Jira and MediaWiki, from the editor, the project view or the Tools menu."
+    }
+    publishing {
+        token = providers.environmentVariable("JETBRAINS_MARKETPLACE_TOKEN")
     }
 }
 
