@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"lore-master/libs/markdown-export/asciidocexport"
 	"lore-master/libs/markdown-export/browserexport"
 	"lore-master/libs/markdown-export/docxexport"
 	"lore-master/libs/markdown-export/exportbuilding"
@@ -13,6 +14,7 @@ import (
 	"lore-master/libs/markdown-export/jiraadfexport"
 	"lore-master/libs/markdown-export/jirawikiexport"
 	"lore-master/libs/markdown-export/mediawikiexport"
+	"lore-master/libs/markdown-export/restexport"
 	"lore-master/libs/markdown-export/odtexport"
 	"lore-master/libs/markdown-export/plaintextexport"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
@@ -81,6 +83,10 @@ func render(id string, document exportmodel.Document, options Options) ([]byte, 
 		return []byte(text), err
 	case "mediawiki":
 		return []byte(mediawikiexport.Render(document)), nil
+	case "asciidoc":
+		return []byte(asciidocexport.Render(document)), nil
+	case "rst":
+		return []byte(restexport.Render(document)), nil
 	default:
 		return nil, fmt.Errorf("unknown export format %q", id)
 	}
