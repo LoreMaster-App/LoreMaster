@@ -26,6 +26,10 @@ var formats = []Format{
 	{ID: "mediawiki", Label: "MediaWiki / Wikipedia", Extension: ".wiki"},
 	{ID: "asciidoc", Label: "AsciiDoc (Asciidoctor, Antora)", Extension: ".adoc"},
 	{ID: "rst", Label: "reStructuredText (Sphinx)", Extension: ".rst"},
+	{ID: "slack", Label: "Slack message (mrkdwn)", Extension: ".slack.txt"},
+	{ID: "org", Label: "Org-mode (Emacs)", Extension: ".org"},
+	{ID: "latex", Label: "LaTeX (a file that compiles)", Extension: ".tex"},
+	{ID: "outline", Label: "JSON outline (headings, links, tasks)", Extension: ".outline.json"},
 }
 
 // Formats returns the formats a document can be exported to.

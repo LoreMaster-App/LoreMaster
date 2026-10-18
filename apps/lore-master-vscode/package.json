@@ -892,7 +892,11 @@
               "jira-adf",
               "mediawiki",
               "asciidoc",
-              "rst"
+              "rst",
+              "slack",
+              "org",
+              "latex",
+              "outline"
             ]
           },
           "default": [

@@ -12,10 +12,14 @@ import (
 	"lore-master/libs/markdown-export/exportmodel"
 	"lore-master/libs/markdown-export/htmlexport"
 	"lore-master/libs/markdown-export/jiraadfexport"
+	"lore-master/libs/markdown-export/latexexport"
 	"lore-master/libs/markdown-export/jirawikiexport"
 	"lore-master/libs/markdown-export/mediawikiexport"
 	"lore-master/libs/markdown-export/restexport"
+	"lore-master/libs/markdown-export/slackexport"
 	"lore-master/libs/markdown-export/odtexport"
+	"lore-master/libs/markdown-export/orgexport"
+	"lore-master/libs/markdown-export/outlineexport"
 	"lore-master/libs/markdown-export/plaintextexport"
 	"lore-master/libs/markdown-workspace/documentdiscovery"
 	"lore-master/libs/markdown-workspace/documentparsing"
@@ -87,6 +91,16 @@ func render(id string, document exportmodel.Document, options Options) ([]byte, 
 		return []byte(asciidocexport.Render(document)), nil
 	case "rst":
 		return []byte(restexport.Render(document)), nil
+	case "slack":
+		return []byte(slackexport.Render(document)), nil
+	case "org":
+		return []byte(orgexport.Render(document)), nil
+	case "latex":
+		return []byte(latexexport.Render(document)), nil
+	case "outline":
+		text, err := outlineexport.Render(document)
+
+		return []byte(text), err
 	default:
 		return nil, fmt.Errorf("unknown export format %q", id)
 	}

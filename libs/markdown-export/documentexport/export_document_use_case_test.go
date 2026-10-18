@@ -100,6 +100,36 @@ func TestReStructuredText(t *testing.T) {
 		"- one", "- [x] done", "#. first", ".. code-block:: go", ".. list-table::", ":header-rows: 1", "   * - Name", "     - Count", "----")
 }
 
+func TestSlack(t *testing.T) {
+	output := export(t, "slack")
+
+	requireAll(t, "slack", output, "*Guide*", "*Steps*", "*bold*", "_soft_", "~gone~", "`code`", "<https://example.com/a|link>", "• one", "• ☑ done", "1. first", "> quoted", "```\nfmt.Println", "Name | Count", "-----")
+}
+
+func TestOrg(t *testing.T) {
+	output := export(t, "org")
+
+	requireAll(t, "org", output, "* Guide", "** Steps", "*bold*", "/soft/", "+gone+", "~code~", "[[https://example.com/a][link]]", "- one", "- [X] done", "1. first",
+		"#+begin_quote", "#+begin_src go", "| Name | Count |", "-----")
+}
+
+func TestLaTeX(t *testing.T) {
+	output := export(t, "latex")
+
+	requireAll(t, "latex", output, "\\documentclass{article}", "\\begin{document}", "\\section{Guide}", "\\subsection{Steps}", "\\textbf{bold}", "\\emph{soft}", "\\sout{gone}", "\\texttt{code}",
+		"\\href{https://example.com/a}{link}", "\\begin{itemize}", "$\\boxtimes$ done", "\\begin{enumerate}", "\\begin{quote}", "\\begin{lstlisting}", "\\begin{tabular}{lr}", "\\end{document}")
+}
+
+func TestJSONOutline(t *testing.T) {
+	output := export(t, "outline")
+
+	requireAll(t, "outline", output, `"title": "Guide"`, `"text": "Steps"`, `"level": 2`, `"url": "https://example.com/a"`, `"url": "other.md#part"`, `"text": "done"`, `"done": true`)
+	var parsed map[string]any
+	if err := json.Unmarshal([]byte(output), &parsed); err != nil {
+		t.Fatalf("outline is not JSON: %v", err)
+	}
+}
+
 func TestUnknownFormatIsRefused(t *testing.T) {
 	if _, err := Export("a.md", []byte("# A\n"), "pdf-from-the-future", Options{}); err == nil {
 		t.Fatal("an unknown format was accepted")
