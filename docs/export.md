@@ -45,7 +45,7 @@ Behind both commands are the engine's `export/formats` and `export/run` calls, w
 | `jira-wiki` | Jira wiki markup (`h1.`, `*bold*`, `{code:go}`, `\|\|table\|\|`). | `.jira.txt` |
 | `jira-adf` | Atlassian Document Format JSON for Jira Cloud and Confluence Cloud, with real task lists and tables. | `.adf.json` |
 | `mediawiki` | Wikipedia / MediaWiki wikitext (`== Heading ==`, `'''bold'''`, `{\| class="wikitable"`, `<syntaxhighlight>`). | `.wiki` |
-| `asciidoc` | AsciiDoc for Asciidoctor and Antora (`== Heading`, `**bold**`, `[source,go]`, `|===` tables). Links to other Markdown files become `xref:name.adoc`. | `.adoc` |
+| `asciidoc` | AsciiDoc for Asciidoctor and Antora (`== Heading`, `**bold**`, `[source,go]`, `\|===` tables). Links to other Markdown files become `xref:name.adoc`. | `.adoc` |
 | `rst` | reStructuredText for Sphinx (underlined headings, `**bold**`, `.. code-block::`, `.. list-table::`). Links to other Markdown files become `:doc:`; strike-through has no equivalent and is dropped. | `.rst` |
 
 Front matter and the sync annotation are never part of an export.
