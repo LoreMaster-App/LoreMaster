@@ -47,6 +47,10 @@ Behind both commands are the engine's `export/formats` and `export/run` calls, w
 | `mediawiki` | Wikipedia / MediaWiki wikitext (`== Heading ==`, `'''bold'''`, `{\| class="wikitable"`, `<syntaxhighlight>`). | `.wiki` |
 | `asciidoc` | AsciiDoc for Asciidoctor and Antora (`== Heading`, `**bold**`, `[source,go]`, `\|===` tables). Links to other Markdown files become `xref:name.adoc`. | `.adoc` |
 | `rst` | reStructuredText for Sphinx (underlined headings, `**bold**`, `.. code-block::`, `.. list-table::`). Links to other Markdown files become `:doc:`; strike-through has no equivalent and is dropped. | `.rst` |
+| `slack` | A Slack message (mrkdwn): `*bold*`, `_italic_`, `~strike~`, `<url\|label>`. Slack has no headings, tables or rules, so a heading is a bold line, a table a code block and a rule a line of dashes. | `.slack.txt` |
+| `org` | Org-mode for Emacs (`* Heading`, `*bold*`, `/italic/`, `#+begin_src`, `\| tables \|`). | `.org` |
+| `latex` | A LaTeX file that compiles on its own (`article` with hyperref, listings, graphicx), with `\section`, `itemize`, `tabular`. | `.tex` |
+| `outline` | A JSON outline of the document: `title`, `headings` (level, text, anchor), `links` and `tasks` (text, done), for tooling. | `.outline.json` |
 
 Front matter and the sync annotation are never part of an export.
 
