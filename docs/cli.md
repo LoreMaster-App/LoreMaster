@@ -82,7 +82,7 @@ document on stdout; progress lines always go to stderr.
 
 ## Export
 
-`export` converts Markdown files to PDF, PNG, Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF, MediaWiki, AsciiDoc, reStructuredText, Slack, Org-mode, LaTeX or a JSON outline. It reads no settings
+`export` converts Markdown files to PDF, PNG, Word, OpenDocument, HTML, plain text, Jira wiki, Jira Cloud ADF, MediaWiki, AsciiDoc, reStructuredText, Slack, Org-mode, LaTeX, a JSON outline, a man page, RTF or MDX. It reads no settings
 and needs no credentials. See [Exporting Markdown](export.md).
 
 ## The CI session

@@ -14,8 +14,11 @@ import (
 	"lore-master/libs/markdown-export/jiraadfexport"
 	"lore-master/libs/markdown-export/latexexport"
 	"lore-master/libs/markdown-export/jirawikiexport"
+	"lore-master/libs/markdown-export/manexport"
+	"lore-master/libs/markdown-export/mdxexport"
 	"lore-master/libs/markdown-export/mediawikiexport"
 	"lore-master/libs/markdown-export/restexport"
+	"lore-master/libs/markdown-export/rtfexport"
 	"lore-master/libs/markdown-export/slackexport"
 	"lore-master/libs/markdown-export/odtexport"
 	"lore-master/libs/markdown-export/orgexport"
@@ -91,6 +94,12 @@ func render(id string, document exportmodel.Document, options Options) ([]byte, 
 		return []byte(asciidocexport.Render(document)), nil
 	case "rst":
 		return []byte(restexport.Render(document)), nil
+	case "man":
+		return []byte(manexport.Render(document)), nil
+	case "rtf":
+		return []byte(rtfexport.Render(document)), nil
+	case "mdx":
+		return []byte(mdxexport.Render(document)), nil
 	case "slack":
 		return []byte(slackexport.Render(document)), nil
 	case "org":

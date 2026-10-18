@@ -130,6 +130,27 @@ func TestJSONOutline(t *testing.T) {
 	}
 }
 
+func TestManPage(t *testing.T) {
+	output := export(t, "man")
+
+	requireAll(t, "man", output, `.TH "GUIDE" "7"`, `.SH "STEPS"`, ".PP", `\fBbold\fR`, `\fIsoft\fR`, `link (\fIhttps://example.com/a\fR)`, `.IP \(bu 2`, ".IP 1. 4", ".nf", ".TS", "allbox;", ".TE")
+}
+
+func TestRichTextFormat(t *testing.T) {
+	output := export(t, "rtf")
+
+	requireAll(t, "rtf", output, `{\rtf1\ansi`, `\b\fs40 Guide`, `{\b bold}`, `{\i soft}`, `{\strike gone}`, `{\f1 code}`, `HYPERLINK "https://example.com/a"`, `\bullet\tab one`, `1.\tab first`, `\trowd`, `\cell`, `\row`)
+	if strings.Count(output, "{") != strings.Count(output, "}")+strings.Count(output, `\{`)-strings.Count(output, `\}`) {
+		t.Errorf("rtf braces do not balance:\n%s", output)
+	}
+}
+
+func TestMDX(t *testing.T) {
+	output := export(t, "mdx")
+
+	requireAll(t, "mdx", output, "---\ntitle: \"Guide\"\n---", "# Guide", "## Steps", "**bold**", "*soft*", "~~gone~~", "`code`", "[link](https://example.com/a)", "- one", "- [x] done", "1. first", "> quoted", "```go", "| Name | Count |", "| :-- | --: |")
+}
+
 func TestUnknownFormatIsRefused(t *testing.T) {
 	if _, err := Export("a.md", []byte("# A\n"), "pdf-from-the-future", Options{}); err == nil {
 		t.Fatal("an unknown format was accepted")

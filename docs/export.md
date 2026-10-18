@@ -51,6 +51,9 @@ Behind both commands are the engine's `export/formats` and `export/run` calls, w
 | `org` | Org-mode for Emacs (`* Heading`, `*bold*`, `/italic/`, `#+begin_src`, `\| tables \|`). | `.org` |
 | `latex` | A LaTeX file that compiles on its own (`article` with hyperref, listings, graphicx), with `\section`, `itemize`, `tabular`. | `.tex` |
 | `outline` | A JSON outline of the document: `title`, `headings` (level, text, anchor), `links` and `tasks` (text, done), for tooling. | `.outline.json` |
+| `man` | A roff man page, section 7 (`.TH`, `.SH`, `.IP`, `tbl` tables). The first level-1 heading is the page title. | `.7` |
+| `rtf` | Rich Text Format for Word, WordPad and other word processors (headings, lists, tables, hyperlinks). | `.rtf` |
+| `mdx` | MDX for Docusaurus: Markdown with a `title` front matter block, `{ }` and `<` escaped, raw HTML left out. | `.mdx` |
 
 Front matter and the sync annotation are never part of an export.
 
