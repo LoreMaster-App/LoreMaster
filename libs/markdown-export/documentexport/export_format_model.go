@@ -24,6 +24,8 @@ var formats = []Format{
 	{ID: "jira-wiki", Label: "Jira wiki markup", Extension: ".jira.txt"},
 	{ID: "jira-adf", Label: "Jira Cloud document (ADF JSON)", Extension: ".adf.json"},
 	{ID: "mediawiki", Label: "MediaWiki / Wikipedia", Extension: ".wiki"},
+	{ID: "asciidoc", Label: "AsciiDoc (Asciidoctor, Antora)", Extension: ".adoc"},
+	{ID: "rst", Label: "reStructuredText (Sphinx)", Extension: ".rst"},
 }
 
 // Formats returns the formats a document can be exported to.

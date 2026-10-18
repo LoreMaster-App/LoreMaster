@@ -890,7 +890,9 @@
               "txt",
               "jira-wiki",
               "jira-adf",
-              "mediawiki"
+              "mediawiki",
+              "asciidoc",
+              "rst"
             ]
           },
           "default": [

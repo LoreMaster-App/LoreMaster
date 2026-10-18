@@ -86,6 +86,20 @@ func TestMediaWiki(t *testing.T) {
 		"* one", "** nested", "# first", "<blockquote>", `<syntaxhighlight lang="go">`, `{| class="wikitable"`, "! style=\"text-align:left\" | Name", "|}", "----")
 }
 
+func TestAsciiDoc(t *testing.T) {
+	output := export(t, "asciidoc")
+
+	requireAll(t, "asciidoc", output, "= Guide", "== Steps", "**bold**", "__soft__", "[.line-through]#gone#", "`+code+`", "https://example.com/a[link]", "xref:other.adoc#part[sibling]",
+		"* one", "* [x] done", "** nested", ". first", "[quote]\n____", "[source,go]\n----", `[cols="<,>",options="header"]`, "|===", "'''")
+}
+
+func TestReStructuredText(t *testing.T) {
+	output := export(t, "rst")
+
+	requireAll(t, "rst", output, "Guide\n=====", "Steps\n-----", "**bold**", "*soft*", "``code``", "`link <https://example.com/a>`__", ":doc:`sibling <other>`",
+		"- one", "- [x] done", "#. first", ".. code-block:: go", ".. list-table::", ":header-rows: 1", "   * - Name", "     - Count", "----")
+}
+
 func TestUnknownFormatIsRefused(t *testing.T) {
 	if _, err := Export("a.md", []byte("# A\n"), "pdf-from-the-future", Options{}); err == nil {
 		t.Fatal("an unknown format was accepted")
