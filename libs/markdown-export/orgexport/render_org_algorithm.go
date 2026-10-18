@@ -134,7 +134,7 @@ func inlines(list []exportmodel.Inline) string {
 // read as one, by leading it with a zero-width space.
 func startOfLine(text string) string {
 	if text != "" && strings.ContainsRune("*-+#|:", rune(text[0])) {
-		return "​" + text
+		return "\u200b" + text
 	}
 
 	return text
