@@ -896,7 +896,10 @@
               "slack",
               "org",
               "latex",
-              "outline"
+              "outline",
+              "man",
+              "rtf",
+              "mdx"
             ]
           },
           "default": [
