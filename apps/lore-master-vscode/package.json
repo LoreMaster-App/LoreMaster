@@ -21,6 +21,12 @@
   "main": "./dist/main.js",
   "activationEvents": [],
   "contributes": {
+    "snippets": [
+      {
+        "language": "markdown",
+        "path": "./dist/assets/snippets/markdown.json"
+      }
+    ],
     "mcpServerDefinitionProviders": [
       {
         "id": "loreMaster.engine",
