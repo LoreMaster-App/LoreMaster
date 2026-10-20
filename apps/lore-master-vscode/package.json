@@ -883,6 +883,11 @@
           "default": false,
           "markdownDescription": "Line up the pipes of every table in a Markdown file when it is saved."
         },
+        "loreMaster.preview.actionBar": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Show LoreMaster's action bar at the top of the Markdown preview: the sync status, an Export button and switches for LoreMaster's additions to the preview."
+        },
         "loreMaster.export.formats": {
           "type": "array",
           "items": {
@@ -1343,14 +1348,13 @@
     "markdown.previewScripts": [
       "./dist/assets/preview/diagram-preview.js",
       "./dist/assets/preview/diagram-viewer.js",
-      "./dist/assets/preview/reading-aids.js"
+      "./dist/assets/preview/action-bar.js"
     ],
     "markdown.previewStyles": [
       "./dist/assets/preview/diagram-preview.css",
       "./dist/assets/preview/callout-preview.css",
       "./dist/assets/preview/diagram-viewer.css",
-      "./dist/assets/preview/reading-aids.css",
-      "./dist/assets/preview/page-header-preview.css"
+      "./dist/assets/preview/action-bar-preview.css"
     ]
   },
   "nx": {

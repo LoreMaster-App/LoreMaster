@@ -36,6 +36,12 @@ export const StatusBarAlignment = { Left: 1, Right: 2 } as const
 // Each window prompt is a replaceable function so a test can script what the user does
 // (reassign it), then restore it. They return "cancelled" by default.
 export const window = {
+  tabGroups: {
+    onDidChangeTabs (_listener: (event: unknown) => unknown): { dispose: () => void } {
+      return { dispose () {} }
+    },
+    close: (_tab: unknown) => Promise.resolve(true),
+  },
   showInformationMessage (_message: string): Promise<undefined> {
     return Promise.resolve(undefined)
   },
@@ -277,6 +283,9 @@ export const workspace = {
   onDidChangeConfiguration (_listener: (event: { affectsConfiguration: (section: string) => boolean }) => unknown): { dispose: () => void } {
     return { dispose () {} }
   },
+  registerTextDocumentContentProvider (_scheme: string, _provider: unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
   createFileSystemWatcher (pattern: unknown): FakeFileSystemWatcher {
     const watcher = new FakeFileSystemWatcher(pattern)
     fileSystemWatchers.push(watcher)
@@ -345,4 +354,8 @@ export const lm = {
 /** Test helper: the provider registered under an id, or undefined. */
 export function mcpProvider (id: string): McpServerDefinitionProvider | undefined {
   return mcpProviders.get(id)
+}
+
+export class TabInputText {
+  constructor (readonly uri: unknown) {}
 }
