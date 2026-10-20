@@ -1,0 +1,26 @@
+/* GitHub alerts (> [!NOTE] ...) drawn as panels in VS Code's built-in Markdown preview, like Confluence's info/note/warning macros. */
+blockquote.loremaster-callout {
+  --loremaster-callout: #0969da;
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border: none;
+  border-left: 4px solid var(--loremaster-callout);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--loremaster-callout) 12%, transparent);
+}
+
+blockquote.loremaster-callout::before {
+  content: attr(data-callout);
+  display: block;
+  margin-bottom: 0.25em;
+  font-weight: 600;
+  color: var(--loremaster-callout);
+}
+
+blockquote.loremaster-callout > p:first-child:empty { display: none; }
+blockquote.loremaster-callout > :last-child { margin-bottom: 0; }
+
+blockquote.loremaster-callout-tip       { --loremaster-callout: #1a7f37; }
+blockquote.loremaster-callout-important { --loremaster-callout: #8250df; }
+blockquote.loremaster-callout-warning   { --loremaster-callout: #bf8700; }
+blockquote.loremaster-callout-caution   { --loremaster-callout: #cf222e; }

@@ -12,6 +12,7 @@ import { registerGeneratorsView } from './generators-view'
 import { registerMarkdownFormatting } from './markdown-formatting'
 import { registerMarkdownLists } from './markdown-lists'
 import { registerMarkdownDiagrams, type MarkdownItExtension } from './markdown-diagrams'
+import { addCalloutPanels, type CalloutMarkdownIt } from './preview-callouts'
 import { registerMarkdownTables } from './markdown-tables'
 import { registerMarkdownToc } from './markdown-toc'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
@@ -113,7 +114,10 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )
 
-  return markdownDiagrams
+  // One extension for the built-in preview: the diagram fences, then the callout panels.
+  return {
+    extendMarkdownIt: md => addCalloutPanels(markdownDiagrams.extendMarkdownIt(md) as typeof md & CalloutMarkdownIt),
+  }
 }
 
 export function deactivate (): void {}
