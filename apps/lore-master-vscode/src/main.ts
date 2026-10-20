@@ -119,7 +119,12 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
 
   // One extension for the built-in preview: the diagram fences, the page header, then the callout panels.
   return {
-    extendMarkdownIt: md => addCalloutPanels(pageHeader.extendMarkdownIt(markdownDiagrams.extendMarkdownIt(md) as typeof md & HeaderMarkdownIt) as typeof md & CalloutMarkdownIt),
+    extendMarkdownIt: md => {
+      const drawn = markdownDiagrams.extendMarkdownIt(md)
+      const headed = pageHeader.extendMarkdownIt(drawn as typeof drawn & HeaderMarkdownIt)
+
+      return addCalloutPanels(headed as typeof headed & CalloutMarkdownIt)
+    },
   }
 }
 
