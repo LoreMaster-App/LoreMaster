@@ -6,6 +6,8 @@
   'use strict'
 
   const here = document.currentScript ? document.currentScript.src : ''
+  // The preview's strict content policy only runs scripts that carry its nonce, so the library script must carry it too.
+  const nonce = document.currentScript ? document.currentScript.nonce || document.currentScript.getAttribute('nonce') || '' : ''
   let library
 
   const drawn = new Map()
@@ -66,6 +68,7 @@
     if (!library) {
       library = new Promise((resolve, reject) => {
         const script = document.createElement('script')
+        if (nonce) { script.setAttribute('nonce', nonce) }
         script.src = here.replace(/preview\/diagram-preview\.js(\?.*)?$/, 'webview/mermaid.min.js')
         script.onload = resolve
         script.onerror = () => { library = undefined; reject(new Error('the Mermaid library could not be loaded')) }
