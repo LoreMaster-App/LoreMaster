@@ -1336,12 +1336,14 @@
     "markdown.markdownItPlugins": true,
     "markdown.previewScripts": [
       "./dist/assets/preview/diagram-preview.js",
-      "./dist/assets/preview/diagram-viewer.js"
+      "./dist/assets/preview/diagram-viewer.js",
+      "./dist/assets/preview/reading-aids.js"
     ],
     "markdown.previewStyles": [
       "./dist/assets/preview/diagram-preview.css",
       "./dist/assets/preview/callout-preview.css",
-      "./dist/assets/preview/diagram-viewer.css"
+      "./dist/assets/preview/diagram-viewer.css",
+      "./dist/assets/preview/reading-aids.css"
     ]
   },
   "nx": {
