@@ -1343,7 +1343,8 @@
       "./dist/assets/preview/diagram-preview.css",
       "./dist/assets/preview/callout-preview.css",
       "./dist/assets/preview/diagram-viewer.css",
-      "./dist/assets/preview/reading-aids.css"
+      "./dist/assets/preview/reading-aids.css",
+      "./dist/assets/preview/page-header-preview.css"
     ]
   },
   "nx": {
