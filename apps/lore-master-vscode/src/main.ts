@@ -4,7 +4,7 @@ import { SET_UP_CI_COMMAND, setUpCiCommand } from './ci-setup'
 import { ADD_CONNECTION_COMMAND, createConnectionUI, registerConfluenceAuth, setUpConnection } from './connection-setup'
 import { answerRenderDiagrams, createMermaidRenderer } from './diagram-rendering'
 import { createEngineClient, resolveEngineBinary } from './engine-process'
-import { registerExportMarkdown } from './export-markdown'
+import { exportMarkdownCommand, registerExportMarkdown } from './export-markdown'
 import { registerFileMoves } from './file-moves'
 import { GENERATE_AND_SYNC_COMMAND, generateAndSyncCommand, syncCommand } from './generate-and-sync'
 import { registerGeneratorForm } from './generator-form'
@@ -13,7 +13,7 @@ import { registerMarkdownFormatting } from './markdown-formatting'
 import { registerMarkdownLists } from './markdown-lists'
 import { registerMarkdownDiagrams, type MarkdownItExtension } from './markdown-diagrams'
 import { addCalloutPanels, type CalloutMarkdownIt } from './preview-callouts'
-import { registerPageHeader, type HeaderMarkdownIt } from './preview-page-header'
+import { registerActionBar, type BarMarkdownIt } from './preview-action-bar'
 import { registerMarkdownTables } from './markdown-tables'
 import { registerMarkdownToc } from './markdown-toc'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
@@ -84,7 +84,7 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
   )
 
   const markdownDiagrams = registerMarkdownDiagrams({ engine })
-  const pageHeader = registerPageHeader({ engine })
+  const actionBar = registerActionBar({ engine, exportDocument: document => exportMarkdownCommand({ engine, output, extensionPath: context.extensionPath }, document) })
   const syncDeps = { engine, connections, targets, output }
   const watchMode = new WatchMode(syncDeps)
 
@@ -99,7 +99,7 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     registerMarkdownTables(),
     registerMarkdownToc(),
     markdownDiagrams,
-    pageHeader,
+    actionBar,
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),
     vscode.commands.registerCommand(TOGGLE_WATCH_COMMAND, () => watchMode.toggle()),
@@ -117,11 +117,11 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )
 
-  // One extension for the built-in preview: the diagram fences, the page header, then the callout panels.
+  // One extension for the built-in preview: the diagram fences, the action bar, then the callout panels.
   return {
     extendMarkdownIt: md => {
       const drawn = markdownDiagrams.extendMarkdownIt(md)
-      const headed = pageHeader.extendMarkdownIt(drawn as typeof drawn & HeaderMarkdownIt)
+      const headed = actionBar.extendMarkdownIt(drawn as typeof drawn & BarMarkdownIt)
 
       return addCalloutPanels(headed as typeof headed & CalloutMarkdownIt)
     },

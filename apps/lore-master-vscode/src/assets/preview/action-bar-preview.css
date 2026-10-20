@@ -1,0 +1,77 @@
+/* LoreMaster's action bar at the top of VS Code's built-in Markdown preview, and what its switches undo. */
+.loremaster-action-bar {
+  position: sticky;
+  top: 0;
+  z-index: 400;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin: 0 0 1em;
+  padding: 6px 10px;
+  font-family: var(--vscode-font-family, sans-serif);
+  font-size: 12px;
+  color: var(--vscode-foreground, inherit);
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background, #252526));
+  border: 1px solid var(--vscode-editorWidget-border, #454545);
+  border-radius: 4px;
+}
+
+.loremaster-bar-status { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; }
+.loremaster-bar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.loremaster-bar-toggles { display: flex; gap: 4px; }
+.loremaster-bar-storage { opacity: 0.7; }
+.loremaster-bar-storage::after { content: ' \2192'; }
+.loremaster-bar-title { font-weight: 600; }
+.loremaster-bar-note { opacity: 0.8; }
+
+.loremaster-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 8px;
+  border-radius: 10px;
+  color: #ffffff;
+  background: #6e7781;
+}
+
+.loremaster-chip-synced        { background: #1a7f37; }
+.loremaster-chip-local-changes { background: #bf8700; }
+.loremaster-chip-new           { background: #0969da; }
+
+a.loremaster-bar-button,
+.loremaster-bar-toggle {
+  padding: 2px 10px;
+  font: inherit;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--vscode-button-secondaryForeground, #ffffff);
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 3px;
+}
+
+a.loremaster-bar-button {
+  color: var(--vscode-button-foreground, #ffffff);
+  background: var(--vscode-button-background, #0e639c);
+}
+
+a.loremaster-bar-button:hover { background: var(--vscode-button-hoverBackground, #1177bb); }
+.loremaster-bar-toggle:hover { background: var(--vscode-button-secondaryHoverBackground, #45494e); }
+
+/* A switch that is on looks pressed; off, it is faded. */
+.loremaster-bar-toggle[aria-pressed="false"] { opacity: 0.5; text-decoration: line-through; }
+
+/* What the switches undo. */
+.loremaster-off-status .loremaster-bar-status { display: none; }
+.loremaster-off-diagrams .loremaster-viewer-tools { display: none; }
+
+.loremaster-off-callouts blockquote.loremaster-callout {
+  padding: 0 16px;
+  border-left: 5px solid var(--vscode-textBlockQuote-border, rgba(127, 127, 127, 0.4));
+  border-radius: 2px;
+  background: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+}
+
+.loremaster-off-callouts blockquote.loremaster-callout::before { content: none; }
