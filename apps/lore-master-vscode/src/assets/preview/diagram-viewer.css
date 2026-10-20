@@ -1,0 +1,63 @@
+/* Hover buttons and the enlarged view for the diagrams LoreMaster draws in VS Code's built-in Markdown preview. */
+.loremaster-diagram { position: relative; }
+
+.loremaster-viewer-tools {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.loremaster-diagram:hover > .loremaster-viewer-tools,
+.loremaster-viewer-tools:focus-within { opacity: 1; }
+
+.loremaster-viewer-button {
+  padding: 2px 8px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--vscode-button-secondaryForeground, #ffffff);
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 3px;
+}
+
+.loremaster-viewer-button:hover { background: var(--vscode-button-secondaryHoverBackground, #45494e); }
+
+.loremaster-viewer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: grab;
+  background: color-mix(in srgb, var(--vscode-editor-background, #1e1e1e) 94%, transparent);
+}
+
+.loremaster-viewer-overlay:active { cursor: grabbing; }
+
+.loremaster-viewer-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 92vw;
+  height: 88vh;
+  transform-origin: center;
+}
+
+.loremaster-viewer-bar {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  display: flex;
+  gap: 4px;
+  cursor: default;
+}
+
+/* D2 draws for a light page, so its enlarged view keeps the light card. */
+.loremaster-viewer-light { background: #ffffff; border-radius: 4px; }

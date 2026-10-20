@@ -1335,11 +1335,13 @@
     },
     "markdown.markdownItPlugins": true,
     "markdown.previewScripts": [
-      "./dist/assets/preview/diagram-preview.js"
+      "./dist/assets/preview/diagram-preview.js",
+      "./dist/assets/preview/diagram-viewer.js"
     ],
     "markdown.previewStyles": [
       "./dist/assets/preview/diagram-preview.css",
-      "./dist/assets/preview/callout-preview.css"
+      "./dist/assets/preview/callout-preview.css",
+      "./dist/assets/preview/diagram-viewer.css"
     ]
   },
   "nx": {
