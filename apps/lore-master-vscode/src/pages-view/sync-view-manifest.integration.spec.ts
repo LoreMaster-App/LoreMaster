@@ -41,6 +41,8 @@ function inlineFor (context: string): string[] {
   return inline.filter(entry => shownFor(entry.when, context)).map(entry => entry.command)
 }
 
+const nextView = (view: 'storage' | 'flat' | 'repo'): string[] => inlineFor(rowContext('loreMasterStorage', { label: 'title', view, excluded: 'faded' })).filter(command => /^loreMaster\.view/.test(command))
+
 describe('the Sync view in the manifest', () => {
   it('is the one tree of locations beside the Generators view, with no Pages or Storages view', () => {
     const ids = manifest.contributes.views.loreMaster.map(view => view.id)
@@ -80,7 +82,13 @@ describe('the Sync view in the manifest', () => {
     const flatTitles = rowContext('loreMasterStorage', { label: 'fileName', view: 'flat', excluded: 'hidden' })
     const shown = inlineFor(flatTitles)
 
-    expect(shown).toEqual(expect.arrayContaining(['loreMaster.showPageTitles', 'loreMaster.viewTree', 'loreMaster.showIgnored']))
+    expect(shown).toEqual(expect.arrayContaining(['loreMaster.showPageTitles', 'loreMaster.viewRepository', 'loreMaster.showIgnored']))
     expect(shown).not.toEqual(expect.arrayContaining(['loreMaster.showFileNames']))
+  })
+
+  it('steps the view button through the three arrangements, so each is reached by clicking', () => {
+    expect(nextView('storage')).toEqual(['loreMaster.viewFlat'])
+    expect(nextView('flat')).toEqual(['loreMaster.viewRepository'])
+    expect(nextView('repo')).toEqual(['loreMaster.viewTree'])
   })
 })

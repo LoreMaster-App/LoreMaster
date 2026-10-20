@@ -577,7 +577,12 @@
         },
         {
           "command": "loreMaster.viewTree",
-          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /view-(flat|repo)/",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /view-repo/",
+          "group": "inline@3"
+        },
+        {
+          "command": "loreMaster.viewRepository",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /view-flat/",
           "group": "inline@3"
         },
         {
@@ -616,9 +621,19 @@
           "group": "inline@9"
         },
         {
+          "command": "loreMaster.viewTree",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && !(viewItem =~ /view-storage/)",
+          "group": "1_view@0"
+        },
+        {
+          "command": "loreMaster.viewFlat",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && !(viewItem =~ /view-flat/)",
+          "group": "1_view@1"
+        },
+        {
           "command": "loreMaster.viewRepository",
           "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && !(viewItem =~ /view-repo/)",
-          "group": "1_view@1"
+          "group": "1_view@2"
         },
         {
           "command": "loreMaster.syncPage",
