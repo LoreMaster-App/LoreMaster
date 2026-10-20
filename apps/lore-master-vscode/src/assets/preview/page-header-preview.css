@@ -1,0 +1,27 @@
+/* The strip at the top of VS Code's built-in Markdown preview: the page title on each storage and where the page stands. */
+.loremaster-page-header {
+  margin: 0 0 1em;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid var(--vscode-editorWidget-border, #454545);
+  border-radius: 4px;
+  background: var(--vscode-editorWidget-background, transparent);
+}
+
+.loremaster-page-header-row { margin: 2px 0; }
+.loremaster-page-header-storage { opacity: 0.7; }
+.loremaster-page-header-storage::after { content: ' \2192'; }
+.loremaster-page-header-title { font-weight: 600; }
+
+.loremaster-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 8px;
+  border-radius: 10px;
+  color: #ffffff;
+  background: #6e7781;
+}
+
+.loremaster-chip-synced        { background: #1a7f37; }
+.loremaster-chip-local-changes { background: #bf8700; }
+.loremaster-chip-new           { background: #0969da; }
