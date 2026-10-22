@@ -75,7 +75,7 @@ describe('the Sync view in the manifest', () => {
       'loreMaster.checkRemote', 'loreMaster.showFileNames', 'loreMaster.viewFlat', 'loreMaster.hideIgnored',
       'loreMaster.refreshStorage', 'loreMaster.syncStorage', 'loreMaster.generateAndSyncStorage', 'loreMaster.editStorage', 'loreMaster.removeStorage',
     ])
-    expect(inlineFor(local)).toEqual(['loreMaster.showFileNames', 'loreMaster.viewFlat', 'loreMaster.refreshStorage'])
+    expect(inlineFor(local)).toEqual(['loreMaster.showFileNames', 'loreMaster.viewFlat', 'loreMaster.hideIgnored', 'loreMaster.refreshStorage'])
   })
 
   it('offers the other choice for what a row shows now', () => {

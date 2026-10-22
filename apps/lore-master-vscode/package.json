@@ -587,12 +587,12 @@
         },
         {
           "command": "loreMaster.hideIgnored",
-          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/ && viewItem =~ /ignored-faded/",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /ignored-faded/",
           "group": "inline@4"
         },
         {
           "command": "loreMaster.showIgnored",
-          "when": "view == loreMaster.sync && viewItem =~ /^loreMasterStorage/ && viewItem =~ /ignored-hidden/",
+          "when": "view == loreMaster.sync && viewItem =~ /^loreMaster(Storage|Local)/ && viewItem =~ /ignored-hidden/",
           "group": "inline@4"
         },
         {
