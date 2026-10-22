@@ -1,5 +1,5 @@
 import type { TreeStatus } from '../engine-protocol'
-import { exportLink } from './action-link.mapper'
+import { previewActionLink } from '../preview-actions'
 import type { PageHeader, PageStatus } from './action-bar.contract'
 
 const STATUS_WORDS: Record<TreeStatus, string> = {
@@ -53,7 +53,7 @@ export function actionBarMarkup (document: string, status: PageStatus): string {
 
   return '<div class="loremaster-action-bar">' +
     `<div class="loremaster-bar-status">${statusMarkup(status)}</div>` +
-    `<div class="loremaster-bar-actions"><a class="loremaster-bar-button" href="${escapeHtml(exportLink(document))}" title="Export this file to other formats">Export...</a>` +
+    `<div class="loremaster-bar-actions"><a class="loremaster-bar-button" href="${escapeHtml(previewActionLink('export', { document }))}" title="Export this file to other formats">Export...</a>` +
     `<span class="loremaster-bar-toggles">${toggles}</span></div>` +
     '</div>\n'
 }

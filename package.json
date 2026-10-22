@@ -74,6 +74,7 @@
       "undici": "^7.29.1"
     },
     "handlebars": "^4.7.10",
+    "dompurify": "^3.4.17",
     "katex": "^0.18.2",
     "@nx/js": {
       "brace-expansion": "^5.0.9"
