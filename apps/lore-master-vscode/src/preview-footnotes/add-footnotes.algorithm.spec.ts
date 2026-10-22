@@ -45,6 +45,14 @@ describe('addFootnotes', () => {
     expect(tokens[3].content).toContain('<i>Note B</i>')
   })
 
+  it('reads definitions on consecutive lines as separate notes, and a following line as a continuation', () => {
+    const tokens = run([...paragraph('One[^a] and two[^b].'), ...paragraph('[^a]: Note A\n[^b]: Note B\nand more')])
+
+    expect(tokens.map(token => token.type)).toEqual(['paragraph_open', 'inline', 'paragraph_close', 'html_block'])
+    expect(tokens[3].content).toContain('<i>Note A</i>')
+    expect(tokens[3].content).toContain('<i>Note B and more</i>')
+  })
+
   it('leaves a page without definitions as it was', () => {
     const tokens = run(paragraph('A reference[^1] to nothing.'))
 

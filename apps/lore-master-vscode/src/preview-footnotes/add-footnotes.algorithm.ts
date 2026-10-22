@@ -5,15 +5,34 @@ const REFERENCE = /\[\^([^\]\s]+)\]/g
 
 const slug = (id: string): string => id.replaceAll(/[^\w-]/g, '-')
 
+/** The definitions a paragraph holds, one per line that opens with `[^id]:`; a line that does not continues the note before it. */
+function definitionsOf (paragraph: string): Map<string, string> | undefined {
+  const lines = paragraph.split('\n')
+  if (!DEFINITION.test(lines[0])) { return undefined }
+  const found = new Map<string, string>()
+  let current = ''
+  for (const line of lines) {
+    const match = DEFINITION.exec(line)
+    if (match === null) {
+      found.set(current, `${found.get(current) ?? ''} ${line.trim()}`.trim())
+      continue
+    }
+    current = match[1]
+    found.set(current, line.slice(match[0].length).trim())
+  }
+
+  return found
+}
+
 /** Takes the paragraphs that are footnote definitions out of the token list and returns them by id. */
 function takeDefinitions (tokens: FootnoteToken[]): Map<string, string> {
   const definitions = new Map<string, string>()
   for (let index = 0; index + 2 < tokens.length; index++) {
     const [open, inline, close] = [tokens[index], tokens[index + 1], tokens[index + 2]]
     if (open.type !== 'paragraph_open' || inline.type !== 'inline' || close.type !== 'paragraph_close') { continue }
-    const match = DEFINITION.exec(inline.content)
-    if (match === null) { continue }
-    definitions.set(match[1], inline.content.slice(match[0].length).replaceAll('\n', ' ').trim())
+    const found = definitionsOf(inline.content)
+    if (found === undefined) { continue }
+    for (const [id, text] of found) { definitions.set(id, text) }
     tokens.splice(index, 3)
     index--
   }
@@ -57,8 +76,10 @@ export function addFootnotes<Md extends FootnoteMarkdownIt> (md: Md): Md {
       token.children = token.children.flatMap(child => child.type === 'text' ? referencesIn(child, state, definitions, numbers) : [child])
     }
     if (numbers.size === 0) { return }
+    // The notes are rendered apart from the document, so the rules that belong to the page (the action bar) do not run on them.
+    const noteEnv = { ...(state.env as object), currentDocument: undefined }
     const items = [...numbers].map(([id]) =>
-      `<li id="fn-${slug(id)}">${md.renderInline(definitions.get(id) ?? '', state.env)} <a class="loremaster-footnote-back" href="#fnref-${slug(id)}" title="Back to the text">↩</a></li>`)
+      `<li id="fn-${slug(id)}">${md.renderInline(definitions.get(id) ?? '', noteEnv)} <a class="loremaster-footnote-back" href="#fnref-${slug(id)}" title="Back to the text">↩</a></li>`)
     const list = new state.Token('html_block', '', 0)
     list.block = true
     list.content = `<hr class="loremaster-footnotes-rule"><ol class="loremaster-footnotes">${items.join('')}</ol>\n`
