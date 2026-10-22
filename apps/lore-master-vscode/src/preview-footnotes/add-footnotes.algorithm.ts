@@ -61,6 +61,14 @@ function referencesIn (text: FootnoteToken, state: FootnoteState, definitions: M
   return last === 0 ? [text] : [...parts, rest]
 }
 
+/** A note's Markdown as HTML. It goes through the inline parser only: `md.renderInline` would run the page's core rules on it too. */
+function inlineHtml (md: FootnoteMarkdownIt, source: string, env: unknown): string {
+  const tokens: FootnoteToken[] = []
+  md.inline.parse(source, md, env, tokens)
+
+  return md.renderer.renderInline(tokens, md.options, env)
+}
+
 /**
  * Teaches the Markdown preview footnotes, which VS Code does not draw: `text[^1]` becomes a numbered link and a line `[^1]: The note`
  * becomes an entry of a list at the end of the page, with a way back. A definition is one paragraph; a reference to a note that is not
@@ -76,10 +84,8 @@ export function addFootnotes<Md extends FootnoteMarkdownIt> (md: Md): Md {
       token.children = token.children.flatMap(child => child.type === 'text' ? referencesIn(child, state, definitions, numbers) : [child])
     }
     if (numbers.size === 0) { return }
-    // The notes are rendered apart from the document, so the rules that belong to the page (the action bar) do not run on them.
-    const noteEnv = { ...(state.env as object), currentDocument: undefined }
     const items = [...numbers].map(([id]) =>
-      `<li id="fn-${slug(id)}">${md.renderInline(definitions.get(id) ?? '', noteEnv)} <a class="loremaster-footnote-back" href="#fnref-${slug(id)}" title="Back to the text">↩</a></li>`)
+      `<li id="fn-${slug(id)}">${inlineHtml(md, definitions.get(id) ?? '', state.env)} <a class="loremaster-footnote-back" href="#fnref-${slug(id)}" title="Back to the text">↩</a></li>`)
     const list = new state.Token('html_block', '', 0)
     list.block = true
     list.content = `<hr class="loremaster-footnotes-rule"><ol class="loremaster-footnotes">${items.join('')}</ol>\n`

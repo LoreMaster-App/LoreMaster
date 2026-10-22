@@ -1,21 +1,27 @@
 /** The part of a markdown-it token the link rule reads and marks. */
 export interface LinkToken {
-  type:     string
-  children: LinkToken[] | null
+  attrs: [string, string][] | null
   attrGet (name: string): string | null
   attrJoin (name: string, value: string): void
   attrSet (name: string, value: string): void
 }
 
-/** The part of markdown-it's core state the link rule reads. */
-export interface LinkState {
-  tokens: LinkToken[]
-  env:    { currentDocument?: { fsPath: string } }
+/** What a render knows: VS Code sets the open file when it renders, not when it parses. */
+export interface LinkEnv {
+  currentDocument?: { fsPath: string }
 }
+
+/** The part of markdown-it's renderer a rule of one token type is given. */
+export interface LinkRenderer {
+  renderToken (tokens: LinkToken[], index: number, options: unknown): string
+}
+
+/** How a token of one type is written as HTML. */
+export type LinkRenderRule = (tokens: LinkToken[], index: number, options: unknown, env: LinkEnv, self: LinkRenderer) => string
 
 /** The part of the markdown-it instance VS Code hands to an extension that the link rule needs. */
 export interface LinkMarkdownIt {
-  core: { ruler: { push (name: string, rule: (state: LinkState) => void): void } }
+  renderer: { rules: Record<string, LinkRenderRule | undefined> }
 }
 
 /** What the rule asks of the machine: whether a file is there, and whether a storage syncs it. */
