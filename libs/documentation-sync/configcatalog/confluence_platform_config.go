@@ -72,7 +72,13 @@ func confluencePlatform() Platform {
 				Choices: []Choice{
 					{Value: "image", Label: "Image", Help: "A code macro plus an SVG attachment."},
 					{Value: "code", Label: "Code only", Help: "A code macro only."},
+					{Value: "html-macro", Label: "Inline in an HTML macro", Help: "The SVG inside an HTML macro, nothing attached, above a collapsed code macro. Use it when the site does not draw SVG attachments. The HTML macro must be enabled by a Confluence administrator."},
 				},
+			},
+			{
+				Key: "mermaidMaxWidth", Label: "Widest Mermaid diagram", Type: FieldNumber, Default: "800", Advanced: true,
+				Help: "In pixels. How wide an inline diagram (the HTML macro mode) is shown at most; it shrinks to fit a narrower page.",
+				Min:  intPointer(100), Max: intPointer(4000),
 			},
 			{
 				Key: "titleCollision", Label: "Title already exists", Type: FieldChoice, Default: "fail", Advanced: true,

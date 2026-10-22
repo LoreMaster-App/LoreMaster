@@ -72,8 +72,10 @@ type Output struct {
 	TitlePrefix  string    `json:"titlePrefix"`
 	Direction    string    `json:"direction"`
 	Content      []Content `json:"content"`
-	// MermaidMode is image or code.
+	// MermaidMode is image, code or html-macro.
 	MermaidMode string `json:"mermaidMode"`
+	// MermaidMaxWidth is the widest, in pixels, an inline diagram is shown (html-macro).
+	MermaidMaxWidth int `json:"mermaidMaxWidth,omitempty"`
 	// TitleCollision is fail or adopt.
 	TitleCollision string `json:"titleCollision"`
 	// LinkMode is title or id.

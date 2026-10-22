@@ -4,6 +4,7 @@ import loremaster.configdescription.ChoiceDescriptor
 import loremaster.configdescription.ConfigDescription
 import loremaster.configdescription.FIELD_CHOICE
 import loremaster.configdescription.FIELD_LIST
+import loremaster.configdescription.FIELD_NUMBER
 import loremaster.configdescription.FieldDescriptor
 import loremaster.configdescription.PlatformDescriptor
 import kotlin.test.Test
@@ -34,6 +35,17 @@ class OutputJsonMapperTest {
         assertEquals("to-platform", output.get("direction").asString)
         assertFalse(output.has("name") || output.has("include"))
         assertEquals(".", output.getAsJsonArray("content")[0].asJsonObject.getAsJsonArray("roots")[0].asString)
+    }
+
+    @Test
+    fun `a number field is written as a number, or left out when empty or not a number`() {
+        val width = FieldDescriptor(key = "maxWidth", label = "Widest", type = FIELD_NUMBER)
+        val sized = description.copy(outputFields = description.outputFields + width)
+
+        assertFalse(blankOutput(sized, notion).has("maxWidth"))
+        assertEquals(640, outputFrom(sized, notion, mapOf("workspace" to "acme", "maxWidth" to " 640 ")).get("maxWidth").asInt)
+        assertFalse(outputFrom(sized, notion, mapOf("workspace" to "acme", "maxWidth" to "")).has("maxWidth"))
+        assertFalse(outputFrom(sized, notion, mapOf("workspace" to "acme", "maxWidth" to "wide")).has("maxWidth"))
     }
 
     @Test

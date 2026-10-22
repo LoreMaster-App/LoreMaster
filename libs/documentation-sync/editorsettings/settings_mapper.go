@@ -18,6 +18,7 @@ type outputWire struct {
 	Direction      string        `json:"direction,omitempty"`
 	Content        []contentWire `json:"content,omitempty"`
 	MermaidMode    string        `json:"mermaidMode,omitempty"`
+	MermaidMaxWidth int          `json:"mermaidMaxWidth,omitempty"`
 	TitleCollision string        `json:"titleCollision,omitempty"`
 	LinkMode       string        `json:"linkMode,omitempty"`
 	Repo           string        `json:"repo,omitempty"`
@@ -81,7 +82,7 @@ func toSettings(values map[string]merged) (workspacesettings.Settings, error) {
 	for _, wire := range wires {
 		output := workspacesettings.Output{
 			Name: wire.Name, Platform: wire.Platform, BaseURL: wire.BaseURL, Space: wire.Space, ParentPageID: wire.ParentPageID,
-			TitlePrefix: wire.TitlePrefix, Direction: wire.Direction, MermaidMode: wire.MermaidMode,
+			TitlePrefix: wire.TitlePrefix, Direction: wire.Direction, MermaidMode: wire.MermaidMode, MermaidMaxWidth: wire.MermaidMaxWidth,
 			TitleCollision: wire.TitleCollision, LinkMode: wire.LinkMode, Repo: wire.Repo, Branch: wire.Branch,
 			Path: wire.Path, Include: wire.Include, Exclude: wire.Exclude, Template: wire.Template,
 		}
@@ -95,6 +96,9 @@ func toSettings(values map[string]merged) (workspacesettings.Settings, error) {
 		}
 		fillEmpty(&output.Direction, *defaults[keyDefaultsDirect])
 		fillEmpty(&output.MermaidMode, *defaults[keyDefaultsMermaid])
+		if output.MermaidMaxWidth == 0 {
+			output.MermaidMaxWidth = workspacesettings.DefaultMermaidMaxWidth
+		}
 		fillEmpty(&output.LinkMode, *defaults[keyDefaultsLink])
 		fillEmpty(&output.TitleCollision, *defaults[keyDefaultsCollide])
 		fillEmpty(&output.TitlePrefix, *defaults[keyDefaultsPrefixT])

@@ -80,6 +80,14 @@ describe('valuesToOutput', () => {
     ])
   })
 
+  it('keeps the width of an inline diagram a number, and leaves it out when it is empty', () => {
+    const values = { ...outputToValues(description, confluence, settings), mermaidMaxWidth: ' 640 ' }
+
+    expect(valuesToOutput(description, values, confluence).mermaidMaxWidth).toBe(640)
+    expect(valuesToOutput(description, { ...values, mermaidMaxWidth: '' }, confluence)).not.toHaveProperty('mermaidMaxWidth')
+    expect(outputToValues(description, { ...confluence, mermaidMaxWidth: 700 }, settings).mermaidMaxWidth).toBe('700')
+  })
+
   it('builds a new GitHub Pages storage with nothing of Confluence in it', () => {
     const output = valuesToOutput(description, { ...emptyValues(description), platform: 'github-pages', repo: ' acme/docs ', branch: 'site', path: 'docs' })
 

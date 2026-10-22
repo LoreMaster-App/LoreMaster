@@ -44,7 +44,7 @@ func sections() []Section {
 				{
 					Key: "defaults.mermaidMode", Label: "Default Mermaid mode", Type: FieldChoice, Advanced: true,
 					Help:    "How Mermaid diagrams are stored in an output that does not set it. Empty means image.",
-					Choices: choicesOf("image", "code"),
+					Choices: choicesOf("image", "code", "html-macro"),
 				},
 				{
 					Key: "defaults.linkMode", Label: "Default link mode", Type: FieldChoice, Advanced: true,

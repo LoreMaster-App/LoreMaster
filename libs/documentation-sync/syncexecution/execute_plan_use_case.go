@@ -458,10 +458,15 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 
 	diagrams := run.renderDiagrams(ctx, action.Path, page)
 	images := make(map[string]string, len(diagrams))
+	pictures := make(map[string]string, len(diagrams))
 	for source, diagram := range diagrams {
-		images[source] = diagram.name
+		if run.input.Output.MermaidMode == "html-macro" && diagram.language == "mermaid" {
+			pictures[source] = string(diagram.svg)
+		} else {
+			images[source] = diagram.name
+		}
 	}
-	blocks := withDiagramImages(page.Converted.Document.Blocks, images)
+	blocks := withDiagramImages(page.Converted.Document.Blocks, images, pictures)
 	unlinked := false
 	if run.input.Output.LinkMode == "id" {
 		blocks, unlinked = withLinkURLs(blocks, run.urls)
@@ -491,14 +496,17 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 	}
 
 	attachments := run.uploadFiles(ctx, action, page, remote.ID)
-	for _, diagram := range diagrams {
+	for source, diagram := range diagrams {
+		if _, inline := pictures[source]; inline {
+			continue
+		}
 		if _, err := run.platform.UploadFile(ctx, remote.ID, platformport.File{Name: diagram.name, ContentType: "image/svg+xml", Content: diagram.svg}); err != nil {
 			run.warn("%s: the diagram %s could not be uploaded (%v)", action.Path, diagram.name, err)
 		}
 	}
 	result.Annotation = run.annotation(page, remote, parentID, action.ContentHash, attachments)
 	if unlinked {
-		run.relink = append(run.relink, relink{result: run.current, action: action, parentID: parentID, blocks: withDiagramImages(page.Converted.Document.Blocks, images)})
+		run.relink = append(run.relink, relink{result: run.current, action: action, parentID: parentID, blocks: withDiagramImages(page.Converted.Document.Blocks, images, pictures)})
 	}
 
 	return result
@@ -541,16 +549,17 @@ func (run *execution) uploadFiles(ctx context.Context, action syncplanning.Actio
 }
 
 type renderedDiagram struct {
-	name string
+	language string
+	name     string
 	svg  []byte
 }
 
 // drawnAsImage says whether the output shows diagrams of language as pictures: Mermaid when the
-// output's mermaidMode is image, any other language unless the mode is code (it has no html or
+// output's mermaidMode is image or html-macro, any other language unless the mode is code (it has no html or
 // marketplace macro to fall back on, so a picture is the only way it is drawn).
 func drawnAsImage(mode string, language string) bool {
 	if language == "mermaid" {
-		return mode == "image"
+		return mode == "image" || mode == "html-macro"
 	}
 
 	return mode != "code"
@@ -591,12 +600,23 @@ func (run *execution) renderDiagrams(ctx context.Context, documentPath documentd
 			diagrams = map[string]renderedDiagram{}
 		}
 		diagrams[found.key()] = renderedDiagram{
+			language: found.Language,
 			name: found.Language + "-" + attachmentHash([]byte(found.Source))[len("sha256:"):][:12] + ".svg",
-			svg:  injectDiagramSource(svg, found.Language, found.Source),
+			svg:      pictureOf(svg, run.input.Output.MermaidMode, found),
 		}
 	}
 
 	return diagrams
+}
+
+// pictureOf is the SVG to hand on for a drawn diagram: one that is attached carries its source,
+// which an inline one does not need (the page's code macro holds it).
+func pictureOf(svg []byte, mode string, found diagramSource) []byte {
+	if mode == "html-macro" && found.Language == "mermaid" {
+		return svg
+	}
+
+	return injectDiagramSource(svg, found.Language, found.Source)
 }
 
 // annotation is the file's annotation after a successful write: what the author set

@@ -166,8 +166,23 @@
               "value": "code",
               "label": "Code only",
               "help": "A code macro only."
+            },
+            {
+              "value": "html-macro",
+              "label": "Inline in an HTML macro",
+              "help": "The SVG inside an HTML macro, nothing attached, above a collapsed code macro. Use it when the site does not draw SVG attachments. The HTML macro must be enabled by a Confluence administrator."
             }
           ],
+          "advanced": true
+        },
+        {
+          "key": "mermaidMaxWidth",
+          "label": "Widest Mermaid diagram",
+          "help": "In pixels. How wide an inline diagram (the HTML macro mode) is shown at most; it shrinks to fit a narrower page.",
+          "type": "number",
+          "default": "800",
+          "min": 100,
+          "max": 4000,
           "advanced": true
         },
         {
@@ -546,6 +561,10 @@
             {
               "value": "code",
               "label": "code"
+            },
+            {
+              "value": "html-macro",
+              "label": "html-macro"
             }
           ],
           "advanced": true

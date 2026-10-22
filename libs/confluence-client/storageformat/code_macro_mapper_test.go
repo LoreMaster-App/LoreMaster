@@ -103,7 +103,7 @@ func TestMacroInputsAreValidated(t *testing.T) {
 		"image without source":       {doc: Document{Blocks: []Block{Paragraph{Inlines: []Inline{Image{}}}}}},
 		"attachment without name":    {doc: Document{Blocks: []Block{Paragraph{Inlines: []Inline{Image{Source: &AttachmentRef{}}}}}}},
 		"link without target":        {doc: Document{Blocks: []Block{Paragraph{Inlines: []Inline{Link{}}}}}},
-		"mermaid html macro not yet": {doc: Document{Blocks: []Block{Mermaid{Source: "graph TD"}}}, options: Options{MermaidMode: MermaidHTMLMacro}},
+		"mermaid marketplace macro not yet": {doc: Document{Blocks: []Block{Mermaid{Source: "graph TD"}}}, options: Options{MermaidMode: MermaidMarketplaceMacro}},
 	}
 	for name, tc := range cases {
 		if _, err := Render(tc.doc, tc.options); err == nil {

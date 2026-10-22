@@ -10,6 +10,13 @@ export type StorageFormErrors = Record<string, string>
  * engine's description states is checked here (a required field, a pattern); the engine validates
  * the rest when the storage is saved, and its refusal is shown to the user.
  */
+/** Whether the text is a whole number inside the field's bounds. */
+function inRange (value: string, field: { min?: number, max?: number }): boolean {
+  const number = Number(value)
+
+  return Number.isSafeInteger(number) && (field.min === undefined || number >= field.min) && (field.max === undefined || number <= field.max)
+}
+
 export function validateStorageForm (description: ConfigDescription, values: StorageFormValues, connectionCount: number): StorageFormErrors {
   const errors: StorageFormErrors = {}
   const platform = description.platforms.find(each => each.id === values.platform)
@@ -29,6 +36,8 @@ export function validateStorageForm (description: ConfigDescription, values: Sto
       }
     } else if (field.pattern !== undefined && !new RegExp(field.pattern).test(value)) {
       errors[field.key] = field.patternHelp ?? `${field.label} is not valid.`
+    } else if (field.type === 'number' && !inRange(value, field)) {
+      errors[field.key] = `${field.label} must be a whole number${field.min === undefined ? '' : ` from ${field.min}`}${field.max === undefined ? '' : ` to ${field.max}`}.`
     }
   }
 

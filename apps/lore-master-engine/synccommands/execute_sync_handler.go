@@ -49,13 +49,13 @@ func ExecuteSync(sessions *sessionlifecycle.Store, plans *PlanStore, renderTimeo
 		// D2 is drawn here whatever the mode; Mermaid is asked of the editor, and only when the
 		// output shows it as an image (the sync does not ask otherwise).
 		var editor platformport.DiagramRenderer
-		if stored.output.MermaidMode == "image" {
+		if drawsMermaid(stored.output.MermaidMode) {
 			editor = hostbridge.NewDiagramRenderer(call.Editor, renderTimeout)
 		}
 		// Mermaid is drawn in the engine's own browser when there is one, so it also works from the
 		// command line; the editor is the fallback. The browser only starts on the first diagram.
 		var browser platformport.DiagramRenderer
-		if stored.output.MermaidMode == "image" && os.Getenv(mermaidRendererVariable) != "editor" {
+		if drawsMermaid(stored.output.MermaidMode) && os.Getenv(mermaidRendererVariable) != "editor" {
 			drawing := mermaidrendering.New()
 			defer drawing.Close()
 			browser = drawing
@@ -113,4 +113,10 @@ func keepJournal(journalCache string, started time.Time, stored *storedPlan, rec
 	}
 
 	return journal.ID, warnings
+}
+
+// drawsMermaid says whether an output's Mermaid mode puts a drawn picture in the page, so the
+// diagrams have to be drawn: as an attachment (image) or inline (html-macro).
+func drawsMermaid(mode string) bool {
+	return mode == "image" || mode == "html-macro"
 }

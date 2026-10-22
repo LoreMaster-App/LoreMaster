@@ -268,6 +268,11 @@ func (p *parser) macro(e *element) (Block, bool) {
 	if name == "children" {
 		return p.children(e), true
 	}
+	if name == "html" && strings.Contains(textOf(e), "<svg") {
+		// The picture of a diagram drawn inline (the html-macro mode): the sync draws it again from
+		// the diagram's source, which the code macro after it carries.
+		return nil, false
+	}
 	if name != "code" {
 		p.flag("an unknown macro %q was dropped", name)
 

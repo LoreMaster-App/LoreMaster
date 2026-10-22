@@ -79,11 +79,20 @@ func (r *renderer) mermaid(diagram Mermaid) error {
 		}
 		r.out.WriteString("</p>")
 		r.codeMacro("", diagram.Source, true, name)
-	case !diagram.IsMermaid(), r.options.MermaidMode == MermaidImage, r.options.MermaidMode == MermaidCode:
+	case r.options.MermaidMode == MermaidHTMLMacro && diagram.SVG != "":
+		r.htmlMacro(sizedSVG(diagram.SVG, r.options.DiagramMaxWidth))
+		r.codeMacro("", diagram.Source, true, name)
+	case !diagram.IsMermaid(), r.options.MermaidMode == MermaidImage, r.options.MermaidMode == MermaidCode, r.options.MermaidMode == MermaidHTMLMacro:
 		r.codeMacro("", diagram.Source, false, name)
 	default:
 		return fmt.Errorf("mermaid mode %d is not available yet (#40)", r.options.MermaidMode)
 	}
 
 	return nil
+}
+
+// htmlMacro writes html as the body of an HTML macro. Confluence Data Center has the macro off
+// until an administrator enables it.
+func (r *renderer) htmlMacro(html string) {
+	r.out.WriteString(`<ac:structured-macro ac:name="html" ac:schema-version="1"><ac:plain-text-body><![CDATA[` + cdata(html) + `]]></ac:plain-text-body></ac:structured-macro>`)
 }

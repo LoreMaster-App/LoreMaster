@@ -191,6 +191,25 @@ func TestPushEmbedsTheMermaidSourceInTheSVG(t *testing.T) {
 	}
 }
 
+func TestPushPutsAMermaidDiagramInlineInHTMLMacroMode(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```mermaid\ngraph TD; A-->B\n```\n"})
+	w.output.MermaidMode = "html-macro"
+	_, report := w.sync()
+	guide := w.result(report, "guide.md")
+
+	diagram := w.fake.Page(guide.PageID).Body.Blocks[0].(platformport.Diagram)
+	if diagram.SVG != "<svg>mermaid:graph TD; A-->B</svg>" || diagram.Image != nil {
+		t.Fatalf("want the SVG inline and no attachment, got %+v", diagram)
+	}
+	if names, _ := w.fake.ListAttachments(context.Background(), guide.PageID); len(names) != 0 {
+		t.Fatalf("nothing should be uploaded for an inline diagram: %v", names)
+	}
+	_, again := w.sync()
+	if got := w.result(again, "guide.md").Outcome; got != Unchanged {
+		t.Fatalf("a second sync with the same mode should leave the page alone, got %s", got)
+	}
+}
+
 func TestPushDrawsAD2DiagramAsAnSVGWithItsSource(t *testing.T) {
 	for _, mode := range []string{"image", "html-macro"} {
 		t.Run(mode, func(t *testing.T) {

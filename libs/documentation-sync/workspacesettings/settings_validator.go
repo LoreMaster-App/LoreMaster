@@ -71,7 +71,10 @@ func validate(settings Settings, requireOutputs bool) error {
 // outputs would overwrite each other's pages.
 func validateConfluenceOutput(add func(string, ...any), where string, output Output, seen map[string]int, index int) {
 	choose(add, where+".direction", output.Direction, []string{"to-platform", "two-way"}, nil)
-	choose(add, where+".mermaidMode", output.MermaidMode, []string{"image", "code"}, map[string]string{"html-macro": "#40", "marketplace-macro": "#40"})
+	choose(add, where+".mermaidMode", output.MermaidMode, []string{"image", "code", "html-macro"}, map[string]string{"marketplace-macro": "#40"})
+	if output.MermaidMaxWidth < 0 {
+		add("%s.mermaidMaxWidth %d must not be negative", where, output.MermaidMaxWidth)
+	}
 	choose(add, where+".titleCollision", output.TitleCollision, []string{"fail", "adopt"}, nil)
 	choose(add, where+".linkMode", output.LinkMode, []string{"title", "id"}, nil)
 	if output.BaseURL != "" && !strings.HasPrefix(output.BaseURL, "https://") && !strings.HasPrefix(output.BaseURL, "http://localhost") && !strings.HasPrefix(output.BaseURL, "http://127.0.0.1") {

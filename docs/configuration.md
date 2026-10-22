@@ -55,7 +55,7 @@ when it finds neither it lists the spaces the signed-in user can see.
 
 | Setting | What it is |
 |---|---|
-| `loreMaster.outputs` | The places the lore goes: `name`, platform, space, parent page, title prefix, direction, content, Mermaid mode, links, repository and branch, `include` and `exclude` lists, `template` ([page templates](templates.md)). |
+| `loreMaster.outputs` | The places the lore goes: `name`, platform, space, parent page, title prefix, direction, content, Mermaid mode and, for `html-macro`, `mermaidMaxWidth` (the widest inline diagram, in pixels; default 800), links, repository and branch, `include` and `exclude` lists, `template` ([page templates](templates.md)). |
 | `loreMaster.confluence.baseUrl` | The Confluence address an output uses unless it sets its own `baseUrl`. |
 | `loreMaster.defaults.*` | The `direction`, `mermaidMode`, `linkMode`, `titleCollision` and `titlePrefix` of an output that does not set them. All of them are in the Settings UI; a prefix set here means the first sync does not ask for one. |
 | `loreMaster.ignore` | Gitignore-style patterns every output leaves out. |

@@ -82,7 +82,7 @@ func mapBlock(block platformport.Block) (storageformat.Block, error) {
 		if !strings.EqualFold(b.Language, "mermaid") && !strings.EqualFold(b.Language, "d2") {
 			return storageformat.CodeBlock{Language: b.Language, Code: b.Source}, nil
 		}
-		diagram := storageformat.Mermaid{Source: b.Source}
+		diagram := storageformat.Mermaid{Source: b.Source, SVG: b.SVG}
 		if strings.EqualFold(b.Language, "d2") {
 			diagram.Language = "d2"
 		}

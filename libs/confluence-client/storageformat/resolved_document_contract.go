@@ -108,6 +108,8 @@ type Mermaid struct {
 	// Language is the diagram language; empty means Mermaid.
 	Language string
 	Image    *AttachmentRef
+	// SVG is the picture to put in the page itself (the html-macro mode); empty when there is none.
+	SVG string
 }
 
 // diagramLanguages are the languages a diagram can be in: the values of the lore-master marker

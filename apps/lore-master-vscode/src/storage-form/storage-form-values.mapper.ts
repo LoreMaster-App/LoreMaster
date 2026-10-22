@@ -45,6 +45,9 @@ function text (value: unknown): string {
   if (Array.isArray(value)) {
     return value.join(', ')
   }
+  if (typeof value === 'number') {
+    return String(value)
+  }
 
   return typeof value === 'string' ? value : ''
 }
@@ -80,13 +83,24 @@ function assign (output: Record2, field: FieldDescriptor, value: string): void {
 
     return
   }
+  if (field.type === 'number') {
+    const typed = value.trim()
+    const number = typed === '' ? NaN : Number(typed)
+    if (Number.isSafeInteger(number)) {
+      output[field.key] = number
+    } else {
+      delete output[field.key]
+    }
+
+    return
+  }
   output[field.key] = value.trim()
 }
 
 /** Empties a setting that belongs to another platform than the chosen one. */
 function clear (output: Record2, key: string, description: ConfigDescription): void {
   const field = [...description.outputFields, ...description.platforms.flatMap(platform => platform.fields)].find(each => each.key === key)
-  if (field?.type === 'list') {
+  if (field?.type === 'list' || field?.type === 'number') {
     delete output[key]
   } else {
     // A choice goes back to its default: the engine wants a valid direction even on a site.
