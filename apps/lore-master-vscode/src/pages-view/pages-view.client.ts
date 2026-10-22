@@ -71,8 +71,11 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
     const remote = local ? undefined : this.remote.get(index)
     const leftOut = local || excluded === 'hidden' ? [] : tree.leftOut ?? []
 
+    // Local lists every file, so what it can hide is the Markdown git ignores; a storage hides what it leaves out.
+    const listed = local && excluded === 'hidden' ? tree.nodes.filter(node => node.gitIgnored !== true) : tree.nodes
+
     return {
-      entries:      buildPageEntries(tree.nodes, label, remote),
+      entries:      buildPageEntries(listed, label, remote),
       leftOut,
       leftOutTotal: local || excluded === 'hidden' ? 0 : tree.leftOutTotal ?? leftOut.length,
       remote,

@@ -248,6 +248,17 @@ describe('PagesViewProvider', () => {
       expect(view.getTreeItem(rows[0]).contextValue).toBe('loreMasterPageUntracked')
     })
 
+    it('hides the files git ignores in Local when asked to, and fades them otherwise', async () => {
+      const faded = provider([confluence], { ...trees, [-1]: local }, 'title', [], { excluded: 'faded' })
+      const hidden = provider([confluence], { ...trees, [-1]: local }, 'title', [], { excluded: 'hidden' })
+
+      const [fadedLocal] = await faded.getChildren()
+      const [hiddenLocal] = await hidden.getChildren()
+
+      expect(await labels(faded, fadedLocal)).toEqual(['Home', 'Guide', 'Plan', 'Scratch'])
+      expect(await labels(hidden, hiddenLocal)).toEqual(['Home', 'Guide', 'Plan'])
+    })
+
     it('shows a flat list ordered by path, without nesting', async () => {
       const view = provider([confluence], { 0: { nodes } }, 'title', [], { view: 'flat' })
 
