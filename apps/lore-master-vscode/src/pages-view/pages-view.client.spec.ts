@@ -272,6 +272,54 @@ describe('PagesViewProvider', () => {
       expect(view.getTreeItem(ignored).contextValue).toBe('loreMasterIgnoredFile')
     })
 
+    describe('following the open file', () => {
+      const tree: WorkspaceTreeResult = { nodes: [node('README.md', 'Home'), node('readme.setup.md', 'Setup', 'README.md'), node('docs/guide.md', 'Guide')] }
+
+      it('finds the row of a file in the Local location, with the rows above it', async () => {
+        const view = provider([confluence], { 0: { nodes }, [-1]: tree })
+        await view.getChildren()
+        const setup = await view.locateFile('/w/readme.setup.md')
+        const home = await view.getParent(setup!)
+        const root = await view.getParent(home!)
+
+        expect([setup?.kind, home?.kind, root?.kind]).toEqual(['page', 'page', 'local'])
+        expect(view.getTreeItem(home!).label).toBe('Home')
+        expect(await view.getParent(root!)).toBeUndefined()
+      })
+
+      it('finds a file in a flat list and in the repository tree', async () => {
+        const flat = provider([confluence], { 0: { nodes }, [-1]: tree }, 'title', [], { view: 'flat' })
+        await flat.getChildren()
+        const flatGuide = (await flat.locateFile('/w/docs/guide.md'))!
+        const flatParent = await flat.getParent(flatGuide)
+        expect(flatParent?.kind).toBe('local')
+
+        const repo = provider([confluence], { 0: { nodes }, [-1]: tree }, 'title', [], { view: 'repo' })
+        await repo.getChildren()
+        const guide = (await repo.locateFile('/w/docs/guide.md'))!
+        const folder = (await repo.getParent(guide))!
+        expect(folder.kind === 'folder' && folder.folder.path).toBe('docs')
+        const above = await repo.getParent(folder)
+        expect(above?.kind).toBe('local')
+      })
+
+      it('finds nothing for a file the view does not list or one outside the workspace', async () => {
+        const view = provider([confluence], { 0: { nodes }, [-1]: tree })
+        await view.getChildren()
+
+        expect(await view.locateFile('/w/unknown.md')).toBeUndefined()
+        expect(await view.locateFile('/elsewhere/README.md')).toBeUndefined()
+      })
+
+      it('gives a row of a storage its storage as parent', async () => {
+        const view = provider([confluence], { 0: { nodes } })
+        const [row] = await storageRows(view)
+
+        const parent = await view.getParent(row)
+        expect(parent?.kind).toBe('storage')
+      })
+    })
+
     it('hides the files a storage leaves out when asked to', async () => {
       const view = provider([confluence], trees, 'title', [], { excluded: 'hidden' })
 

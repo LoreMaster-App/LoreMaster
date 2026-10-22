@@ -107,8 +107,21 @@ export function registerPagesView (deps: SyncCommandDeps, memento: DisplayMement
       }
     }))
 
+  const treeView = vscode.window.createTreeView(PAGES_VIEW_ID, { treeDataProvider: provider, canSelectMany: true })
+
+  // Like the Explorer, the view follows the editor: the open file's row is selected, its parents opened, and focus stays in the editor.
+  const revealOpenFile = async (): Promise<void> => {
+    const document = vscode.window.activeTextEditor?.document
+    if (!treeView.visible || document?.uri.scheme !== 'file' || document.languageId !== 'markdown') { return }
+    const row = await provider.locateFile(document.uri.fsPath)
+    if (row !== undefined) { await treeView.reveal(row, { select: true, focus: false }) }
+  }
+  const followEditor = (): void => { void revealOpenFile().then(undefined, () => {}) }
+
   return vscode.Disposable.from(
-    vscode.window.createTreeView(PAGES_VIEW_ID, { treeDataProvider: provider, canSelectMany: true }),
+    treeView,
+    vscode.window.onDidChangeActiveTextEditor(followEditor),
+    treeView.onDidChangeVisibility(followEditor),
     vscode.commands.registerCommand(REFRESH_PAGES_COMMAND, () => provider.refresh()),
     vscode.commands.registerCommand(REFRESH_STORAGE_COMMAND, (node: PagesNode | undefined) => {
       const index = locationOf(node)

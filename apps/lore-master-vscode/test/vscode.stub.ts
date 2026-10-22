@@ -63,8 +63,8 @@ export const window = {
   registerTreeDataProvider (_viewId: string, _provider: unknown): { dispose: () => void } {
     return { dispose () {} }
   },
-  createTreeView (_viewId: string, _options: unknown): { dispose: () => void } {
-    return { dispose () {} }
+  createTreeView (_viewId: string, _options: unknown): { visible: boolean; onDidChangeVisibility: (listener: () => unknown) => { dispose: () => void }; reveal: () => Promise<void>; dispose: () => void } {
+    return { visible: false, onDidChangeVisibility: () => ({ dispose () {} }), reveal: () => Promise.resolve(), dispose () {} }
   },
   createStatusBarItem (_alignment?: number, _priority?: number): FakeStatusBarItem {
     const item = new FakeStatusBarItem()
