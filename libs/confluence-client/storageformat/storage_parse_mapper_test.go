@@ -134,6 +134,18 @@ func TestParseCollapsedMacroBecomesMermaidWithItsImage(t *testing.T) {
 	}
 }
 
+func TestParseDropsTheInlinePictureOfADiagramAndKeepsItsSource(t *testing.T) {
+	doc, flags, err := Parse(`<ac:structured-macro ac:name="html" ac:schema-version="1"><ac:plain-text-body><![CDATA[<div style="max-width:800px;"><svg viewBox="0 0 10 10"><g/></svg></div>]]></ac:plain-text-body></ac:structured-macro><ac:structured-macro ac:name="code" ac:schema-version="1"><ac:parameter ac:name="collapse">true</ac:parameter><ac:parameter ac:name="lore-master">mermaid</ac:parameter><ac:plain-text-body><![CDATA[graph TD
+]]></ac:plain-text-body></ac:structured-macro>`)
+	if err != nil || len(flags) != 0 {
+		t.Fatalf("an inline picture is not an unknown macro: err=%v flags=%v", err, flags)
+	}
+	diagram, ok := doc.Blocks[0].(Mermaid)
+	if len(doc.Blocks) != 1 || !ok || diagram.Source != "graph TD\n" || diagram.SVG != "" {
+		t.Fatalf("want the diagram from its source alone, got %#v", doc.Blocks)
+	}
+}
+
 func TestParseMarkedCodeMacroIsMermaidWithoutCollapse(t *testing.T) {
 	// The explicit marker identifies a diagram even when it is not collapsed — a code-mode
 	// diagram, or a page where a Confluence-side edit dropped the collapse flag.

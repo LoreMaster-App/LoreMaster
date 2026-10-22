@@ -48,25 +48,30 @@ func diagramSources(blocks []platformport.Block) []diagramSource {
 }
 
 // withDiagramImages returns a copy of blocks in which each diagram with a rendered picture
-// (images is keyed by diagramSource.key) points at it. The input is not modified.
-func withDiagramImages(blocks []platformport.Block, images map[string]string) []platformport.Block {
-	if len(images) == 0 {
+// (both maps are keyed by diagramSource.key) points at it: images are attachment names, pictures
+// are SVG documents to show in the page itself. The input is not modified.
+func withDiagramImages(blocks []platformport.Block, images map[string]string, pictures map[string]string) []platformport.Block {
+	if len(images) == 0 && len(pictures) == 0 {
 		return blocks
 	}
 	copied := make([]platformport.Block, len(blocks))
 	for i, block := range blocks {
 		switch b := block.(type) {
 		case platformport.Diagram:
-			if name, ok := images[diagramSource{Language: b.Language, Source: b.Source}.key()]; ok {
+			key := diagramSource{Language: b.Language, Source: b.Source}.key()
+			if name, ok := images[key]; ok {
 				b.Image = &platformport.AttachmentRef{Filename: name}
+			}
+			if svg, ok := pictures[key]; ok {
+				b.SVG = svg
 			}
 			copied[i] = b
 		case platformport.Blockquote:
-			copied[i] = platformport.Blockquote{Blocks: withDiagramImages(b.Blocks, images)}
+			copied[i] = platformport.Blockquote{Blocks: withDiagramImages(b.Blocks, images, pictures)}
 		case platformport.List:
 			list := platformport.List{Ordered: b.Ordered, Start: b.Start, Items: make([]platformport.ListItem, len(b.Items))}
 			for j, item := range b.Items {
-				list.Items[j] = platformport.ListItem{Blocks: withDiagramImages(item.Blocks, images)}
+				list.Items[j] = platformport.ListItem{Blocks: withDiagramImages(item.Blocks, images, pictures)}
 			}
 			copied[i] = list
 		default:

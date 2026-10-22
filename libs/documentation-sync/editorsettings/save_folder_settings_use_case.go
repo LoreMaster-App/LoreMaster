@@ -142,6 +142,9 @@ func minimalOutputs(outputs []workspacesettings.Output, inherited map[string]str
 			TitleCollision: unlessEffective(output.TitleCollision, inherited[keyDefaultsCollide], builtinDefaults[keyDefaultsCollide]),
 			BaseURL:        output.BaseURL,
 		}
+		if output.MermaidMaxWidth != workspacesettings.DefaultMermaidMaxWidth {
+			wire.MermaidMaxWidth = output.MermaidMaxWidth
+		}
 		if output.Platform == "confluence" || output.Platform == "" {
 			wire.BaseURL = unlessEffective(output.BaseURL, inherited[keyConfluenceURL], "")
 		}

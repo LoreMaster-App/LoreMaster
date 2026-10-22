@@ -10,7 +10,7 @@ func toWire(settings workspacesettings.Settings) rpcprotocol.Settings {
 	for i, output := range settings.Outputs {
 		wire.Outputs[i] = rpcprotocol.Output{
 			Name: output.Name, Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
-			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode,
+			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode, MermaidMaxWidth: output.MermaidMaxWidth,
 			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode, Repo: output.Repo, Branch: output.Branch, Path: output.Path,
 			Include: output.Include, Exclude: output.Exclude, Template: output.Template,
 			Content: make([]rpcprotocol.Content, len(output.Content)),
@@ -28,7 +28,7 @@ func fromWire(wire rpcprotocol.Settings) workspacesettings.Settings {
 	for i, output := range wire.Outputs {
 		settings.Outputs[i] = workspacesettings.Output{
 			Name: output.Name, Platform: output.Platform, BaseURL: output.BaseURL, Space: output.Space, ParentPageID: output.ParentPageID,
-			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode,
+			TitlePrefix: output.TitlePrefix, Direction: output.Direction, MermaidMode: output.MermaidMode, MermaidMaxWidth: output.MermaidMaxWidth,
 			TitleCollision: output.TitleCollision, LinkMode: output.LinkMode, Repo: output.Repo, Branch: output.Branch, Path: output.Path,
 			Include: output.Include, Exclude: output.Exclude, Template: output.Template,
 			Content: make([]workspacesettings.Content, len(output.Content)),

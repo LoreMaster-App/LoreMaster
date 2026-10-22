@@ -1164,13 +1164,22 @@
                 "type": "string",
                 "enum": [
                   "image",
-                  "code"
+                  "code",
+                  "html-macro"
                 ],
                 "enumDescriptions": [
                   "A code macro plus an SVG attachment rendered by the editor.",
-                  "A code macro only."
+                  "A code macro only.",
+                  "The SVG inline in an HTML macro (nothing is attached), above a collapsed code macro. For sites that do not draw SVG attachments; a Confluence administrator must enable the HTML macro."
                 ],
                 "markdownDescription": "How Mermaid diagrams are stored. Empty uses `loreMaster.defaults.mermaidMode`."
+              },
+              "mermaidMaxWidth": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 4000,
+                "default": 800,
+                "markdownDescription": "The widest, in pixels, an inline Mermaid diagram is shown (`html-macro` mode). It shrinks to fit a narrower page."
               },
               "titleCollision": {
                 "type": "string",
@@ -1317,7 +1326,8 @@
           "enum": [
             "",
             "image",
-            "code"
+            "code",
+            "html-macro"
           ],
           "default": "",
           "scope": "resource",

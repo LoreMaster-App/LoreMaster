@@ -11,7 +11,7 @@ export function blankOutput (description: ConfigDescription, platform: PlatformD
   const fields = [...description.outputFields, ...description.platforms.flatMap(each => each.fields)]
   for (const key of allOutputKeys(description)) {
     const field = fields.find(each => each.key === key)
-    if (field?.type === 'list') {
+    if (field?.type === 'list' || field?.type === 'number') {
       continue
     }
     output[key] = field?.type === 'choice' ? field.default ?? '' : ''

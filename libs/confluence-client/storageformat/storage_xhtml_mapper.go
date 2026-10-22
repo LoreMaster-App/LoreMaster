@@ -28,8 +28,10 @@ const (
 	MermaidImage MermaidMode = iota
 	// MermaidCode shows only the source in a code macro.
 	MermaidCode
-	// MermaidHTMLMacro and MermaidMarketplaceMacro are #40.
+	// MermaidHTMLMacro puts the drawn SVG in an HTML macro, above a collapsed code macro with
+	// the source; nothing is attached. Without a drawn picture, just the code macro.
 	MermaidHTMLMacro
+	// MermaidMarketplaceMacro is still to do (#40).
 	MermaidMarketplaceMacro
 )
 
@@ -37,6 +39,9 @@ const (
 type Options struct {
 	LinkMode    LinkMode
 	MermaidMode MermaidMode
+	// DiagramMaxWidth is the widest, in pixels, an inline diagram (MermaidHTMLMacro) is shown;
+	// 0 leaves it at the size the diagram was drawn.
+	DiagramMaxWidth int
 }
 
 // Render writes doc as Confluence storage format. It never emits an XML comment, so the

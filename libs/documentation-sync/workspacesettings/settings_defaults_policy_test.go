@@ -25,7 +25,7 @@ func TestResolvingFillsDefaultsAndTrimsThePrefix(t *testing.T) {
 
 	want := Output{
 		Platform: "confluence", BaseURL: "https://acme.atlassian.net/wiki", Space: "ENG", ParentPageID: "123000", TitlePrefix: "MNCI",
-		Direction: "to-platform", MermaidMode: "image", TitleCollision: "fail", LinkMode: "title",
+		Direction: "to-platform", MermaidMode: "image", MermaidMaxWidth: 800, TitleCollision: "fail", LinkMode: "title",
 		Content: []Content{{Type: "markdown", Roots: []string{"docs"}, Excludes: []string{"drafts/**"}, Template: "default"}},
 	}
 	if firstSync || !reflect.DeepEqual(resolved.Outputs[0], want) {

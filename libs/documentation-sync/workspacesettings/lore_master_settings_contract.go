@@ -3,6 +3,9 @@ package workspacesettings
 // CurrentVersion is the format version this code reads and writes.
 const CurrentVersion = 1
 
+// DefaultMermaidMaxWidth is how wide, in pixels, an inline diagram is shown unless an output says otherwise.
+const DefaultMermaidMaxWidth = 800
+
 // Settings is the whole file.
 type Settings struct {
 	Version int `json:"version"`
@@ -53,8 +56,10 @@ type Output struct {
 	TitlePrefix  string    `json:"titlePrefix"`
 	Direction    string    `json:"direction"`
 	Content      []Content `json:"content"`
-	// MermaidMode is image | code (html-macro and marketplace-macro: #40).
+	// MermaidMode is image | code | html-macro (marketplace-macro: #40).
 	MermaidMode string `json:"mermaidMode"`
+	// MermaidMaxWidth is the widest, in pixels, a diagram is shown in html-macro mode.
+	MermaidMaxWidth int `json:"mermaidMaxWidth,omitempty"`
 	// TitleCollision is what to do when an unannotated file's title already exists on
 	// the platform: fail | adopt.
 	TitleCollision string `json:"titleCollision"`
@@ -106,6 +111,6 @@ func defaultOutput() Output {
 	return Output{
 		Platform: "confluence", Direction: "to-platform",
 		Content:     []Content{{Type: "markdown", Roots: []string{"."}, Template: "default"}},
-		MermaidMode: "image", TitleCollision: "fail", LinkMode: "title",
+		MermaidMode: "image", MermaidMaxWidth: DefaultMermaidMaxWidth, TitleCollision: "fail", LinkMode: "title",
 	}
 }

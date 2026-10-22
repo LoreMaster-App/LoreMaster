@@ -57,6 +57,9 @@ type (
 		Language string
 		Source   string
 		Image    *AttachmentRef
+		// SVG is the picture itself, for an output that puts it in the page rather than
+		// attaching it; empty when the diagram is attached or not drawn.
+		SVG string
 	}
 )
 

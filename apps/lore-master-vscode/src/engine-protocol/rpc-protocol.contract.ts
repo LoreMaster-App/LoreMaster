@@ -151,31 +151,33 @@ export interface Content {
 
 export interface Output {
   /** What the editor calls this storage; absent means a name made from where it goes. */
-  name?:          string
-  platform:       string
-  baseUrl:        string
-  space:          string
-  parentPageId:   string
-  titlePrefix:    string
-  direction:      string
-  content:        Content[]
-  mermaidMode:    string
-  titleCollision: string
-  linkMode:       string
+  name?:            string
+  platform:         string
+  baseUrl:          string
+  space:            string
+  parentPageId:     string
+  titlePrefix:      string
+  direction:        string
+  content:          Content[]
+  mermaidMode:      string
+  /** The widest, in pixels, an inline diagram is shown (html-macro mode); absent means the engine's default. */
+  mermaidMaxWidth?: number
+  titleCollision:   string
+  linkMode:         string
   /** github-pages: the repo ("owner/name" or a URL; empty = the workspace's own origin),
    *  the branch to publish to (empty = gh-pages) and the folder inside it (empty = the root,
    *  which the publish owns entirely; a path leaves the rest of the branch alone). */
-  repo?:          string
-  branch?:        string
-  path?:          string
+  repo?:            string
+  branch?:          string
+  path?:            string
   /** Gitignore-syntax entries (files, or folders ending in "/") this storage reads although the
    *  top-level ignore list or its own exclude leaves them out; the most specific entry wins. */
-  include?:       string[]
+  include?:         string[]
   /** Entries this storage leaves out, on top of the top-level ignore list. */
-  exclude?:       string[]
+  exclude?:         string[]
   /** How the storage's pages are laid out: a built-in's name, a workspace path or (confluence)
    *  a page id or address; absent is the default layout. */
-  template?:      string
+  template?:        string
 }
 
 /** One generator of the loreMaster.generators setting: what it reads and the folder it writes its pages to. */

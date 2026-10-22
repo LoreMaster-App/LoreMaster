@@ -5,6 +5,7 @@ import com.google.gson.JsonObject
 import loremaster.configdescription.ConfigDescription
 import loremaster.configdescription.FIELD_CHOICE
 import loremaster.configdescription.FIELD_LIST
+import loremaster.configdescription.FIELD_NUMBER
 import loremaster.configdescription.FieldDescriptor
 import loremaster.configdescription.PlatformDescriptor
 
@@ -44,7 +45,7 @@ fun blankOutput(description: ConfigDescription, platform: PlatformDescriptor): J
     addProperty("platform", platform.id)
     for (field in allFields(description)) {
         when {
-            field.type == FIELD_LIST || field.key == "name" -> Unit
+            field.type == FIELD_LIST || field.type == FIELD_NUMBER || field.key == "name" -> Unit
             field.type == FIELD_CHOICE -> addProperty(field.key, field.default)
             else -> addProperty(field.key, "")
         }
@@ -72,6 +73,10 @@ fun outputFrom(description: ConfigDescription, platform: PlatformDescriptor, val
             output.remove(field.key)
             val items = splitList(text)
             if (items.isNotEmpty()) output.add(field.key, JsonArray().also { array -> items.forEach(array::add) })
+        } else if (field.type == FIELD_NUMBER) {
+            // The engine wants a number or nothing, never text.
+            output.remove(field.key)
+            text.toIntOrNull()?.let { output.addProperty(field.key, it) }
         } else if (field.key == "name" && text.isEmpty()) {
             output.remove("name")
         } else {
