@@ -59,7 +59,7 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInvalidSettings, "%s", err.Error())
 		}
-		prepared = prepared.WithTemplate(template.Hash)
+		prepared = prepared.WithTemplate(template.Hash).WithDiagramMode(output.MermaidMode)
 		scope := make([]documentdiscovery.DocumentPath, len(params.Scope))
 		for i, path := range params.Scope {
 			scope[i] = documentdiscovery.DocumentPath(path)
