@@ -343,7 +343,7 @@ ${reason.detail}`
   }
 
   async getParent (node: PagesNode): Promise<PagesNode | undefined> {
-    if (['local', 'storage', 'notice'].includes(node.kind)) { return undefined }
+    if (!hasLocation(node)) { return undefined }
     const chain = await this.rowsTo(node.index, pathOfRow(node) ?? '', node.kind === 'folder')
 
     return chain.at(-2) ?? this.locationNode(node.index)
@@ -404,6 +404,11 @@ ${reason.detail}`
       }
     }
   }
+}
+
+/** Whether a row sits inside a location (Local or a storage), rather than being one or a bare notice. */
+function hasLocation (node: PagesNode): node is Exclude<PagesNode, { kind: 'local' | 'storage' | 'notice' }> {
+  return !['local', 'storage', 'notice'].includes(node.kind)
 }
 
 /** The workspace-relative path a row stands for, when it stands for one. */
