@@ -57,10 +57,17 @@ func encode(out *bytes.Buffer, value reflect.Value) {
 // page does and when the template does, so editing a template re-publishes the pages. An empty
 // templateHash (no template) leaves the hash as it was.
 func HashWithTemplate(renderHash string, templateHash string) string {
-	if templateHash == "" {
+	return HashWithVariant(renderHash, templateHash)
+}
+
+// HashWithVariant is the render hash of a page shown in one of several ways that its blocks
+// do not tell apart (a template, how diagrams are drawn): it changes when the page does and
+// when the variant does. An empty variant leaves the hash as it was.
+func HashWithVariant(renderHash string, variant string) string {
+	if variant == "" {
 		return renderHash
 	}
-	sum := sha256.Sum256([]byte(renderHash + "|" + templateHash))
+	sum := sha256.Sum256([]byte(renderHash + "|" + variant))
 
 	return "sha256:" + hex.EncodeToString(sum[:])
 }

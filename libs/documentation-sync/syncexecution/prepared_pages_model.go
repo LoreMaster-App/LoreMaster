@@ -37,6 +37,23 @@ func (p Prepared) WithTemplate(templateHash string) Prepared {
 	return p
 }
 
+// WithDiagramMode is the pages with the way the output draws diagrams folded into the render
+// hash of each page that has one. The blocks are the same whether a diagram becomes an image
+// or stays code, so without this a page synced as code is "unchanged" after the output is
+// switched to images and the image is never made.
+func (p Prepared) WithDiagramMode(mode string) Prepared {
+	pages := make(map[documentdiscovery.DocumentPath]PreparedPage, len(p.Pages))
+	for path, page := range p.Pages {
+		if len(diagramSources(page.Converted.Document.Blocks)) > 0 {
+			page.Converted.RenderHash = documentconversion.HashWithVariant(page.Converted.RenderHash, "diagrams:"+mode)
+		}
+		pages[path] = page
+	}
+	p.Pages = pages
+
+	return p
+}
+
 // PreparedPage is one document ready to write.
 type PreparedPage struct {
 	Converted documentconversion.Converted
