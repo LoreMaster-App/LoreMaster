@@ -1,4 +1,4 @@
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import * as vscode from 'vscode'
 import {
   type ConfigDescription,
@@ -64,6 +64,21 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
   /** `options` says how one location is shown: Local is index -1, a storage its index in the settings. */
   constructor (private readonly engine: PagesEngine, private readonly options: (index: number) => DisplayOptions) {}
 
+  /** What a location lists: its pages as nested entries, and the files it leaves out. */
+  private shapeOf (tree: WorkspaceTreeResult, index: number): { entries: PageEntry[]; leftOut: LeftOutFile[]; leftOutTotal: number; remote: RemoteCheck | undefined } {
+    const { label, excluded } = this.options(index)
+    const local = index === LOCAL_INDEX
+    const remote = local ? undefined : this.remote.get(index)
+    const leftOut = local || excluded === 'hidden' ? [] : tree.leftOut ?? []
+
+    return {
+      entries:      buildPageEntries(tree.nodes, label, remote),
+      leftOut,
+      leftOutTotal: local || excluded === 'hidden' ? 0 : tree.leftOutTotal ?? leftOut.length,
+      remote,
+    }
+  }
+
   private async pagesOf (index: number): Promise<PagesNode[]> {
     let tree: WorkspaceTreeResult
     try {
@@ -72,13 +87,9 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
       return [{ kind: 'notice', message: error instanceof Error ? error.message : String(error) }]
     }
 
-    const { label, view, excluded } = this.options(index)
-    const local = index === LOCAL_INDEX
-    const remote = local ? undefined : this.remote.get(index)
+    const { view } = this.options(index)
     const rows: PagesNode[] = (tree.problems ?? []).map(message => ({ kind: 'notice', message }))
-    const entries = buildPageEntries(tree.nodes, label, remote)
-    const leftOut = local || excluded === 'hidden' ? [] : tree.leftOut ?? []
-    const leftOutTotal = local || excluded === 'hidden' ? 0 : tree.leftOutTotal ?? leftOut.length
+    const { entries, leftOut, leftOutTotal, remote } = this.shapeOf(tree, index)
 
     if (view === 'repo') {
       rows.push(...this.repoRows(index, entries, leftOut))
@@ -101,13 +112,60 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
 
   /** The files placed where they sit in the repository, left-out ones in place and faded. */
   private repoRows (index: number, entries: PageEntry[], leftOut: LeftOutFile[]): PagesNode[] {
+    const root = this.repoRoot(index, entries, leftOut)
+
+    return [...folderRows(index, root.folders), ...root.files.map(file => itemRow(file))]
+  }
+
+  private repoRoot (index: number, entries: PageEntry[], leftOut: LeftOutFile[]): RepoFolder<RepoItem> {
     const items: RepoItem[] = [
       ...allEntries(entries).map((entry): RepoItem => ({ kind: 'page', index, entry: { ...entry, children: [] } })),
       ...leftOut.map((file): RepoItem => ({ kind: 'left-out-file', index, file })),
     ]
-    const root = repoTree(items, pathOfItem)
 
-    return [...folderRows(index, root.folders), ...root.files.map(file => itemRow(file))]
+    return repoTree(items, pathOfItem)
+  }
+
+  /** The row of a location: Local, or a storage. */
+  private locationNode (index: number): PagesNode | undefined {
+    if (index === LOCAL_INDEX) { return { kind: 'local' } }
+    const output = this.outputs.find(each => each.index === index)
+
+    return output === undefined ? undefined : { kind: 'storage', ...output }
+  }
+
+  /** The rows from a location's top level down to the one at `path` (a page or file, or a folder), as the location shows it now. */
+  private async rowsTo (index: number, path: string, isFolder: boolean): Promise<PagesNode[]> {
+    let tree: WorkspaceTreeResult
+    try {
+      tree = await this.treeOf(index)
+    } catch {
+      return []
+    }
+    const { view } = this.options(index)
+    const { entries, leftOut } = this.shapeOf(tree, index)
+    if (view === 'repo') {
+      const chain: PagesNode[] = []
+      let folder = this.repoRoot(index, entries, leftOut)
+      while (true) {
+        const next = folder.folders.find(each => path.startsWith(`${each.path}/`) || path === each.path)
+        if (next === undefined) { break }
+        chain.push({ kind: 'folder', index, folder: next })
+        if (isFolder && next.path === path) { return chain }
+        folder = next
+      }
+      const file = folder.files.find(each => pathOfItem(each) === path)
+
+      return file === undefined || isFolder ? [] : [...chain, itemRow(file)]
+    }
+    if (isFolder) { return [] }
+    if (view === 'flat') {
+      const found = allEntries(entries).find(each => each.node.path === path)
+
+      return found === undefined ? [] : [{ kind: 'page', index, entry: { ...found, children: [] } }]
+    }
+
+    return pageChain(index, entries, path)
   }
 
   private treeOf (index: number): Promise<WorkspaceTreeResult> {
@@ -275,6 +333,22 @@ ${reason.detail}`
     }
   }
 
+  /** The row for a Markdown file of the workspace in the Local location, or undefined when the view does not list it. */
+  async locateFile (fsPath: string): Promise<PagesNode | undefined> {
+    const path = relative(this.folder, fsPath).replaceAll('\\', '/')
+    if (path === '' || this.folder === '' || path.startsWith('..')) { return undefined }
+    const rows = await this.rowsTo(LOCAL_INDEX, path, false)
+
+    return rows.at(-1)
+  }
+
+  async getParent (node: PagesNode): Promise<PagesNode | undefined> {
+    if (['local', 'storage', 'notice'].includes(node.kind)) { return undefined }
+    const chain = await this.rowsTo(node.index, pathOfRow(node) ?? '', node.kind === 'folder')
+
+    return chain.at(-2) ?? this.locationNode(node.index)
+  }
+
   async getChildren (node?: PagesNode): Promise<PagesNode[]> {
     if (node?.kind === 'page') {
       return node.entry.children.map(entry => ({ kind: 'page', index: node.index, entry }))
@@ -332,9 +406,35 @@ ${reason.detail}`
   }
 }
 
+/** The workspace-relative path a row stands for, when it stands for one. */
+function pathOfRow (node: PagesNode): string | undefined {
+  switch (node.kind) {
+    case 'page': { return node.entry.node.path
+    }
+    case 'folder': { return node.folder.path
+    }
+    case 'left-out-file': { return node.file.path
+    }
+    default: { return undefined
+    }
+  }
+}
+
 /** Every entry of the nested tree, parents before their children. */
 function allEntries (entries: PageEntry[]): PageEntry[] {
   return entries.flatMap(entry => [entry, ...allEntries(entry.children)])
+}
+
+/** The page rows from the top of the tree down to the entry at `path`; empty when it is not there. */
+function pageChain (index: number, entries: PageEntry[], path: string): PagesNode[] {
+  for (const entry of entries) {
+    const row: PagesNode = { kind: 'page', index, entry }
+    if (entry.node.path === path) { return [row] }
+    const below = pageChain(index, entry.children, path)
+    if (below.length > 0) { return [row, ...below] }
+  }
+
+  return []
 }
 
 function itemRow (item: RepoItem): PagesNode {
