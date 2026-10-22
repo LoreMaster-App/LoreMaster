@@ -72,8 +72,8 @@ func validate(settings Settings, requireOutputs bool) error {
 func validateConfluenceOutput(add func(string, ...any), where string, output Output, seen map[string]int, index int) {
 	choose(add, where+".direction", output.Direction, []string{"to-platform", "two-way"}, nil)
 	choose(add, where+".mermaidMode", output.MermaidMode, []string{"image", "code", "html-macro"}, map[string]string{"marketplace-macro": "#40"})
-	if output.MermaidMaxWidth < 0 {
-		add("%s.mermaidMaxWidth %d must not be negative", where, output.MermaidMaxWidth)
+	if problem := CSSLengthProblem(output.MermaidMaxWidth); problem != "" {
+		add("%s.mermaidMaxWidth %q %s", where, output.MermaidMaxWidth, problem)
 	}
 	choose(add, where+".titleCollision", output.TitleCollision, []string{"fail", "adopt"}, nil)
 	choose(add, where+".linkMode", output.LinkMode, []string{"title", "id"}, nil)

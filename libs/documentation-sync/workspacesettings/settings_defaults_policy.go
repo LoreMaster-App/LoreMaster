@@ -21,9 +21,7 @@ func applyDefaults(settings *Settings) {
 		output.Platform = cmpOr(output.Platform, defaults.Platform)
 		output.Direction = cmpOr(output.Direction, defaults.Direction)
 		output.MermaidMode = cmpOr(output.MermaidMode, defaults.MermaidMode)
-		if output.MermaidMaxWidth == 0 {
-			output.MermaidMaxWidth = defaults.MermaidMaxWidth
-		}
+		output.MermaidMaxWidth = cmpOr(NormalizeCSSLength(output.MermaidMaxWidth), defaults.MermaidMaxWidth)
 		output.TitleCollision = cmpOr(output.TitleCollision, defaults.TitleCollision)
 		output.LinkMode = cmpOr(output.LinkMode, defaults.LinkMode)
 		if len(output.Content) == 0 {

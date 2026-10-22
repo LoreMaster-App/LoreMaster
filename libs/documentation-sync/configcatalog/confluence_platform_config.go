@@ -76,9 +76,10 @@ func confluencePlatform() Platform {
 				},
 			},
 			{
-				Key: "mermaidMaxWidth", Label: "Widest Mermaid diagram", Type: FieldNumber, Default: "800", Advanced: true,
-				Help: "In pixels. How wide an inline diagram (the HTML macro mode) is shown at most; it shrinks to fit a narrower page.",
-				Min:  intPointer(100), Max: intPointer(4000),
+				Key: "mermaidMaxWidth", Label: "Widest Mermaid diagram", Type: FieldText, Default: "800px", Advanced: true,
+				Help:        "How wide an inline diagram (the HTML macro mode) is shown at most: any CSS max-width, such as 800px, 50%, 40em or min(800px, 100%). A number alone is pixels. It shrinks to fit a narrower page and is never larger than it was drawn.",
+				Pattern:     `^[a-zA-Z0-9 .,%()+*/-]*$`,
+				PatternHelp: "Use a CSS length such as 800px, 50% or min(800px, 100%).",
 			},
 			{
 				Key: "titleCollision", Label: "Title already exists", Type: FieldChoice, Default: "fail", Advanced: true,

@@ -160,8 +160,8 @@ export interface Output {
   direction:        string
   content:          Content[]
   mermaidMode:      string
-  /** The widest, in pixels, an inline diagram is shown (html-macro mode); absent means the engine's default. */
-  mermaidMaxWidth?: number
+  /** The CSS max-width of an inline diagram (html-macro mode): 800px, 50%, min(800px, 100%); absent means the engine's default. */
+  mermaidMaxWidth?: string
   titleCollision:   string
   linkMode:         string
   /** github-pages: the repo ("owner/name" or a URL; empty = the workspace's own origin),

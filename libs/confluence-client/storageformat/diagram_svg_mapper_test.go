@@ -8,9 +8,9 @@ import (
 const mermaidSVG = `<?xml version="1.0"?><svg id="d1" width="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 800" style="max-width: 1600px;" role="graphics-document"><g/></svg>`
 
 func TestSizedSVGCapsTheWidthAndKeepsTheProportions(t *testing.T) {
-	got := sizedSVG(mermaidSVG, 900)
+	got := sizedSVG(mermaidSVG, "900px")
 
-	for _, want := range []string{`<div style="max-width:900px;width:100%;">`, `width="100%" style="height:auto;"`, `viewBox="0 0 1600 800"`, `id="d1"`} {
+	for _, want := range []string{`<div style="max-width:min(900px, 1600px);width:100%;">`, `width="100%" style="height:auto;"`, `viewBox="0 0 1600 800"`, `id="d1"`} {
 		if !strings.Contains(got, want) {
 			t.Errorf("missing %q in %s", want, got)
 		}
@@ -21,26 +21,37 @@ func TestSizedSVGCapsTheWidthAndKeepsTheProportions(t *testing.T) {
 }
 
 func TestSizedSVGNeverEnlargesAPictureBeyondItsDrawnSize(t *testing.T) {
-	if got := sizedSVG(mermaidSVG, 3000); !strings.Contains(got, "max-width:1600px") {
-		t.Errorf("a cap above the drawn width keeps the drawn width: %s", got)
+	if got := sizedSVG(mermaidSVG, "3000px"); !strings.Contains(got, "max-width:min(3000px, 1600px)") {
+		t.Errorf("a cap above the drawn width is bounded by it: %s", got)
 	}
-	if got := sizedSVG(mermaidSVG, 0); !strings.Contains(got, "max-width:1600px") {
-		t.Errorf("no cap keeps the drawn width: %s", got)
+	for _, none := range []string{"", "none"} {
+		if got := sizedSVG(mermaidSVG, none); !strings.Contains(got, "max-width:1600px") {
+			t.Errorf("no cap (%q) keeps the drawn width: %s", none, got)
+		}
+	}
+}
+
+func TestSizedSVGTakesAnyCSSWidth(t *testing.T) {
+	for _, width := range []string{"50%", "40em", "min(800px, 100%)", "calc(100% - 2rem)"} {
+		want := "max-width:min(" + width + ", 1600px)"
+		if got := sizedSVG(mermaidSVG, width); !strings.Contains(got, want) {
+			t.Errorf("%s: want %q in %s", width, want, got)
+		}
 	}
 }
 
 func TestSizedSVGWithoutAnySizeUsesTheCap(t *testing.T) {
-	if got := sizedSVG(`<svg><g/></svg>`, 700); !strings.Contains(got, "max-width:700px") {
+	if got := sizedSVG(`<svg><g/></svg>`, "50%"); !strings.Contains(got, "max-width:50%;") {
 		t.Errorf("an SVG that does not say its size takes the cap: %s", got)
 	}
-	if got := sizedSVG(`not an svg`, 700); got != "not an svg" {
+	if got := sizedSVG(`not an svg`, "700px"); got != "not an svg" {
 		t.Errorf("anything else is left alone: %s", got)
 	}
 }
 
 func TestHTMLMacroModeShowsTheSVGAboveACollapsedSource(t *testing.T) {
 	doc := Document{Blocks: []Block{Mermaid{Source: "graph TD; A-->B", SVG: mermaidSVG}}}
-	got, err := Render(doc, Options{MermaidMode: MermaidHTMLMacro, DiagramMaxWidth: 800})
+	got, err := Render(doc, Options{MermaidMode: MermaidHTMLMacro, DiagramMaxWidth: "800px"})
 	if err != nil {
 		t.Fatal(err)
 	}

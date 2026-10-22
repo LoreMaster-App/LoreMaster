@@ -188,7 +188,7 @@ func (p *Platform) ForOutput(output workspacesettings.Output) *Platform {
 	if output.LinkMode == "id" {
 		copied.render.LinkMode = storageformat.LinkByURL
 	}
-	copied.render.DiagramMaxWidth = output.MermaidMaxWidth
+	copied.render.DiagramMaxWidth = workspacesettings.NormalizeCSSLength(output.MermaidMaxWidth)
 	switch output.MermaidMode {
 	case "code":
 		copied.render.MermaidMode = storageformat.MermaidCode
