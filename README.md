@@ -193,8 +193,9 @@ Two diagram languages are understood, each as a fenced code block (` ```mermaid 
 - `html-macro` — Mermaid only: the SVG goes inline in an HTML macro, with nothing attached, above
   the source in a collapsed code macro. Use it when the site does not draw SVG attachments (some
   Data Center instances show only a file icon). A Confluence administrator has to enable the HTML
-  macro first. `mermaidMaxWidth` (pixels, default 800) is how wide the picture is shown at most; it
-  shrinks to fit a narrower page and is never enlarged beyond the size it was drawn at.
+  macro first. `mermaidMaxWidth` is how wide the picture is shown at most, as any CSS `max-width`:
+  `800px` (the default), `50%` of the page, `40em`, `min(800px, 100%)`; a bare number is pixels. It
+  shrinks to fit a narrower page and is never larger than the size it was drawn at.
 - `marketplace-macro` — Mermaid only, with a Marketplace app; not built yet.
 
 **Mermaid** is drawn by the editor's webview. **D2** is drawn by the engine itself, so it also
@@ -233,7 +234,7 @@ workspace. The sync reads the folder's `.vscode/settings.json`, for example:
       "titlePrefix": "LoreMaster",     // pages are titled "<prefix>: <H1>"
       "direction": "to-platform",      // to-platform (push) | two-way (also pull remote edits back)
       "mermaidMode": "image",          // image | code | html-macro | marketplace-macro
-      "mermaidMaxWidth": 800,          // html-macro: the widest diagram, in pixels
+      "mermaidMaxWidth": "800px",      // html-macro: any CSS max-width (50%, 40em, min(800px, 100%))
       "titleCollision": "adopt",       // adopt | fail
       "linkMode": "title",             // title | id
       "content": [{ "type": "markdown", "roots": ["docs"], "excludes": [], "template": "default" }]

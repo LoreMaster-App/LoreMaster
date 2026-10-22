@@ -1175,11 +1175,15 @@
                 "markdownDescription": "How Mermaid diagrams are stored. Empty uses `loreMaster.defaults.mermaidMode`."
               },
               "mermaidMaxWidth": {
-                "type": "integer",
-                "minimum": 100,
-                "maximum": 4000,
-                "default": 800,
-                "markdownDescription": "The widest, in pixels, an inline Mermaid diagram is shown (`html-macro` mode). It shrinks to fit a narrower page."
+                "type": "string",
+                "default": "800px",
+                "examples": [
+                  "800px",
+                  "50%",
+                  "40em",
+                  "min(800px, 100%)"
+                ],
+                "markdownDescription": "The widest an inline Mermaid diagram is shown (`html-macro` mode): any CSS `max-width`, such as `800px`, `50%`, `40em` or `min(800px, 100%)`. A number alone is pixels. It shrinks to fit a narrower page and is never larger than it was drawn."
               },
               "titleCollision": {
                 "type": "string",

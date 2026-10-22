@@ -178,11 +178,11 @@
         {
           "key": "mermaidMaxWidth",
           "label": "Widest Mermaid diagram",
-          "help": "In pixels. How wide an inline diagram (the HTML macro mode) is shown at most; it shrinks to fit a narrower page.",
-          "type": "number",
-          "default": "800",
-          "min": 100,
-          "max": 4000,
+          "help": "How wide an inline diagram (the HTML macro mode) is shown at most: any CSS max-width, such as 800px, 50%, 40em or min(800px, 100%). A number alone is pixels. It shrinks to fit a narrower page and is never larger than it was drawn.",
+          "type": "text",
+          "default": "800px",
+          "pattern": "^[a-zA-Z0-9 .,%()+*/-]*$",
+          "patternHelp": "Use a CSS length such as 800px, 50% or min(800px, 100%).",
           "advanced": true
         },
         {

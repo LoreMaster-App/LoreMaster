@@ -37,7 +37,7 @@ func TestValidate(t *testing.T) {
 		{"reserved platform", func(s *Settings) { s.Outputs[0].Platform = "notion" }, `outputs[0].platform "notion" is planned but not available yet (#166); use confluence or github-pages or github-wiki`},
 		{"bad direction", func(s *Settings) { s.Outputs[0].Direction = "sideways" }, `outputs[0].direction "sideways" is not one of to-platform, two-way`},
 		{"marketplace macro reserved", func(s *Settings) { s.Outputs[0].MermaidMode = "marketplace-macro" }, `outputs[0].mermaidMode "marketplace-macro" is planned but not available yet (#40); use image or code or html-macro`},
-		{"negative diagram width", func(s *Settings) { s.Outputs[0].MermaidMaxWidth = -1 }, `outputs[0].mermaidMaxWidth -1 must not be negative`},
+		{"diagram width that is not CSS", func(s *Settings) { s.Outputs[0].MermaidMaxWidth = "50%; color: red" }, `outputs[0].mermaidMaxWidth "50%; color: red" must be a CSS length such as 800px, 50% or min(800px, 100%)`},
 		{"test results reserved", func(s *Settings) { s.Outputs[0].Content[0].Type = "test-results" }, `outputs[0].content[0].type "test-results" is planned but not available yet (#96); use markdown`},
 		{"custom template reserved", func(s *Settings) { s.Outputs[0].Content[0].Template = "fancy" }, `outputs[0].content[0].template "fancy": a content entry only takes default; set the template on the output (outputs[].template)`},
 		{"template of another platform", func(s *Settings) { s.Outputs[0].Template = "minimal" }, `outputs[0].template "minimal" is not a built-in template of confluence; use default, or a path`},

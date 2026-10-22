@@ -39,9 +39,10 @@ const (
 type Options struct {
 	LinkMode    LinkMode
 	MermaidMode MermaidMode
-	// DiagramMaxWidth is the widest, in pixels, an inline diagram (MermaidHTMLMacro) is shown;
-	// 0 leaves it at the size the diagram was drawn.
-	DiagramMaxWidth int
+	// DiagramMaxWidth is the CSS max-width of an inline diagram (MermaidHTMLMacro): 800px, 50%,
+	// min(800px, 100%)... It is already checked; empty or "none" leaves the diagram at the size it
+	// was drawn.
+	DiagramMaxWidth string
 }
 
 // Render writes doc as Confluence storage format. It never emits an XML comment, so the
