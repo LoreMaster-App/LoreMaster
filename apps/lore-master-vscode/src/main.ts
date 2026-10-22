@@ -14,6 +14,9 @@ import { registerMarkdownLists } from './markdown-lists'
 import { registerMarkdownDiagrams, type MarkdownItExtension } from './markdown-diagrams'
 import { addCalloutPanels, type CalloutMarkdownIt } from './preview-callouts'
 import { registerActionBar, type BarMarkdownIt } from './preview-action-bar'
+import { servePreviewActions } from './preview-actions'
+import { addFootnotes, type FootnoteMarkdownIt } from './preview-footnotes'
+import { addLinkChecks, workspaceLinkTargets, type LinkMarkdownIt } from './preview-link-check'
 import { registerMarkdownTables } from './markdown-tables'
 import { registerMarkdownToc } from './markdown-toc'
 import { COPY_MCP_CONFIG_COMMAND, copyMcpConfig, registerMcpServer } from './mcp-server'
@@ -84,7 +87,17 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
   )
 
   const markdownDiagrams = registerMarkdownDiagrams({ engine })
-  const actionBar = registerActionBar({ engine, exportDocument: document => exportMarkdownCommand({ engine, output, extensionPath: context.extensionPath }, document) })
+  const actionBar = registerActionBar({ engine })
+  const previewActions = servePreviewActions({
+    export: params => exportMarkdownCommand({ engine, output, extensionPath: context.extensionPath }, vscode.Uri.parse(params.document)),
+  })
+  const linkTargets = workspaceLinkTargets(path => {
+    const status = actionBar.statusOf(path)
+
+    if (status.state === 'tracked') { return status.pages.length > 0 }
+
+    return status.state === 'untracked' ? false : undefined
+  })
   const syncDeps = { engine, connections, targets, output }
   const watchMode = new WatchMode(syncDeps)
 
@@ -100,6 +113,7 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     registerMarkdownToc(),
     markdownDiagrams,
     actionBar,
+    previewActions,
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),
     vscode.commands.registerCommand(GENERATE_AND_SYNC_COMMAND, () => generateAndSyncCommand(syncDeps)),
     vscode.commands.registerCommand(TOGGLE_WATCH_COMMAND, () => watchMode.toggle()),
@@ -117,13 +131,16 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     vscode.commands.registerCommand(COPY_MCP_CONFIG_COMMAND, () => copyMcpConfig(context)),
   )
 
-  // One extension for the built-in preview: the diagram fences, the action bar, then the callout panels.
+  // One extension for the built-in preview: the diagram fences, the action bar, the callout panels, footnotes, then the link checks.
   return {
     extendMarkdownIt: md => {
       const drawn = markdownDiagrams.extendMarkdownIt(md)
       const headed = actionBar.extendMarkdownIt(drawn as typeof drawn & BarMarkdownIt)
 
-      return addCalloutPanels(headed as typeof headed & CalloutMarkdownIt)
+      const called = addCalloutPanels(headed as typeof headed & CalloutMarkdownIt)
+      const noted = addFootnotes(called as typeof called & FootnoteMarkdownIt)
+
+      return addLinkChecks(noted as typeof noted & LinkMarkdownIt, linkTargets)
     },
   }
 }

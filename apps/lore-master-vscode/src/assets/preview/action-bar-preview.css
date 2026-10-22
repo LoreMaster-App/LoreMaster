@@ -75,3 +75,8 @@ a.loremaster-bar-button:hover { background: var(--vscode-button-hoverBackground,
 }
 
 .loremaster-off-callouts blockquote.loremaster-callout::before { content: none; }
+
+.loremaster-link-broken { color: var(--vscode-errorForeground, #f14c4c); text-decoration: underline wavy; }
+.loremaster-link-unsynced { text-decoration: underline dashed; text-decoration-color: var(--vscode-editorWarning-foreground, #cca700); }
+.loremaster-footnote-ref { font-size: 0.8em; }
+.loremaster-footnotes { font-size: 0.9em; }
