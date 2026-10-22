@@ -15,6 +15,9 @@ export interface FootnoteState {
 
 /** The part of the markdown-it instance VS Code hands to an extension that the footnote rule needs. */
 export interface FootnoteMarkdownIt {
-  core: { ruler: { push (name: string, rule: (state: FootnoteState) => void): void } }
-  renderInline (source: string, env?: unknown): string
+  core:     { ruler: { push (name: string, rule: (state: FootnoteState) => void): void } }
+  /** Reads inline Markdown into tokens on its own: unlike renderInline, it does not run the rules of the whole page. */
+  inline:   { parse (source: string, md: unknown, env: unknown, tokens: FootnoteToken[]): void }
+  renderer: { renderInline (tokens: FootnoteToken[], options: unknown, env: unknown): string }
+  options:  unknown
 }

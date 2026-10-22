@@ -2,6 +2,7 @@
 // algorithms, and this covers what only a host can: that the commands find the active editor, apply their
 // edits and move the cursors.
 const assert = require('node:assert')
+const os = require('node:os')
 const path = require('node:path')
 const vscode = require('vscode')
 
@@ -140,6 +141,26 @@ suite('Markdown editing in a real VS Code host', () => {
 
     const plain = await render('```ts\nlet a = 1\n```')
     assert.ok(!plain.includes('loremaster-diagram'), plain)
+  })
+
+  test('the preview of an open file has the action bar, the footnotes and the link marks', async function () {
+    this.timeout(60_000)
+    const uri = vscode.Uri.file(path.join(os.tmpdir(), 'loremaster-preview-check.md'))
+    await vscode.workspace.fs.writeFile(uri, Buffer.from('# Check\n\nA claim[^1] and [a gone file](missing-file.md).\n\n[^1]: The note.\n'))
+    try {
+      const document = await vscode.workspace.openTextDocument(uri)
+      // With a document (not a string) VS Code puts it in the render environment, as the preview does.
+      const html = await vscode.commands.executeCommand('markdown.api.render', document)
+
+      assert.ok(html.includes('loremaster-action-bar'), html)
+      assert.ok(html.includes('Export...'), html)
+      assert.ok(html.includes('loremaster-footnote-ref'), html)
+      assert.ok(html.includes('loremaster-link-broken'), html)
+      // A note is drawn on its own: the rules of the page (the Mermaid one adds a span) do not run inside it.
+      assert.ok(!html.includes('<li id="fn-1"><span'), html)
+    } finally {
+      await vscode.workspace.fs.delete(uri)
+    }
   })
 
   test('does nothing in a file that is not Markdown', async () => {

@@ -30,7 +30,7 @@ export function createSyncTargetUI (): SyncTargetUI {
         ...view.children.map(page => ({ label: `$(file) ${page.title}`, page })),
       ]
       const picked = await vscode.window.showQuickPick(items, {
-        title:       `Parent page — ${view.breadcrumb}`,
+        title:       `LoreMaster: parent page — ${view.breadcrumb}`,
         placeHolder: 'Choose a parent page, or browse into one',
       })
 
@@ -51,13 +51,13 @@ export function createSyncTargetUI (): SyncTargetUI {
     },
 
     promptSearchQuery () {
-      return Promise.resolve(vscode.window.showInputBox({ title: 'Search pages by title', prompt: 'Title contains', ignoreFocusOut: true }))
+      return Promise.resolve(vscode.window.showInputBox({ title: 'LoreMaster: search pages by title', prompt: 'Title contains', ignoreFocusOut: true }))
     },
 
     async pickSearchResult (results: Page[]) {
       const picked = await vscode.window.showQuickPick(
         results.map(page => ({ label: page.title, description: page.url, page })),
-        { title: 'Search results', placeHolder: results.length === 0 ? 'No pages matched' : 'Pick a parent page' },
+        { title: 'LoreMaster: search results', placeHolder: results.length === 0 ? 'No pages matched' : 'Pick a parent page' },
       )
 
       return picked?.page

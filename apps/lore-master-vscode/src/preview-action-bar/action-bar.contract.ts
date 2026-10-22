@@ -33,14 +33,22 @@ export interface BarToken {
   block:   boolean
 }
 
-/** The part of markdown-it's core state the bar rule reads and changes. */
+/** What a render knows: VS Code sets the open file when it renders, not when it parses. */
+export interface BarEnv {
+  currentDocument?: { fsPath: string, toString (): string }
+}
+
+/** The part of markdown-it's core state the bar rule changes. */
 export interface BarState {
   tokens: BarToken[]
-  env:    { currentDocument?: { fsPath: string, toString (): string } }
   Token:  new (type: string, tag: string, nesting: number) => BarToken
 }
 
-/** The part of the markdown-it instance VS Code hands to an extension that the bar rule needs. */
+/** How a token of one type is written as HTML. */
+export type BarRenderRule = (tokens: BarToken[], index: number, options: unknown, env: BarEnv) => string
+
+/** The part of the markdown-it instance VS Code hands to an extension that the bar needs. */
 export interface BarMarkdownIt {
-  core: { ruler: { push (name: string, rule: (state: BarState) => void): void } }
+  core:     { ruler: { push (name: string, rule: (state: BarState) => void): void } }
+  renderer: { rules: Record<string, BarRenderRule | undefined> }
 }

@@ -77,7 +77,7 @@ export async function exportMarkdownCommand (deps: ExportCommandDeps, clicked?: 
   }
   const picked = await vscode.window.showQuickPick(formatPicks(formats, setting<string[]>('formats', ['html'])), {
     canPickMany: true,
-    title:       targets.length === 1 ? `Export ${vscode.workspace.asRelativePath(targets[0])}` : `Export ${targets.length} Markdown files`,
+    title:       targets.length === 1 ? `LoreMaster: export ${vscode.workspace.asRelativePath(targets[0])}` : `LoreMaster: export ${targets.length} Markdown files`,
     placeHolder: 'Choose the formats to export to',
   })
   if (!picked || picked.length === 0) {
@@ -147,7 +147,7 @@ export async function copyMarkdownAsCommand (deps: ExportCommandDeps): Promise<v
   try {
     const formats = textFormats(await listExportFormats(deps.engine))
     const picked = await vscode.window.showQuickPick(formatPicks(formats, []), {
-      title:       editor.selection.isEmpty ? 'Copy the document as' : 'Copy the selection as',
+      title:       editor.selection.isEmpty ? 'LoreMaster: copy the document as' : 'LoreMaster: copy the selection as',
       placeHolder: 'Choose a format',
     })
     if (!picked) {

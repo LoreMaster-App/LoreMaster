@@ -22,8 +22,10 @@ const noRule = (): void => {}
 function run (tokens: FootnoteToken[]): FootnoteToken[] {
   let rule: (state: FootnoteState) => void = noRule
   const md: FootnoteMarkdownIt = {
-    core:         { ruler: { push: (_name, made) => { rule = made } } },
-    renderInline: source => `<i>${source}</i>`,
+    core:     { ruler: { push: (_name, made) => { rule = made } } },
+    inline:   { parse: (source, _md, _env, out) => { out.push(make('text', source)) } },
+    renderer: { renderInline: tokens => `<i>${tokens.map(token => token.content).join('')}</i>` },
+    options:  {},
   }
   addFootnotes(md)
   rule({ tokens, env: {}, Token: FakeToken })

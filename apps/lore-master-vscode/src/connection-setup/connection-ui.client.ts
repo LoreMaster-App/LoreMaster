@@ -51,7 +51,7 @@ export function createConnectionUI (): ConnectionUI {
 async function askFields (method: CredentialKindDescriptor): Promise<Credential | undefined> {
   const answers: Record<string, string> = {}
   for (const field of method.fields) {
-    const answer = await vscode.window.showInputBox({ title: method.label, prompt: field.label, password: field.secret === true, ignoreFocusOut: true })
+    const answer = await vscode.window.showInputBox({ title: `LoreMaster: ${method.label}`, prompt: field.label, password: field.secret === true, ignoreFocusOut: true })
     if (answer === undefined) {
       return undefined
     }

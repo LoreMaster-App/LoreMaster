@@ -1,34 +1,55 @@
 import { join, resolve } from 'node:path'
 import { addLinkChecks } from './add-link-checks.algorithm'
-import type { LinkMarkdownIt, LinkState, LinkToken } from './link-check.contract'
+import type { LinkMarkdownIt, LinkRenderer, LinkRenderRule, LinkToken } from './link-check.contract'
 
 const DOC = join('repo', 'docs', 'a.md')
 const B = resolve('repo', 'docs', 'b.md')
 
-function link (href: string): LinkToken & { attrs: Record<string, string> } {
-  const attrs: Record<string, string> = { href }
+/** A link token as markdown-it makes it: a list of name and value pairs. */
+class FakeLink implements LinkToken {
+  constructor (public attrs: [string, string][] | null) {}
 
-  return {
-    type:     'link_open',
-    children: null,
-    attrs,
-    attrGet:  name => attrs[name] ?? null,
-    attrJoin: (name, value) => { attrs[name] = [attrs[name], value].filter(Boolean).join(' ') },
-    attrSet:  (name, value) => { attrs[name] = value },
+  attrGet (name: string): string | null {
+    return this.attrs?.find(pair => pair[0] === name)?.[1] ?? null
+  }
+
+  attrSet (name: string, value: string): void {
+    const found = this.attrs?.find(pair => pair[0] === name)
+    if (found) {
+      found[1] = value
+    } else {
+      this.attrs = [...this.attrs ?? [], [name, value]]
+    }
+  }
+
+  attrJoin (name: string, value: string): void {
+    this.attrSet(name, [this.attrGet(name), value].filter(Boolean).join(' '))
   }
 }
 
-const noRule = (): void => {}
+interface Targets { exists: boolean, synced: Record<string, boolean | undefined> }
 
-function check (href: string, targets: { exists: boolean, synced: Record<string, boolean | undefined> }): Record<string, string> {
-  let rule: (state: LinkState) => void = noRule
-  const md: LinkMarkdownIt = { core: { ruler: { push: (_name, made) => { rule = made } } } }
+/** Renders a link the way VS Code does: the page is parsed without knowing the file, and the file is given to the render. */
+function drawn (href: string, targets: Targets, document: string | null = DOC): { attrs: Record<string, string>, token: FakeLink } {
+  const rules: Record<string, LinkRenderRule | undefined> = {}
+  const md: LinkMarkdownIt = { renderer: { rules } }
   addLinkChecks(md, { exists: () => targets.exists, isSynced: path => targets.synced[path] })
-  const made = link(href)
-  rule({ tokens: [{ type: 'inline', children: [made], attrGet: () => null, attrJoin: noRule, attrSet: noRule }], env: { currentDocument: { fsPath: DOC } } })
+  let attrs: Record<string, string> = {}
+  const renderer: LinkRenderer = {
+    renderToken: (tokens, index) => {
+      attrs = Object.fromEntries(tokens[index].attrs ?? [])
 
-  return made.attrs
+      return ''
+    },
+  }
+  const token = new FakeLink([['href', href]])
+  const env = { currentDocument: document === null ? undefined : { fsPath: document } }
+  rules.link_open?.([token], 0, {}, env, renderer)
+
+  return { attrs, token }
 }
+
+const check = (href: string, targets: Targets): Record<string, string> => drawn(href, targets).attrs
 
 const BOTH = { [DOC]: true, [B]: true }
 
@@ -54,6 +75,17 @@ describe('addLinkChecks', () => {
   it('does not call a link unsynced while it is not known, or when the page itself is not synced', () => {
     expect(check('./b.md', { exists: true, synced: { [DOC]: true, [B]: undefined } }).class).toBeUndefined()
     expect(check('./b.md', { exists: true, synced: { [DOC]: false, [B]: false } }).class).toBeUndefined()
+  })
+
+  it('draws the mark without changing the parsed page, which VS Code renders again', () => {
+    const { token, attrs } = drawn('./gone.md', { exists: false, synced: BOTH })
+
+    expect(attrs.class).toBe('loremaster-link-broken')
+    expect(token.attrs).toEqual([['href', './gone.md']])
+  })
+
+  it('marks nothing in a render that does not say which file is open', () => {
+    expect(drawn('./gone.md', { exists: false, synced: BOTH }, null).attrs).toEqual({ href: './gone.md' })
   })
 
   it('ignores addresses, in-page links and other files', () => {
