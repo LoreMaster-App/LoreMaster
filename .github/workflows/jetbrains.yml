@@ -29,7 +29,7 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
 
       - run: go build -o "$RUNNER_TEMP/lore-master-engine" ./apps/lore-master-engine
         name: Build the engine
@@ -77,7 +77,7 @@ jobs:
           java-version: 21
 
       - if: steps.version.outputs.released == 'false'
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - if: steps.version.outputs.released == 'false'
         name: Build the engine for every platform
