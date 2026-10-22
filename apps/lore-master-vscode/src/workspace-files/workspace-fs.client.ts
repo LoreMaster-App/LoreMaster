@@ -17,7 +17,7 @@ export async function pickWorkspaceFolder (): Promise<string | undefined> {
 
   const picked = await vscode.window.showQuickPick(
     folders.map(folder => ({ label: folder.name, description: folder.uri.fsPath })),
-    { placeHolder: 'Which workspace folder?' },
+    { title: 'LoreMaster: workspace folder', placeHolder: 'Which workspace folder?' },
   )
 
   return picked?.description
