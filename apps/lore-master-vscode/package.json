@@ -336,31 +336,31 @@
       },
       {
         "command": "loreMaster.viewTree",
-        "title": "Tree View",
+        "title": "View as Tree",
         "icon": "$(list-tree)",
         "category": "LoreMaster"
       },
       {
         "command": "loreMaster.viewFlat",
-        "title": "Flat View",
+        "title": "View as Flat List",
         "icon": "$(list-flat)",
         "category": "LoreMaster"
       },
       {
         "command": "loreMaster.viewRepository",
-        "title": "Repository View",
+        "title": "View as Repository",
         "icon": "$(repo)",
         "category": "LoreMaster"
       },
       {
         "command": "loreMaster.showIgnored",
-        "title": "Show Ignored",
+        "title": "Show Ignored Files",
         "icon": "$(eye)",
         "category": "LoreMaster"
       },
       {
         "command": "loreMaster.hideIgnored",
-        "title": "Hide Ignored",
+        "title": "Hide Ignored Files",
         "icon": "$(eye-closed)",
         "category": "LoreMaster"
       },

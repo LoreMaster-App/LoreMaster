@@ -14,6 +14,7 @@ import { pageDescription, pageLabel } from './page-label.policy'
 import { statusPresentation } from './page-status.policy'
 import type { DisplayOptions, PageEntry, RemoteCheck } from './page-tree.contract'
 import { rowContext } from './row-context.policy'
+import { rowState, rowStateLines } from './row-state.policy'
 
 /** The view id contributed in package.json (inside the LoreMaster view container). */
 export const PAGES_VIEW_ID = 'loreMaster.sync'
@@ -187,9 +188,10 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
   private localItem (): vscode.TreeItem {
     const item = new vscode.TreeItem('Local', vscode.TreeItemCollapsibleState.Collapsed)
     item.id = 'storage:local'
-    item.description = 'every Markdown file in the repository'
+    const options = this.options(LOCAL_INDEX)
+    item.description = rowState(options)
     item.iconPath = new vscode.ThemeIcon('root-folder')
-    item.tooltip = 'Every Markdown file of the workspace, including the ones a storage leaves out. Each row says which storages sync it.'
+    item.tooltip = ['Every Markdown file of the workspace, including the ones a storage leaves out. Each row says which storages sync it.', '', ...rowStateLines(options, 'Files git ignores')].join('\n')
     item.contextValue = rowContext('loreMasterLocal', this.options(LOCAL_INDEX))
 
     return item
@@ -198,8 +200,10 @@ export class PagesViewProvider implements vscode.TreeDataProvider<PagesNode> {
   private storageItem (node: ConfiguredOutput): vscode.TreeItem {
     const item = new vscode.TreeItem(node.label, vscode.TreeItemCollapsibleState.Expanded)
     item.id = `storage:${node.index}`
-    item.description = node.detail
+    const options = this.options(node.index)
+    item.description = node.detail === '' ? rowState(options) : `${rowState(options)} · ${node.detail}`
     item.iconPath = new vscode.ThemeIcon(node.icon)
+    item.tooltip = [node.detail, '', ...rowStateLines(options, 'Files this storage leaves out')].join('\n')
     item.contextValue = rowContext('loreMasterStorage', this.options(node.index))
 
     return item
