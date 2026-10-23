@@ -48,8 +48,12 @@ let total = 0 // FIXME(alice): overflows past 2^53
 
 The engine method behind it is `notes/scan` (`{ workspaceRoot, tags }`), which the other editors can use too.
 
+## As a page that syncs
+
+The `notes` [generator](generators.md#notes) writes the same notes as one Markdown page (a table per tag), so they sync to
+Confluence or GitHub Pages like any other lore: add `{ "type": "notes", "output": "docs/notes" }` to `loreMaster.generators`.
+
 ## Not yet
 
-Editor highlights and a gutter icon, a status bar count, filtering, Problems-panel diagnostics for overdue notes, a Markdown page of
-the notes that syncs like any other, a command-line `notes` command, and turning a note into an issue are planned: see the issue
-"gather TODO and other tagged comments as lore".
+Editor highlights and a gutter icon, a status bar count, filtering, Problems-panel diagnostics for overdue notes, a command-line
+`notes` command, and turning a note into an issue are planned: see the issue "gather TODO and other tagged comments as lore".

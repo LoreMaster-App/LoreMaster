@@ -31,7 +31,7 @@ and asks for one generator each, since one generator writes one kind of page.
 | Markdown (`markdown-docs`) | `.md` or `.markdown` files | The pages, with the images they show |
 | Storybook (`storybook-docs`) | An `index.json` or `stories.json` of stories, or a `source` URL | A page per component with rendered screenshots |
 
-Code documentation (`go-docs`, `ts-docs`, `python-docs`, `csharp-docs`, `dart-docs`) reads source
+Code documentation (`go-docs`, `ts-docs`, `python-docs`, `csharp-docs`, `dart-docs`) and `notes` read source
 code, which no file can be recognised from, so those keep an explicit `type`. They are shortcuts:
 a command that writes Markdown plus `markdown-docs` does the same for any other tool.
 
@@ -65,7 +65,7 @@ In the `loreMaster.generators` setting (and `loreMaster.outputs` for where the p
 
 | Key | Meaning |
 |---|---|
-| `type` | Optional for the formats in the table above: left out, the format is recognised from what `input` selects. Required for `go-docs`, `ts-docs`, `python-docs`, `csharp-docs` and `dart-docs`. Names: `test-results`, `coverage`, `markdown-docs`, `storybook-docs`, `openapi-docs`, or those five. |
+| `type` | Optional for the formats in the table above: left out, the format is recognised from what `input` selects. Required for `notes`, `go-docs`, `ts-docs`, `python-docs`, `csharp-docs` and `dart-docs`. Names: `test-results`, `coverage`, `markdown-docs`, `storybook-docs`, `openapi-docs`, or those five. |
 | `source` | Where a generator reads from when that is not a set of files: for `storybook-docs`, the URL of a Storybook or the folder of its build. |
 | `input` | Gitignore-style patterns selecting what to read. A pattern starting with `!` leaves out what it matches. With no selecting pattern (none, or only `!` ones) the type's default applies. |
 | `output` | The workspace folder the pages are written to. It cannot be the workspace itself, and two generators cannot write into overlapping folders. |
@@ -175,6 +175,24 @@ mode never renders it.
 Whether the generated pages and images go into git is yours to decide: the generator writes them
 to `output`, and the sync uploads them from there. Commit them, or ignore the folder and generate
 on CI before each sync.
+
+## `notes`
+
+Reads the tagged comments of the source files (`TODO`, `FIXME`, `BUG`, `HACK`, `NOTE`...; see [notes](notes.md) for what counts)
+and writes **one page**: a count per tag, then a table per tag with each note's text, where it is (`path:line`), and its owner,
+issue and date when any note has them. The page is the same for the same notes, so an unchanged codebase rewrites nothing. It needs
+nothing installed, and reads files by the same rules a sync does.
+
+```yaml
+generators:
+  - type: notes
+    input: ["src/", "!**/generated/"]   # optional; default is every source file
+    output: docs/notes
+    title: Open work                    # optional; default is "Notes"
+```
+
+The page syncs like any Markdown, so what is unfinished and what is a known workaround reach Confluence or GitHub Pages. Source
+files are shown by path, not linked: they are not pages.
 
 ## `go-docs`
 

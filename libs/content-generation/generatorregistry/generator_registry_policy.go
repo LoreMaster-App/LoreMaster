@@ -9,6 +9,7 @@ import (
 	"lore-master/libs/content-generation/generatedfile"
 	"lore-master/libs/content-generation/godocs"
 	"lore-master/libs/content-generation/markdowndocs"
+	"lore-master/libs/content-generation/notesdocs"
 	"lore-master/libs/content-generation/openapidocs"
 	"lore-master/libs/content-generation/pythondocs"
 	"lore-master/libs/content-generation/storybookdocs"
@@ -23,6 +24,7 @@ var generators = map[string]generatedfile.GenerateFunc{
 	"dart-docs":      dartdocs.Generate,
 	"go-docs":        godocs.Generate,
 	"markdown-docs":  markdowndocs.Generate,
+	"notes":          notesdocs.Generate,
 	"openapi-docs":   openapidocs.Generate,
 	"python-docs":    pythondocs.Generate,
 	"storybook-docs": storybookdocs.Generate,

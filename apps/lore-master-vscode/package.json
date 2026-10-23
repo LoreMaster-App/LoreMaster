@@ -1355,6 +1355,7 @@
                   "test-results",
                   "coverage",
                   "markdown-docs",
+                  "notes",
                   "go-docs",
                   "openapi-docs",
                   "ts-docs",
