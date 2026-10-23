@@ -119,3 +119,31 @@ func TestADiagramThatRunsOutOfTimeIsReplacedByAFreshTabForTheNext(t *testing.T) 
 		t.Fatalf("the next diagram was held up: %v", err)
 	}
 }
+
+func TestLineOfReadsTheLineMermaidNames(t *testing.T) {
+	for message, want := range map[string]int{"Parse error on line 3:\n...": 3, "Lexical error on line 12. Unrecognized text.": 12, "no line here": 0} {
+		if got := lineOf(message); got != want {
+			t.Errorf("%q: got %d, want %d", message, got, want)
+		}
+	}
+}
+
+func TestWithoutABrowserACheckSaysItIsUnavailable(t *testing.T) {
+	renderer := &Renderer{timeout: time.Second, find: func() (string, error) { return "", errors.New("no browser here") }}
+
+	if _, err := renderer.Check(context.Background(), "graph TD; A-->B"); !errors.Is(err, platformport.ErrRendererUnavailable) {
+		t.Fatalf("err = %v", err)
+	}
+}
+
+func TestACheckFindsTheErrorOfABadDiagramAndPassesAGoodOne(t *testing.T) {
+	renderer := browserTest(t)
+
+	if problems, err := renderer.Check(context.Background(), "graph TD\n  A-->B"); err != nil || len(problems) != 0 {
+		t.Fatalf("a good diagram: %v %v", problems, err)
+	}
+	problems, err := renderer.Check(context.Background(), "graph TD\n  A-->B\n  B --- ??? C")
+	if err != nil || len(problems) != 1 || problems[0].Line == 0 {
+		t.Fatalf("a bad diagram should give one problem with a line: %v %v", problems, err)
+	}
+}

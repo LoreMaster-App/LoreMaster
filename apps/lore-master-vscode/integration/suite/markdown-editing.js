@@ -163,6 +163,30 @@ suite('Markdown editing in a real VS Code host', () => {
     }
   })
 
+  test('a broken D2 diagram is an error in the Problems panel, on the line D2 names, and fixing it clears it', async function () {
+    this.timeout(60_000)
+    const { document, editor } = await open(['# Diagrams', '', '```d2', 'a -> b', 'c -> {', 'd -> e', '```', ''].join('\n'))
+    const waitFor = async (condition) => {
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        const found = vscode.languages.getDiagnostics(document.uri)
+        if (condition(found)) { return found }
+        await new Promise(resolve => setTimeout(resolve, 200))
+      }
+
+      return vscode.languages.getDiagnostics(document.uri)
+    }
+
+    const broken = await waitFor(found => found.length > 0)
+    assert.ok(broken.length > 0, 'the engine should have reported the unclosed map')
+    assert.ok(broken.every(each => each.source === 'LoreMaster (D2)' && each.severity === vscode.DiagnosticSeverity.Error), JSON.stringify(broken))
+    // The source starts on line 3 (0-based): the error is on one of its lines, not on the heading.
+    assert.ok(broken.every(each => each.range.start.line >= 3 && each.range.start.line <= 5), JSON.stringify(broken.map(each => each.range.start.line)))
+
+    await editor.edit(edit => edit.replace(new vscode.Range(4, 0, 4, 6), 'c -> d'))
+    const fixed = await waitFor(found => found.length === 0)
+    assert.strictEqual(fixed.length, 0, JSON.stringify(fixed))
+  })
+
   test('does nothing in a file that is not Markdown', async () => {
     const document = await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'hello' })
     const editor = await vscode.window.showTextDocument(document)

@@ -130,6 +130,7 @@ func engineMethods(logger *slog.Logger) rpcserver.Methods {
 		rpcprotocol.MethodExportFormats:     exportcommands.ListFormats(),
 		rpcprotocol.MethodExportRun:         exportcommands.RunExport(),
 		rpcprotocol.MethodDiagramRender:     diagramcommands.RenderDiagram(),
+		rpcprotocol.MethodDiagramCheck:      diagramcommands.CheckDiagram(),
 		rpcprotocol.MethodConfigDescribe:    configcommands.DescribeConfig(),
 	}
 }

@@ -17,3 +17,12 @@ type DiagramRenderer interface {
 // draw in, say), as opposed to a diagram it could not draw. A caller that has another renderer
 // asks that one instead; a diagram that failed is not asked twice.
 var ErrRendererUnavailable = errors.New("the renderer is not available on this machine")
+
+// DiagramProblem is one thing wrong with a diagram's source, as the author sees it in the editor.
+type DiagramProblem struct {
+	// Line and Column are 1-based within the diagram's own source; 0 when the language does not say.
+	Line   int
+	Column int
+	// Message is the language's own explanation.
+	Message string
+}

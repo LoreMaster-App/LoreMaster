@@ -90,6 +90,23 @@ export const window = {
   activeTextEditor: undefined as { document: { uri: unknown } } | undefined,
 }
 
+export class Range {
+  constructor (readonly startLine: number, readonly startCharacter: number, readonly endLine: number, readonly endCharacter: number) {}
+}
+
+export const DiagnosticSeverity = { Error: 0, Warning: 1, Information: 2, Hint: 3 } as const
+
+export class Diagnostic {
+  source?: string
+  constructor (readonly range: Range, readonly message: string, readonly severity?: number) {}
+}
+
+export const languages = {
+  createDiagnosticCollection (_name?: string): { set: (uri: unknown, diagnostics: unknown[]) => void, delete: (uri: unknown) => void, clear: () => void, dispose: () => void } {
+    return { set () {}, delete () {}, clear () {}, dispose () {} }
+  },
+}
+
 export const ProgressLocation = { SourceControl: 1, Window: 10, Notification: 15 } as const
 
 export const ConfigurationTarget = { Global: 1, Workspace: 2, WorkspaceFolder: 3 } as const
@@ -278,6 +295,15 @@ export const workspace = {
     return { dispose () {} }
   },
   onDidChangeTextDocument (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidOpenTextDocument (_listener: (document: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidSaveTextDocument (_listener: (document: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidCloseTextDocument (_listener: (document: unknown) => unknown): { dispose: () => void } {
     return { dispose () {} }
   },
   onDidChangeConfiguration (_listener: (event: { affectsConfiguration: (section: string) => boolean }) => unknown): { dispose: () => void } {
