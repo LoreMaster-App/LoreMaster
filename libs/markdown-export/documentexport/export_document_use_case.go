@@ -42,6 +42,9 @@ type Options struct {
 	Preview bool
 	// MermaidPath is the Mermaid library PDF and PNG draw diagrams with; they are printed as code without one.
 	MermaidPath string
+	// DrawD2 draws a D2 diagram's source as an SVG document. The HTML-based formats (HTML, PDF, PNG) put the drawing where the code
+	// block was; without it, or when it refuses a diagram, D2 stays code. It needs no browser, unlike Mermaid.
+	DrawD2 func(source string) (string, error)
 	// ReferencePath is a template (a .docx for docx, an .odt for odt) whose styles, headers, footers and page setup the
 	// document takes; its own text is not used. Other formats ignore it.
 	ReferencePath string
@@ -71,13 +74,13 @@ func Export(path string, content []byte, formatID string, options Options) (File
 func render(id string, document exportmodel.Document, options Options) ([]byte, error) {
 	switch id {
 	case "html":
-		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir, KeepMarkdownLinks: options.Preview, Diagrams: drawDocumentDiagrams(document, options)})), nil
+		return []byte(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir, KeepMarkdownLinks: options.Preview, Diagrams: withD2(drawDocumentDiagrams(document, options), drawD2Diagrams(document, options))})), nil
 	case "txt":
 		return []byte(plaintextexport.Render(document)), nil
 	case "pdf":
-		return browserexport.RenderPDF(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir}), browserexport.Options{BrowserPath: options.BrowserPath, PageSize: options.PageSize, MermaidPath: options.MermaidPath})
+		return browserexport.RenderPDF(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir, Diagrams: drawD2Diagrams(document, options)}), browserexport.Options{BrowserPath: options.BrowserPath, PageSize: options.PageSize, MermaidPath: options.MermaidPath})
 	case "png":
-		return browserexport.RenderPNG(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir}), browserexport.Options{BrowserPath: options.BrowserPath, Width: options.Width, MermaidPath: options.MermaidPath})
+		return browserexport.RenderPNG(htmlexport.Render(document, htmlexport.Options{BaseDir: options.BaseDir, Diagrams: drawD2Diagrams(document, options)}), browserexport.Options{BrowserPath: options.BrowserPath, Width: options.Width, MermaidPath: options.MermaidPath})
 	case "docx":
 		return docxexport.Render(document, docxexport.Options{BaseDir: options.BaseDir, ReferencePath: options.ReferencePath})
 	case "odt":
