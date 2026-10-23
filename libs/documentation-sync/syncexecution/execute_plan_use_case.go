@@ -460,7 +460,7 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 	images := make(map[string]string, len(diagrams))
 	pictures := make(map[string]string, len(diagrams))
 	for source, diagram := range diagrams {
-		if run.input.Output.MermaidMode == "html-macro" && diagram.language == "mermaid" {
+		if run.input.Output.MermaidMode == "html-macro" {
 			pictures[source] = string(diagram.svg)
 		} else {
 			images[source] = diagram.name
@@ -612,7 +612,7 @@ func (run *execution) renderDiagrams(ctx context.Context, documentPath documentd
 // pictureOf is the SVG to hand on for a drawn diagram: one that is attached carries its source,
 // which an inline one does not need (the page's code macro holds it).
 func pictureOf(svg []byte, mode string, found diagramSource) []byte {
-	if mode == "html-macro" && found.Language == "mermaid" {
+	if mode == "html-macro" {
 		return svg
 	}
 

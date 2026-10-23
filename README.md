@@ -190,7 +190,7 @@ Two diagram languages are understood, each as a fenced code block (` ```mermaid 
 - `image` (default) — the diagram is drawn to SVG, uploaded as an attachment and shown with
   its source kept in a code macro. Portable across platforms.
 - `code` — leave it as a fenced code block.
-- `html-macro` — Mermaid only: the SVG goes inline in an HTML macro, with nothing attached, above
+- `html-macro` — Mermaid and D2: the SVG goes inline in an HTML macro, with nothing attached, above
   the source in a collapsed code macro. Use it when the site does not draw SVG attachments (some
   Data Center instances show only a file icon). A Confluence administrator has to enable the HTML
   macro first. `mermaidMaxWidth` is how wide the picture is shown at most, as any CSS `max-width`:
@@ -201,7 +201,7 @@ Two diagram languages are understood, each as a fenced code block (` ```mermaid 
 **Mermaid** is drawn by the editor's webview. **D2** is drawn by the engine itself, so it also
 works from the command line and on CI, with no browser, and the same diagram always draws the
 same SVG. On GitHub Pages a D2 diagram is drawn at build time and shown as an image; Mermaid is
-drawn by the visitor's browser. D2 has no `html-macro` mode: outside `code` it is always an image.
+drawn by the visitor's browser. In `html-macro` mode D2 goes inline too, like Mermaid; outside `code` and `html-macro` it is always an attached image.
 
 ## Authentication
 

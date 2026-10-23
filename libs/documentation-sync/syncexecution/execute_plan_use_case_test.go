@@ -211,27 +211,37 @@ func TestPushPutsAMermaidDiagramInlineInHTMLMacroMode(t *testing.T) {
 }
 
 func TestPushDrawsAD2DiagramAsAnSVGWithItsSource(t *testing.T) {
-	for _, mode := range []string{"image", "html-macro"} {
-		t.Run(mode, func(t *testing.T) {
-			w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```d2\nweb -> api\n```\n"})
-			w.output.MermaidMode = mode
-			_, report := w.sync()
-			guide := w.result(report, "guide.md")
-			names, err := w.fake.ListAttachments(context.Background(), guide.PageID)
-			if err != nil || len(names) != 1 || !strings.HasPrefix(names[0].Filename, "d2-") || !strings.HasSuffix(names[0].Filename, ".svg") {
-				t.Fatalf("attachments %+v (%v)", names, err)
-			}
-			svg, err := w.fake.DownloadAttachment(context.Background(), guide.PageID, names[0].Filename)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if language, source, ok := extractDiagramSource(svg); !ok || language != "d2" || source != "web -> api" {
-				t.Fatalf("the SVG does not carry the D2 source: %q %q ok=%v", language, source, ok)
-			}
-			if !strings.Contains(string(svg), "-->d2:web -> api</svg>") {
-				t.Fatalf("the renderer was not asked for D2: %q", svg)
-			}
-		})
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```d2\nweb -> api\n```\n"})
+	_, report := w.sync()
+	guide := w.result(report, "guide.md")
+	names, err := w.fake.ListAttachments(context.Background(), guide.PageID)
+	if err != nil || len(names) != 1 || !strings.HasPrefix(names[0].Filename, "d2-") || !strings.HasSuffix(names[0].Filename, ".svg") {
+		t.Fatalf("attachments %+v (%v)", names, err)
+	}
+	svg, err := w.fake.DownloadAttachment(context.Background(), guide.PageID, names[0].Filename)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if language, source, ok := extractDiagramSource(svg); !ok || language != "d2" || source != "web -> api" {
+		t.Fatalf("the SVG does not carry the D2 source: %q %q ok=%v", language, source, ok)
+	}
+	if !strings.Contains(string(svg), "-->d2:web -> api</svg>") {
+		t.Fatalf("the renderer was not asked for D2: %q", svg)
+	}
+}
+
+func TestPushPutsAD2DiagramInlineInHTMLMacroMode(t *testing.T) {
+	w := newWorkspace(t, map[string]string{"guide.md": "# Guide\n\n```d2\nweb -> api\n```\n"})
+	w.output.MermaidMode = "html-macro"
+	_, report := w.sync()
+	guide := w.result(report, "guide.md")
+
+	diagram := w.fake.Page(guide.PageID).Body.Blocks[0].(platformport.Diagram)
+	if diagram.SVG != "<svg>d2:web -> api</svg>" || diagram.Image != nil {
+		t.Fatalf("want the SVG inline and no attachment, got %+v", diagram)
+	}
+	if names, _ := w.fake.ListAttachments(context.Background(), guide.PageID); len(names) != 0 {
+		t.Fatalf("nothing should be uploaded for an inline diagram: %v", names)
 	}
 }
 
