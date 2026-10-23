@@ -27,29 +27,8 @@ const OverridesVariable = "LORE_MASTER_SETTINGS"
 // no settings, so the caller reads the defaults of a workspace not set up. Otherwise the settings
 // are completed and validated, and an error names the file and key.
 func LoadEditorSettings(workspaceRoot, userSettingsPath string) (Result, error) {
-	var layers []Layer
-	add := func(layer Layer, err error) error {
-		if err != nil {
-			return err
-		}
-		layers = append(layers, layer)
-
-		return nil
-	}
-	if userSettingsPath != "" {
-		if err := add(ReadLayer(userSettingsPath)); err != nil {
-			return Result{}, err
-		}
-	}
-	if workspaceFile := os.Getenv(WorkspaceFileVariable); workspaceFile != "" {
-		if err := add(ReadWorkspaceFileLayer(workspaceFile)); err != nil {
-			return Result{}, err
-		}
-	}
-	if err := add(ReadLayer(FolderSettingsPath(workspaceRoot))); err != nil {
-		return Result{}, err
-	}
-	if err := add(ParseOverridesLayer(os.Getenv(OverridesVariable))); err != nil {
+	layers, err := readLayers(workspaceRoot, userSettingsPath)
+	if err != nil {
 		return Result{}, err
 	}
 
@@ -74,4 +53,35 @@ func LoadEditorSettings(workspaceRoot, userSettingsPath string) (Result, error) 
 	}
 
 	return Result{Configured: true, FirstSync: firstSync, Settings: settings, Sources: sources}, nil
+}
+
+// readLayers reads the settings layers in the order they are merged: the user's, the workspace file's, the folder's, then the overrides.
+func readLayers(workspaceRoot, userSettingsPath string) ([]Layer, error) {
+	var layers []Layer
+	add := func(layer Layer, err error) error {
+		if err != nil {
+			return err
+		}
+		layers = append(layers, layer)
+
+		return nil
+	}
+	if userSettingsPath != "" {
+		if err := add(ReadLayer(userSettingsPath)); err != nil {
+			return nil, err
+		}
+	}
+	if workspaceFile := os.Getenv(WorkspaceFileVariable); workspaceFile != "" {
+		if err := add(ReadWorkspaceFileLayer(workspaceFile)); err != nil {
+			return nil, err
+		}
+	}
+	if err := add(ReadLayer(FolderSettingsPath(workspaceRoot))); err != nil {
+		return nil, err
+	}
+	if err := add(ParseOverridesLayer(os.Getenv(OverridesVariable))); err != nil {
+		return nil, err
+	}
+
+	return layers, nil
 }

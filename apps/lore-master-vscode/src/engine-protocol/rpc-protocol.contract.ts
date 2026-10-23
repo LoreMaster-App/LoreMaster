@@ -34,6 +34,7 @@ export const EXPORT_FORMATS_METHOD = 'export/formats'
 export const EXPORT_RUN_METHOD = 'export/run'
 export const DIAGRAM_RENDER_METHOD = 'diagram/render'
 export const DIAGRAM_CHECK_METHOD = 'diagram/check'
+export const NOTES_SCAN_METHOD = 'notes/scan'
 export const CONFIG_DESCRIBE_METHOD = 'config/describe'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
@@ -698,6 +699,32 @@ export interface DiagramProblem {
 export interface DiagramCheckResult {
   /** One answer per diagram asked about, in order; `unavailable` says why a diagram could not be checked at all. */
   results: { problems: DiagramProblem[], unavailable?: string }[]
+}
+
+/** Where to look for notes (tagged comments) and for which tags; `tags` empty means the engine's default list. */
+export interface NotesScanParams {
+  workspaceRoot: string
+  tags?:         string[]
+}
+
+/** One tagged comment: 1-based line and column, the tag's text, and what was written in its brackets. */
+export interface NoteEntry {
+  path:   string
+  line:   number
+  column: number
+  tag:    string
+  text:   string
+  owner?: string
+  issue?: string
+  due?:   string
+}
+
+export interface NotesScanResult {
+  notes:        NoteEntry[]
+  filesScanned: number
+  filesSkipped: number
+  /** The tags that were looked for. */
+  tags:         string[]
 }
 
 export interface ExportFormatsResult {

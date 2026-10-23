@@ -64,7 +64,7 @@ export const window = {
     return { dispose () {} }
   },
   createTreeView (_viewId: string, _options: unknown): { visible: boolean; onDidChangeVisibility: (listener: () => unknown) => { dispose: () => void }; reveal: () => Promise<void>; dispose: () => void } {
-    return { visible: false, onDidChangeVisibility: () => ({ dispose () {} }), reveal: () => Promise.resolve(), dispose () {} }
+    return { visible: false, badge: undefined, onDidChangeVisibility: () => ({ dispose () {} }), reveal: () => Promise.resolve(), dispose () {} }
   },
   createStatusBarItem (_alignment?: number, _priority?: number): FakeStatusBarItem {
     const item = new FakeStatusBarItem()
@@ -322,6 +322,12 @@ export const workspace = {
     return { dispose () {} }
   },
   onDidRenameFiles (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidCreateFiles (_listener: (event: unknown) => unknown): { dispose: () => void } {
+    return { dispose () {} }
+  },
+  onDidDeleteFiles (_listener: (event: unknown) => unknown): { dispose: () => void } {
     return { dispose () {} }
   },
   onDidChangeWorkspaceFolders (_listener: () => unknown): { dispose: () => void } {

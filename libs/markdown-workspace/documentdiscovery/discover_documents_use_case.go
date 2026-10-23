@@ -15,12 +15,36 @@ import (
 // (a link can leave the workspace or loop) and are reported as warnings instead, as are
 // files whose paths differ only by case, which collide on Windows and macOS.
 func DiscoverDocuments(ctx context.Context, options Options) (Discovery, error) {
-	roots, err := normalisedRoots(options.Roots)
+	files, warnings, err := walkFiles(ctx, options, isMarkdown)
 	if err != nil {
 		return Discovery{}, err
 	}
+	documents := make([]DocumentPath, len(files))
+	for i, file := range files {
+		documents[i] = DocumentPath(file)
+	}
+	warnings = append(warnings, caseCollisionWarnings(documents)...)
+
+	return NewDiscovery(documents, warnings), nil
+}
+
+// DiscoverFiles walks every root like DiscoverDocuments, with the same ignore rules, and returns the
+// workspace-relative paths of the regular files accept says yes to, sorted. It is for a reader of
+// files other than Markdown (the notes in source comments) that must leave out exactly what a sync leaves out.
+func DiscoverFiles(ctx context.Context, options Options, accept func(rel string) bool) ([]string, error) {
+	files, _, err := walkFiles(ctx, options, accept)
+
+	return files, err
+}
+
+// walkFiles is the walk both share. Symbolic links are never followed; a Markdown one is reported.
+func walkFiles(ctx context.Context, options Options, accept func(rel string) bool) ([]string, []string, error) {
+	roots, err := normalisedRoots(options.Roots)
+	if err != nil {
+		return nil, nil, err
+	}
 	rules := newIgnoreRules(options.WorkspaceRoot, options.Excludes, options.Includes, !options.IncludeGitignored)
-	found := map[DocumentPath]bool{}
+	found := map[string]bool{}
 	var warnings []string
 
 	for _, root := range roots {
@@ -54,25 +78,24 @@ func DiscoverDocuments(ctx context.Context, options Options) (Discovery, error) 
 				if isMarkdown(rel) {
 					warnings = append(warnings, fmt.Sprintf("%s is a symbolic link and was skipped", rel))
 				}
-			case entry.Type().IsRegular() && isMarkdown(rel):
-				found[DocumentPath(rel)] = true
+			case entry.Type().IsRegular() && accept(rel):
+				found[rel] = true
 			}
 
 			return nil
 		})
 		if walkErr != nil {
-			return Discovery{}, fmt.Errorf("discover documents under %q: %w", root, walkErr)
+			return nil, nil, fmt.Errorf("discover documents under %q: %w", root, walkErr)
 		}
 	}
 
-	documents := make([]DocumentPath, 0, len(found))
-	for document := range found {
-		documents = append(documents, document)
+	files := make([]string, 0, len(found))
+	for file := range found {
+		files = append(files, file)
 	}
-	slices.Sort(documents)
-	warnings = append(warnings, caseCollisionWarnings(documents)...)
+	slices.Sort(files)
 
-	return NewDiscovery(documents, warnings), nil
+	return files, warnings, nil
 }
 
 func normalisedRoots(roots []string) ([]string, error) {

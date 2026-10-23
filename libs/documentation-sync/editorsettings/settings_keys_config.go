@@ -30,7 +30,7 @@ var configKeys = map[string]bool{
 // extensionOnlyKeys are the editor extension's own preferences; they are not part of the
 // configuration and are ignored here.
 var extensionOnlyKeys = []string{
-	"loreMaster.engine.", "loreMaster.credentials.", "loreMaster.pages.", "loreMaster.export.", "loreMaster.markdown.", "loreMaster.preview.", "loreMaster.diagrams.", "loreMaster.generateBeforeSync", "loreMaster.runPrepareSteps", "loreMaster.watchDebounceSeconds",
+	"loreMaster.engine.", "loreMaster.credentials.", "loreMaster.pages.", "loreMaster.export.", "loreMaster.markdown.", "loreMaster.preview.", "loreMaster.diagrams.", "loreMaster.notes.", "loreMaster.generateBeforeSync", "loreMaster.runPrepareSteps", "loreMaster.watchDebounceSeconds",
 }
 
 func isExtensionOnly(key string) bool {
