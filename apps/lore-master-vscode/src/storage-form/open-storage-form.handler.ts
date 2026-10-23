@@ -132,7 +132,7 @@ function open (deps: StorageFormDeps, folder: string, init: StorageFormInit, ind
         try {
           reply({ type: 'spaces', spaces: await lookup.listSpaces(request.connection) })
         } catch (error) {
-          reply({ type: 'lookupError', message: messageOf(error) })
+          reply({ type: 'spacesError', message: messageOf(error) })
         }
         break
       }

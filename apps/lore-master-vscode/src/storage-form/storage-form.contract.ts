@@ -48,5 +48,6 @@ export type FormReply =
   { type: 'pages', pages: Page[] } |
   { type: 'connections', connections: ConnectionChoice[], selected: string } |
   { type: 'lookupError', message: string } |
+  { type: 'spacesError', message: string } |
   { type: 'invalid', errors: Record<string, string>, message?: string } |
   { type: 'saved' }
