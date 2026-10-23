@@ -1388,7 +1388,8 @@
       "./dist/assets/preview/diagram-preview.css",
       "./dist/assets/preview/callout-preview.css",
       "./dist/assets/preview/diagram-viewer.css",
-      "./dist/assets/preview/action-bar-preview.css"
+      "./dist/assets/preview/action-bar-preview.css",
+      "./dist/assets/preview/task-list-preview.css"
     ]
   },
   "nx": {
