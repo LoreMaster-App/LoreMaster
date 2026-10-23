@@ -1,0 +1,16 @@
+/* Task lists in the Markdown preview: the checkbox LoreMaster draws for "- [ ]" and "- [x]". */
+ul.contains-task-list, ol.contains-task-list { list-style: none; padding-left: 1.4em; }
+.task-list-item .loremaster-task {
+  display: inline-block; position: relative; box-sizing: border-box; width: 1.05em; height: 1.05em; margin: 0 0.5em 0 -1.5em; vertical-align: -0.15em;
+  border: 1.5px solid var(--vscode-checkbox-border, currentColor); border-radius: 3px; background: var(--vscode-checkbox-background, transparent);
+  cursor: pointer; text-decoration: none;
+}
+.task-list-item .loremaster-task:hover, .task-list-item .loremaster-task:focus { border-color: var(--vscode-focusBorder, #007fd4); }
+.task-list-item .loremaster-task-done { background: var(--vscode-checkbox-selectBackground, var(--vscode-focusBorder, #007fd4)); }
+.task-list-item .loremaster-task-done::after {
+  content: ''; position: absolute; left: 0.3em; top: 0.02em; width: 0.28em; height: 0.58em;
+  border: solid var(--vscode-checkbox-foreground, #fff); border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.task-list-item-done { opacity: 0.7; }
+.task-list-item-done > p, .task-list-item-done > span { text-decoration: line-through; }
+.loremaster-task-static { margin: 0 0.5em 0 -1.5em; }

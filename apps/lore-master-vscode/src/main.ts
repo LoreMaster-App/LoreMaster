@@ -14,6 +14,7 @@ import { registerMarkdownLists } from './markdown-lists'
 import { registerDiagramDiagnostics } from './diagram-diagnostics'
 import { registerMarkdownDiagrams, type MarkdownItExtension } from './markdown-diagrams'
 import { addCalloutPanels, type CalloutMarkdownIt } from './preview-callouts'
+import { addTaskLists, type TaskMarkdownIt, toggleTask } from './preview-tasks'
 import { registerActionBar, type BarMarkdownIt } from './preview-action-bar'
 import { servePreviewActions } from './preview-actions'
 import { addFootnotes, type FootnoteMarkdownIt } from './preview-footnotes'
@@ -90,7 +91,8 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
   const markdownDiagrams = registerMarkdownDiagrams({ engine })
   const actionBar = registerActionBar({ engine })
   const previewActions = servePreviewActions({
-    export: params => exportMarkdownCommand({ engine, output, extensionPath: context.extensionPath }, vscode.Uri.parse(params.document)),
+    'export':      params => exportMarkdownCommand({ engine, output, extensionPath: context.extensionPath }, vscode.Uri.parse(params.document)),
+    'toggle-task': params => toggleTask(params),
   })
   const linkTargets = workspaceLinkTargets(path => {
     const status = actionBar.statusOf(path)
@@ -140,7 +142,8 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
       const headed = actionBar.extendMarkdownIt(drawn as typeof drawn & BarMarkdownIt)
 
       const called = addCalloutPanels(headed as typeof headed & CalloutMarkdownIt)
-      const noted = addFootnotes(called as typeof called & FootnoteMarkdownIt)
+      const tasked = addTaskLists(called as typeof called & TaskMarkdownIt)
+      const noted = addFootnotes(tasked as typeof tasked & FootnoteMarkdownIt)
 
       return addLinkChecks(noted as typeof noted & LinkMarkdownIt, linkTargets)
     },

@@ -187,6 +187,30 @@ suite('Markdown editing in a real VS Code host', () => {
     assert.strictEqual(fixed.length, 0, JSON.stringify(fixed))
   })
 
+  test('a task list item gets a checkbox in the preview, and clicking it flips the [ ] in the file', async function () {
+    this.timeout(60_000)
+    const { document } = await open('# Tasks\n\n- [ ] first\n- [x] second\n  - [ ] nested\n')
+    const html = await vscode.commands.executeCommand('markdown.api.render', document)
+
+    const links = [...html.matchAll(/class="loremaster-task[^"]*" href="([^"]+)"/g)].map(match => match[1].replaceAll('&amp;', '&'))
+    assert.strictEqual(links.length, 3, html)
+    assert.ok(html.includes('loremaster-task loremaster-task-done'), 'the done item is drawn as done')
+    assert.ok(!html.includes('[ ] first'), 'the marker is replaced by the checkbox')
+
+    // What the preview does with a link of an unknown scheme: it opens it, and the extension answers by editing the file.
+    await vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(links[0]))
+    for (let attempt = 0; attempt < 50 && !document.getText().includes('- [x] first'); attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    assert.strictEqual(document.getText(), '# Tasks\n\n- [x] first\n- [x] second\n  - [ ] nested\n')
+
+    await vscode.commands.executeCommand('vscode.open', vscode.Uri.parse(links[1]))
+    for (let attempt = 0; attempt < 50 && document.getText().includes('- [x] second'); attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+    assert.strictEqual(document.getText(), '# Tasks\n\n- [x] first\n- [ ] second\n  - [ ] nested\n')
+  })
+
   test('does nothing in a file that is not Markdown', async () => {
     const document = await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'hello' })
     const editor = await vscode.window.showTextDocument(document)
