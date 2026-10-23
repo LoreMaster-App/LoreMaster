@@ -112,6 +112,9 @@ lore-master-engine export --format png --width 1400 --browser /usr/bin/chromium 
   PNG). The HTML export then holds each diagram as an inline SVG, so the file still needs no script and can be opened
   anywhere; a diagram that cannot be drawn, or an export with no library or browser, keeps the diagram as a code block
   without an error. Plain text, Word, OpenDocument and the wiki formats keep them as code.
+- **D2** diagrams are drawn by the engine itself, so they need no browser and no library: HTML, PDF and PNG hold each one as an
+  inline SVG (the same source is drawn once). A diagram D2 refuses stays a code block. Word, OpenDocument and the wiki formats keep
+  D2 as code, like Mermaid.
 - **Links to other Markdown files** become `[[Page]]` links in MediaWiki and `.html` links in HTML. Elsewhere
   they keep the path.
 

@@ -21,9 +21,14 @@ type Options struct {
 	// KeepMarkdownLinks leaves links to other Markdown files as they are, which is what a preview wants: the
 	// file is opened, not an HTML page that does not exist.
 	KeepMarkdownLinks bool
-	// Diagrams are Mermaid diagrams already drawn as SVG, by their source. A code block of that source is replaced by the picture;
-	// any other stays as code.
+	// Diagrams are diagrams already drawn as SVG, by DiagramKey (their language and source). A code block of that source is replaced
+	// by the picture; any other stays as code.
 	Diagrams map[string]string
+}
+
+// DiagramKey is how a drawn diagram is found in Options.Diagrams: its language, any case, and its source.
+func DiagramKey(language string, source string) string {
+	return strings.ToLower(language) + "\x00" + source
 }
 
 // Render writes the document as a complete HTML page.
@@ -69,7 +74,7 @@ func (w writer) block(block exportmodel.Block) string {
 	case exportmodel.QuoteBlock:
 		return "<blockquote>\n" + w.blocks(block.Children) + "</blockquote>\n"
 	case exportmodel.CodeBlock:
-		if picture, drawn := w.options.Diagrams[block.Text]; drawn && block.Lang == "mermaid" {
+		if picture, drawn := w.options.Diagrams[DiagramKey(block.Lang, block.Text)]; drawn {
 			return "<div class=\"diagram\">" + picture + "</div>\n"
 		}
 		class := ""

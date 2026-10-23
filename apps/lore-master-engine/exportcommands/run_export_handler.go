@@ -8,13 +8,14 @@ import (
 	"lore-master/apps/lore-master-engine/mermaidrendering"
 	"lore-master/apps/lore-master-engine/rpcprotocol"
 	"lore-master/apps/lore-master-engine/rpcserver"
+	"lore-master/libs/documentation-sync/d2rendering"
 	"lore-master/libs/markdown-export/documentexport"
 )
 
 // RunExport handles export/run: one document converted and written next to it or into a folder, or
 // returned as text.
 func RunExport() rpcserver.Method {
-	return func(_ context.Context, call rpcserver.Call) (any, error) {
+	return func(ctx context.Context, call rpcserver.Call) (any, error) {
 		var params rpcprotocol.ExportRunParams
 		if err := call.Decode(&params); err != nil {
 			return nil, err
@@ -37,7 +38,7 @@ func RunExport() rpcserver.Method {
 		if err != nil {
 			return nil, err
 		}
-		file, err := documentexport.Export(params.Path, source, params.Format, documentexport.Options{BaseDir: filepath.Dir(params.Path), BrowserPath: params.BrowserPath, MermaidPath: mermaidrendering.LibraryPath(params.MermaidPath), ReferencePath: params.ReferencePath, PageSize: params.PageSize, Width: params.ImageWidth, Preview: params.Preview})
+		file, err := documentexport.Export(params.Path, source, params.Format, documentexport.Options{BaseDir: filepath.Dir(params.Path), BrowserPath: params.BrowserPath, MermaidPath: mermaidrendering.LibraryPath(params.MermaidPath), ReferencePath: params.ReferencePath, PageSize: params.PageSize, Width: params.ImageWidth, Preview: params.Preview, DrawD2: drawD2(ctx)})
 		if err != nil {
 			return nil, rpcprotocol.Errorf(rpcprotocol.CodeInternalError, "export %s: %s", filepath.Base(params.Path), err.Error())
 		}
@@ -72,4 +73,13 @@ func sourceOf(params rpcprotocol.ExportRunParams) ([]byte, error) {
 	}
 
 	return content, nil
+}
+
+// drawD2 is how an export draws a D2 diagram: the engine's own renderer, which needs no browser.
+func drawD2(ctx context.Context) func(source string) (string, error) {
+	return func(source string) (string, error) {
+		svg, err := d2rendering.RenderSVG(ctx, source, 0)
+
+		return string(svg), err
+	}
 }
