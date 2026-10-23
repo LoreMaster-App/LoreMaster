@@ -29,8 +29,8 @@ suite('LoreMaster in a real VS Code host', () => {
     }
   })
 
-  test('contributes its sidebar views: one Sync view of every location, and Generators', async () => {
-    assert.deepStrictEqual(VIEWS, ['loreMaster.sync', 'loreMaster.generators'])
+  test('contributes its sidebar views: one Sync view of every location, Generators and Notes', async () => {
+    assert.deepStrictEqual(VIEWS, ['loreMaster.sync', 'loreMaster.generators', 'loreMaster.notes'])
     // VS Code adds a "<view id>.focus" command for every view it knows.
     const registered = await vscode.commands.getCommands(true)
     for (const id of VIEWS) {

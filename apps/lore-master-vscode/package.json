@@ -301,6 +301,24 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "loreMaster.refreshNotes",
+        "title": "Refresh Notes",
+        "category": "LoreMaster",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "loreMaster.notesByFile",
+        "title": "Group Notes by File",
+        "category": "LoreMaster",
+        "icon": "$(file)"
+      },
+      {
+        "command": "loreMaster.notesByTag",
+        "title": "Group Notes by Tag",
+        "category": "LoreMaster",
+        "icon": "$(tag)"
+      },
+      {
         "command": "loreMaster.generateAndSync",
         "title": "Generate and Sync All",
         "category": "LoreMaster",
@@ -401,6 +419,11 @@
         {
           "id": "loreMaster.generators",
           "name": "Generators"
+        },
+        {
+          "id": "loreMaster.notes",
+          "name": "Notes",
+          "visibility": "collapsed"
         }
       ]
     },
@@ -542,6 +565,21 @@
           "command": "loreMaster.refreshGenerators",
           "when": "view == loreMaster.generators",
           "group": "navigation@4"
+        },
+        {
+          "command": "loreMaster.notesByFile",
+          "when": "view == loreMaster.notes && config.loreMaster.notes.groupBy != file",
+          "group": "navigation@1"
+        },
+        {
+          "command": "loreMaster.notesByTag",
+          "when": "view == loreMaster.notes && config.loreMaster.notes.groupBy == file",
+          "group": "navigation@1"
+        },
+        {
+          "command": "loreMaster.refreshNotes",
+          "when": "view == loreMaster.notes",
+          "group": "navigation@2"
         },
         {
           "command": "loreMaster.generateAndSync",
@@ -800,6 +838,14 @@
           "when": "false"
         },
         {
+          "command": "loreMaster.notesByFile",
+          "when": "false"
+        },
+        {
+          "command": "loreMaster.notesByTag",
+          "when": "false"
+        },
+        {
           "command": "loreMaster.showPageTitles",
           "when": "false"
         },
@@ -897,6 +943,35 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Line up the pipes of every table in a Markdown file when it is saved."
+        },
+        "loreMaster.notes.tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "TODO",
+            "FIXME",
+            "BUG",
+            "HACK",
+            "XXX",
+            "NOTE",
+            "WARN"
+          ],
+          "markdownDescription": "The tags the **Notes** view looks for at the start of a comment, such as `// TODO: later`, `# FIXME(alice): broken` or `<!-- NOTE: why -->`. Upper case; the order is the order of the groups. After the tag, brackets may hold an owner, an issue and a date: `TODO(alice, #12, 2026-12-01)`."
+        },
+        "loreMaster.notes.groupBy": {
+          "type": "string",
+          "enum": [
+            "tag",
+            "file"
+          ],
+          "default": "tag",
+          "enumDescriptions": [
+            "One group per tag.",
+            "One group per file."
+          ],
+          "markdownDescription": "How the **Notes** view groups the notes. Change it with the button in the view title."
         },
         "loreMaster.diagrams.diagnostics": {
           "type": "boolean",

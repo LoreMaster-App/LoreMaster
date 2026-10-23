@@ -12,6 +12,7 @@ import { registerGeneratorsView } from './generators-view'
 import { registerMarkdownFormatting } from './markdown-formatting'
 import { registerMarkdownLists } from './markdown-lists'
 import { registerDiagramDiagnostics } from './diagram-diagnostics'
+import { registerNotesView } from './notes-view'
 import { registerMarkdownDiagrams, type MarkdownItExtension } from './markdown-diagrams'
 import { addCalloutPanels, type CalloutMarkdownIt } from './preview-callouts'
 import { addTaskLists, type TaskMarkdownIt, toggleTask } from './preview-tasks'
@@ -116,6 +117,7 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     registerMarkdownToc(),
     markdownDiagrams,
     registerDiagramDiagnostics({ engine, output }),
+    registerNotesView({ engine }),
     actionBar,
     previewActions,
     vscode.commands.registerCommand(SYNC_COMMAND, () => syncCommand(syncDeps)),

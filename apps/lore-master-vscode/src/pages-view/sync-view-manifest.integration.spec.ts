@@ -44,10 +44,10 @@ function inlineFor (context: string): string[] {
 const nextView = (view: 'storage' | 'flat' | 'repo'): string[] => inlineFor(rowContext('loreMasterStorage', { label: 'title', view, excluded: 'faded' })).filter(command => /^loreMaster\.view/.test(command))
 
 describe('the Sync view in the manifest', () => {
-  it('is the one tree of locations beside the Generators view, with no Pages or Storages view', () => {
+  it('is the one tree of locations beside the Generators and Notes views, with no Pages or Storages view', () => {
     const ids = manifest.contributes.views.loreMaster.map(view => view.id)
 
-    expect(ids).toEqual([PAGES_VIEW_ID, 'loreMaster.generators'])
+    expect(ids).toEqual([PAGES_VIEW_ID, 'loreMaster.generators', 'loreMaster.notes'])
     expect(PAGES_VIEW_ID).toBe('loreMaster.sync')
   })
 
