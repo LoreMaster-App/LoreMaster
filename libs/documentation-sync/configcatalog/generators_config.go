@@ -31,6 +31,7 @@ func generatorTypes() []GeneratorType {
 		{ID: "test-results", Label: "Test results", Description: "JUnit XML test reports."},
 		{ID: "coverage", Label: "Coverage", Description: "Code coverage reports."},
 		{ID: "markdown-docs", Label: "Markdown documents", Description: "Existing documents brought in as pages."},
+		{ID: "notes", Label: "Notes", Description: "TODO, FIXME and other tagged comments of the source files."},
 		{ID: "go-docs", Label: "Go documentation", Description: "Go package documentation."},
 		{ID: "openapi-docs", Label: "OpenAPI", Description: "OpenAPI 3 descriptions."},
 		{ID: "ts-docs", Label: "TypeScript documentation", Description: "TypeScript and JavaScript source documentation, through TypeDoc."},

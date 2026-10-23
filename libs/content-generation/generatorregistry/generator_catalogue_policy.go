@@ -52,6 +52,11 @@ var catalogue = []Entry{
 		Needs:      "Chrome, Chromium or Edge on the machine (LORE_MASTER_BROWSER overrides the executable)",
 	},
 	{
+		Type:   "notes",
+		Reads:  "the tagged comments of the source files (TODO, FIXME, BUG, HACK, NOTE...), by the same ignore rules a sync reads files by",
+		Writes: "one page with the count per tag and a table per tag: the text, where it is, and its owner, issue and date",
+	},
+	{
 		Type:   "go-docs",
 		Reads:  "the Go packages of the workspace and their doc comments",
 		Writes: "an index and a page per package, nested like the folders",

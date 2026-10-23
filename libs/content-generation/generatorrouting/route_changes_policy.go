@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"lore-master/libs/code-notes/commentsyntax"
 	"lore-master/libs/content-generation/generatedfile"
 	"lore-master/libs/content-generation/inputselection"
 )
@@ -40,6 +41,7 @@ var reads = map[string]struct {
 	"python-docs":   {extensions: []string{".py"}, names: []string{"pyproject.toml", "setup.cfg"}},
 	"csharp-docs":   {extensions: []string{".cs"}, names: []string{"directory.build.props"}},
 	"dart-docs":     {extensions: []string{".dart"}, names: []string{"pubspec.yaml"}},
+	"notes":         {extensions: commentsyntax.Extensions(), names: commentsyntax.Names()},
 }
 
 // Route decides what a batch of changed files (workspace-relative, '/'-separated) calls for. A

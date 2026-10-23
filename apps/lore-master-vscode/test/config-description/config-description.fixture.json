@@ -372,6 +372,11 @@
       "description": "Existing documents brought in as pages."
     },
     {
+      "id": "notes",
+      "label": "Notes",
+      "description": "TODO, FIXME and other tagged comments of the source files."
+    },
+    {
       "id": "go-docs",
       "label": "Go documentation",
       "description": "Go package documentation."
@@ -438,6 +443,11 @@
           "value": "markdown-docs",
           "label": "Markdown documents",
           "help": "Existing documents brought in as pages."
+        },
+        {
+          "value": "notes",
+          "label": "Notes",
+          "help": "TODO, FIXME and other tagged comments of the source files."
         },
         {
           "value": "go-docs",
