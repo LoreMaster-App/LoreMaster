@@ -125,9 +125,15 @@ folder) as ordinary pages. Markdown only: HTML is never parsed, so produce Markd
 
 ```jsonc
 { "type": "markdown-docs", "input": ["build/docs/"], "output": "docs/api", "title": "API reference" }
+
+// in place: the command writes into docs/structure; include that folder in an output's content roots
+{ "type": "markdown-docs", "prepare": "node ./tools/tree.mjs", "output": "docs/structure" }
 ```
 
-`input` is required (importing every Markdown file of a project would be surprising). Files keep
+`input` is required (importing every Markdown file of a project would be surprising), with one
+exception: **in place**. When the command already writes the pages where they should be, make the
+input the output folder, or leave it out, and nothing is imported or copied; the pages stay as the
+command wrote them and the sync reads them from there. Files keep
 their layout below the deepest folder they share, so relative links between them keep working.
 For each page the generator removes front matter and the lines a tool stamps in, makes sure it
 opens with one top heading, gives it a title no other page has (a wiki space requires it), and adds

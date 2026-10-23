@@ -12,6 +12,7 @@ import (
 	"lore-master/libs/content-generation/generatorpreparing"
 	"lore-master/libs/content-generation/generatorregistry"
 	"lore-master/libs/content-generation/generatorrunning"
+	"lore-master/libs/content-generation/markdowndocs"
 	"lore-master/libs/documentation-sync/editorsettings"
 	"lore-master/libs/documentation-sync/workspacesettings"
 )
@@ -83,6 +84,10 @@ func run(ctx context.Context, workspaceRoot string, index int, generator workspa
 		entry.Prepared = true
 	}
 	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title}
+	// The command already wrote the pages where they are wanted: nothing to import or copy.
+	if (spec.Type == "" || spec.Type == "markdown-docs") && markdowndocs.IsInPlace(spec) {
+		return runInPlace(ctx, workspaceRoot, spec, entry)
+	}
 	// No type: recognise the format from what the input selects, after the command wrote it.
 	if spec.Type == "" {
 		detected, err := formatdetection.Detect(ctx, workspaceRoot, spec)
@@ -105,6 +110,23 @@ func run(ctx context.Context, workspaceRoot string, index int, generator workspa
 		return entry
 	}
 	entry.Written, entry.Unchanged, entry.Removed, entry.Warnings = outcome.Written, outcome.Unchanged, outcome.Removed, outcome.Warnings
+
+	return entry
+}
+
+// runInPlace reports the Markdown the command left in the output folder and writes nothing.
+func runInPlace(ctx context.Context, workspaceRoot string, spec generatedfile.Spec, entry rpcprotocol.GeneratorRun) rpcprotocol.GeneratorRun {
+	entry.Type = "markdown-docs"
+	files, err := markdowndocs.InPlaceFiles(ctx, workspaceRoot, spec)
+	if err != nil {
+		entry.Error = err.Error()
+
+		return entry
+	}
+	entry.Unchanged = files
+	if len(files) == 0 {
+		entry.Warnings = append(entry.Warnings, "no Markdown file in "+spec.Output+": the command wrote none there")
+	}
 
 	return entry
 }

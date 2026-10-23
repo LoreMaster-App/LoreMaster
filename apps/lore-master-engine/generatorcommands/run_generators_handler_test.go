@@ -350,3 +350,29 @@ func TestRunRecognisesTheFormatOfAGeneratorWithoutAType(t *testing.T) {
 		t.Fatalf("an unrecognised output is not reported as a problem: %+v", unknown)
 	}
 }
+
+const inPlaceSettingsYAML = `version: 1
+generators:
+  - type: markdown-docs
+    input: [documentation/structure]
+    output: documentation/structure
+`
+
+func TestMarkdownWrittenStraightIntoTheOutputFolderIsLeftWhereItIs(t *testing.T) {
+	root := t.TempDir()
+	write(t, root, map[string]string{settingsFixture: inPlaceSettingsYAML, "documentation/structure/tree.md": "# Tree\n"})
+
+	result, err := call(t, connect(t), root, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	run := result.Runs[0]
+	if run.Error != "" || len(run.Written) != 0 || !slices.Equal(run.Unchanged, []string{"documentation/structure/tree.md"}) {
+		t.Fatalf("run %+v", run)
+	}
+	body, _ := os.ReadFile(filepath.Join(root, "documentation", "structure", "tree.md"))
+	if string(body) != "# Tree\n" {
+		t.Fatalf("the page was changed: %q", body)
+	}
+}
