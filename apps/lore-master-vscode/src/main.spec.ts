@@ -36,8 +36,8 @@ describe('activate', () => {
     const generatorsViewCommands = 6
     // Export and Copy As are one disposable too.
     const exportCommands = 2
-    // The Markdown editing commands are four disposables: formatting, lists, tables and the table of contents. The diagrams for the built-in preview are a fifth its action bar a sixth and the server of the preview's action links a seventh.
+    // The Markdown editing commands are four disposables: formatting, lists, tables and the table of contents. The diagrams for the built-in preview are a fifth its action bar a sixth and the server of the preview's action links a seventh and the diagram diagnostics an eighth.
     const markdownEditingCommands = 25
-    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands - exportCommands - markdownEditingCommands + 12 + 7)
+    expect(context.subscriptions).toHaveLength(contributed.length - pagesViewCommands - generatorsViewCommands - exportCommands - markdownEditingCommands + 12 + 8)
   })
 })

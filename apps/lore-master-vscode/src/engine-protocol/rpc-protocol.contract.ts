@@ -33,6 +33,7 @@ export const FILES_PLAN_MOVE_METHOD = 'files/planMove'
 export const EXPORT_FORMATS_METHOD = 'export/formats'
 export const EXPORT_RUN_METHOD = 'export/run'
 export const DIAGRAM_RENDER_METHOD = 'diagram/render'
+export const DIAGRAM_CHECK_METHOD = 'diagram/check'
 export const CONFIG_DESCRIBE_METHOD = 'config/describe'
 export const HOST_PROGRESS_METHOD = 'host/progress'
 export const HOST_RENDER_DIAGRAM_METHOD = 'host/renderDiagram'
@@ -680,6 +681,23 @@ export interface DiagramRenderParams {
 export interface DiagramRenderResult {
   /** The complete SVG document. */
   svg: string
+}
+
+/** Diagrams whose source the engine checks without drawing them (`diagram/check`). */
+export interface DiagramCheckParams {
+  diagrams: { language: string, source: string }[]
+}
+
+/** One thing wrong with a diagram: 1-based line and column inside its source, absent when the language does not say. */
+export interface DiagramProblem {
+  line?:   number
+  column?: number
+  message: string
+}
+
+export interface DiagramCheckResult {
+  /** One answer per diagram asked about, in order; `unavailable` says why a diagram could not be checked at all. */
+  results: { problems: DiagramProblem[], unavailable?: string }[]
 }
 
 export interface ExportFormatsResult {

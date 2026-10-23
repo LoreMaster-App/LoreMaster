@@ -898,6 +898,11 @@
           "default": false,
           "markdownDescription": "Line up the pipes of every table in a Markdown file when it is saved."
         },
+        "loreMaster.diagrams.diagnostics": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Show the errors of Mermaid and D2 diagrams in the Problems panel, on the line of the diagram the language names. D2 is checked as you type; Mermaid when the file is opened or saved, and only on a machine that has Chrome, Edge or Chromium."
+        },
         "loreMaster.preview.actionBar": {
           "type": "boolean",
           "default": true,
