@@ -54,7 +54,7 @@ func (r *Renderer) Check(ctx context.Context, source string) ([]platformport.Dia
 		if errors.Is(err, context.DeadlineExceeded) {
 			r.dropTab()
 
-			return nil, fmt.Errorf("Mermaid did not answer within %s", r.timeout)
+			return nil, fmt.Errorf("the Mermaid check did not answer within %s", r.timeout)
 		}
 
 		return nil, err
