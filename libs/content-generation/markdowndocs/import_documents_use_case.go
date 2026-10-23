@@ -21,7 +21,7 @@ const DefaultTitle = "Documentation"
 // keep their layout below the deepest folder they and the images they show share.
 func Generate(ctx context.Context, workspaceRoot string, spec generatedfile.Spec) (generatedfile.Output, error) {
 	if !hasSelectingPattern(spec.Input) {
-		return generatedfile.Output{}, fmt.Errorf("markdown-docs needs an input: the folder or files of Markdown to import, e.g. build/docs/")
+		return generatedfile.Output{}, fmt.Errorf("markdown-docs needs an input: the folder or files of Markdown to import, e.g. build/docs/, or leave the input as the output folder when the command writes the pages there")
 	}
 	paths, err := findDocuments(ctx, workspaceRoot, spec.Input, spec.Output)
 	if err != nil {

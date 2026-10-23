@@ -42,7 +42,7 @@ var catalogue = []Entry{
 		Type:       "markdown-docs",
 		Reads:      "Markdown another tool wrote (TypeDoc's Markdown plugin, dokka, a build/docs folder)",
 		Recognised: "files with the .md or .markdown extension",
-		Writes:     "the same pages as ordinary pages with unique titles, the images they show copied beside them; input is required",
+		Writes:     "the same pages as ordinary pages with unique titles, the images they show copied beside them; input is required unless the command writes the pages straight into the output folder",
 	},
 	{
 		Type:       "storybook-docs",
