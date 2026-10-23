@@ -91,8 +91,25 @@ export function renderStorageFormPage (nonce: string, title: string): string {
       control = el('select', { id });
       const add = el('button', { type: 'button', textContent: 'Add connection…' });
       add.addEventListener('click', () => api.postMessage({ type: 'addConnection' }));
+      control.addEventListener('change', requestSpaces);
       wrap.append(el('div', { className: 'row' }, [control, add]));
       fillConnections(control, values[field.key]);
+    } else if (field.lookup && field.lookup.kind === 'space') {
+      // A space is chosen from a dropdown filled from the site; where the list cannot be had it becomes a box to type the key in.
+      control = el('select', { id });
+      fillSpaces(control, null, values[field.key]);
+      wrap.append(control);
+      lookups.spaces = {
+        select: () => control,
+        fail: () => {
+          if (control.tagName !== 'SELECT') { return; }
+          const input = el('input', { id, autocomplete: 'off', placeholder: 'The space key' });
+          input.value = control.value;
+          control.replaceWith(input);
+          control = input;
+        },
+      };
+      requestSpaces();
     } else if (field.type === 'choice') {
       control = el('select', { id });
       for (const choice of field.choices || []) {
@@ -130,17 +147,24 @@ export function renderStorageFormPage (nonce: string, title: string): string {
     return wrap;
   }
 
-  // A lookup the page knows how to offer: a space is browsed, a page is searched in a space chosen first.
+  // The options of the space dropdown: a prompt, the chosen space (kept even when the site does not list it), then every space.
+  function fillSpaces (select, spaces, selected) {
+    select.textContent = '';
+    select.append(el('option', { value: '', textContent: spaces === null ? 'Loading spaces…' : 'Choose a space…' }));
+    const list = spaces || [];
+    if (selected && !list.some(space => space.key === selected)) { select.append(el('option', { value: selected, textContent: selected })); }
+    for (const space of list) { select.append(el('option', { value: space.key, textContent: space.key + ': ' + space.name })); }
+    select.value = selected || '';
+  }
+
+  // Asks for the spaces of the chosen connection; the answer fills the dropdown.
+  function requestSpaces () {
+    const connection = connectionValue();
+    if (lookups.spaces && connection) { api.postMessage({ type: 'listSpaces', connection }); }
+  }
+
+  // A lookup the page knows how to offer: a page is searched in a space chosen first.
   function drawLookup (wrap, field, control) {
-    if (field.lookup.kind === 'space') {
-      const list = el('select', { size: 6, hidden: true });
-      const browse = el('button', { type: 'button', textContent: 'Browse spaces' });
-      browse.addEventListener('click', () => { browse.disabled = true; api.postMessage({ type: 'listSpaces', connection: connectionValue() }); });
-      list.addEventListener('change', () => { control.value = list.value; });
-      wrap.append(el('div', { className: 'row' }, [control, browse]), list);
-      lookups.spaces = { list, browse };
-      return true;
-    }
     if (field.lookup.kind === 'page') {
       const query = el('input', { autocomplete: 'off', placeholder: 'Find it by title' });
       const search = el('button', { type: 'button', textContent: 'Search' });
@@ -265,15 +289,19 @@ export function renderStorageFormPage (nonce: string, title: string): string {
         const entry = platform && platform.connection ? current.find(each => each.key === platform.connection.field) : null;
         const select = entry ? $('f-' + entry.key) : null;
         if (select) { fillConnections(select, message.selected); }
+        requestSpaces();
         break;
       }
       case 'spaces': {
         const spaces = lookups.spaces;
-        if (!spaces) { break; }
-        spaces.browse.disabled = false;
-        spaces.list.textContent = '';
-        for (const space of message.spaces) { spaces.list.append(el('option', { value: space.key, textContent: space.key + ': ' + space.name })); }
-        spaces.list.hidden = message.spaces.length === 0;
+        const select = spaces ? spaces.select() : null;
+        if (select && select.tagName === 'SELECT') { fillSpaces(select, message.spaces, select.value); }
+        break;
+      }
+      case 'spacesError': {
+        if (lookups.spaces) { lookups.spaces.fail(); }
+        $('banner').textContent = 'The spaces could not be listed (' + message.message + '). Type the space key instead.';
+        $('banner').hidden = false;
         break;
       }
       case 'pages': {
@@ -299,7 +327,6 @@ export function renderStorageFormPage (nonce: string, title: string): string {
         break;
       }
       case 'lookupError': {
-        if (lookups.spaces) { lookups.spaces.browse.disabled = false; }
         if (lookups.pages) { lookups.pages.search.disabled = false; }
         $('banner').textContent = message.message;
         $('banner').hidden = false;
