@@ -616,7 +616,7 @@ func pictureOf(svg []byte, mode string, found diagramSource) []byte {
 		return svg
 	}
 
-	return injectDiagramSource(svg, found.Language, found.Source)
+	return injectDiagramSource(pixelSizedSVG(svg), found.Language, found.Source)
 }
 
 // annotation is the file's annotation after a successful write: what the author set
