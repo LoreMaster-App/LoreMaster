@@ -28,12 +28,18 @@ export async function sync (deps: SyncCommandDeps, chosenFolder?: string, only?:
     return
   }
 
-  await syncOutputs({
-    engine:        deps.engine,
-    connections:   deps.connections,
-    targets:       deps.targets,
-    workspaceRoot: folder,
-    ui:            createSyncUI(deps.output),
-    addConnection: () => connectPlatform({ engine: deps.engine, store: deps.connections }),
-  }, only ? { only } : {})
+  const ui = createSyncUI(deps.output)
+  try {
+    await syncOutputs({
+      engine:        deps.engine,
+      connections:   deps.connections,
+      targets:       deps.targets,
+      workspaceRoot: folder,
+      ui,
+      addConnection: () => connectPlatform({ engine: deps.engine, store: deps.connections }),
+    }, only ? { only } : {})
+  } catch (error) {
+    // A failure before the plan (settings, engine) must not leave the click looking like nothing happened.
+    await ui.error(error instanceof Error ? error.message : String(error))
+  }
 }

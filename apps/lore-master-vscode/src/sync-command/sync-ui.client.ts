@@ -62,17 +62,18 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
       })
     },
 
-    async choose (summary: string) {
+    async choose (summary: string, conflicts: number) {
       const picked = await vscode.window.showQuickPick(
         [
           { label: '$(check) Run', value: 'run' },
+          ...conflicts > 0 ? [{ label: `$(warning) Run and overwrite ${conflicts} page(s) edited on the platform`, value: 'force' }] : [],
           { label: '$(list-unordered) Show details', value: 'details' },
           { label: '$(x) Cancel', value: 'cancel' },
         ],
         { title: `LoreMaster: ${summary}`, placeHolder: 'Review the plan' },
       )
 
-      return (picked?.value ?? 'cancel') as 'cancel' | 'details' | 'run'
+      return (picked?.value ?? 'cancel') as 'cancel' | 'details' | 'force' | 'run'
     },
 
     writeDetails (lines: string[]) {
@@ -102,10 +103,6 @@ export function createSyncUI (output: vscode.OutputChannel): SyncUI {
 
     status (message: string) {
       vscode.window.setStatusBarMessage(message, 5000)
-    },
-
-    async confirmForce (message: string) {
-      return await vscode.window.showWarningMessage(message, { modal: true }, 'Force') === 'Force'
     },
 
     async error (message: string) {

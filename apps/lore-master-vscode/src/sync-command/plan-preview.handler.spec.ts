@@ -8,7 +8,7 @@ const plan = (over: Partial<SyncPlanResult> = {}): SyncPlanResult => ({
   ...over,
 })
 
-function ui (choices: ('run' | 'details' | 'cancel')[]): PlanPreviewUI & { details: number; errors: string[][] } {
+function ui (choices: ('run' | 'force' | 'details' | 'cancel')[]): PlanPreviewUI & { details: number; errors: string[][] } {
   let next = 0
   const self = {
     details:      0,
@@ -49,13 +49,17 @@ describe('previewPlan', () => {
 
     const run = await previewPlan(plan({ errors: ['broken'] }), preview)
 
-    expect(run).toBe(false)
+    expect(run).toBe('cancel')
     expect(preview.errors).toEqual([['broken']])
     expect(preview.details).toBe(1)
   })
 
-  it('returns true on Run', async () => {
-    expect(await previewPlan(plan(), ui(['run']))).toBe(true)
+  it('returns run on Run', async () => {
+    expect(await previewPlan(plan(), ui(['run']))).toBe('run')
+  })
+
+  it('returns force when the user overwrites conflicts', async () => {
+    expect(await previewPlan(plan(), ui(['force']))).toBe('force')
   })
 
   it('shows details then runs', async () => {
@@ -63,11 +67,11 @@ describe('previewPlan', () => {
 
     const run = await previewPlan(plan(), preview)
 
-    expect(run).toBe(true)
+    expect(run).toBe('run')
     expect(preview.details).toBe(1)
   })
 
-  it('returns false on Cancel', async () => {
-    expect(await previewPlan(plan(), ui(['cancel']))).toBe(false)
+  it('returns cancel on Cancel', async () => {
+    expect(await previewPlan(plan(), ui(['cancel']))).toBe('cancel')
   })
 })

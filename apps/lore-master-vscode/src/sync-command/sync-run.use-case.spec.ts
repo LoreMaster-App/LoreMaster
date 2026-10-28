@@ -88,7 +88,6 @@ function buildUI (over: Partial<SyncUI> = {}): SyncUI & { reported: string[][]; 
     withProgress:     (_title, task) => task(step => { steps.push(step) }),
     report:           lines => { reported.push(lines) },
     status:           message => { statuses.push(message) },
-    confirmForce:     () => Promise.resolve(false),
     error:            message => {
       errors.push(message)
 
@@ -172,17 +171,17 @@ describe('syncConfluenceOutput', () => {
     expect(engine.calls.some(call => call.method === SYNC_EXECUTE_METHOD)).toBe(false)
   })
 
-  it('offers a forced re-run on conflict and runs it when confirmed', async () => {
+  it('executes once with force when the user overwrites conflicts up front', async () => {
     const engine = fakeEngine({
       [SESSION_OPEN_METHOD]: () => session,
       [SYNC_PLAN_METHOD]:    () => ({ planId: 'p', actions: [{ kind: 'conflict', title: 'A' }], counts: { conflict: 1 } }),
       [SYNC_EXECUTE_METHOD]: () => ({ pages: [{ title: 'A', planned: 'conflict', outcome: 'skipped' }] }),
     })
 
-    await run(engine, buildUI({ confirmForce: () => Promise.resolve(true) }))
+    await run(engine, buildUI({ choose: () => Promise.resolve('force') }))
 
     const executes = engine.calls.filter(call => call.method === SYNC_EXECUTE_METHOD)
-    expect(executes).toHaveLength(2)
-    expect((executes[1].params as { force: boolean }).force).toBe(true)
+    expect(executes).toHaveLength(1)
+    expect((executes[0].params as { force: boolean }).force).toBe(true)
   })
 })
