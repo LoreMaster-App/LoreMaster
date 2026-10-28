@@ -40,7 +40,6 @@ export interface SyncUI extends StorageSetupUI, PlanPreviewUI {
   withProgress<T> (title: string, task: (report: (step: ProgressStep) => void) => Promise<T>): Promise<T>
   report (lines: string[]): void
   status (message: string): void
-  confirmForce (message: string): Promise<boolean>
   /** Tells the user the sync can be undone; not every surface offers it (watch mode stays quiet). */
   offerRollback? (journalId: string): void
 }
@@ -89,7 +88,7 @@ export async function syncConfluenceOutput (deps: SyncDeps, ref: ConfluenceOutpu
 
   let session: SessionOpenResult
   try {
-    session = await engine.request<SessionOpenResult>(SESSION_OPEN_METHOD, { baseUrl: meta.baseUrl, edition: meta.edition, credential })
+    session = await ui.withProgress('LoreMaster: connecting', () => engine.request<SessionOpenResult>(SESSION_OPEN_METHOD, { baseUrl: meta.baseUrl, edition: meta.edition, credential }))
   } catch (error) {
     await ui.error(messageOf(error))
 
@@ -113,24 +112,15 @@ export async function syncConfluenceOutput (deps: SyncDeps, ref: ConfluenceOutpu
 async function planAndExecute (deps: SyncDeps & { sessionId: string; output: number }): Promise<void> {
   const { engine, sessionId, workspaceRoot, scope, output, ui } = deps
 
-  const plan = await planOnce(engine, { sessionId, workspaceRoot, output, scope })
-  if (!await previewPlan(plan, ui)) {
+  const plan = await ui.withProgress('LoreMaster: reading the workspace and checking pages', () => planOnce(engine, { sessionId, workspaceRoot, output, scope }))
+  const choice = await previewPlan(plan, ui)
+  if (choice === 'cancel') {
     return
   }
 
-  const result = await execute(engine, plan.planId, false, ui)
+  const result = await execute(engine, plan.planId, choice === 'force', ui)
   reportResult(result, ui)
   offerRollback(result, ui)
-
-  if ((plan.counts.conflict ?? 0) > 0) {
-    const forced = await ui.confirmForce('Some pages changed on the platform since the last sync. Overwrite them?')
-    if (forced) {
-      const replan = await planOnce(engine, { sessionId, workspaceRoot, output, scope })
-      const forcedResult = await execute(engine, replan.planId, true, ui)
-      reportResult(forcedResult, ui)
-      offerRollback(forcedResult, ui)
-    }
-  }
 }
 
 function planOnce (engine: EngineClient, params: { sessionId: string; workspaceRoot: string; output: number; scope?: string[] }): Promise<SyncPlanResult> {

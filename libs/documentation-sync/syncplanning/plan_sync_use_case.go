@@ -86,6 +86,7 @@ func PlanSync(ctx context.Context, platform platformport.DocumentationPlatform, 
 		}
 	})
 
+	run.prefetch()
 	claimed := map[string]bool{}
 	var walkErr error
 	input.Tree.Walk(func(node *documenttree.TreeNode, _ int) {
@@ -147,10 +148,12 @@ type planner struct {
 	// marked are the pages the sync marked under the parent; annotated are those an
 	// annotation in the workspace points at.
 	marked, annotated map[string]bool
+	// lookups are the platform's answers per document, fetched before the walk.
+	lookups map[documentdiscovery.DocumentPath]*remoteLookup
 }
 
 func (run *planner) planDocument(node *documenttree.TreeNode) (Action, string, string, error) {
-	ctx, platform, output := run.ctx, run.platform, run.input.Output
+	output := run.input.Output
 	titles, pageIDs := run.titles, run.pageIDs
 	document := node.Document
 	action := Action{
@@ -164,7 +167,8 @@ func (run *planner) planDocument(node *documenttree.TreeNode) (Action, string, s
 
 	annotation := document.Annotation
 	if annotation == nil || annotation.PageID == "" || !sameTarget(annotation, output) {
-		found, err := platform.FindPagesByTitle(ctx, run.space, action.Title)
+		lookup := run.lookups[document.Path]
+		found, err := lookup.found, lookup.err
 		if err != nil {
 			return Action{}, "", "", err
 		}
@@ -188,7 +192,7 @@ func (run *planner) planDocument(node *documenttree.TreeNode) (Action, string, s
 		return action, "", "", nil
 	}
 
-	remote, err := platform.GetPage(ctx, annotation.PageID)
+	remote, err := run.lookups[document.Path].page, run.lookups[document.Path].err
 	var missing *platformport.PageNotFoundError
 	if errors.As(err, &missing) {
 		action.Kind = Create
