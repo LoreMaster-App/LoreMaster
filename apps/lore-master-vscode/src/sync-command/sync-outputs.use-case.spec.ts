@@ -76,6 +76,7 @@ function buildUI (over: Partial<SyncUI> = {}): SyncUI & { errors: string[] } {
     withProgress:      (_title, task) => task(() => {}),
     report:            () => {},
     status:            () => {},
+    confirmForce:      () => Promise.resolve(false),
     error:             message => {
       errors.push(message)
 
