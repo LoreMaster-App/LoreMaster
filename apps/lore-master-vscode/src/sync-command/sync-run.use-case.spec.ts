@@ -88,6 +88,7 @@ function buildUI (over: Partial<SyncUI> = {}): SyncUI & { reported: string[][]; 
     withProgress:     (_title, task) => task(step => { steps.push(step) }),
     report:           lines => { reported.push(lines) },
     status:           message => { statuses.push(message) },
+    confirmForce:     () => Promise.resolve(false),
     error:            message => {
       errors.push(message)
 
@@ -130,7 +131,7 @@ describe('syncConfluenceOutput', () => {
 
     await run(engine, ui)
 
-    expect(ui.steps).toEqual([{ message: 'writing', done: 1, total: 2 }])
+    expect(ui.steps.map(step => step.message)).toEqual([`connecting to ${meta.baseUrl}`, 'reading the workspace and checking each page', 'writing'])
     expect(ui.reported[0]).toEqual(['written   A'])
     expect(ui.statuses).toEqual(['LoreMaster: synced 1 page(s)'])
     expect((engine.calls.find(call => call.method === SYNC_PLAN_METHOD)?.params as { output: number }).output).toBe(0)
@@ -171,14 +172,14 @@ describe('syncConfluenceOutput', () => {
     expect(engine.calls.some(call => call.method === SYNC_EXECUTE_METHOD)).toBe(false)
   })
 
-  it('executes once with force when the user overwrites conflicts up front', async () => {
+  it('asks about conflicts before executing and runs once with force when confirmed', async () => {
     const engine = fakeEngine({
       [SESSION_OPEN_METHOD]: () => session,
       [SYNC_PLAN_METHOD]:    () => ({ planId: 'p', actions: [{ kind: 'conflict', title: 'A' }], counts: { conflict: 1 } }),
       [SYNC_EXECUTE_METHOD]: () => ({ pages: [{ title: 'A', planned: 'conflict', outcome: 'skipped' }] }),
     })
 
-    await run(engine, buildUI({ choose: () => Promise.resolve('force') }))
+    await run(engine, buildUI({ confirmForce: () => Promise.resolve(true) }))
 
     const executes = engine.calls.filter(call => call.method === SYNC_EXECUTE_METHOD)
     expect(executes).toHaveLength(1)
