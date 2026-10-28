@@ -13,7 +13,7 @@ import {
 } from '../engine-protocol'
 import type { ConnectionMeta, ConnectionStore } from '../secret-storage'
 import { type StorageSetupUI } from '../storage-setup'
-import { type PlanPreviewUI, previewPlan } from './plan-preview.handler'
+import { type PlanPreviewUI, planDetails, summarizePlan } from './plan-preview.handler'
 import type { TargetStore } from '../sync-target'
 
 /** One progress step, as `withProgress` reports it. */
@@ -37,6 +37,7 @@ export interface OutputChoice {
  *  preview, the output-subset picker, and the progress/report surface. */
 export interface SyncUI extends StorageSetupUI, PlanPreviewUI {
   pickOutputs (choices: OutputChoice[]): Promise<number[] | undefined>
+  confirmForce (message: string): Promise<boolean>
   withProgress<T> (title: string, task: (report: (step: ProgressStep) => void) => Promise<T>): Promise<T>
   report (lines: string[]): void
   status (message: string): void
@@ -86,39 +87,59 @@ export async function syncConfluenceOutput (deps: SyncDeps, ref: ConfluenceOutpu
     return
   }
 
-  let session: SessionOpenResult
-  try {
-    session = await ui.withProgress('LoreMaster: connecting', () => engine.request<SessionOpenResult>(SESSION_OPEN_METHOD, { baseUrl: meta.baseUrl, edition: meta.edition, credential }))
-  } catch (error) {
-    await ui.error(messageOf(error))
-
-    return
-  }
-
-  try {
+  let session: SessionOpenResult | undefined
+  let planning: Promise<SyncPlanResult> | undefined
+  // Connecting and planning start only once the user has chosen, and say what they are doing.
+  const prepare = (): Promise<SyncPlanResult> => planning ??= ui.withProgress('LoreMaster: preparing the sync', async report => {
+    report({ message: `connecting to ${meta.baseUrl}`, done: 0, total: 0 })
+    session = await engine.request<SessionOpenResult>(SESSION_OPEN_METHOD, { baseUrl: meta.baseUrl, edition: meta.edition, credential })
     targets.set(workspaceRoot, { space: output.space, parentPageId: output.parentPageId, parentTitle: '', titlePrefix: output.titlePrefix })
-    await planAndExecute({ ...deps, sessionId: session.sessionId, output: index })
+    report({ message: 'reading the workspace and checking each page', done: 0, total: 0 })
+
+    return planOnce(engine, { sessionId: session.sessionId, workspaceRoot, output: index, scope: deps.scope })
+  })
+
+  try {
+    await runChosen(deps, prepare)
   } catch (error) {
     await ui.error(messageOf(error))
   } finally {
-    try {
-      await engine.request(SESSION_CLOSE_METHOD, { sessionId: session.sessionId })
-    } catch {
-      // Closing is best-effort.
+    if (session) {
+      try {
+        await engine.request(SESSION_CLOSE_METHOD, { sessionId: session.sessionId })
+      } catch {
+        // Closing is best-effort.
+      }
     }
   }
 }
 
-async function planAndExecute (deps: SyncDeps & { sessionId: string; output: number }): Promise<void> {
-  const { engine, sessionId, workspaceRoot, scope, output, ui } = deps
+/** The choice is on screen at once; the plan is made when it is needed. Conflicting pages are asked about before
+ *  anything is written, never after. */
+async function runChosen (deps: SyncDeps, prepare: () => Promise<SyncPlanResult>): Promise<void> {
+  const { engine, ui } = deps
 
-  const plan = await ui.withProgress('LoreMaster: reading the workspace and checking pages', () => planOnce(engine, { sessionId, workspaceRoot, output, scope }))
-  const choice = await previewPlan(plan, ui)
-  if (choice === 'cancel') {
-    return
+  for (;;) {
+    const choice = await ui.choose()
+    if (choice === 'cancel') {
+      return
+    }
+    if (choice === 'run') {
+      break
+    }
+    ui.writeDetails(planDetails(await prepare()))
   }
 
-  const result = await execute(engine, plan.planId, choice === 'force', ui)
+  const plan = await prepare()
+  if ((plan.errors ?? []).length > 0) {
+    ui.writeDetails(planDetails(plan))
+    await ui.showErrors(plan.errors ?? [])
+
+    return
+  }
+  const conflicts = plan.counts.conflict ?? 0
+  const force = conflicts > 0 && await ui.confirmForce(`${conflicts} page(s) changed on the platform since the last sync. Overwrite them? (${summarizePlan(plan)})`)
+  const result = await execute(engine, plan.planId, force, ui)
   reportResult(result, ui)
   offerRollback(result, ui)
 }

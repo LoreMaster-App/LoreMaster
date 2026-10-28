@@ -2,9 +2,8 @@ import type { SyncPlanResult } from '../engine-protocol'
 
 /** The plan-preview prompts. */
 export interface PlanPreviewUI {
-  /** Offers Run / Show details / Cancel over a one-line summary, and, when `conflicts` pages were edited on the
-   *  platform since the last sync, Run and overwrite them. */
-  choose (summary: string, conflicts: number): Promise<'run' | 'force' | 'details' | 'cancel'>
+  /** Offers Run / Show details / Cancel the moment a sync starts, before anything is read. */
+  choose (): Promise<'run' | 'details' | 'cancel'>
   /** Writes the full plan to the output channel. */
   writeDetails (lines: string[]): void
   /** Shows that the plan cannot run, with its errors. */
@@ -38,28 +37,4 @@ export function planDetails (plan: SyncPlanResult): string[] {
   }
 
   return lines
-}
-
-/**
- * Shows the plan and asks whether to run it. A plan with errors cannot run: its details go
- * to the output channel and the errors are shown. Otherwise the summary is offered with
- * Run / Show details (writes the plan to the output channel, then asks again) / Cancel, plus
- * overwriting conflicting pages when there are any, so nothing is asked after the sync has run.
- * Returns how to execute, or 'cancel'.
- */
-export async function previewPlan (plan: SyncPlanResult, ui: PlanPreviewUI): Promise<'run' | 'force' | 'cancel'> {
-  if ((plan.errors ?? []).length > 0) {
-    ui.writeDetails(planDetails(plan))
-    await ui.showErrors(plan.errors ?? [])
-
-    return 'cancel'
-  }
-
-  for (;;) {
-    const choice = await ui.choose(summarizePlan(plan), plan.counts?.conflict ?? 0)
-    if (choice !== 'details') {
-      return choice
-    }
-    ui.writeDetails(planDetails(plan))
-  }
 }

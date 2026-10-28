@@ -17,13 +17,7 @@ export function createSilentSyncUI (output: vscode.OutputChannel): SilentSyncUI 
     ...createSyncUI(output),
     problems,
 
-    choose: (_summary: string, conflicts: number) => {
-      if (conflicts > 0) {
-        log('Some pages changed on the platform since the last sync, so they were left alone. Sync them yourself to overwrite.')
-      }
-
-      return Promise.resolve('run' as const)
-    },
+    choose: () => Promise.resolve('run' as const),
 
     writeDetails (lines: string[]) {
       log('Plan:')
@@ -51,6 +45,12 @@ export function createSilentSyncUI (output: vscode.OutputChannel): SilentSyncUI 
     },
 
     status: () => {},
+
+    confirmForce: () => {
+      log('Some pages changed on the platform since the last sync, so they were left alone. Sync them yourself to overwrite.')
+
+      return Promise.resolve(false)
+    },
 
     // Setting up storages asks questions; a watch has to start from outputs that are already set up.
     pickStorageTypes: () => Promise.resolve(undefined),
