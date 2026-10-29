@@ -65,7 +65,7 @@ func PlanSync(sessions *sessionlifecycle.Store, plans *PlanStore) rpcserver.Meth
 			scope[i] = documentdiscovery.DocumentPath(path)
 		}
 		plan, err := syncplanning.PlanSync(ctx, session.Platform, syncplanning.Input{
-			Tree: tree, Output: output, SpaceID: space.ID, Scope: scope, Rendered: prepared.Rendered(),
+			Tree: tree, Output: output, SpaceID: space.ID, Scope: scope, Rendered: prepared.Rendered(), Rewrite: params.Rewrite,
 		})
 		if err != nil {
 			return nil, sessionlifecycle.PlatformError(err)

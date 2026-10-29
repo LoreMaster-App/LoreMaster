@@ -54,6 +54,8 @@ export interface SyncDeps {
   targets:        TargetStore
   workspaceRoot:  string
   scope?:         string[]
+  /** Write every page again even when nothing changed. */
+  rewrite?:       boolean
   ui:             SyncUI
   addConnection?: () => Promise<ConnectionMeta | undefined>
 }
@@ -96,7 +98,7 @@ export async function syncConfluenceOutput (deps: SyncDeps, ref: ConfluenceOutpu
     targets.set(workspaceRoot, { space: output.space, parentPageId: output.parentPageId, parentTitle: '', titlePrefix: output.titlePrefix })
     report({ message: 'reading the workspace and checking each page', done: 0, total: 0 })
 
-    return planOnce(engine, { sessionId: session.sessionId, workspaceRoot, output: index, scope: deps.scope })
+    return planOnce(engine, { sessionId: session.sessionId, workspaceRoot, output: index, scope: deps.scope, rewrite: deps.rewrite })
   })
 
   try {
@@ -144,7 +146,7 @@ async function runChosen (deps: SyncDeps, prepare: () => Promise<SyncPlanResult>
   offerRollback(result, ui)
 }
 
-function planOnce (engine: EngineClient, params: { sessionId: string; workspaceRoot: string; output: number; scope?: string[] }): Promise<SyncPlanResult> {
+function planOnce (engine: EngineClient, params: { sessionId: string; workspaceRoot: string; output: number; scope?: string[]; rewrite?: boolean }): Promise<SyncPlanResult> {
   return engine.request<SyncPlanResult>(SYNC_PLAN_METHOD, params)
 }
 

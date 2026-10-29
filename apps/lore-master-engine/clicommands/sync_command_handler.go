@@ -18,6 +18,7 @@ type syncOptions struct {
 	yes      bool
 	dryRun   bool
 	force    bool
+	rewrite  bool
 	prune    bool
 }
 
@@ -33,6 +34,7 @@ func syncCommand(ctx context.Context, env Environment, methods rpcserver.Methods
 		flags.BoolVar(&options.yes, "yes", false, "apply the plan; without it the plan is only shown")
 		flags.BoolVar(&options.dryRun, "dry-run", false, "show the plan and change nothing, even with --yes")
 		flags.BoolVar(&options.force, "force", false, "overwrite pages edited on the platform since the last sync")
+		flags.BoolVar(&options.rewrite, "rewrite", false, "write every page again even when nothing changed, to redo one that went wrong (use --scope for a few)")
 		flags.BoolVar(&options.prune, "prune", false, "move pages whose file is gone to the trash")
 	})
 	if !ok {
@@ -189,7 +191,7 @@ func syncConfluence(ctx context.Context, env Environment, engine *connection, pa
 	}()
 
 	var plan rpcprotocol.SyncPlanResult
-	if err := engine.call(ctx, rpcprotocol.MethodSyncPlan, rpcprotocol.SyncPlanParams{SessionID: session.SessionID, WorkspaceRoot: parsed.workspace, Output: output.index, Scope: options.scope}, &plan); err != nil {
+	if err := engine.call(ctx, rpcprotocol.MethodSyncPlan, rpcprotocol.SyncPlanParams{SessionID: session.SessionID, WorkspaceRoot: parsed.workspace, Output: output.index, Scope: options.scope, Rewrite: options.rewrite}, &plan); err != nil {
 		return fail(err)
 	}
 	entry.Plan = &plan

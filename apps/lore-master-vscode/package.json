@@ -57,6 +57,16 @@
         "category": "LoreMaster"
       },
       {
+        "command": "loreMaster.rewriteAll",
+        "title": "Rewrite All Pages",
+        "category": "LoreMaster"
+      },
+      {
+        "command": "loreMaster.rewriteCurrentFile",
+        "title": "Rewrite Current File's Page",
+        "category": "LoreMaster"
+      },
+      {
         "command": "loreMaster.publishPages",
         "title": "Publish to GitHub Pages",
         "category": "LoreMaster"
