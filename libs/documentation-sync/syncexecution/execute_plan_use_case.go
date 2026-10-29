@@ -456,7 +456,7 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 		}
 	}
 
-	diagrams := run.renderDiagrams(ctx, action.Path, page)
+	diagrams, undrawn := run.renderDiagrams(ctx, action.Path, page)
 	images := make(map[string]string, len(diagrams))
 	pictures := make(map[string]string, len(diagrams))
 	for source, diagram := range diagrams {
@@ -505,6 +505,11 @@ func (run *execution) write(ctx context.Context, action syncplanning.Action, res
 		}
 	}
 	result.Annotation = run.annotation(page, remote, parentID, action.ContentHash, attachments)
+	if undrawn {
+		// A render hash no conversion produces makes the next plan write the page again, so a
+		// diagram that failed once is drawn on the next sync instead of staying code for good.
+		result.Annotation.RenderHash = ""
+	}
 	if unlinked {
 		run.relink = append(run.relink, relink{result: run.current, action: action, parentID: parentID, blocks: withDiagramImages(page.Converted.Document.Blocks, images, pictures)})
 	}
@@ -576,8 +581,7 @@ func languageName(language string) string {
 
 // renderDiagrams draws the page's diagrams when the output shows them as images, keyed by
 // diagramSource.key. A diagram that cannot be drawn stays as code, with a warning.
-func (run *execution) renderDiagrams(ctx context.Context, documentPath documentdiscovery.DocumentPath, page PreparedPage) map[string]renderedDiagram {
-	var diagrams map[string]renderedDiagram
+func (run *execution) renderDiagrams(ctx context.Context, documentPath documentdiscovery.DocumentPath, page PreparedPage) (diagrams map[string]renderedDiagram, failed bool) {
 	for _, found := range diagramSources(page.Converted.Document.Blocks) {
 		if !drawnAsImage(run.input.Output.MermaidMode, found.Language) {
 			continue
@@ -593,6 +597,7 @@ func (run *execution) renderDiagrams(ctx context.Context, documentPath documentd
 		svg, err := run.input.Renderer.Render(ctx, found.Language, found.Source)
 		if err != nil {
 			run.warn("%s: a %s diagram could not be drawn (%v); it is shown as code", documentPath, languageName(found.Language), err)
+			failed = true
 
 			continue
 		}
@@ -606,7 +611,7 @@ func (run *execution) renderDiagrams(ctx context.Context, documentPath documentd
 		}
 	}
 
-	return diagrams
+	return diagrams, failed
 }
 
 // pictureOf is the SVG to hand on for a drawn diagram: one that is attached carries its source,
