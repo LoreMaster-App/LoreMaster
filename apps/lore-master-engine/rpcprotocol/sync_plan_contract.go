@@ -15,6 +15,8 @@ type SyncPlanParams struct {
 	// Scope limits the plan to these workspace-relative files ('/'-separated) and the
 	// ancestors they need created; empty plans everything.
 	Scope []string `json:"scope,omitempty"`
+	// Rewrite plans every existing page as an update even when nothing changed.
+	Rewrite bool `json:"rewrite,omitempty"`
 }
 
 // SyncPlanResult is the plan. With Errors it cannot be executed; fix them and plan

@@ -29,7 +29,7 @@ on `amd64` and `arm64`. Pin `VERSION`: the CLI's flags follow the extension's ve
 lore-master-engine generate [--workspace DIR] [--generator N]... [--prepare] [--json]
 lore-master-engine tree     [--workspace DIR] [--output N|NAME]... [--json]
 lore-master-engine sync     [--workspace DIR] [--output N|NAME]... [--scope PATH]... [--generate] [--prepare]
-                            [--yes] [--dry-run] [--force] [--prune] [--json]
+                            [--yes] [--dry-run] [--force] [--rewrite] [--prune] [--json]
 lore-master-engine watch    [--workspace DIR] [--output N|NAME]... [--yes] [--force]
                             [--debounce 2s] [--poll 1s]
 lore-master-engine pages build   --out DIR [--workspace DIR] [--output N|NAME] [--json]
@@ -47,7 +47,7 @@ lore-master-engine version
 - `tree` shows the page tree each output would sync, with each page's local status.
 - `rollback` undoes a sync, see [Undo a sync](#undo-a-sync).
 - `sync` plans each output. **Without `--yes` it only shows the plan.** `--generate` runs the
-  generators first; `--force` overwrites pages edited on the platform; `--prune` trashes pages
+  generators first; `--force` overwrites pages edited on the platform; `--rewrite` writes every page again even when nothing changed (with `--scope` for a few); `--prune` trashes pages
   whose file is gone.
 
 - `pages build`, `pages publish` and `pages check` also take a `github-wiki` output; see

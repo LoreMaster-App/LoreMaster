@@ -27,6 +27,9 @@ type Input struct {
 	// still updates when that changes and the file does not. A document missing from
 	// the map shows nothing beyond it. Nil skips the comparison.
 	Rendered map[documentdiscovery.DocumentPath]RenderedPage
+	// Rewrite plans every existing page as an update even when nothing changed, to redo a page
+	// that went wrong (a diagram left as code). A page edited on the platform is still a conflict.
+	Rewrite bool
 }
 
 // RenderedPage is what a page shows as converted now: the hash of its body, which
@@ -204,7 +207,7 @@ func (run *planner) planDocument(node *documenttree.TreeNode) (Action, string, s
 		return Action{}, "", "", err
 	}
 	action.PageID, action.RemoteVersion, action.URL = remote.ID, remote.Version, remote.URL
-	renderedChanged := false
+	renderedChanged := run.input.Rewrite
 	if rendered := run.input.Rendered; rendered != nil {
 		now := rendered[document.Path]
 		renderedChanged = now.RenderHash != annotation.RenderHash || !maps.Equal(now.Attachments, annotation.Attachments)

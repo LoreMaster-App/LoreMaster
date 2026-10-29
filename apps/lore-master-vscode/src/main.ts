@@ -30,7 +30,7 @@ import { EDIT_STORAGE_COMMAND } from './storage-editing'
 import { addStorageForm, editStorageForm } from './storage-form'
 import { ROLLBACK_SYNC_COMMAND, rollbackSyncCommand } from './sync-rollback'
 import { ADD_STORAGE_COMMAND, OPEN_CONFIG_COMMAND, openConfig, REFRESH_STORAGES_COMMAND, REMOVE_STORAGE_COMMAND, removeStorageCommand, type StorageNode } from './sidebar'
-import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, syncCurrentFile, syncTo } from './sync-command'
+import { SYNC_COMMAND, SYNC_CURRENT_FILE_COMMAND, REWRITE_ALL_COMMAND, REWRITE_CURRENT_FILE_COMMAND, SYNC_TO_COMMAND, rewriteAll, rewriteCurrentFile, syncCurrentFile, syncTo } from './sync-command'
 import { createTargetStore } from './sync-target'
 import { TOGGLE_WATCH_COMMAND, WatchMode } from './watch-mode'
 
@@ -125,6 +125,8 @@ export function activate (context: vscode.ExtensionContext): MarkdownItExtension
     vscode.commands.registerCommand(TOGGLE_WATCH_COMMAND, () => watchMode.toggle()),
     vscode.commands.registerCommand(SYNC_TO_COMMAND, () => syncTo(syncDeps)),
     vscode.commands.registerCommand(SYNC_CURRENT_FILE_COMMAND, () => syncCurrentFile(syncDeps)),
+    vscode.commands.registerCommand(REWRITE_ALL_COMMAND, () => rewriteAll(syncDeps)),
+    vscode.commands.registerCommand(REWRITE_CURRENT_FILE_COMMAND, () => rewriteCurrentFile(syncDeps)),
     vscode.commands.registerCommand(PUBLISH_PAGES_COMMAND, () => publishPagesCommand({ engine, output })),
     vscode.commands.registerCommand(CREATE_AGENT_COMMAND, () => createAgentCommand({ engine })),
     vscode.commands.registerCommand(ROLLBACK_SYNC_COMMAND, (journalId?: unknown) => rollbackSyncCommand({ engine, connections, output }, typeof journalId === 'string' ? journalId : undefined)),

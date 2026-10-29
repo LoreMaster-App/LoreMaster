@@ -331,6 +331,7 @@ export interface SyncPlanParams {
   workspaceRoot: string
   output:        number
   scope?:        string[]
+  rewrite?:      boolean
 }
 
 export interface PlanAction {
