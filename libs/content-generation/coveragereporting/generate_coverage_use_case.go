@@ -36,7 +36,11 @@ func Generate(ctx context.Context, workspaceRoot string, spec generatedfile.Spec
 		parsed = append(parsed, files)
 	}
 
-	output.Files = RenderCoverage(spec.Title, MergeCoverage(parsed))
+	pageDepth := DefaultPageDepth
+	if spec.PageDepth != nil {
+		pageDepth = *spec.PageDepth
+	}
+	output.Files = RenderCoverage(spec.Title, MergeCoverage(parsed), pageDepth)
 
 	return output, nil
 }

@@ -25,7 +25,7 @@ and asks for one generator each, since one generator writes one kind of page.
 
 | Format | How it is recognised | Gives |
 |---|---|---|
-| JUnit XML (`test-results`) | XML whose root is `testsuite` or `testsuites` | A page per suite with its cases, failures and a summary |
+| JUnit XML (`test-results`) | XML whose root is `testsuite` or `testsuites` | A page per report file with its failures and a row per suite |
 | Cobertura XML, LCOV (`coverage`) | XML whose root is `coverage`; a tracefile with `SF:` records | Per-file results in the folder layout of the code |
 | OpenAPI 2 and 3 (`openapi-docs`) | YAML or JSON with a top-level `openapi` or `swagger` | Operations, parameters, schemas |
 | Markdown (`markdown-docs`) | `.md` or `.markdown` files | The pages, with the images they show |
@@ -77,13 +77,17 @@ Reads JUnit XML — the format Go (`gotestsum`, `go-junit-report`), Jest (`jest-
 pytest (`--junitxml`), Maven and most other runners write. Without `input` it looks for
 `**/junit*.xml`, `**/TEST-*.xml` and `**/*junit.xml`, skipping `node_modules` and `.git`.
 
-It writes:
+It writes **one page per report file**, not one per suite. A Jest run has one suite for each
+spec file, so a page for each suite would be hundreds of pages. A page has:
 
-- **`README.md`** — the totals (tests, passed, failed, errors, skipped, time), the failing
-  tests, and a table of suites. Every suite page nests under it.
-- **one page per test suite** — its totals, every failure with its message and stack in a
-  code block, and a table of its tests. A very large suite lists its first 500 tests; every
-  failure is always listed.
+- the totals (tests, passed, failed, errors, skipped, time);
+- every **failure**, with its message and stack in a code block (a long stack is cut);
+- a **table with a row for each suite**: its tests, passed, failed, errors, skipped and time.
+
+Tests that passed are counted, not listed.
+
+With one report, that page is `README.md`. With several (one for each project, say), `README.md`
+has a row for each report and a list of the failing suites, and each report page nests under it.
 
 A report that is not valid JUnit is reported and skipped; the others are still written. When
 there are no reports at all, the index says so, so old results never linger.
@@ -104,13 +108,23 @@ Without `input` it looks for `**/*cobertura*.xml`, `**/coverage.xml`, `**/lcov.i
 { "type": "coverage", "input": ["coverage/"], "output": "docs/coverage", "title": "Code coverage" }
 ```
 
-It writes one page per folder, like the Code Coverage tab of Azure DevOps:
+It writes pages like the Code Coverage tab of Azure DevOps:
 
 - an **overview**: code coverage %, total, covered, partially covered and not covered lines;
 - a table of the folder's **files, then subfolders**, each with a coverage bar and percentage and
   the same four counts;
-- each subfolder is a link to its own page, which nests under its parent in the page tree, and each
-  page links back **Up**.
+- each subfolder down to the page depth is a link to its own page, which nests under its parent in
+  the page tree, and each page links back **Up**.
+
+Only the first `pageDepth` levels of folders get a page (default `2`, counted from the folder where
+the code starts: `apps/web` and `libs/core` when the code is under `apps/` and `libs/`). A folder
+deeper than that is a **section of the page above it**, with its own totals and a table of its
+files. A code base of hundreds of folders is then a few pages. `"pageDepth": 0` writes one page,
+and a large number such as `99` writes a page for every folder.
+
+```jsonc
+{ "type": "coverage", "input": ["coverage/"], "output": "docs/coverage", "pageDepth": 2 }
+```
 
 A line that ran with every branch taken is *covered*, one that ran with a branch missed is
 *partially covered*, one that never ran is *not covered*. Several reports for the same file (for

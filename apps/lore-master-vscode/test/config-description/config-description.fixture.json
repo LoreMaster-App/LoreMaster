@@ -364,7 +364,19 @@
     {
       "id": "coverage",
       "label": "Coverage",
-      "description": "Code coverage reports."
+      "description": "Code coverage reports.",
+      "fields": [
+        {
+          "key": "pageDepth",
+          "label": "Page depth",
+          "help": "How many folder levels below the code's root get a page of their own. Folders deeper than that are sections of the page above. 0 writes one page.",
+          "type": "number",
+          "default": "2",
+          "min": 0,
+          "max": 10,
+          "advanced": true
+        }
+      ]
     },
     {
       "id": "markdown-docs",

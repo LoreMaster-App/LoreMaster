@@ -1395,6 +1395,11 @@
                 "type": "string",
                 "markdownDescription": "Heads the generated index page. Empty means the type's own default."
               },
+              "pageDepth": {
+                "type": "integer",
+                "minimum": 0,
+                "markdownDescription": "For `coverage`: how many folder levels below the code's root get a page of their own. Folders deeper than that are sections of the page above. `0` writes one page. Default `2`."
+              },
               "prepare": {
                 "type": "string",
                 "markdownDescription": "A shell command that produces what this generator reads (a build, a test run), run in the workspace folder. It runs only when you ask: the **Run generators** command (see `loreMaster.runPrepareSteps`), or `lore-master-engine generate --prepare` on CI. Leave empty when the files already exist."

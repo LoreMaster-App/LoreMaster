@@ -83,7 +83,7 @@ func run(ctx context.Context, workspaceRoot string, index int, generator workspa
 		}
 		entry.Prepared = true
 	}
-	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title}
+	spec := generatedfile.Spec{Type: generator.Type, Input: generator.Input, Source: generator.Source, Output: generator.Output, Title: generator.Title, PageDepth: generator.PageDepth}
 	// The command already wrote the pages where they are wanted: nothing to import or copy.
 	if (spec.Type == "" || spec.Type == "markdown-docs") && markdowndocs.IsInPlace(spec) {
 		return runInPlace(ctx, workspaceRoot, spec, entry)

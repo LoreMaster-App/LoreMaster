@@ -66,15 +66,13 @@ func TestRenderIsTheSameWhateverOrderTheSuitesArriveIn(t *testing.T) {
 	}
 }
 
-func TestRenderGivesEverySuiteItsOwnFileAndTitle(t *testing.T) {
+func TestRenderGivesEveryReportItsOwnFileAndTitle(t *testing.T) {
 	cases := []Case{{Name: "t", Status: Passed}}
 	suites := []Suite{
-		{Name: "Unit tests", Source: "a/junit.xml", Tests: 1, Cases: cases},
-		{Name: "Unit tests", Source: "b/junit.xml", Tests: 1, Cases: cases},
-		{Name: "unit.tests", Source: "c/junit.xml", Tests: 1, Cases: cases},
-		{Name: "README", Source: "d/junit.xml", Tests: 1, Cases: cases},
-		{Name: "Test results", Source: "e/junit.xml", Tests: 1, Cases: cases},
-		{Name: "!!!", Source: "f/junit.xml", Tests: 1, Cases: cases},
+		{Name: "Unit tests", Source: "a/b.xml", Tests: 1, Cases: cases},
+		{Name: "Unit tests", Source: "a-b.xml", Tests: 1, Cases: cases},
+		{Name: "Unit tests", Source: "README", Tests: 1, Cases: cases},
+		{Name: "Unit tests", Source: "!!!", Tests: 1, Cases: cases},
 	}
 
 	files := RenderReport("Test results", suites)
@@ -86,7 +84,7 @@ func TestRenderGivesEverySuiteItsOwnFileAndTitle(t *testing.T) {
 			t.Fatalf("%s has a dot, which would nest the page under another", file.Path)
 		}
 	}
-	if want := "README.md,unit-tests.md,unit-tests-2.md,unit-tests-3.md,readme-2.md,test-results.md,suite.md"; strings.Join(paths, ",") != want {
+	if want := "README.md,report.md,readme-2.md,a-b-xml.md,a-b-xml-2.md"; strings.Join(paths, ",") != want {
 		t.Fatalf("paths %v, want %s", paths, want)
 	}
 	titles := map[string]bool{}
@@ -97,8 +95,52 @@ func TestRenderGivesEverySuiteItsOwnFileAndTitle(t *testing.T) {
 		}
 		titles[strings.ToLower(heading)] = true
 	}
-	if !strings.Contains(bodyOf(t, files, "test-results.md"), "# Test results (e/junit.xml)") {
-		t.Fatal("a suite named like the index is disambiguated by its report")
+	if !strings.Contains(bodyOf(t, files, "a-b-xml-2.md"), "# Test results: a/b.xml\n") {
+		t.Fatal("a page is titled by the report it shows")
+	}
+}
+
+func TestRenderWritesOnePageForOneReportHoweverManySuitesItHas(t *testing.T) {
+	var suites []Suite
+	for i := 0; i < 300; i++ {
+		suites = append(suites, Suite{Name: fmt.Sprintf("suite %03d", i), Source: "junit.xml", Tests: 2, Cases: []Case{{Name: "a", Status: Passed}, {Name: "b", Status: Passed}}})
+	}
+
+	files := RenderReport("Test results", suites)
+
+	if len(files) != 1 || files[0].Path != "README.md" {
+		t.Fatalf("pages %v, want only README.md", pathsOf(generatedfile.Output{Files: files}))
+	}
+	body := string(files[0].Body)
+	for _, expected := range []string{"# Test results\n", "600 tests in 300 suites: 600 passed, 0 failed, 0 errors, 0 skipped", "| suite 000 | 2 | 2 | 0 | 0 | 0 |", "| suite 299 | 2 | 2 | 0 | 0 | 0 |"} {
+		if !strings.Contains(body, expected) {
+			t.Errorf("the page lacks %q", expected)
+		}
+	}
+	if strings.Contains(body, "## Failures") {
+		t.Error("a run with no failure has no Failures section")
+	}
+}
+
+func TestRenderWithSeveralReportsMakesAnIndexAndAPageForEach(t *testing.T) {
+	passing := []Case{{Name: "t", Status: Passed}}
+	files := RenderReport("R", []Suite{
+		{Name: "s1", Source: "apps/a/junit.xml", Tests: 1, Cases: passing},
+		{Name: "s2", Source: "apps/a/junit.xml", Tests: 1, Cases: passing},
+		{Name: "s3", Source: "libs/b/junit.xml", Tests: 1, Cases: passing},
+	})
+
+	if got := strings.Join(pathsOf(generatedfile.Output{Files: files}), ","); got != "README.md,apps-a-junit-xml.md,libs-b-junit-xml.md" {
+		t.Fatalf("paths %s", got)
+	}
+	index := bodyOf(t, files, "README.md")
+	for _, expected := range []string{"3 tests in 3 suites in 2 reports: 3 passed", "| [apps/a/junit.xml](apps-a-junit-xml.md) | 2 | 2 | 2 | 0 | 0 | 0 |", "| [libs/b/junit.xml](libs-b-junit-xml.md) | 1 | 1 | 1 | 0 | 0 | 0 |"} {
+		if !strings.Contains(index, expected) {
+			t.Errorf("index lacks %q:\n%s", expected, index)
+		}
+	}
+	if page := bodyOf(t, files, "apps-a-junit-xml.md"); !strings.Contains(page, "| s1 | 1 | 1 | 0 | 0 | 0 |") || strings.Contains(page, "| s3 |") {
+		t.Errorf("the page of a report has the suites of that report only:\n%s", page)
 	}
 }
 
@@ -118,61 +160,61 @@ func TestRenderEscapesWhatWouldBreakATableOrACodeBlock(t *testing.T) {
 
 	files := RenderReport("R", []Suite{suite})
 
-	index := bodyOf(t, files, "README.md")
-	if !strings.Contains(index, `[tricky \| \[suite\]](tricky-suite.md)`) {
-		t.Fatalf("index %s", index)
-	}
-	body := bodyOf(t, files, "tricky-suite.md")
-	if !strings.Contains(body, "| `pkg.a\\|b'c` | failed |") {
+	body := bodyOf(t, files, "README.md")
+	if !strings.Contains(body, `| tricky \| \[suite\] | 1 | 0 | 1 | 0 | 0 |`) {
 		t.Fatalf("table cell not escaped:\n%s", body)
+	}
+	if !strings.Contains(body, "#### `pkg.a\\|b'c`") {
+		t.Fatalf("test name not escaped:\n%s", body)
 	}
 	if !strings.Contains(body, "``````text\nboom\n\nhas ````` inside\n``````\n") {
 		t.Fatalf("the fence is not longer than the backticks inside:\n%s", body)
 	}
 }
 
-func TestRenderBoundsHugeSuitesAndStackTraces(t *testing.T) {
+func TestRenderCountsPassingTestsAndBoundsStackTraces(t *testing.T) {
 	var cases []Case
-	for i := 0; i < maxCaseRows+10; i++ {
+	for i := 0; i < 600; i++ {
 		cases = append(cases, Case{Name: fmt.Sprintf("t%04d", i), Status: Passed})
 	}
 	cases = append(cases, Case{Name: "broken", Status: Failed, Details: strings.Repeat("x", maxDetailRunes+500)})
 	suite := Suite{Name: "big", Source: "r.xml", Tests: len(cases), Failures: 1, Cases: cases}
 
-	body := bodyOf(t, RenderReport("R", []Suite{suite}), "big.md")
+	body := bodyOf(t, RenderReport("R", []Suite{suite}), "README.md")
 
-	if !strings.Contains(body, fmt.Sprintf("Showing the first %d of %d tests; every failure is listed above.", maxCaseRows, len(cases))) {
-		t.Fatal("the long table is not bounded")
+	if !strings.Contains(body, "| big | 601 | 600 | 1 | 0 | 0 |") {
+		t.Fatalf("the suite row counts the passing tests:\n%s", body)
 	}
-	if strings.Contains(body, fmt.Sprintf("t%04d", maxCaseRows+1)) {
-		t.Fatal("rows past the bound were written")
+	if strings.Contains(body, "t0001") {
+		t.Fatal("a test that passed was listed")
 	}
 	if !strings.Contains(body, "… (truncated)") || strings.Count(body, "x") > maxDetailRunes+10 {
 		t.Fatal("the stack trace is not bounded")
 	}
-	if !strings.Contains(body, "### `broken`") {
-		t.Fatal("a failure past the table bound is still listed")
+	if !strings.Contains(body, "#### `broken`") {
+		t.Fatal("a failure is always listed")
 	}
 }
 
-func TestRenderListsFailingTestsOnTheIndexUpToALimit(t *testing.T) {
-	var cases []Case
-	for i := 0; i < maxListedFailures+3; i++ {
-		cases = append(cases, Case{Name: fmt.Sprintf("t%02d", i), Status: Failed})
+func TestRenderListsFailingSuitesOnTheIndexUpToALimit(t *testing.T) {
+	var suites []Suite
+	for _, source := range []string{"a.xml", "b.xml"} {
+		for i := 0; i < maxListedFailures/2+5; i++ {
+			suites = append(suites, Suite{Name: fmt.Sprintf("s%02d", i), Source: source, Tests: 1, Failures: 1, Cases: []Case{{Name: "t", Status: Failed}}})
+		}
 	}
-	suite := Suite{Name: "s", Source: "r.xml", Tests: len(cases), Failures: len(cases), Cases: cases}
 
-	index := bodyOf(t, RenderReport("R", []Suite{suite}), "README.md")
+	index := bodyOf(t, RenderReport("R", suites), "README.md")
 
-	if !strings.Contains(index, "## Failing tests") || !strings.Contains(index, "- … and 3 more") {
+	if !strings.Contains(index, "## Failing suites") || !strings.Contains(index, "- … and 10 more") {
 		t.Fatalf("index %s", index)
 	}
 }
 
-func TestRenderADescriptionOfASummarisedSuiteHasNoTestTable(t *testing.T) {
-	body := bodyOf(t, RenderReport("R", []Suite{{Name: "s", Source: "r.xml", Tests: 4, Failures: 1}}), "s.md")
+func TestRenderASummarisedSuiteHasItsTotalsAndNoFailureSection(t *testing.T) {
+	body := bodyOf(t, RenderReport("R", []Suite{{Name: "s", Source: "r.xml", Tests: 4, Failures: 1}}), "README.md")
 
-	if !strings.Contains(body, "only its totals") || strings.Contains(body, "| Test |") {
+	if !strings.Contains(body, "| s | 4 | 3 | 1 | 0 | 0 |") || strings.Contains(body, "## Failures") {
 		t.Fatalf("body %s", body)
 	}
 }

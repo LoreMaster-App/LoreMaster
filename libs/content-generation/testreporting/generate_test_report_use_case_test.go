@@ -53,7 +53,7 @@ func TestGenerateFindsReportsAnywhereByTheirUsualNames(t *testing.T) {
 	if len(output.Warnings) != 0 {
 		t.Fatalf("warnings %q", output.Warnings)
 	}
-	want := []string{"README.md", "lore-master-libs-confluence-client-storageformat.md", "lore-master-libs-markdown-workspace-documentparsing.md", "pages-view.md", "status-policy.md"}
+	want := []string{"README.md", "build-reports-test-go-xml.md", "junit-xml.md"}
 	if got := pathsOf(output); !slices.Equal(got, want) {
 		t.Fatalf("pages %q, want %q", got, want)
 	}
@@ -73,7 +73,7 @@ func TestGenerateUsesTheConfiguredInputAndTitle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got := pathsOf(output); len(got) != 3 {
+	if got := pathsOf(output); !slices.Equal(got, []string{"README.md"}) {
 		t.Fatalf("pages %q", got)
 	}
 	if !strings.HasPrefix(string(output.Files[0].Body), "# CI results\n") {
@@ -96,7 +96,7 @@ func TestGenerateReportsABadReportAndStillRendersTheGoodOnes(t *testing.T) {
 	if len(output.Warnings) != 2 || !strings.HasPrefix(output.Warnings[0], "junit-bad.xml: ") || !strings.HasPrefix(output.Warnings[1], "junit-other.xml: ") {
 		t.Fatalf("warnings %q", output.Warnings)
 	}
-	if got := pathsOf(output); len(got) != 3 {
+	if got := pathsOf(output); !slices.Equal(got, []string{"README.md"}) {
 		t.Fatalf("pages %q", got)
 	}
 }

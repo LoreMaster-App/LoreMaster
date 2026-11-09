@@ -102,7 +102,7 @@ func call(t *testing.T, conn *jsonrpc2.Conn, root string, generators ...int) (rp
 
 func TestRunWritesPagesThenLeavesThemAloneWhenNothingChanged(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit})
+	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit, "reports/junit-ui.xml": junit})
 	conn := connect(t)
 
 	first, err := call(t, conn, root, 0)
@@ -113,7 +113,7 @@ func TestRunWritesPagesThenLeavesThemAloneWhenNothingChanged(t *testing.T) {
 	if len(first.Runs) != 1 || first.Runs[0].Index != 0 || first.Runs[0].Type != "test-results" || first.Runs[0].Output != "docs/tests" || first.Runs[0].Error != "" {
 		t.Fatalf("run %+v", first.Runs)
 	}
-	want := []string{"docs/tests/README.md", "docs/tests/pages-view.md", "docs/tests/status-policy.md"}
+	want := []string{"docs/tests/README.md", "docs/tests/reports-junit-ui-xml.md", "docs/tests/reports-junit-xml.md"}
 	if !slices.Equal(first.Runs[0].Written, want) {
 		t.Fatalf("written %q, want %q", first.Runs[0].Written, want)
 	}
@@ -133,7 +133,7 @@ func TestRunWritesPagesThenLeavesThemAloneWhenNothingChanged(t *testing.T) {
 
 func TestGeneratedPagesJoinTheTreeLikeAnyOtherMarkdown(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit, "docs/README.md": "# Docs\n"})
+	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit, "reports/junit-ui.xml": junit, "docs/README.md": "# Docs\n"})
 	if _, err := call(t, connect(t), root, 0); err != nil {
 		t.Fatal(err)
 	}
@@ -162,14 +162,14 @@ func TestGeneratedPagesJoinTheTreeLikeAnyOtherMarkdown(t *testing.T) {
 		}
 		parents[string(node.Document.Path)] = parent
 	})
-	if parents["docs/tests/README.md"] != "docs/README.md" || parents["docs/tests/pages-view.md"] != "docs/tests/README.md" || parents["docs/tests/status-policy.md"] != "docs/tests/README.md" {
+	if parents["docs/tests/README.md"] != "docs/README.md" || parents["docs/tests/reports-junit-xml.md"] != "docs/tests/README.md" || parents["docs/tests/reports-junit-ui-xml.md"] != "docs/tests/README.md" {
 		t.Fatalf("nesting %v", parents)
 	}
 }
 
 func TestRunWithNoIndexesRunsEveryGeneratorAndOneFailureDoesNotStopTheRest(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit, "docs/ci-tests/README.md": "# Hand-written\n"})
+	write(t, root, map[string]string{settingsFixture: settingsYAML, "reports/junit.xml": junit, "reports/junit-ui.xml": junit, "docs/ci-tests/README.md": "# Hand-written\n"})
 
 	result, err := call(t, connect(t), root)
 	if err != nil {
@@ -335,7 +335,7 @@ outputs:
 
 func TestRunRecognisesTheFormatOfAGeneratorWithoutAType(t *testing.T) {
 	root := t.TempDir()
-	write(t, root, map[string]string{settingsFixture: untypedSettingsYAML, "reports/junit.xml": junit, "unknown/pom.xml": "<project/>"})
+	write(t, root, map[string]string{settingsFixture: untypedSettingsYAML, "reports/junit.xml": junit, "reports/junit-ui.xml": junit, "unknown/pom.xml": "<project/>"})
 
 	result, err := call(t, connect(t), root)
 	if err != nil {

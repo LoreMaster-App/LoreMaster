@@ -251,6 +251,9 @@ func validateGenerators(add func(string, ...any), generators []Generator) {
 		if generator.Prepare != "" && strings.TrimSpace(generator.Prepare) == "" {
 			add("%s.prepare is blank; give the command that produces what the generator reads, or remove it", at)
 		}
+		if generator.PageDepth != nil && *generator.PageDepth < 0 {
+			add("%s.pageDepth is %d; use 0 or more", at, *generator.PageDepth)
+		}
 		validateSource(add, at, generator)
 		for j, pattern := range generator.Input {
 			clean := path.Clean(strings.TrimPrefix(pattern, "!"))

@@ -38,6 +38,9 @@ type Generator struct {
 	// Prepare is an optional shell command that produces what the generator reads (a build, a
 	// test run). It runs only when a run asks for it, never on its own.
 	Prepare string `json:"prepare,omitempty"`
+	// PageDepth is how many folder levels of the code get a page of their own (coverage); what is
+	// deeper is written on the page of the level above. Absent means the default, 2; 0 writes one page.
+	PageDepth *int `json:"pageDepth,omitempty"`
 }
 
 // Output is one place the lore goes.

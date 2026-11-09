@@ -68,8 +68,8 @@ output, no parser available* instead of staying silent.
 
 | Generator | Reads | Writes |
 |---|---|---|
-| `test-results` | JUnit XML | a page per suite, with failures and totals |
-| `coverage` | Cobertura XML, LCOV | a page per folder with coverage bars |
+| `test-results` | JUnit XML | a page per report, with failures and a row per suite |
+| `coverage` | Cobertura XML, LCOV | a page per project folder, deeper folders as sections, with coverage bars |
 | `openapi-docs` | OpenAPI 3 | operations by tag, parameters, schemas |
 | `storybook-docs` | a Storybook build or URL | a page per component with real screenshots |
 | `markdown-docs` | Markdown another tool wrote | the same pages, images included |

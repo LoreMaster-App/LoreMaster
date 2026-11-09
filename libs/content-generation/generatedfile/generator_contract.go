@@ -17,6 +17,9 @@ type Spec struct {
 	// workspace: a base URL, or a workspace-relative folder (storybook-docs reads a Storybook's
 	// build that way). Empty for generators that read Input.
 	Source string
+	// PageDepth is how many folder levels of the code get a page of their own (coverage); what is
+	// deeper is written on the page of the level above. Nil means the generator's own default.
+	PageDepth *int
 }
 
 // File is one generated page.

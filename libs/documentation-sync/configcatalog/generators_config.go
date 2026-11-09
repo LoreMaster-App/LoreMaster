@@ -29,7 +29,13 @@ func generatorFields() []Field {
 func generatorTypes() []GeneratorType {
 	return []GeneratorType{
 		{ID: "test-results", Label: "Test results", Description: "JUnit XML test reports."},
-		{ID: "coverage", Label: "Coverage", Description: "Code coverage reports."},
+		{
+			ID: "coverage", Label: "Coverage", Description: "Code coverage reports.",
+			Fields: []Field{{
+				Key: "pageDepth", Label: "Page depth", Type: FieldNumber, Advanced: true, Default: "2", Min: intPointer(0), Max: intPointer(10),
+				Help: "How many folder levels below the code's root get a page of their own. Folders deeper than that are sections of the page above. 0 writes one page.",
+			}},
+		},
 		{ID: "markdown-docs", Label: "Markdown documents", Description: "Existing documents brought in as pages."},
 		{ID: "notes", Label: "Notes", Description: "TODO, FIXME and other tagged comments of the source files."},
 		{ID: "go-docs", Label: "Go documentation", Description: "Go package documentation."},
